@@ -5,9 +5,9 @@
     <artifactId>rdm-sync-api</artifactId>
 
     <parent>
-        <groupId>ru.i-novus.ms.rdm</groupId>
+        <groupId>ru.i-novus.ms.rdm.sync</groupId>
         <artifactId>rdm-sync</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -21,7 +21,6 @@
         <dependency>
             <groupId>ru.i-novus.ms.rdm</groupId>
             <artifactId>rdm-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
