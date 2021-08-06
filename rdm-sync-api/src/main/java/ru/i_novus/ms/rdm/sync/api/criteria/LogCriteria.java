@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.criteria;
+package ru.i_novus.ms.rdm.sync.api.criteria;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,6 +18,7 @@ import java.time.LocalDate;
 @Setter
 @ApiModel("Критерии поиска записи журнала")
 public class LogCriteria extends AbstractCriteria {
+
     @ApiModelProperty("Код справочника")
     @QueryParam("refbookCode")
     private String refbookCode;

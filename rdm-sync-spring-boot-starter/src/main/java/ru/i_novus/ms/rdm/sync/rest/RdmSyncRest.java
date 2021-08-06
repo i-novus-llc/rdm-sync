@@ -2,8 +2,8 @@ package ru.i_novus.ms.rdm.sync.rest;
 
 import io.swagger.annotations.*;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import ru.i_novus.ms.rdm.sync.api.criteria.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.criteria.LogCriteria;
 import ru.i_novus.ms.rdm.sync.model.Log;
 
 import javax.ws.rs.*;
