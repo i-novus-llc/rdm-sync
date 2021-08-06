@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
-import ru.i_novus.ms.rdm.sync.api.model.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;

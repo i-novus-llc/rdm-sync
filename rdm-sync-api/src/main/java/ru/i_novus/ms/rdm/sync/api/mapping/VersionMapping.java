@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.api.model.mapping;
+package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

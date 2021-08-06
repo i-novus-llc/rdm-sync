@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.service.change_data;
 
 import org.springframework.data.util.Pair;
 import org.springframework.util.ReflectionUtils;
-import ru.i_novus.ms.rdm.sync.api.model.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 
 import java.io.Serializable;
 import java.util.*;
