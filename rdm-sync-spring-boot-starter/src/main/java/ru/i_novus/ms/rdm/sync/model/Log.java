@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class Log {
+
     private Long id;
     private String refbookCode;
     private String currentVersion;
@@ -22,5 +23,4 @@ public class Log {
     private LocalDateTime date;
     private String message;
     private String stack;
-
 }

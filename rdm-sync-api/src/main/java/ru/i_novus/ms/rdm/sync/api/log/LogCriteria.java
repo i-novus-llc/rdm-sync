@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.api.criteria;
+package ru.i_novus.ms.rdm.sync.api.log;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
