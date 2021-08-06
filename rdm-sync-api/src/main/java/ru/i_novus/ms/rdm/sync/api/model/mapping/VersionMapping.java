@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.model;
+package ru.i_novus.ms.rdm.sync.api.model.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class VersionMapping {
+
     private Integer id;
     private String code;
     private String version;
@@ -27,5 +28,4 @@ public class VersionMapping {
     public boolean changed() {
         return mappingLastUpdated.isAfter(lastSync);
     }
-
 }

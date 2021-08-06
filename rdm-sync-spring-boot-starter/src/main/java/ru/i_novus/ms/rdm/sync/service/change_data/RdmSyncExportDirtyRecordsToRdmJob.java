@@ -4,16 +4,13 @@ import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.model.FieldMapping;
-import ru.i_novus.ms.rdm.sync.model.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncJobContext;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.INTERNAL_TAG;
 import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.reindex;

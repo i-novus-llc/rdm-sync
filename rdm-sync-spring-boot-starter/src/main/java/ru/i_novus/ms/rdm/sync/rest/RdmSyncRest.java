@@ -2,9 +2,9 @@ package ru.i_novus.ms.rdm.sync.rest;
 
 import io.swagger.annotations.*;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.criteria.LogCriteria;
 import ru.i_novus.ms.rdm.sync.model.Log;
-import ru.i_novus.ms.rdm.sync.model.VersionMapping;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

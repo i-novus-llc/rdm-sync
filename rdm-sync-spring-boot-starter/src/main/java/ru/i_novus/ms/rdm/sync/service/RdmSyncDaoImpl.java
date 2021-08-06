@@ -16,9 +16,9 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.api.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.model.Log;
-import ru.i_novus.ms.rdm.sync.model.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 

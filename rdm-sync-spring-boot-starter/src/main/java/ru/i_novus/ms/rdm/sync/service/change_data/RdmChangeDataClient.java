@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.refdata.RdmChangeDataRequest;
 import ru.i_novus.ms.rdm.api.model.refdata.Row;
-import ru.i_novus.ms.rdm.sync.model.FieldMapping;
-import ru.i_novus.ms.rdm.sync.model.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.model.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 

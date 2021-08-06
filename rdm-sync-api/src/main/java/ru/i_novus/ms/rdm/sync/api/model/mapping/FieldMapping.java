@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.model;
+package ru.i_novus.ms.rdm.sync.api.model.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class FieldMapping {
+
     private String sysField;
     private String sysDataType;
     private String rdmField;
