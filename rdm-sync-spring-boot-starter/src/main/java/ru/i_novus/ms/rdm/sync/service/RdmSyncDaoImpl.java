@@ -17,7 +17,7 @@ import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.api.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.model.Log;
+import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
@@ -431,5 +431,4 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static String getInternalLocalStateUpdateTriggerName(String schema, String table) {
         return schema + "_" + table + "_intrnl_lcl_rw_stt_updt";
     }
-
 }

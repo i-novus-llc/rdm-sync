@@ -21,6 +21,7 @@ import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.api.util.PageIterator;
+import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
@@ -56,16 +57,17 @@ import static ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum.INSE
 public class RdmSyncRestImpl implements RdmSyncRest {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncRestImpl.class);
+
     private static final int MAX_SIZE = 100;
 
     private static final String ERROR_WHILE_FETCHING_NEW_VERSION    = "Error while fetching new version with code %s.";
     private static final String ERROR_WHILE_UPDATING_NEW_VERSION    = "Error while updating new version with code %s.";
     private static final String NO_MAPPING_FOR_PRIMARY_KEY          = "No mapping found for primary key %s.";
-    private static final String NO_REFBOOK_FOUND                    = "No reference book with code %s found.";
-    private static final String NO_PRIMARY_KEY_FOUND                = "No primary key found in reference book with code %s.";
-    private static final String MAPPING_OUT_OF_DATE                 = "Field %s was deleted in version %s. Update your mappings.";
+    private static final String NO_REFBOOK_FOUND                    = "No reference book with code '%s' found.";
+    private static final String NO_PRIMARY_KEY_FOUND                = "No primary key found in reference book with code '%s'.";
+    private static final String MAPPING_OUT_OF_DATE                 = "Field '%s' was deleted in version with code '%s'. Update your mappings.";
     private static final String COMPOSITE_PK_NOT_SUPPORTED          = "RefBook %s has composite primary key. They are not implemented yet.";
-    private static final String MORE_THAN_ONE_REFBOOK_FOUND         = "Search for RefBook with code %s returned more than one element.";
+    private static final String MORE_THAN_ONE_REFBOOK_FOUND         = "Search for reference book with code '%s' returned more than one element.";
 
     @Autowired
     private RefBookService refBookService;

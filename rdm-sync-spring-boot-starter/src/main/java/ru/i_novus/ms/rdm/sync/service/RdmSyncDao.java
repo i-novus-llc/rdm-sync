@@ -2,9 +2,9 @@ package ru.i_novus.ms.rdm.sync.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
+import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.model.Log;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 
@@ -115,5 +115,4 @@ public interface RdmSyncDao {
 
     void createSchemaIfNotExists(String schema);
     void createRefBookTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
-
 }

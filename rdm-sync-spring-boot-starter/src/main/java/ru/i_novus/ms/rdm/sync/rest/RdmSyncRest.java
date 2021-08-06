@@ -2,9 +2,9 @@ package ru.i_novus.ms.rdm.sync.rest;
 
 import io.swagger.annotations.*;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.model.Log;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -50,5 +50,4 @@ public interface RdmSyncRest {
     Response downloadXmlFieldMapping(@QueryParam("code") List<String> forRefBooks);
 
     RefBook getLastPublishedVersionFromRdm(String code);
-
 }
