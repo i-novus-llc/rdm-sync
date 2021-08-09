@@ -1,0 +1,11 @@
+version: "3.6"
+
+services:
+  sync:
+    image: ${DOCKER_REGISTRY}/rdm/sync:${TAG}
+
+  db:
+    image: ${DOCKER_REGISTRY}/rdm/db:${TAG}
+
+  activemq:
+    image: "rmohr/activemq:5.15.9"
