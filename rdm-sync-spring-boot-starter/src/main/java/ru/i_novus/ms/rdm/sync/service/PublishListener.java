@@ -3,7 +3,7 @@ package ru.i_novus.ms.rdm.sync.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
-import ru.i_novus.ms.rdm.sync.rest.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 
 public class PublishListener {
 

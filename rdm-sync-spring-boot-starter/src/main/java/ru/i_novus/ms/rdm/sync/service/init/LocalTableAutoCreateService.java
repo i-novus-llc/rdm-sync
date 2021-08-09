@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.rest.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
 
 import java.util.ArrayList;

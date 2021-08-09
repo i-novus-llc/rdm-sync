@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.rest;
+package ru.i_novus.ms.rdm.sync.api.service;
 
 import io.swagger.annotations.*;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
