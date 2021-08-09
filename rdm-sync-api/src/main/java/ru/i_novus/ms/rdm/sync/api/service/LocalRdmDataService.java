@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.rest;
+package ru.i_novus.ms.rdm.sync.api.service;
 
 import org.springframework.data.domain.Page;
 
@@ -20,10 +20,13 @@ public interface LocalRdmDataService {
             @QueryParam("getDeleted") Boolean getDeleted,
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size,
-            @Context UriInfo uriInfo);
+            @Context UriInfo uriInfo
+    );
 
     @GET
     @Path("/{refBookCode}/{primaryKey}")
-    Map<String, Object> getSingle(@PathParam("refBookCode") String refBookCode, @PathParam("primaryKey") String pk);
-
+    Map<String, Object> getSingle(
+            @PathParam("refBookCode") String refBookCode,
+            @PathParam("primaryKey") String pk
+    );
 }
