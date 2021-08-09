@@ -29,9 +29,9 @@ public interface RdmSyncService {
     void update();
 
     @POST
-    @Path("/update/{refbookCode}")
+    @Path("/update/{refBookCode}")
     @ApiOperation(value = "Синхронизация отдельного справочника")
-    void update(@PathParam("refbookCode") String refbookCode);
+    void update(@PathParam("refBookCode") String refBookCode);
 
     void update(RefBook refBook, VersionMapping versionMapping);
 
