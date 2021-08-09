@@ -16,10 +16,15 @@
 
         <maven.deploy.skip>true</maven.deploy.skip>
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/SyncApplication.java, **/SyncAppConfig.java, **/SyncConfiguration.java, **/SecurityConfig.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/SyncApplication.java, **/SyncAppConfig.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>ru.i-novus.ms.rdm.sync</groupId>
+            <artifactId>rdm-sync-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
