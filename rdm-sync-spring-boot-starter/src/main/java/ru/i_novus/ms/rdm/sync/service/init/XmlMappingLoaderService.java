@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -18,7 +18,7 @@ import java.io.InputStream;
 @Component
 class XmlMappingLoaderService {
 
-    private static Logger logger = LoggerFactory.getLogger(XmlMappingLoaderService.class);
+    private static final Logger logger = LoggerFactory.getLogger(XmlMappingLoaderService.class);
 
     @Autowired private RdmSyncDao rdmSyncDao;
     @Autowired private ClusterLockService lockService;

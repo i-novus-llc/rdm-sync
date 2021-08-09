@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.service;
+package ru.i_novus.ms.rdm.sync.dao;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.time.LocalDate;
@@ -21,9 +22,9 @@ import java.util.Map;
 public interface RdmSyncDao {
 
     /**
-     * Получить список маппинга справочников НСИ на таблицы клиента
+     * Получить список маппинга справочников НСИ на таблицы клиента.
      *
-     * @return список
+     * @return Список
      */
     List<VersionMapping> getVersionMappings();
 
@@ -32,10 +33,10 @@ public interface RdmSyncDao {
     int getLastVersion(String refbookCode);
 
     /**
-     * Получить список маппинга полей справочников НСИ на поля клиента
+     * Получить список маппинга полей справочников НСИ на поля клиента.
      *
      * @param refbookCode код справочника НСИ
-     * @return список
+     * @return Список
      */
     List<FieldMapping> getFieldMapping(String refbookCode);
 
@@ -47,7 +48,7 @@ public interface RdmSyncDao {
      *
      * @param table          таблица справочника на стороне клиента
      * @param primaryField   поле, являющееся первичном ключом справочника, в таблице клиента
-     * @return список идентификаторов данных справочника клиента
+     * @return Список идентификаторов данных справочника клиента
      */
     List<Object> getDataIds(String table, FieldMapping primaryField);
 
@@ -60,7 +61,7 @@ public interface RdmSyncDao {
     boolean isIdExists(String table, String primaryField, Object primaryValue);
 
     /**
-     * Вставить строку в справочник клиента
+     * Вставить строку в справочник клиента.
      *
      * @param table таблица справочника на стороне клиента
      * @param row   строка с данными
@@ -68,28 +69,31 @@ public interface RdmSyncDao {
     void insertRow(String table, Map<String, Object> row, boolean markSynced);
 
     /**
-     * Изменить строку в справочник клиента
-     * @param table таблица справочника на стороне клиента
+     * Изменить строку в справочник клиента.
+     *
+     * @param table        таблица справочника на стороне клиента
      * @param primaryField поле, являющееся первичном ключом справочника, в таблице клиента
-     * @param row строка с данными
+     * @param row          строка с данными
      */
     void updateRow(String table, String primaryField, Map<String, Object> row, boolean markSynced);
 
     /**
-     * Пометить запись справочника клиента (не)удаленной
-     * @param table таблица справочника на стороне клиента
-     * @param primaryField поле, являющееся первичном ключом справочника, в таблице клиента
+     * Пометить запись справочника клиента как (не)удалённую.
+     *
+     * @param table          таблица справочника на стороне клиента
+     * @param primaryField   поле, являющееся первичным ключом справочника, в таблице клиента
      * @param isDeletedField поле, отвечающее за признак удаления, в таблице клиента
-     * @param primaryValue значение первичного ключа записи
-     * @param deleted новое значение для поля isDeletedField
+     * @param primaryValue   значение первичного ключа записи
+     * @param deleted        новое значение для поля isDeletedField
      */
     void markDeleted(String table, String primaryField, String isDeletedField, Object primaryValue, boolean deleted, boolean markSynced);
 
     /**
-     * Пометить все записи справочника клиента (не)удаленными
-     * @param table таблица справочника на стороне клиента
+     * Пометить все записи справочника клиента как (не)удалённые.
+     *
+     * @param table          таблица справочника на стороне клиента
      * @param isDeletedField поле, отвечающее за признак удаления, в таблице клиента
-     * @param deleted новое значение для поля isDeletedField
+     * @param deleted        новое значение для поля isDeletedField
      */
     void markDeleted(String table, String isDeletedField, boolean deleted, boolean markSynced);
 

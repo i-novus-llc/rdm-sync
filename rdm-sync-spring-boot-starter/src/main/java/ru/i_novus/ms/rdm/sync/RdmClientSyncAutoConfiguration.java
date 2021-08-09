@@ -24,6 +24,8 @@ import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.api.util.json.LocalDateTimeMapperPreparer;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
 

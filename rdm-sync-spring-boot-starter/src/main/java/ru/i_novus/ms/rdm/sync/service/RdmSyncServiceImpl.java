@@ -26,6 +26,7 @@ import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
@@ -75,10 +76,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     private VersionRestService versionService;
     @Autowired
     private CompareService compareService;
+
     @Autowired
     private RdmMappingService mappingService;
     @Autowired
     private RdmLoggingService loggingService;
+
     @Autowired
     private RdmSyncDao dao;
 
@@ -92,6 +95,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update() {
+
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         List<RefBook> refBooks = getRefBooks(versionMappings);
         for (String code : RefBookReferenceSort.getSortedCodes(refBooks)) {
@@ -105,14 +109,17 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
+
         if (dao.getVersionMapping(refBookCode) != null) {
             RefBook newVersion;
             try {
                 newVersion = getLastPublishedVersionFromRdm(refBookCode);
+
             } catch (Exception e) {
                 logger.error(format(ERROR_WHILE_FETCHING_NEW_VERSION, refBookCode), e);
                 return;
             }
+
             VersionMapping versionMapping = getVersionMapping(refBookCode);
             try {
                 if (isFirstLoad(versionMapping) || isNewVersionPublished(newVersion, versionMapping) || isMappingChanged(versionMapping)) {
@@ -131,6 +138,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Override
     @Transactional
     public void update(RefBook newVersion, VersionMapping versionMapping) {
+
         dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         try {
             if (isFirstLoad(versionMapping)) {
@@ -162,6 +170,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private boolean isNewVersionPublished(RefBook newVersion, VersionMapping versionMapping) {
+
         return !versionMapping.getVersion().equals(newVersion.getLastPublishedVersion())
                 && !versionMapping.getPublicationDate().equals(newVersion.getLastPublishedVersionFromDate());
     }
@@ -173,6 +182,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Override
     @Transactional(readOnly = true)
     public Response downloadXmlFieldMapping(List<String> forRefBooks) {
+
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         if (forRefBooks.stream().noneMatch("all"::equalsIgnoreCase))
             versionMappings = versionMappings.stream().filter(vm -> forRefBooks.contains(vm.getCode())).collect(toList());
@@ -198,6 +208,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private VersionMapping getVersionMapping(String refbookCode) {
+
         VersionMapping versionMapping = dao.getVersionMapping(refbookCode);
         List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
         if (fieldMappings.stream().noneMatch(f -> f.getSysField().equals(versionMapping.getPrimaryField()))) {
@@ -207,23 +218,28 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     public RefBook getLastPublishedVersionFromRdm(String code) {
+
         RefBookCriteria refBookCriteria = new RefBookCriteria();
         refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
         refBookCriteria.setCodeExact(code);
+
         Page<RefBook> page = refBookService.search(refBookCriteria);
         if (page.getContent().isEmpty())
             throw new IllegalArgumentException(format(NO_REFBOOK_FOUND, code));
         if (page.getContent().size() > 1)
             throw new IllegalStateException(format(MORE_THAN_ONE_REFBOOK_FOUND, code));
+
         RefBook last = page.getContent().iterator().next();
         if (last.getStructure().getPrimaries().isEmpty())
             throw new IllegalStateException(format(NO_PRIMARY_KEY_FOUND, code));
         if (last.getStructure().getPrimaries().size() > 1)
             throw new UnsupportedOperationException(String.format(COMPOSITE_PK_NOT_SUPPORTED, code));
+
         return last;
     }
 
     private List<RefBook> getRefBooks(List<VersionMapping> versionMappings) {
+
         List<RefBook> refBooks = new ArrayList<>();
         for (VersionMapping versionMapping : versionMappings) {
             try {
@@ -237,6 +253,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private void mergeData(VersionMapping versionMapping, RefBook newVersion) {
+
         Integer oldVersionId = versionService.getVersion(versionMapping.getVersion(), versionMapping.getCode()).getId();
         StructureDiff structureDiff = compareService.compareStructures(oldVersionId, newVersion.getId());
         if (!CollectionUtils.isEmpty(structureDiff.getUpdated()) || !CollectionUtils.isEmpty(structureDiff.getDeleted()) || !CollectionUtils.isEmpty(structureDiff.getInserted())) {
@@ -267,6 +284,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private void mergeRow(DiffRowValue row, VersionMapping versionMapping, List<FieldMapping> fieldMappings, RefBook newVersion) {
+
         Map<String, Object> mappedRow = new HashMap<>();
         for (DiffFieldValue diffFieldValue : row.getValues()) {
             Map<String, Object> mappedValue = mapValue(diffFieldValue.getField().getName(),
@@ -288,6 +306,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private Map<String, Object> mapValue(String rdmField, Object value, List<FieldMapping> fieldMappings, RefBook newVersion) {
+
         FieldMapping fieldMapping = fieldMappings.stream().filter(m -> m.getRdmField().equals(rdmField)).findAny().orElse(null);
         if (fieldMapping == null) {
             //поле не ведется в системе
@@ -317,6 +336,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private void uploadNew(VersionMapping versionMapping, RefBook newVersion) {
+
         List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
         List<Object> existingDataIds = dao.getDataIds(versionMapping.getTable(),
                 fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null));
@@ -332,6 +352,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private void insertOrUpdateRow(RefBookRowValue row, List<Object> existingDataIds, VersionMapping versionMapping, List<FieldMapping> fieldMappings, RefBook newVersion) {
+
         String primaryField = versionMapping.getPrimaryField();
         Map<String, Object> mappedRow = new HashMap<>();
         for (FieldValue fieldValue : row.getFieldValues()) {

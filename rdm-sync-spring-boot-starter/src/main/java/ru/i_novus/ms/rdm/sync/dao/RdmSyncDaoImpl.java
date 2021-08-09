@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.service;
+package ru.i_novus.ms.rdm.sync.dao;
 
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.slf4j.Logger;
@@ -11,16 +11,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.api.util.StringUtils;
-import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
+import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
+import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.PreparedStatement;

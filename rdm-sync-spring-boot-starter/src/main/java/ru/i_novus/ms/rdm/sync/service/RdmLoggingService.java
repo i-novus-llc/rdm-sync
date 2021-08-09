@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.time.LocalDate;
 import java.util.List;

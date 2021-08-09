@@ -10,7 +10,7 @@ import ru.i_novus.ms.rdm.api.model.refdata.RdmChangeDataRequest;
 import ru.i_novus.ms.rdm.api.model.refdata.Row;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.io.Serializable;
@@ -31,19 +31,19 @@ public abstract class RdmChangeDataClient {
     @Autowired protected RdmSyncDao dao;
 
     /**
-     * Этот метод сам сконвертирует ваши объекты в новую {@code Map<String, Object> M} используя следующие правила:
-     * - Если объект не экземпляр класса Map -- берем все его поля вплоть до Object-а, переводим их в snake_case, кладем в {@code M}
-     * - Если объект экземпляр класса Map -- берем все ее ключи, переводим их в snake_case, кладем в новую {@code M}
-     * - Если локально присутствуют записи в таблице rdm_sync.field_mappings для полей справочника с кодом {@code refBookCode} -- применяем описанные там правила к {@code M}.
-     *
-     * Правила, по которым строки переводятся в snake_case могут быть найдены здесь: {@link com.google.common.base.CaseFormat#LOWER_UNDERSCORE}.
+     * Этот метод сам сконвертирует ваши объекты в новый набор {@code Map<String, Object> M}, используя следующие правила:
+     * <p>- Если объект не экземпляр класса Map, берём все его поля вплоть до Object-а, переводим их в snake_case, кладём в {@code M}.
+     * <p>- Если объект - экземпляр класса Map, берём все её ключи, переводим их в snake_case, кладём в новую {@code M}.
+     * <p>- Если локально присутствуют записи в таблице rdm_sync.field_mappings для полей справочника с кодом {@code refBookCode}, применяем описанные там правила к {@code M}.
+     * <p/>
+     * Правила, по которым строки переводятся в snake_case, могут быть найдены <a href="com.google.common.base.CaseFormat#LOWER_UNDERSCORE">здесь</a>.
      * Пара примеров:
-     * 1) camelCase -> camel_case
-     * 2) camelCase123 -> camel_case123
-     *
+     * <p>1) camelCase -> camel_case
+     * <p>2) camelCase123 -> camel_case123
      */
     @Transactional
     public <T extends Serializable> void changeData(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete) {
+
         List<FieldMapping> fieldMappings = dao.getFieldMapping(refBookCode);
         changeData(refBookCode, addUpdate, delete, t -> {
             Map<String, Object> map = tToMap(t, true, null);
@@ -59,11 +59,12 @@ public abstract class RdmChangeDataClient {
      * @param refBookCode Код справочника
      * @param addUpdate Записи, которые нужно добавить/изменить в RDM
      * @param delete Записи, которые нужно удалить из RDM
-     * @param map Функция, преобразовабающая экземпляр класса {@code <T>} в {@code Map<String, Object>}. Ключами в мапе должны идти поля в RDM, типы данных должны быть приводимыми.
-     * @param <T> Этот параметр должен реализовывать интерфейс Serializable ({@link java.util.HashMap} отлично подойдет).
+     * @param map Функция, преобразовывающая экземпляр класса {@code <T>} в {@code Map<String, Object>}. Ключами в мапе должны идти поля в RDM, типы данных должны быть приводимыми.
+     * @param <T> Этот параметр должен реализовывать интерфейс Serializable ({@link java.util.HashMap} отлично подойдёт).
      */
     @Transactional
     public <T extends Serializable> void changeData(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map) {
+
         VersionMapping vm = dao.getVersionMapping(refBookCode);
         if (vm != null && (!addUpdate.isEmpty() || !delete.isEmpty())) {
             boolean ensureState = false;
@@ -90,16 +91,15 @@ public abstract class RdmChangeDataClient {
     abstract <T extends Serializable>  void changeData0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map);
 
     /**
-     * Этот метод сам попытается преобразовать экземпляр класса {@code <T>} в {@code Map<String, Object> M} используя следующие правила:
-     * - Если T экземпляр класса Map, берем все ее ключи, переводим их в snake_case, оставляем только те ключи, что содержатся в локальной таблице клиента (смотрим по схеме таблицы) и кладем в {@code M}
-     * - Если T не экземляр класса Map, берем все поля вплоть до Object-а и применяем ту же самую логику к ним
-     * - Дополняем {@code M} нехватающими ключами из схемы локальной таблицы.
-     *
-     * Правила, по которым строки переводятся в snake_case могут быть найдены здесь: {@link com.google.common.base.CaseFormat#LOWER_UNDERSCORE}.
+     * Этот метод сам попытается преобразовать экземпляр класса {@code <T>} в набор {@code Map<String, Object> M}, используя следующие правила:
+     * <p>- Если T - экземпляр класса Map, берём все её ключи, переводим их в snake_case, оставляем только те ключи, что содержатся в локальной таблице клиента (смотрим по схеме таблицы) и кладём в {@code M}.
+     * <p>- Если T не экземпляр класса Map, берём все поля вплоть до Object-а и применяем ту же самую логику к ним.
+     * <p>- Для отсутствующих полей дополняем {@code M} ключами из схемы локальной таблицы.
+     * <p/>
+     * Правила, по которым строки переводятся в snake_case, могут быть найдены <a href="com.google.common.base.CaseFormat#LOWER_UNDERSCORE">здесь</a>.
      * Пара примеров:
-     * 1) camelCase -> camel_case
-     * 2) camelCase123 -> camel_case123
-     *
+     * <p>1) camelCase -> camel_case
+     * <p>2) camelCase123 -> camel_case123
      */
     @Transactional
     public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable) {
@@ -119,6 +119,7 @@ public abstract class RdmChangeDataClient {
      */
     @Transactional
     public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable, Function<? super T, Map<String, Object>> map) {
+
         VersionMapping versionMapping = getVersionMappingByTableOrElseThrow(localTable);
         String pk = versionMapping.getPrimaryField();
         String isDeletedField = versionMapping.getDeletedField();
@@ -145,15 +146,20 @@ public abstract class RdmChangeDataClient {
     }
 
     private VersionMapping getVersionMappingByTableOrElseThrow(String table) {
-        return dao.getVersionMappings().stream().filter(vm -> vm.getTable().equals(table)).findAny().orElseThrow(() -> new RdmException("No table " + table + " found."));
+
+        return dao.getVersionMappings().stream()
+                .filter(vm -> vm.getTable().equals(table))
+                .findAny().orElseThrow(() -> new RdmException("No table " + table + " found."));
     }
 
-    static <T extends Serializable>  RdmChangeDataRequest toRdmChangeDataRequest(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map) {
+    static <T extends Serializable> RdmChangeDataRequest toRdmChangeDataRequest(String refBookCode,
+                                                                                List<? extends T> addUpdate,
+                                                                                List<? extends T> delete,
+                                                                                Function<? super T, Map<String, Object>> map) {
         List<Row> addUpdateRows = new ArrayList<>();
         List<Row> toDeleteRows = new ArrayList<>();
         for (T t : addUpdate) addUpdateRows.add(new Row(map.apply(t)));
         for (T t : delete) toDeleteRows.add(new Row(map.apply(t)));
         return new RdmChangeDataRequest(refBookCode, addUpdateRows, toDeleteRows);
     }
-
 }

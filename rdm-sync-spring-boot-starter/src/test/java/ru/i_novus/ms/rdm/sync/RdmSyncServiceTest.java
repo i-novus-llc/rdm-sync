@@ -19,11 +19,15 @@ import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.model.refdata.RefBookRowValue;
 import ru.i_novus.ms.rdm.api.model.refdata.SearchDataCriteria;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
-import ru.i_novus.ms.rdm.api.service.*;
+import ru.i_novus.ms.rdm.api.service.CompareService;
+import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.service.*;
+import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
+import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
+import ru.i_novus.ms.rdm.sync.service.RdmSyncServiceImpl;
 import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.platform.datastorage.temporal.model.value.*;
@@ -49,22 +53,22 @@ public class RdmSyncServiceTest {
 
     @InjectMocks
     private RdmSyncServiceImpl rdmSyncRest;
+
     @Mock
     private RdmSyncDao dao;
+
     @Mock
     private RefBookService refBookService;
     @Mock
     private VersionRestService versionService;
+
     @Mock
     private CompareService compareService;
+
     @Mock
     private RdmMappingService mappingService;
     @Mock
     private RdmLoggingService rdmLoggingService;
-    @Mock
-    private DraftService draftService;
-    @Mock
-    private PublishService publishService;
 
     @Before
     public void setUp() {

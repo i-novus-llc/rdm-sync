@@ -6,7 +6,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.data.domain.Page;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncJobContext;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 

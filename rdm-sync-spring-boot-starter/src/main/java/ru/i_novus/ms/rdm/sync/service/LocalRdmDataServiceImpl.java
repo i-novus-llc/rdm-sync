@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
 import javax.ws.rs.NotFoundException;

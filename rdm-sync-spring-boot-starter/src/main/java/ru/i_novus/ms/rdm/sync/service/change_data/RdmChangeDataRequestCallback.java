@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.io.Serializable;
@@ -14,8 +14,8 @@ import java.util.List;
 
 /**
  * В общем случае, вам нужно думать о методах этого интерфейса, как об UNDO/REDO (то бишь Ctrl+Z/Ctrl+Y).
- * onSuccess -- это REDO, onError -- это UNDO. Желательно сделать методы идемпотентными, то есть если кто - то
- * вызовет onSuccess несколько раз -- результат этих вызовов будет такой же, как если бы кто - то вызвал его ровно один раз.
+ * onSuccess -- это REDO, onError -- это UNDO. Желательно сделать методы идемпотентными, то есть если кто-то
+ * вызовет onSuccess несколько раз -- результат этих вызовов будет такой же, как если бы кто-то вызвал его ровно один раз.
  */
 public abstract class RdmChangeDataRequestCallback {
 
