@@ -21,6 +21,16 @@ class LocalTableAutoCreateService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalTableAutoCreateService.class);
 
+    private static final String LOG_AUTOCREATE_SKIP =
+            "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
+    private static final String LOG_AUTOCREATE_START =
+            "Autocreation mapping data from structure of RefBook with code '{}' is started.";
+    private static final String LOG_AUTOCREATE_FINISH =
+            "Autocreation mapping data from structure of RefBook with code '{}' is finished.";
+    private static final String LOG_AUTOCREATE_ERROR =
+            "Error autocreation mapping data from structure of RefBook with code '{}'.";
+    private static final String LOG_LAST_PUBLISHED_NOT_FOUND = " Can't get last published version from RDM.";
+
     @Autowired
     private RdmSyncDao dao;
 
@@ -29,30 +39,38 @@ class LocalTableAutoCreateService {
 
     @Transactional
     public void autoCreate(String refBookCode, String autoCreateSchema) {
+
         if (dao.getVersionMapping(refBookCode) != null) {
-            logger.info("Skipping auto creation of structures of RefBook with code {}.", refBookCode);
+            logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
             return;
         }
-        logger.info("Auto creating structures of RefBook with code {}", refBookCode);
+
+        logger.info(LOG_AUTOCREATE_START, refBookCode);
+
         RefBook lastPublished;
         try {
-            lastPublished = rdmSyncRest.getLastPublishedVersionFromRdm(refBookCode);
+            lastPublished = rdmSyncService.getLastPublishedVersionFromRdm(refBookCode);
+
         } catch (Exception e) {
-            logger.error("Error while auto creating structures of RefBook with code {}. Can't get last published version from RDM.", refBookCode, e);
+            logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
             return;
         }
+
         Structure structure = lastPublished.getStructure();
         String isDeletedField = "is_deleted";
-        boolean isDeletedReserved = structure.getAttributes().stream().anyMatch(attribute -> "is_deleted".equals(attribute.getCode()));
-        if (isDeletedReserved)
+        if (structure.getAttribute(isDeletedField) != null) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
+        }
+
         Structure.Attribute uniqueSysField = structure.getPrimaries().get(0);
+
         XmlMappingRefBook mapping = new XmlMappingRefBook();
         mapping.setCode(refBookCode);
         mapping.setSysTable(String.format("%s.%s", autoCreateSchema, refBookCode.replaceAll("[-.]", "_").toLowerCase()));
         mapping.setDeletedField(isDeletedField);
         mapping.setUniqueSysField(uniqueSysField.getCode());
         mapping.setMappingVersion(-1);
+
         List<XmlMappingField> fields = new ArrayList<>(structure.getAttributes().size() + 1);
         for (Structure.Attribute attr : structure.getAttributes()) {
             XmlMappingField field = new XmlMappingField();
@@ -61,9 +79,10 @@ class LocalTableAutoCreateService {
             field.setSysDataType(DataTypeEnum.getByRdmAttr(attr).getDataTypes().get(0));
             fields.add(field);
         }
+
         dao.upsertVersionMapping(mapping);
         dao.insertFieldMapping(refBookCode, fields);
-        logger.info("Structures of RefBook with code {} auto created.", refBookCode);
-    }
 
+        logger.info(LOG_AUTOCREATE_FINISH, refBookCode);
+    }
 }
