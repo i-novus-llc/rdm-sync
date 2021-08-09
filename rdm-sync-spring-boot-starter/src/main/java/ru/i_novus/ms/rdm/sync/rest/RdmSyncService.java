@@ -21,7 +21,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Синхронизация данных справочников НСИ")
 @SuppressWarnings("I-novus:MethodNameWordCountRule")
-public interface RdmSyncRest {
+public interface RdmSyncService {
 
     @POST
     @Path("/update")

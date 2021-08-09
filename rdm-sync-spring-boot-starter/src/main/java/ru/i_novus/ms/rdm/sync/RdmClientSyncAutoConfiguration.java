@@ -23,7 +23,7 @@ import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.api.util.json.LocalDateTimeMapperPreparer;
 import ru.i_novus.ms.rdm.sync.rest.LocalRdmDataService;
-import ru.i_novus.ms.rdm.sync.rest.RdmSyncRest;
+import ru.i_novus.ms.rdm.sync.rest.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
 
@@ -38,7 +38,7 @@ import java.time.OffsetDateTime;
  * @since 20.02.2019
  */
 @Configuration
-@ConditionalOnClass(RdmSyncRestImpl.class)
+@ConditionalOnClass(RdmSyncServiceImpl.class)
 @EnableConfigurationProperties(RdmClientSyncProperties.class)
 @EnableJaxRsProxyClient(
         classes = {RefBookService.class, VersionRestService.class, CompareService.class},
@@ -79,14 +79,14 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnMissingClass(value = "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory")
     @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
-    public RdmSyncRest lockingRdmSyncRest() {
-        return new LockingRdmSyncRest();
+    public RdmSyncService lockingRdmSyncRest() {
+        return new LockingRdmSyncService();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public RdmSyncRest rdmSyncRest() {
-        return new RdmSyncRestImpl();
+    public RdmSyncService rdmSyncRest() {
+        return new RdmSyncServiceImpl();
     }
 
     @Bean
@@ -182,8 +182,8 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
-    public PublishListener publishListener(RdmSyncRest rdmSyncRest) {
-        return new PublishListener(rdmSyncRest);
+    public PublishListener publishListener(RdmSyncService rdmSyncService) {
+        return new PublishListener(rdmSyncService);
     }
 
     @Bean
@@ -232,5 +232,4 @@ public class RdmClientSyncAutoConfiguration {
     public LocalRdmDataService localRdmDataService() {
         return new LocalRdmDataServiceImpl();
     }
-
 }

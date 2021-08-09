@@ -20,9 +20,9 @@ import ru.i_novus.ms.rdm.api.model.refdata.RefBookRowValue;
 import ru.i_novus.ms.rdm.api.model.refdata.SearchDataCriteria;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.*;
-import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
@@ -43,11 +43,12 @@ import static org.mockito.Mockito.*;
  * @since 26.02.2019
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RdmSyncRestTest {
+public class RdmSyncServiceTest {
+
     private static final int MAX_SIZE = 100;
 
     @InjectMocks
-    private RdmSyncRestImpl rdmSyncRest;
+    private RdmSyncServiceImpl rdmSyncRest;
     @Mock
     private RdmSyncDao dao;
     @Mock
@@ -76,6 +77,7 @@ public class RdmSyncRestTest {
      */
     @Test
     public void testFirstTimeUpdate() {
+
         RefBook firstVersion = createFirstRdmVersion();
         VersionMapping versionMapping = new VersionMapping(1, "TEST", null, null, "test_table", "id", "is_deleted", null, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
@@ -105,6 +107,7 @@ public class RdmSyncRestTest {
      */
     @Test
     public void testUpdate() {
+
         RefBook firstVersion = createFirstRdmVersion();
         RefBook secondVersion = createSecondRdmVersion();
         VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastPublishedVersion(), firstVersion.getLastPublishedVersionFromDate(), "test_table", "id", "is_deleted", null, null);
@@ -137,6 +140,7 @@ public class RdmSyncRestTest {
      */
     @Test
     public void testInsert() {
+
         RefBook oldVersion = createSecondRdmVersion();
         RefBook newVersion = createThirdRdmVersion();
         VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastPublishedVersion(), oldVersion.getLastPublishedVersionFromDate(), "test_table", "id", "is_deleted", null, null);
@@ -259,6 +263,7 @@ public class RdmSyncRestTest {
     }
 
     private RefBook createFirstRdmVersion() {
+
         RefBook refBook = new RefBook();
         refBook.setId(1);
         refBook.setCode("TEST");
@@ -272,6 +277,7 @@ public class RdmSyncRestTest {
     }
 
     private RefBook createSecondRdmVersion() {
+
         RefBook refBook = new RefBook();
         refBook.setId(2);
         refBook.setCode("TEST");
@@ -285,6 +291,7 @@ public class RdmSyncRestTest {
     }
 
     private RefBook createThirdRdmVersion() {
+
         RefBook refBook = new RefBook();
         refBook.setId(3);
         refBook.setCode("TEST");
@@ -298,6 +305,7 @@ public class RdmSyncRestTest {
     }
 
     private RefBookDataDiff prepareUpdateRefBookDataDiff() {
+
         DiffFieldValue<BigInteger> id1 = new DiffFieldValue<>(new CommonField("id"), BigInteger.ONE, null, DiffStatusEnum.DELETED);
         DiffFieldValue<String> name1 = new DiffFieldValue<>(new CommonField("name"), "London", null, DiffStatusEnum.DELETED);
         DiffFieldValue<BigInteger> id2 = new DiffFieldValue<>(new CommonField("id"), null, BigInteger.valueOf(3L), DiffStatusEnum.INSERTED);
@@ -311,6 +319,7 @@ public class RdmSyncRestTest {
     }
 
     private RefBookDataDiff prepareInsertRefBookDataDiff() {
+
         DiffFieldValue<BigInteger> id = new DiffFieldValue<>(new CommonField("id"), null, BigInteger.ONE, DiffStatusEnum.INSERTED);
         DiffFieldValue<String> name = new DiffFieldValue<>(new CommonField("name"),null, "London", DiffStatusEnum.INSERTED);
         DiffRowValue row = new DiffRowValue(asList(id, name), DiffStatusEnum.INSERTED);
@@ -320,6 +329,7 @@ public class RdmSyncRestTest {
     }
 
     private SearchDataCriteria createSearchDataCriteria() {
+
         SearchDataCriteria searchDataCriteriaCount = new SearchDataCriteria();
         searchDataCriteriaCount.setPageSize(MAX_SIZE);
         return searchDataCriteriaCount;
@@ -333,6 +343,7 @@ public class RdmSyncRestTest {
     }
 
     private Page<RefBookRowValue> createFirstRdmData() {
+
         List<RefBookRowValue> list = new ArrayList<>();
         list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
         list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
@@ -340,6 +351,7 @@ public class RdmSyncRestTest {
     }
 
     private Page<RefBookRowValue> createSecondRdmData() {
+
         List<RefBookRowValue> list = new ArrayList<>();
         list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
         list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
@@ -348,6 +360,7 @@ public class RdmSyncRestTest {
     }
 
     private Page<RefBookRowValue> createThirdRdmData() {
+
         List<RefBookRowValue> list = new ArrayList<>();
         list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
         list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
@@ -356,6 +369,7 @@ public class RdmSyncRestTest {
     }
 
     private List<Map<String, Object>> createFirstVerifyDataMap() {
+
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(1L));
         row1.put("full_name", "London");
@@ -366,6 +380,7 @@ public class RdmSyncRestTest {
     }
 
     private List<Map<String, Object>> createSecondVerifyDataMap() {
+
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(2L));
         row1.put("full_name", "Moscow");
@@ -376,6 +391,7 @@ public class RdmSyncRestTest {
     }
 
     private List<Map<String, Object>> createThirdVerifyDataMap() {
+
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(2L));
         row1.put("full_name", "Moscow");
@@ -387,5 +403,4 @@ public class RdmSyncRestTest {
         row3.put("full_name", "London");
         return asList(row1, row2, row3);
     }
-
 }

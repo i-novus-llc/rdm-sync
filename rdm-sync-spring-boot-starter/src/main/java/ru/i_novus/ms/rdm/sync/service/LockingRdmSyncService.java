@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class LockingRdmSyncRest extends RdmSyncRestImpl {
+public class LockingRdmSyncService extends RdmSyncServiceImpl {
 
     @Autowired
     private RdmSyncDao dao;

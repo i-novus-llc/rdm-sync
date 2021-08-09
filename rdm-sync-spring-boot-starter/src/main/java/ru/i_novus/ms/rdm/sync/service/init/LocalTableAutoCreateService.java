@@ -10,7 +10,7 @@ import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.rest.RdmSyncRest;
+import ru.i_novus.ms.rdm.sync.rest.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncDao;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ class LocalTableAutoCreateService {
     private RdmSyncDao dao;
 
     @Autowired
-    private RdmSyncRest rdmSyncRest;
+    private RdmSyncService rdmSyncService;
 
     @Transactional
     public void autoCreate(String refBookCode, String autoCreateSchema) {

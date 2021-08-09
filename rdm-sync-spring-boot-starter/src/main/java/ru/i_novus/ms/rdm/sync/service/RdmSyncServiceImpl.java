@@ -22,14 +22,14 @@ import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.api.util.PageIterator;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
+import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
-import ru.i_novus.ms.rdm.sync.model.*;
+import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.rest.RdmSyncRest;
+import ru.i_novus.ms.rdm.sync.rest.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.util.RefBookReferenceSort;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.platform.datastorage.temporal.model.FieldValue;
@@ -54,9 +54,9 @@ import static ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum.INSE
  */
 
 @SuppressWarnings({"java:S3740","I-novus:MethodNameWordCountRule"})
-public class RdmSyncRestImpl implements RdmSyncRest {
+public class RdmSyncServiceImpl implements RdmSyncService {
 
-    private static final Logger logger = LoggerFactory.getLogger(RdmSyncRestImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
     private static final int MAX_SIZE = 100;
 
@@ -82,10 +82,10 @@ public class RdmSyncRestImpl implements RdmSyncRest {
     @Autowired
     private RdmSyncDao dao;
 
-    private RdmSyncRest self;
+    private RdmSyncService self;
 
     @Autowired
-    public void setSelf(RdmSyncRest self) {
+    public void setSelf(RdmSyncService self) {
         this.self = self;
     }
 
@@ -349,5 +349,4 @@ public class RdmSyncRestImpl implements RdmSyncRest {
             dao.insertRow(versionMapping.getTable(), mappedRow, true);
         }
     }
-
 }
