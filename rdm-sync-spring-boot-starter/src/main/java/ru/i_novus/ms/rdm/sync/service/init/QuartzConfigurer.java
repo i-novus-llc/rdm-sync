@@ -33,11 +33,12 @@ class QuartzConfigurer {
     @Autowired
     private ClusterLockService clusterLockService;
 
-    @Value("${rdm_sync.export_from_local.cron:0/5 * * * * ?}")
-    private String exportToRdmJobScanIntervalCron;
+    @Value("${rdm_sync.export.to.rdm.cron:0/5 * * * * ?}")
+    private String exportToRdmCron;
 
     @Value("${rdm_sync.change_data_mode:null}")
     private String changeDataMode;
+    private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
 
     @Transactional
     public void setupJobs() {
@@ -46,15 +47,18 @@ class QuartzConfigurer {
 
         if (!clusterLockService.tryLock()) return;
 
-        final String jobGroup = "RDM_SYNC_INTERNAL";
-        final String jobName = RdmSyncExportDirtyRecordsToRdmJob.NAME;
+        setupExportJob();
+    }
 
+    private void setupExportJob() {
+
+        final String jobName = RdmSyncExportDirtyRecordsToRdmJob.NAME;
         try {
             if (!scheduler.getMetaData().isJobStoreClustered()) {
                 logger.warn(LOG_SCHEDULER_NON_CLUSTERED);
             }
 
-            JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
+            JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
             if (changeDataMode == null) {
                 deleteJob(jobKey);
                 return;
@@ -69,10 +73,10 @@ class QuartzConfigurer {
             Trigger newTrigger = newTrigger().
                     withIdentity(triggerKey).
                     forJob(newJob).
-                    withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmJobScanIntervalCron)).
+                    withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmCron)).
                     build();
 
-            addJob(triggerKey, oldTrigger, newJob, newTrigger);
+            addJob(triggerKey, oldTrigger, newJob, newTrigger, exportToRdmCron);
 
         } catch (SchedulerException e) {
 
@@ -90,7 +94,7 @@ class QuartzConfigurer {
     }
 
     private void addJob(TriggerKey triggerKey, Trigger oldTrigger,
-                        JobDetail newJob, Trigger newTrigger) throws SchedulerException {
+                        JobDetail newJob, Trigger newTrigger, String cronExpression) throws SchedulerException {
 
         if (oldTrigger == null) {
 
@@ -102,7 +106,7 @@ class QuartzConfigurer {
         if (oldTrigger instanceof CronTrigger) {
 
             CronTrigger trigger = (CronTrigger) oldTrigger;
-            if (!trigger.getCronExpression().equals(exportToRdmJobScanIntervalCron)) {
+            if (!trigger.getCronExpression().equals(cronExpression)) {
 
                 scheduler.rescheduleJob(triggerKey, newTrigger);
 

@@ -41,5 +41,4 @@ class ClusterLockService {
 
         return acquired;
     }
-
 }

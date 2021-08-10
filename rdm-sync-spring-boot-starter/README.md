@@ -212,18 +212,18 @@ select 'S019', 'is_required', 'boolean', 'is_required';
 Желательно сделать это через Quartz-шедулер в кластерном режиме (и пометить Job по обновлению справочников Quartz-аннотацией org.quartz.DisallowConcurrentExecution).
 Также cron-выражения нужно выбрать аккуратно, а не так, что у вас допустим 10 справочников и для каждого одно и то же выражение. Лучше распределить импорт этих 10 справочников, например, по часовому интервалу (то есть 6 минут на каждый).
 Обычная настройка всего этого будет такая:
-1) Автовайрим интерфейс ru.i_novus.ms.rdm.sync.api.service.RdmSyncService через AutoWiringSpringBeanJobFactory
-(по примеру отсюда: https://stackoverflow.com/questions/6990767/inject-bean-reference-into-a-quartz-job-in-spring/15211030)
+1) Автовайрим интерфейс ru.i_novus.ms.rdm.sync.api.service.RdmSyncService через AutowiringSpringBeanJobFactory.
+(по примеру <a href="https://stackoverflow.com/questions/6990767/inject-bean-reference-into-a-quartz-job-in-spring/15211030">отсюда</a>).
 2) И в методе org.quart.Job#execute вызываем его метод ru.i_novus.ms.rdm.sync.api.service.RdmSyncService#update(String refBookCode).
 То есть желательно либо создать по джобу на каждый справочник (со своим cron-ом), либо как-то самим координировать в джобе, чтобы они не запускались разом. Или, если у вас несколько (скажем 3) экземпляров приложения, можно сделать по 3 concurrent джоба одновременно и т.д.
 
 ## Настройка периодического экспорта справочников
 
 В classpath должен лежать Quartz-шедулер (в кластерном режиме).
-Есть две настройки: `rdm_sync.export_from_local.cron` и `rdm_sync.export_from_local.batch_size`.
+Есть две настройки: `rdm_sync.export.to.rdm.cron` и `rdm_sync.export.to.rdm.batch_size`.
 Библиотека создаст Job, который по крону, заданному первой настройкой (по умолчанию -- раз в 5 секунд),
 будет периодически сканировать все клиентские таблички на предмет записей в состоянии `DIRTY`.
-Из этих записей он будет отбирать `rdm_sync.export_from_local.batch_size` записей (по умолчанию -- 100) и экспортировать их в RDM.
+Из этих записей он будет отбирать `rdm_sync.export.to.rdm.batch_size` записей (по умолчанию -- 100) и экспортировать их в RDM.
 На каждую пачку записей, отправленную в RDM, внутри RDM будет так же происходить публикация. То есть если у вас 500 "грязных записей" и batch_size = 100, то соответствующий справочник опубликуется 5 раз.
 Поэтому batch_size вместе с крон-выражением нужно выбирать аккуратно.
 Ещё раз стоит отметить, что очень желательно вместе с экспортом настроить также и импорт.
