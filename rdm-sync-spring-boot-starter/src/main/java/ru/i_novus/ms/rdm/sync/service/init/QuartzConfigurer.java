@@ -20,6 +20,13 @@ class QuartzConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(QuartzConfigurer.class);
 
+    private static final String LOG_SCHEDULER_NON_CLUSTERED =
+            "Scheduler is configured in non clustered mode. There may be concurrency issues.";
+    private static final String LOG_JOB_SCHEDULE_ERROR =
+            "Cannot schedule %s job. All records in the %s state will remain in it.";
+    private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
+    private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
+
     @Autowired(required = false)
     private Scheduler scheduler;
 
@@ -39,47 +46,71 @@ class QuartzConfigurer {
 
         if (!clusterLockService.tryLock()) return;
 
-        String group = "RDM_SYNC_INTERNAL";
+        final String jobGroup = "RDM_SYNC_INTERNAL";
+        final String jobName = RdmSyncExportDirtyRecordsToRdmJob.NAME;
+
         try {
             if (!scheduler.getMetaData().isJobStoreClustered()) {
-                logger.warn("Scheduler configured in non clustered mode. There may be concurrency issues.");
+                logger.warn(LOG_SCHEDULER_NON_CLUSTERED);
             }
 
-            JobKey exportToRdmJobKey = JobKey.jobKey(group, RdmSyncExportDirtyRecordsToRdmJob.NAME);
-            if (changeDataMode != null) {
-                TriggerKey exportToRdmTriggerKey = TriggerKey.triggerKey(
-                        exportToRdmJobKey.getName(), exportToRdmJobKey.getGroup()
-                );
-                Trigger exportToRdmExistingTrigger = scheduler.getTrigger(exportToRdmTriggerKey);
-                JobDetail exportToRdmJob = newJob(RdmSyncExportDirtyRecordsToRdmJob.class).
-                        withIdentity(exportToRdmJobKey).
-                        build();
-                Trigger exportToRdmTrigger = newTrigger().
-                        withIdentity(exportToRdmTriggerKey).
-                        forJob(exportToRdmJob).
-                        withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmJobScanIntervalCron)).
-                        build();
-
-                if (exportToRdmExistingTrigger == null) {
-                    scheduler.scheduleJob(exportToRdmJob, exportToRdmTrigger);
-
-                } else {
-                    if (exportToRdmExistingTrigger instanceof CronTrigger) {
-                        CronTrigger ct = (CronTrigger) exportToRdmExistingTrigger;
-                        if (!ct.getCronExpression().equals(exportToRdmJobScanIntervalCron)) {
-                            scheduler.rescheduleJob(exportToRdmTriggerKey, exportToRdmTrigger);
-                        } else
-                            logger.info("Trigger's {} expression not changed.", exportToRdmTriggerKey);
-                    } else
-                        logger.warn("Trigger {} is not CronTrigger instance. Leave it as it is.", exportToRdmTriggerKey);
-                }
-            } else {
-                if (scheduler.checkExists(exportToRdmJobKey))
-                    scheduler.deleteJob(exportToRdmJobKey);
+            JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
+            if (changeDataMode == null) {
+                deleteJob(jobKey);
+                return;
             }
+
+            TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
+            Trigger oldTrigger = scheduler.getTrigger(triggerKey);
+
+            JobDetail newJob = newJob(RdmSyncExportDirtyRecordsToRdmJob.class).
+                    withIdentity(jobKey).
+                    build();
+            Trigger newTrigger = newTrigger().
+                    withIdentity(triggerKey).
+                    forJob(newJob).
+                    withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmJobScanIntervalCron)).
+                    build();
+
+            addJob(triggerKey, oldTrigger, newJob, newTrigger);
+
         } catch (SchedulerException e) {
-            logger.error("Cannot schedule {} job. All records in the {} state will remain in it.", RdmSyncExportDirtyRecordsToRdmJob.NAME, RdmSyncLocalRowState.DIRTY, e);
+
+            String message = String.format(LOG_JOB_SCHEDULE_ERROR, jobName, RdmSyncLocalRowState.DIRTY);
+            logger.error(message, e);
         }
     }
 
+    private void deleteJob(JobKey jobKey) throws SchedulerException {
+
+        if (scheduler.checkExists(jobKey)) {
+
+            scheduler.deleteJob(jobKey);
+        }
+    }
+
+    private void addJob(TriggerKey triggerKey, Trigger oldTrigger,
+                        JobDetail newJob, Trigger newTrigger) throws SchedulerException {
+
+        if (oldTrigger == null) {
+
+            scheduler.scheduleJob(newJob, newTrigger);
+
+            return;
+        }
+
+        if (oldTrigger instanceof CronTrigger) {
+
+            CronTrigger trigger = (CronTrigger) oldTrigger;
+            if (!trigger.getCronExpression().equals(exportToRdmJobScanIntervalCron)) {
+
+                scheduler.rescheduleJob(triggerKey, newTrigger);
+
+            } else
+                logger.info(LOG_TRIGGER_NOT_CHANGED, triggerKey);
+
+        } else {
+            logger.warn(LOG_TRIGGER_IS_NOT_CRON, triggerKey);
+        }
+    }
 }
