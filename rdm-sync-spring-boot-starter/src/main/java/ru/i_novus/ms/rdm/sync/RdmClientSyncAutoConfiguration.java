@@ -34,6 +34,8 @@ import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author lgalimova
@@ -41,7 +43,7 @@ import java.time.OffsetDateTime;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@EnableConfigurationProperties(RdmClientSyncProperties.class)
+@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncAutoConfiguration.class})
 @EnableJaxRsProxyClient(
         classes = {RefBookService.class, VersionRestService.class, CompareService.class},
         address = "${rdm.client.sync.url}"
@@ -57,10 +59,12 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public RdmClientSyncConfig rdmClientSyncConfig(RdmClientSyncProperties properties) {
+
         String url = properties.getUrl();
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Rdm client synchronizer properties not configured properly: url is missing");
         }
+
         RdmClientSyncConfig config = new RdmClientSyncConfig();
         config.put("url", url);
         return config;
@@ -68,11 +72,18 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @DependsOn("liquibase")
-    public SpringLiquibase liquibaseRdm(DataSource dataSource) {
+    public SpringLiquibase liquibaseRdm(DataSource dataSource, RdmClientSyncLiquibaseParameters parameters) {
+
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setDatabaseChangeLogLockTable("databasechangeloglock_rdms");
         liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelog.xml");
+
+        Map<String, String> changeLogParameters = new HashMap<>(2);
+        changeLogParameters.put("quartz_schema_name", parameters.getQuartzSchemaName());
+        changeLogParameters.put("quartz_table_prefix", parameters.getQuartzTablePrefix());
+        liquibase.setChangeLogParameters(changeLogParameters);
+
         return liquibase;
     }
 
