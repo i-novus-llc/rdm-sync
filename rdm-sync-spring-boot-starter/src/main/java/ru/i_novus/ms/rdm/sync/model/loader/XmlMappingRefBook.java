@@ -40,7 +40,7 @@ public class XmlMappingRefBook {
         return fields;
     }
 
-    public void setField(List<XmlMappingField> fields) {
+    public void setFields(List<XmlMappingField> fields) {
         this.fields = fields;
     }
 

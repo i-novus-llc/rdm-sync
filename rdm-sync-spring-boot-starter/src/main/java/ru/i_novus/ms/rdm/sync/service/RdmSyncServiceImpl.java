@@ -190,7 +190,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         xmlMapping.setRefbooks(new ArrayList<>());
         for (VersionMapping vm : versionMappings) {
             XmlMappingRefBook xmlMappingRefBook = XmlMappingRefBook.createBy(vm);
-            xmlMappingRefBook.setField(dao.getFieldMapping(vm.getCode()).stream().map(XmlMappingField::createBy).collect(toList()));
+            xmlMappingRefBook.setFields(dao.getFieldMapping(vm.getCode()).stream().map(XmlMappingField::createBy).collect(toList()));
             xmlMapping.getRefbooks().add(xmlMappingRefBook);
         }
         StreamingOutput stream = out -> {
