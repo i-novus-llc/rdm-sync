@@ -61,9 +61,11 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final int MAX_SIZE = 100;
 
-    private static final String ERROR_WHILE_FETCHING_NEW_VERSION    = "Error while fetching new version with code %s.";
-    private static final String ERROR_WHILE_UPDATING_NEW_VERSION    = "Error while updating new version with code %s.";
-    private static final String NO_MAPPING_FOR_PRIMARY_KEY          = "No mapping found for primary key %s.";
+    private static final String LOG_NO_MAPPING_FOR_REFBOOK           = "No version mapping found for reference book with code '{}'.";
+    private static final String LOG_ERROR_WHILE_FETCHING_NEW_VERSION = "Error while fetching new version with code '%s'.";
+    private static final String LOG_ERROR_WHILE_UPDATING_NEW_VERSION = "Error while updating new version with code '%s'.";
+
+    private static final String NO_MAPPING_FOR_PRIMARY_KEY          = "No mapping found for primary key '%s'.";
     private static final String NO_REFBOOK_FOUND                    = "No reference book with code '%s' found.";
     private static final String NO_PRIMARY_KEY_FOUND                = "No primary key found in reference book with code '%s'.";
     private static final String MAPPING_OUT_OF_DATE                 = "Field '%s' was deleted in version with code '%s'. Update your mappings.";
@@ -110,28 +112,35 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
 
-        if (dao.getVersionMapping(refBookCode) != null) {
-            RefBook newVersion;
-            try {
-                newVersion = getLastPublishedVersionFromRdm(refBookCode);
+        if (dao.getVersionMapping(refBookCode) == null) {
+            logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
+            return;
+        }
 
-            } catch (Exception e) {
-                logger.error(format(ERROR_WHILE_FETCHING_NEW_VERSION, refBookCode), e);
-                return;
-            }
+        RefBook newVersion;
+        try {
+            newVersion = getLastPublishedVersionFromRdm(refBookCode);
 
-            VersionMapping versionMapping = getVersionMapping(refBookCode);
-            try {
-                if (isFirstLoad(versionMapping) || isNewVersionPublished(newVersion, versionMapping) || isMappingChanged(versionMapping)) {
-                    self.update(newVersion, versionMapping);
-                    loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersion.getLastPublishedVersion());
-                } else {
-                    logger.info("Skipping update on {}. No changes.", refBookCode);
-                }
-            } catch (Exception e) {
-                logger.error(format(ERROR_WHILE_UPDATING_NEW_VERSION, refBookCode), e);
-                loggingService.logError(refBookCode, versionMapping.getVersion(), newVersion.getLastPublishedVersion(), e.getMessage(), ExceptionUtils.getStackTrace(e));
+        } catch (Exception e) {
+            logger.error(format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, refBookCode), e);
+            return;
+        }
+
+        VersionMapping versionMapping = getVersionMapping(refBookCode);
+        try {
+            if (isFirstLoad(versionMapping) || isNewVersionPublished(newVersion, versionMapping) || isMappingChanged(versionMapping)) {
+
+                self.update(newVersion, versionMapping);
+                loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersion.getLastPublishedVersion());
+
+            } else {
+                logger.info("Skipping update on '{}'. No changes.", refBookCode);
             }
+        } catch (Exception e) {
+            logger.error(format(LOG_ERROR_WHILE_UPDATING_NEW_VERSION, refBookCode), e);
+
+            loggingService.logError(refBookCode, versionMapping.getVersion(), newVersion.getLastPublishedVersion(),
+                    e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -144,9 +153,11 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             if (isFirstLoad(versionMapping)) {
                 //заливаем с нуля
                 uploadNew(versionMapping, newVersion);
+                
             } else if (isNewVersionPublished(newVersion, versionMapping)) {
                 //если версия и дата публикация не совпадают - нужно обновить справочник
                 mergeData(versionMapping, newVersion);
+
             } else if (isMappingChanged(versionMapping)) {
 //              Значит в прошлый раз мы синхронизировались по старому маппингу.
 //              Необходимо полностью залить свежую версию.
@@ -155,6 +166,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             }
             //обновляем версию в таблице версий клиента
             dao.updateVersionMapping(versionMapping.getId(), newVersion.getLastPublishedVersion(), newVersion.getLastPublishedVersionFromDate());
+
         } finally {
             dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         }
@@ -184,15 +196,21 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     public Response downloadXmlFieldMapping(List<String> forRefBooks) {
 
         List<VersionMapping> versionMappings = dao.getVersionMappings();
-        if (forRefBooks.stream().noneMatch("all"::equalsIgnoreCase))
-            versionMappings = versionMappings.stream().filter(vm -> forRefBooks.contains(vm.getCode())).collect(toList());
+        if (forRefBooks.stream().noneMatch("all"::equalsIgnoreCase)) {
+            versionMappings = versionMappings.stream()
+                    .filter(vm -> forRefBooks.contains(vm.getCode()))
+                    .collect(toList());
+        }
+
         XmlMapping xmlMapping = new XmlMapping();
         xmlMapping.setRefbooks(new ArrayList<>());
+
         for (VersionMapping vm : versionMappings) {
             XmlMappingRefBook xmlMappingRefBook = XmlMappingRefBook.createBy(vm);
             xmlMappingRefBook.setFields(dao.getFieldMapping(vm.getCode()).stream().map(XmlMappingField::createBy).collect(toList()));
             xmlMapping.getRefbooks().add(xmlMappingRefBook);
         }
+
         StreamingOutput stream = out -> {
             try {
                 Marshaller marshaller = XmlMapping.JAXB_CONTEXT.createMarshaller();
@@ -245,7 +263,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             try {
                 refBooks.add(getLastPublishedVersionFromRdm(versionMapping.getCode()));
             } catch (RuntimeException ex) {
-                logger.error(format(ERROR_WHILE_FETCHING_NEW_VERSION, versionMapping.getCode()), ex);
+                logger.error(format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, versionMapping.getCode()), ex);
                 loggingService.logError(versionMapping.getCode(), null, null, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             }
         }
