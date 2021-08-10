@@ -42,9 +42,11 @@ class RdmSyncInitializer {
 
     @PostConstruct
     public void start() {
+
         mappingLoaderService.load();
         autoCreate();
         createInternalInfrastructure();
+
         if (quartzConfigurer != null) {
             quartzConfigurer.setupJobs();
         } else
@@ -52,10 +54,12 @@ class RdmSyncInitializer {
     }
 
     private void autoCreate() {
-        if (autoCreateRefBookCodes != null) {
-            for (String refBookCode : autoCreateRefBookCodes) {
-                localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
-            }
+
+        if (autoCreateRefBookCodes == null)
+            return;
+
+        for (String refBookCode : autoCreateRefBookCodes) {
+            localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
         }
     }
 

@@ -22,9 +22,11 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) {
+
         RdmSyncDao dao = RdmSyncJobContext.getDao();
         RdmChangeDataClient changeDataClient = RdmSyncJobContext.getRdmChangeDataClient();
         int limit = RdmSyncJobContext.getExportToRdmBatchSize();
+
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         for (VersionMapping vm : versionMappings) {
             int offset = 0;
@@ -35,16 +37,18 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
                 Page<Map<String, Object>> dirtyBatch = dao.getData(table, vm.getPrimaryField(), limit, offset, RdmSyncLocalRowState.DIRTY, null);
                 if (dirtyBatch.getContent().isEmpty())
                     break;
+
                 List<HashMap<String, Object>> addUpdate = new ArrayList<>();
                 List<HashMap<String, Object>> delete = new ArrayList<>();
                 for (Map<String, Object> map : dirtyBatch.getContent()) {
-                    Boolean deletedVal = (Boolean) map.get(deletedKey);
-                    if (deletedVal == null || !deletedVal)
-                        addUpdate.add((HashMap<String, Object>) map);
-                    else
+                    Boolean isDeleted = (Boolean) map.get(deletedKey);
+                    if (Boolean.TRUE.equals(isDeleted))
                         delete.add((HashMap<String, Object>) map);
+                    else
+                        addUpdate.add((HashMap<String, Object>) map);
                 }
                 addUpdate.add(INTERNAL_TAG);
+
                 changeDataClient.changeData(vm.getCode(), addUpdate, delete, record -> {
                     Map<String, Object> map = new HashMap<>(record);
                     reindex(fieldMappings, map);
@@ -54,5 +58,4 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
             }
         }
     }
-
 }
