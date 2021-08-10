@@ -63,8 +63,8 @@ public abstract class RdmChangeDataClient {
      * @param delete      Записи, которые нужно удалить из RDM
      * @param map         Функция, преобразовывающая экземпляр класса {@code <T>} в {@code Map<String, Object>}.
      *                    Ключами в мапе должны идти поля в RDM, типы данных должны быть приводимыми.
-     * @param <T>         Этот параметр должен реализовывать интерфейс Serializable ({@link java.util.HashMap}
-     *          отлично подойдёт).
+     * @param <T>         Этот параметр должен реализовывать интерфейс Serializable
+     *                    ({@link java.util.HashMap} отлично подойдёт).
      */
     @Transactional
     public <T extends Serializable> void changeData(String refBookCode,
@@ -72,25 +72,33 @@ public abstract class RdmChangeDataClient {
                                                     Function<? super T, Map<String, Object>> map) {
 
         VersionMapping vm = dao.getVersionMapping(refBookCode);
-        if (vm != null && (!addUpdate.isEmpty() || !delete.isEmpty())) {
-            boolean ensureState = false;
-            ListIterator<? extends T> it = addUpdate.listIterator(addUpdate.size());
-            if (it.hasPrevious() && it.previous() == INTERNAL_TAG) {
-                ensureState = true;
-                it.remove();
-            }
-            if (ensureState) {
-                List<Object> list = new ArrayList<>(extractSnakeCaseKey(vm.getPrimaryField(), addUpdate));
-                list.addAll(extractSnakeCaseKey(vm.getPrimaryField(), delete));
-                dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
+        if (vm == null || (addUpdate.isEmpty() || delete.isEmpty())) {
+            return;
+        }
+
+        boolean ensureState = false;
+        ListIterator<? extends T> it = addUpdate.listIterator(addUpdate.size());
+        if (it.hasPrevious() && it.previous() == INTERNAL_TAG) {
+            ensureState = true;
+            it.remove();
+        }
+
+        if (ensureState) {
+            List<Object> list = new ArrayList<>(extractSnakeCaseKey(vm.getPrimaryField(), addUpdate));
+            list.addAll(extractSnakeCaseKey(vm.getPrimaryField(), delete));
+
+            dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
+            try {
                 boolean stateChanged = dao.setLocalRecordsState(vm.getTable(), vm.getPrimaryField(), list, RdmSyncLocalRowState.DIRTY, RdmSyncLocalRowState.PENDING);
                 if (!stateChanged) {
                     logger.info("State change did not pass. Skipping request on {}.", refBookCode);
                     throw new RdmException();
                 }
+            } finally {
                 dao.enableInternalLocalRowStateUpdateTrigger(vm.getTable());
             }
         }
+
         changeData0(refBookCode, addUpdate, delete, map);
     }
 
