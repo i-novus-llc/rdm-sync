@@ -42,7 +42,8 @@ public abstract class RdmChangeDataClient {
      * <p>2) camelCase123 -> camel_case123
      */
     @Transactional
-    public <T extends Serializable> void changeData(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete) {
+    public <T extends Serializable> void changeData(String refBookCode,
+                                                    List<? extends T> addUpdate, List<? extends T> delete) {
 
         List<FieldMapping> fieldMappings = dao.getFieldMapping(refBookCode);
         changeData(refBookCode, addUpdate, delete, t -> {
@@ -56,14 +57,19 @@ public abstract class RdmChangeDataClient {
     /**
      * Экспортировать данные в RDM (синхронно или через очередь сообщений, в зависимости от реализации).
      * В зависимости от результатов операции будет вызван соответствующий метод у {@link RdmChangeDataRequestCallback}.
+     *
      * @param refBookCode Код справочника
-     * @param addUpdate Записи, которые нужно добавить/изменить в RDM
-     * @param delete Записи, которые нужно удалить из RDM
-     * @param map Функция, преобразовывающая экземпляр класса {@code <T>} в {@code Map<String, Object>}. Ключами в мапе должны идти поля в RDM, типы данных должны быть приводимыми.
-     * @param <T> Этот параметр должен реализовывать интерфейс Serializable ({@link java.util.HashMap} отлично подойдёт).
+     * @param addUpdate   Записи, которые нужно добавить/изменить в RDM
+     * @param delete      Записи, которые нужно удалить из RDM
+     * @param map         Функция, преобразовывающая экземпляр класса {@code <T>} в {@code Map<String, Object>}.
+     *                    Ключами в мапе должны идти поля в RDM, типы данных должны быть приводимыми.
+     * @param <T>         Этот параметр должен реализовывать интерфейс Serializable ({@link java.util.HashMap}
+     *          отлично подойдёт).
      */
     @Transactional
-    public <T extends Serializable> void changeData(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map) {
+    public <T extends Serializable> void changeData(String refBookCode,
+                                                    List<? extends T> addUpdate, List<? extends T> delete,
+                                                    Function<? super T, Map<String, Object>> map) {
 
         VersionMapping vm = dao.getVersionMapping(refBookCode);
         if (vm != null && (!addUpdate.isEmpty() || !delete.isEmpty())) {
@@ -88,7 +94,9 @@ public abstract class RdmChangeDataClient {
         changeData0(refBookCode, addUpdate, delete, map);
     }
 
-    abstract <T extends Serializable>  void changeData0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map);
+    abstract <T extends Serializable>  void changeData0(String refBookCode,
+                                                        List<? extends T> addUpdate, List<? extends T> delete,
+                                                        Function<? super T, Map<String, Object>> map);
 
     /**
      * Этот метод сам попытается преобразовать экземпляр класса {@code <T>} в набор {@code Map<String, Object> M}, используя следующие правила:
@@ -103,22 +111,31 @@ public abstract class RdmChangeDataClient {
      */
     @Transactional
     public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable) {
+
         VersionMapping versionMapping = getVersionMappingByTableOrElseThrow(localTable);
         List<Pair<String, String>> schema = dao.getColumnNameAndDataTypeFromLocalDataTable(versionMapping.getTable());
         lazyUpdateData(addUpdate, localTable, t -> mapForPgInsert(t, schema));
     }
 
     /**
-     * Вставить/Обновить записи в локальной таблице. Существующие записи и новые записи (проверяется по первичному ключу) из состояния {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#SYNCED} переходят в состояние
-     * {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#DIRTY}. Со временем они перейдут в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#PENDING}.
-     * Откуда они могут перейти либо обратно в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#SYNCED}, либо в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#ERROR}.
-     * @param addUpdate Записи, которые нужно вставить/изменить в локальной таблице и, со временем, вставить/изменить в RDM.
+     * Вставить/Обновить записи в локальной таблице.
+     * <p/>
+     * Существующие записи и новые записи (проверяется по первичному ключу)
+     * из состояния {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#SYNCED} переходят
+     * в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#DIRTY}.
+     * Со временем они перейдут в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#PENDING}.
+     * Откуда они могут перейти либо обратно в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#SYNCED},
+     * либо в состояние {@link ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState#ERROR}.
+     *
+     * @param addUpdate  Записи, которые нужно вставить/изменить в локальной таблице и, со временем, в RDM.
      * @param localTable Локальная таблица с данными (с явно указанными схемой и названием таблицы)
-     * @param map Функция для преобразования экземляра класса {@code <T>} в {@code Map<String, Object>}, ключами которой идут соответствующие колонки и типы данных в локальной таблице клиента.
-     * @param <T> Этот параметр должен реализовывать интерфейс Serializable (для единообразия)
+     * @param map        Функция для преобразования экземляра класса {@code <T>} в {@code Map<String, Object>},
+     *                   ключами которой идут соответствующие колонки и типы данных в локальной таблице клиента.
+     * @param <T>        Этот параметр должен реализовывать интерфейс Serializable (для единообразия)
      */
     @Transactional
-    public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable, Function<? super T, Map<String, Object>> map) {
+    public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable,
+                                                        Function<? super T, Map<String, Object>> map) {
 
         VersionMapping versionMapping = getVersionMappingByTableOrElseThrow(localTable);
         String pk = versionMapping.getPrimaryField();
