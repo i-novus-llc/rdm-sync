@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
@@ -20,12 +21,19 @@ class XmlMappingLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlMappingLoaderService.class);
 
-    @Autowired private RdmSyncDao rdmSyncDao;
-    @Autowired private ClusterLockService lockService;
+    @Value("${rdm_sync.rdm-mapping.xml.path:/rdm-mapping.xml}")
+    private String rdmMappingXmlPath;
+
+    @Autowired
+    private RdmSyncDao rdmSyncDao;
+
+    @Autowired
+    private ClusterLockService lockService;
 
     @Transactional
     public void load() {
-        try (InputStream io = RdmSyncInitializer.class.getResourceAsStream("/rdm-mapping.xml")) {
+
+        try (InputStream io = RdmSyncInitializer.class.getResourceAsStream(rdmMappingXmlPath)) {
             if (io == null) {
                 logger.info("rdm-mapping.xml not found, xml mapping loader skipped");
                 return;
@@ -49,11 +57,13 @@ class XmlMappingLoaderService {
     }
 
     private void load(XmlMappingRefBook xmlMappingRefBook) {
+
         if (xmlMappingRefBook.getMappingVersion() > rdmSyncDao.getLastVersion(xmlMappingRefBook.getCode())) {
             logger.info("load {}", xmlMappingRefBook.getCode());
             rdmSyncDao.insertFieldMapping(xmlMappingRefBook.getCode(), xmlMappingRefBook.getFields());
             rdmSyncDao.upsertVersionMapping(xmlMappingRefBook);
             logger.info("mapping for code {} was loaded", xmlMappingRefBook.getCode());
+
         } else {
             logger.info("mapping for {} not changed", xmlMappingRefBook.getCode());
         }
