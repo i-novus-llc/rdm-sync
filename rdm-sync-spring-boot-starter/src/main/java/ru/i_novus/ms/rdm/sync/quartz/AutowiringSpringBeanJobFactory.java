@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.util;
+package ru.i_novus.ms.rdm.sync.quartz;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;

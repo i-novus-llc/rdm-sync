@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import ru.i_novus.ms.rdm.sync.util.AutowiringSpringBeanJobFactory;
+import ru.i_novus.ms.rdm.sync.quartz.AutowiringSpringBeanJobFactory;
 
 @Configuration
 public class SyncAppConfig {

@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
-import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.*;
+import static ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils.*;
 
 /**
  * Клиент для экспорта данных в RDM.

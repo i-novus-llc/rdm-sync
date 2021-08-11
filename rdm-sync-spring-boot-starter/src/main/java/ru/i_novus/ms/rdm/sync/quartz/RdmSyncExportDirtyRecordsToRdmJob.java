@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.service.change_data;
+package ru.i_novus.ms.rdm.sync.quartz;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -11,11 +11,12 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
+import ru.i_novus.ms.rdm.sync.service.change_data.RdmChangeDataClient;
 
 import java.util.*;
 
-import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.INTERNAL_TAG;
-import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.reindex;
+import static ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils.INTERNAL_TAG;
+import static ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils.reindex;
 
 @Component
 @DisallowConcurrentExecution

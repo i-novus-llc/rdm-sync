@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
-import ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncExportDirtyRecordsToRdmJob;
+import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;

@@ -8,6 +8,7 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
+import ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -58,7 +59,7 @@ public abstract class RdmChangeDataRequestCallback {
 
         String pk = vm.getPrimaryField();
         String table = vm.getTable();
-        List<Object> pks = RdmSyncChangeDataUtils.extractSnakeCaseKey(pk, addUpdate);
+        List<Object> pks = RdmSyncDataUtils.extractSnakeCaseKey(pk, addUpdate);
 
         dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
         try {
