@@ -188,6 +188,7 @@ public abstract class RdmChangeDataClient {
         List<Row> toDeleteRows = new ArrayList<>();
         for (T t : addUpdate) addUpdateRows.add(new Row(map.apply(t)));
         for (T t : delete) toDeleteRows.add(new Row(map.apply(t)));
+
         return new RdmChangeDataRequest(refBookCode, addUpdateRows, toDeleteRows);
     }
 }

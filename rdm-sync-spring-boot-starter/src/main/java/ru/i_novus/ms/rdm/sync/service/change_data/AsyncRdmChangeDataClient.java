@@ -33,6 +33,7 @@ public class AsyncRdmChangeDataClient extends RdmChangeDataClient {
             );
         } catch (Exception e) {
             logger.error("An error occurred while sending message to the message broker.", e);
+
             callback.onError(refBookCode, addUpdate, delete, e);
         }
     }

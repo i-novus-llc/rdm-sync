@@ -41,18 +41,25 @@ class XmlMappingLoaderService {
 
             Unmarshaller jaxbUnmarshaller = XmlMapping.JAXB_CONTEXT.createUnmarshaller();
             XmlMapping mapping = (XmlMapping) jaxbUnmarshaller.unmarshal(io);
-            if (lockService.tryLock()) {
-                try  {
-                    logger.info("loading ...");
-                    mapping.getRefbooks().forEach(this::load);
-                    logger.info("xml mapping was loaded");
-                } finally {
-                    logger.info("Lock successfully released.");
-                }
-            }
+            load(mapping);
+
         } catch (IOException | JAXBException e) {
             logger.error("xml mapping load error ", e);
             throw new RdmException(e);
+        }
+    }
+
+    private void load(XmlMapping mapping) {
+
+        if (lockService.tryLock()) {
+            try  {
+                logger.info("loading ...");
+                mapping.getRefbooks().forEach(this::load);
+                logger.info("xml mapping was loaded");
+
+            } finally {
+                logger.info("Lock successfully released.");
+            }
         }
     }
 
