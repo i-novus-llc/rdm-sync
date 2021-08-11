@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapping>
+
+    <!--<refbook code="b_simple" sys-table="rdm_sync_dt.b_simple"-->
+    <!--         unique-sys-field="code" deleted-field="is_deleted" mapping-version="1">-->
+
+    <!--    <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>-->
+    <!--    <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>-->
+    <!--</refbook>-->
+
+</mapping>
