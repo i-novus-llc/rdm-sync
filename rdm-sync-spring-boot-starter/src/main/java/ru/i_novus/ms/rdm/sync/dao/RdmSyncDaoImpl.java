@@ -49,17 +49,17 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncDaoImpl.class);
 
     private static final String INTERNAL_FUNCTION = "rdm_sync_internal_update_local_row_state()";
-    private static final String LOCAL_ROW_STATE_UPDATE_FUNC =
-    "CREATE OR REPLACE FUNCTION\n" +
-    "   %1$s\n" +
-    "RETURNS TRIGGER AS\n" +
-    "   $$\n" +
-    "       BEGIN\n" +
-    "			NEW.%2$s='%3$s';\n" +
-    "           RETURN NEW;\n" +
-    "       END;\n" +
-    "   $$\n" +
-    "LANGUAGE 'plpgsql'";
+
+    private static final String LOCAL_ROW_STATE_UPDATE_FUNC = "CREATE OR REPLACE FUNCTION\n" +
+            "   %1$s\n" +
+            "RETURNS TRIGGER AS\n" +
+            "   $$\n" +
+            "       BEGIN\n" +
+            "			NEW.%2$s='%3$s';\n" +
+            "           RETURN NEW;\n" +
+            "       END;\n" +
+            "   $$\n" +
+            "LANGUAGE 'plpgsql'";
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -68,18 +68,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public List<VersionMapping> getVersionMappings() {
-        return jdbcTemplate.query("select id,code,version,publication_dt,sys_table,unique_sys_field,deleted_field,mapping_last_updated,update_dt from rdm_sync.version",
-            (rs, rowNum) -> new VersionMapping(
-                rs.getInt(1),
-                rs.getString(2),
-                rs.getString(3),
-                rs.getTimestamp(4) != null ? rs.getTimestamp(4).toLocalDateTime() : null,
-                rs.getString(5),
-                rs.getString(6),
-                rs.getString(7),
-                rs.getTimestamp(8) == null ? LocalDateTime.MIN : rs.getTimestamp(8).toLocalDateTime(),
-                rs.getTimestamp(9) == null ? LocalDateTime.MIN : rs.getTimestamp(9).toLocalDateTime()
-            )
+
+        final String sql = "select id,code,version,publication_dt,sys_table,unique_sys_field,deleted_field," +
+                "mapping_last_updated,update_dt from rdm_sync.version";
+
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new VersionMapping(
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getTimestamp(4) != null ? rs.getTimestamp(4).toLocalDateTime() : null,
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7),
+                        rs.getTimestamp(8) == null ? LocalDateTime.MIN : rs.getTimestamp(8).toLocalDateTime(),
+                        rs.getTimestamp(9) == null ? LocalDateTime.MIN : rs.getTimestamp(9).toLocalDateTime()
+                )
         );
     }
 

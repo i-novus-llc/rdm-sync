@@ -102,8 +102,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         List<RefBook> refBooks = getRefBooks(versionMappings);
         for (String code : RefBookReferenceSort.getSortedCodes(refBooks)) {
             self.update(
-                refBooks.stream().filter(refBook -> refBook.getCode().equals(code)).findFirst().orElseThrow(),
-                versionMappings.stream().filter(versionMapping -> versionMapping.getCode().equals(code)).findFirst().orElseThrow()
+                refBooks.stream()
+                        .filter(refBook -> refBook.getCode().equals(code))
+                        .findFirst().orElseThrow(),
+                versionMappings.stream()
+                        .filter(versionMapping -> versionMapping.getCode().equals(code))
+                        .findFirst().orElseThrow()
             );
         }
     }
