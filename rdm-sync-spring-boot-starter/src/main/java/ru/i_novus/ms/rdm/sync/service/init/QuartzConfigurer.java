@@ -33,7 +33,7 @@ class QuartzConfigurer {
     @Autowired
     private ClusterLockService clusterLockService;
 
-    @Value("${rdm_sync.export.to.rdm.cron:0/5 * * * * ?}")
+    @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
 
     @Value("${rdm_sync.change_data_mode:null}")

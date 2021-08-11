@@ -201,7 +201,8 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "rdm_sync.change_data_mode", havingValue = "async")
-    public RdmChangeDataListener rdmChangeDataListener(RefBookService refBookService, RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
+    public RdmChangeDataListener rdmChangeDataListener(RefBookService refBookService,
+                                                       RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
         return new RdmChangeDataListener(refBookService, rdmChangeDataRequestCallback);
     }
 
@@ -239,7 +240,7 @@ public class RdmClientSyncAutoConfiguration {
     @SuppressWarnings("squid:S2440")
     public RdmSyncJobContext rdmSyncJobContext(RdmSyncDao rdmSyncDao,
                                                RdmChangeDataClient rdmChangeDataClient,
-                                               @Value("${rdm_sync.export.to.rdm.batch_size:100}")
+                                               @Value("${rdm_sync.export.to_rdm.batch_size:100}")
                                                int exportToRdmBatchSize) {
         return new RdmSyncJobContext(rdmSyncDao, rdmChangeDataClient, exportToRdmBatchSize);
     }
