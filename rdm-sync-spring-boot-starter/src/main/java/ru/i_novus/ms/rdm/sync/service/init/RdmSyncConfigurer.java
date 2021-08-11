@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -17,6 +18,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
+@ConditionalOnProperty(name = "rdm_sync.scheduling", havingValue = "true")
 class RdmSyncConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
