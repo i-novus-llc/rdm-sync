@@ -26,7 +26,7 @@ class RdmSyncInitializer {
     private RdmSyncDao dao;
 
     @Autowired(required = false)
-    private QuartzConfigurer quartzConfigurer;
+    private RdmSyncConfigurer rdmSyncConfigurer;
 
     @Autowired
     private LocalTableAutoCreateService localTableAutoCreateService;
@@ -47,8 +47,8 @@ class RdmSyncInitializer {
         autoCreate();
         createInternalInfrastructure();
 
-        if (quartzConfigurer != null) {
-            quartzConfigurer.setupJobs();
+        if (rdmSyncConfigurer != null) {
+            rdmSyncConfigurer.setupJobs();
         } else
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
     }

@@ -16,9 +16,9 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
-class QuartzConfigurer {
+class RdmSyncConfigurer {
 
-    private static final Logger logger = LoggerFactory.getLogger(QuartzConfigurer.class);
+    private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
 
     private static final String LOG_SCHEDULER_NON_CLUSTERED =
             "Scheduler is configured in non clustered mode. There may be concurrency issues.";
