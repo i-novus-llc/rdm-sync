@@ -21,7 +21,7 @@ public class AsyncRdmChangeDataClient extends RdmChangeDataClient {
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    @Value("${rdm_sync.change_date.queue:rdmChangeData}")
+    @Value("${rdm_sync.change_data.queue:rdmChangeData}")
     private String rdmChangeDataQueue;
 
     @Override

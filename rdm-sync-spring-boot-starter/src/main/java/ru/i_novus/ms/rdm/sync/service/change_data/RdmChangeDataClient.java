@@ -27,8 +27,11 @@ public abstract class RdmChangeDataClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmChangeDataClient.class);
 
-    @Autowired protected RdmChangeDataRequestCallback callback;
-    @Autowired protected RdmSyncDao dao;
+    @Autowired
+    protected RdmSyncDao dao;
+
+    @Autowired
+    protected RdmChangeDataRequestCallback callback;
 
     /**
      * Этот метод сам сконвертирует ваши объекты в новый набор {@code Map<String, Object> M}, используя следующие правила:
