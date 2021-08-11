@@ -75,7 +75,7 @@ public abstract class RdmChangeDataClient {
                                                     Function<? super T, Map<String, Object>> map) {
 
         VersionMapping vm = dao.getVersionMapping(refBookCode);
-        if (vm == null || (addUpdate.isEmpty() || delete.isEmpty())) {
+        if (vm == null || (addUpdate.isEmpty() && delete.isEmpty())) {
             return;
         }
 
