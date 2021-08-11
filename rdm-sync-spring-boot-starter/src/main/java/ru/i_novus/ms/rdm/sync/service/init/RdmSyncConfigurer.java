@@ -10,8 +10,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
+import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
+import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -24,11 +25,11 @@ class RdmSyncConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
 
     private static final String LOG_SCHEDULER_NON_CLUSTERED =
-            "Scheduler is configured in non clustered mode. There may be concurrency issues.";
-    private static final String LOG_JOB_SCHEDULE_ERROR =
-            "Cannot schedule %s job. All records in the %s state will remain in it.";
+            "Scheduler is configured in non clustered mode. There is may be concurrency issues.";
     private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
     private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
+    private static final String LOG_JOB_CANNOT_SCHEDULE = "Cannot schedule %s job.";
+    private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
 
     private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
 
@@ -37,6 +38,9 @@ class RdmSyncConfigurer {
 
     @Autowired
     private ClusterLockService clusterLockService;
+
+    @Value("${rdm_sync.import.from_rdm.cron:}")
+    private String importFromRdmCron;
 
     @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
@@ -49,12 +53,47 @@ class RdmSyncConfigurer {
 
         if (scheduler == null) return;
 
-        if (!clusterLockService.tryLock()) return;
-
+        setupImportJob();
         setupExportJob();
     }
 
+    private void setupImportJob() {
+
+        if (StringUtils.isEmpty(importFromRdmCron))
+            return;
+
+        final String jobName = RdmSyncImportRecordsFromRdmJob.NAME;
+        try {
+            if (!scheduler.getMetaData().isJobStoreClustered()) {
+                logger.warn(LOG_SCHEDULER_NON_CLUSTERED);
+            }
+
+            JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
+
+            TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
+            Trigger oldTrigger = scheduler.getTrigger(triggerKey);
+
+            JobDetail newJob = newJob(RdmSyncImportRecordsFromRdmJob.class).
+                    withIdentity(jobKey).
+                    build();
+            Trigger newTrigger = newTrigger().
+                    withIdentity(triggerKey).
+                    forJob(newJob).
+                    withSchedule(CronScheduleBuilder.cronSchedule(importFromRdmCron)).
+                    build();
+
+            addJob(triggerKey, oldTrigger, newJob, newTrigger, importFromRdmCron);
+
+        } catch (SchedulerException e) {
+
+            String message = String.format(LOG_JOB_CANNOT_SCHEDULE, jobName);
+            logger.error(message, e);
+        }
+    }
+
     private void setupExportJob() {
+
+        if (!clusterLockService.tryLock()) return;
 
         if (StringUtils.isEmpty(exportToRdmCron))
             return;
@@ -87,7 +126,8 @@ class RdmSyncConfigurer {
 
         } catch (SchedulerException e) {
 
-            String message = String.format(LOG_JOB_SCHEDULE_ERROR, jobName, RdmSyncLocalRowState.DIRTY);
+            String message = String.format(LOG_JOB_CANNOT_SCHEDULE, jobName) + "\n" +
+                    String.format(LOG_ALL_RECORDS_WILL_REMAIN, RdmSyncLocalRowState.DIRTY);
             logger.error(message, e);
         }
     }
