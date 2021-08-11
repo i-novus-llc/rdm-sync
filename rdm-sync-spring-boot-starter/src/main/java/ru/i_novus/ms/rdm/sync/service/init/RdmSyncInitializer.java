@@ -37,7 +37,7 @@ class RdmSyncInitializer {
     @Value("${rdm_sync.auto_create.schema:rdm}")
     private String autoCreateSchema;
 
-    @Value("${rdm_sync.auto_create.ref_book_codes:}")
+    @Value("${rdm_sync.auto_create.refbook_codes:}")
     private List<String> autoCreateRefBookCodes;
 
     @PostConstruct
@@ -64,6 +64,7 @@ class RdmSyncInitializer {
     }
 
     private void createInternalInfrastructure() {
+
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         for (VersionMapping versionMapping : versionMappings) {
             internalInfrastructureCreator.createInternalInfrastructure(versionMapping.getTable(), versionMapping.getCode(), versionMapping.getDeletedField(), autoCreateRefBookCodes);
