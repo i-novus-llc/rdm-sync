@@ -8,10 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@Component
 public class SyncRdmChangeDataClient extends RdmChangeDataClient {
 
-    @Autowired protected RefBookService refBookService;
+    private final RefBookService refBookService;
+
+    public SyncRdmChangeDataClient(RefBookService refBookService) {
+
+        this.refBookService = refBookService;
+    }
 
     public <T extends Serializable> void changeData0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Function<? super T, Map<String, Object>> map) {
 

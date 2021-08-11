@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
 import ru.i_novus.ms.rdm.api.provider.*;
@@ -213,16 +214,17 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "sync")
-    public RdmChangeDataClient syncRdmChangeDataClient() {
-        return new SyncRdmChangeDataClient();
+    public RdmChangeDataClient syncRdmChangeDataClient(RefBookService refBookService) {
+        return new SyncRdmChangeDataClient(refBookService);
     }
 
     @Bean
     @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "async")
-    public RdmChangeDataClient asyncRdmChangeDataClient() {
-        return new AsyncRdmChangeDataClient();
+    public RdmChangeDataClient asyncRdmChangeDataClient(JmsTemplate jmsTemplate,
+                                                        @Value("${rdm_sync.change_data.queue:rdmChangeData}")
+                                                        String rdmChangeDataQueue) {
+        return new AsyncRdmChangeDataClient(jmsTemplate, rdmChangeDataQueue);
     }
-
 
     @Bean
     public RdmChangeDataRequestCallback rdmChangeDataRequestCallback() {
@@ -238,16 +240,6 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public RdmSyncLocalRowStateService rdmSyncLocalRowStateService() {
         return new RdmSyncLocalRowStateService();
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "")
-    @SuppressWarnings("squid:S2440")
-    public RdmSyncJobContext rdmSyncJobContext(RdmSyncDao rdmSyncDao,
-                                               RdmChangeDataClient rdmChangeDataClient,
-                                               @Value("${rdm_sync.export.to_rdm.batch_size:100}")
-                                               int exportToRdmBatchSize) {
-        return new RdmSyncJobContext(rdmSyncDao, rdmChangeDataClient, exportToRdmBatchSize);
     }
 
     @Bean

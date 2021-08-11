@@ -3,11 +3,13 @@ package ru.i_novus.ms.rdm.sync.service.change_data;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncJobContext;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.util.*;
@@ -15,17 +17,28 @@ import java.util.*;
 import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.INTERNAL_TAG;
 import static ru.i_novus.ms.rdm.sync.service.change_data.RdmSyncChangeDataUtils.reindex;
 
+@Component
 @DisallowConcurrentExecution
 public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
 
     public static final String NAME = "ExportDirtyRecordsToRdm";
 
+    @Autowired
+    private RdmSyncDao dao;
+
+    @Autowired(required = false)
+    private RdmChangeDataClient rdmChangeDataClient;
+
+    @Value("${rdm_sync.export.to_rdm.batch_size:100}")
+    private int exportToRdmBatchSize;
+
     @Override
     public void execute(JobExecutionContext context) {
 
-        RdmSyncDao dao = RdmSyncJobContext.getDao();
-        RdmChangeDataClient changeDataClient = RdmSyncJobContext.getRdmChangeDataClient();
-        int limit = RdmSyncJobContext.getExportToRdmBatchSize();
+        if (rdmChangeDataClient == null)
+            return;
+
+        final int limit = exportToRdmBatchSize;
 
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         for (VersionMapping vm : versionMappings) {
@@ -49,7 +62,7 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
                 }
                 addUpdate.add(INTERNAL_TAG);
 
-                changeDataClient.changeData(vm.getCode(), addUpdate, delete, record -> {
+                rdmChangeDataClient.changeData(vm.getCode(), addUpdate, delete, record -> {
                     Map<String, Object> map = new HashMap<>(record);
                     reindex(fieldMappings, map);
                     return map;
