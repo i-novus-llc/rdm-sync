@@ -9,30 +9,9 @@ networks:
 #      - subnet: 192.168.1.0/24
 
 services:
-  db:
-    volumes:
-    - rdm-db-data:/pg/12/data
-    environment:
-      PGDATA: /pg/12/data
-    ports:
-    - "5432"
-    command: postgres -c 'max_connections=500'
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-      placement:
-        constraints:
-        - node.labels.type == db
-
-  activemq:
-    volumes:
-      - activemq-data:/data/activemq
-      - activemq-log:/var/log/activemq
 
   sync:
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/rdm
       SERVER_TOMCAT_ACCESSLOG_ENABLED: "true"
       JAVA_OPTS: -Xmx200m
       SPRING_DATASOURCE_USERNAME: postgres
@@ -58,20 +37,14 @@ services:
       retries: 3
       start_period: 40s
 
-
-volumes:
-  rdm-db-data:
-
-  activemq-data:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: /opt/share/n2oclouddemo/amq/data
-
-  activemq-log:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: /opt/share/n2oclouddemo/amq/logs
+  activemq:
+    image: "rmohr/activemq:5.15.9"
+    ports:
+      - 61616
+      - 8161
+    deploy:
+      restart_policy:
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M

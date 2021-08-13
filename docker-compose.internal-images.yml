@@ -4,8 +4,8 @@ services:
   sync:
     image: ${DOCKER_REGISTRY}/rdm/sync:${TAG}
 
-  db:
-    image: ${DOCKER_REGISTRY}/rdm/db:${TAG}
+  sync-db:
+    image: ${DOCKER_REGISTRY}/rdm/sync-db:${TAG}
 
   activemq:
     image: "rmohr/activemq:5.15.9"

@@ -7,8 +7,8 @@ services:
       args:
         JAR_FILE: rdm-sync-service/target/rdm-sync-service.jar
 
-  db:
+  sync-db:
     build:
-      context: db
+      context: rdm-sync-db/
       args:
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
