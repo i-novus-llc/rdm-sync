@@ -18,7 +18,8 @@ services:
 
   sync:
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://sync-db:5432/rdm_sync
+      SPRING_CLOUD_CONSUL_CONFIG_PREFIX: "rdm_sync"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://sync-db:5432/rdm_sync
 
 volumes:
   sync-db-data:
