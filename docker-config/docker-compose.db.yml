@@ -1,0 +1,26 @@
+version: "3.6"
+
+services:
+
+  sync-db:
+    volumes:
+      - sync-db-data:/pg/12/data
+    environment:
+      PGDATA: /pg/12/data
+    ports:
+      - 5432
+    command: postgres -c 'max_connections=500'
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+      placement:
+        constraints:
+        - node.labels.type == db
+
+  sync:
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://sync-db:5432/rdm_sync
+
+volumes:
+  sync-db-data:
