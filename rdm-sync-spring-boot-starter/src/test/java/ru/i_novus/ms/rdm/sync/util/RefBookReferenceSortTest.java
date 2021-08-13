@@ -9,19 +9,21 @@ import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 
 import java.util.*;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @RunWith(JUnit4.class)
 public class RefBookReferenceSortTest {
 
     @Test
     public void testGetOrder() {
-//      Описываем структуру ссылок в справочниках:
+
+//      Проверяемая структура ссылок в справочниках:
+//
 //          5 -----> 2
 //        /   \       \
 //      7      4       1 -----> 0
@@ -29,6 +31,7 @@ public class RefBookReferenceSortTest {
 //          6 -----> 3
 //
 //      Все ссылки идут слева направо.
+//
 //      Более формально:
 //      7 -> 5, 7 -> 6;
 //      5 -> 4, 5 -> 2
@@ -36,52 +39,74 @@ public class RefBookReferenceSortTest {
 //      2 -> 1
 //      3 -> 1
 //      1 -> 0
-        RefBook
-            v0 = new RefBook(),
-            v1 = new RefBook(),
-            v2 = new RefBook(),
-            v3 = new RefBook(),
-            v4 = new RefBook(),
-            v5 = new RefBook(),
-            v6 = new RefBook(),
-            v7 = new RefBook();
-        v0.setCode("0");
-        v1.setCode("1");
-        v2.setCode("2");
-        v3.setCode("3");
-        v4.setCode("4");
-        v5.setCode("5");
-        v6.setCode("6");
-        v7.setCode("7");
-        v0.setStructure(new Structure(emptyList(), emptyList()));
-        v1.setStructure(new Structure(emptyList(), singletonList(new Structure.Reference("", v0.getCode(), ""))));
-        v2.setStructure(new Structure(emptyList(), singletonList(new Structure.Reference("", v1.getCode(), ""))));
-        v3.setStructure(new Structure(emptyList(), singletonList(new Structure.Reference("", v1.getCode(), ""))));
-        v4.setStructure(new Structure(emptyList(), emptyList()));
-        v5.setStructure(new Structure(emptyList(), List.of(new Structure.Reference("", v2.getCode(), ""), new Structure.Reference("", v4.getCode(), ""))));
-        v6.setStructure(new Structure(emptyList(), List.of(new Structure.Reference("", v3.getCode(), ""), new Structure.Reference("", v4.getCode(), ""))));
-        v7.setStructure(new Structure(emptyList(), List.of(new Structure.Reference("", v5.getCode(), ""), new Structure.Reference("", v6.getCode(), ""))));
-        List<RefBook> refBooks = new java.util.ArrayList<>(List.of(v0, v1, v2, v3, v4, v5, v6, v7));
+
+        RefBook refBook0 = new RefBook(),
+                refBook1 = new RefBook(),
+                refBook2 = new RefBook(),
+                refBook3 = new RefBook(),
+                refBook4 = new RefBook(),
+                refBook5 = new RefBook(),
+                refBook6 = new RefBook(),
+                refBook7 = new RefBook();
+
+        refBook0.setCode("0");
+        refBook1.setCode("1");
+        refBook2.setCode("2");
+        refBook3.setCode("3");
+        refBook4.setCode("4");
+        refBook5.setCode("5");
+        refBook6.setCode("6");
+        refBook7.setCode("7");
+
+        refBook0.setStructure(new Structure(emptyList(), emptyList()));
+        refBook1.setStructure(new Structure(emptyList(), singletonList(newReference(refBook0))));
+        refBook2.setStructure(new Structure(emptyList(), singletonList(newReference(refBook1))));
+        refBook3.setStructure(new Structure(emptyList(), singletonList(newReference(refBook1))));
+        refBook4.setStructure(new Structure(emptyList(), emptyList()));
+        refBook5.setStructure(new Structure(emptyList(), List.of(newReference(refBook2), newReference(refBook4))));
+        refBook6.setStructure(new Structure(emptyList(), List.of(newReference(refBook3), newReference(refBook4))));
+        refBook7.setStructure(new Structure(emptyList(), List.of(newReference(refBook5), newReference(refBook6))));
+
+        List<RefBook> refBooks = List.of(
+                refBook0, refBook1, refBook2, refBook3, refBook4, refBook5, refBook6, refBook7
+        );
+
+        List<RefBook> sortingRefBooks = new ArrayList<>(refBooks);
         for (int i = 0; i < 1000; i++) {
-            Collections.shuffle(refBooks); // Перемешиваем, чтобы рандомизировать все
-            List<String> inverseOrder = RefBookReferenceSort.getSortedCodes(refBooks);
-            testOrder(inverseOrder, refBooks);
+
+            shuffle(sortingRefBooks); // Перемешиваем, чтобы рандомизировать порядок
+            List<String> inverseOrder = RefBookReferenceSort.getSortedCodes(sortingRefBooks);
+            testOrder(inverseOrder, sortingRefBooks);
         }
     }
 
+    private Structure.Reference newReference(RefBook refBook) {
+
+        return new Structure.Reference("", refBook.getCode(), "");
+    }
+
     private void testOrder(List<String> inverseOrder, List<RefBook> refBooks) {
+
+        assertFalse(isEmpty(refBooks));
+
         Set<String> visited = new HashSet<>();
-        Map<String, RefBook> m = refBooks.stream().map(RefBook::new).collect(toMap(RefBookVersion::getCode, identity()));
+        Map<String, RefBook> refCodeBooks = refBooks.stream()
+                .map(RefBook::new)
+                .collect(toMap(RefBookVersion::getCode, identity()));
+
         for (String s : inverseOrder) {
-            RefBook refBook = m.get(s);
-//          Если здесь true -- значит у нас либо неправильная топологическая сортировка,
-//          либо справочники содержат циклические ссылки
-            assertThat(visited.contains(refBook.getCode()), is(false));
+
+            RefBook refBook = refCodeBooks.get(s);
+            // Если здесь true, то либо неправильная топологическая сортировка,
+            // либо справочники содержат циклические ссылки.
+            assertFalse(visited.contains(refBook.getCode()));
+            
             visited.add(refBook.getCode());
-            for (Structure.Reference ref : refBook.getStructure().getReferences()) {
-//              Если здесь false -- значит сортировка неправильная, потому что
-//              мы не посетили вершину, на которую ссылаемся
-                assertThat(visited.contains(ref.getReferenceCode()), is(true));
+            
+            for (Structure.Reference reference : refBook.getStructure().getReferences()) {
+                // Если здесь false, то сортировка неправильная,
+                // потому что не посещена вершина, на которую есть ссылка.
+                assertTrue(visited.contains(reference.getReferenceCode()));
             }
         }
     }

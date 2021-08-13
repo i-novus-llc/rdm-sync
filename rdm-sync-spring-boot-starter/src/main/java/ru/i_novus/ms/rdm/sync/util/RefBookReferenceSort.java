@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.util;
 
-import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 
 import java.util.*;
@@ -9,21 +8,27 @@ public class RefBookReferenceSort {
 
     private RefBookReferenceSort() {}
 
-    public static List<String> getSortedCodes(List<RefBook> refbooks) {
-        Map<String, DictionaryNode> m = new HashMap<>();
-        for (RefBook refbook : refbooks)
-            m.put(refbook.getCode(), new DictionaryNode());
-        for (RefBook version : refbooks) {
-            DictionaryNode node = m.get(version.getCode());
-            Structure s = version.getStructure();
-            for (Structure.Reference r : s.getReferences()) {
-                String refTo = r.getReferenceCode();
-                if (m.containsKey(refTo)) {
-                    node.child.add(refTo);
-                }
-            }
+    public static List<String> getSortedCodes(List<RefBook> refBooks) {
+
+        Map<String, DictionaryNode> refCodes = new HashMap<>();
+        for (RefBook refbook : refBooks) {
+            refCodes.put(refbook.getCode(), new DictionaryNode());
         }
-        List<String> topologicalOrder = topologicalSort(m);
+
+        for (RefBook version : refBooks) {
+
+            DictionaryNode node = refCodes.get(version.getCode());
+            version.getStructure().getReferences().forEach(reference -> {
+
+                String referenceCode = reference.getReferenceCode();
+                if (refCodes.containsKey(referenceCode)) {
+                    node.child.add(referenceCode);
+                }
+            });
+        }
+
+        List<String> topologicalOrder = topologicalSort(refCodes);
+
         LinkedList<String> inverseOrder = new LinkedList<>();
         for (String s : topologicalOrder) {
             inverseOrder.push(s);
@@ -31,28 +36,39 @@ public class RefBookReferenceSort {
         return inverseOrder;
     }
 
-    private static List<String> topologicalSort(Map<String, DictionaryNode> m) {
+    private static List<String> topologicalSort(Map<String, DictionaryNode> refCodes) {
+
         Set<String> visited = new HashSet<>();
         LinkedList<String> stack = new LinkedList<>();
-        for (Map.Entry<String, DictionaryNode> e : m.entrySet()) {
-            if (!visited.contains(e.getKey())) {
-                topologicalSort0(stack, visited, m, e.getKey());
+
+        for (Map.Entry<String, DictionaryNode> e : refCodes.entrySet()) {
+
+            String refBookCode = e.getKey();
+            if (!visited.contains(refBookCode)) {
+                topologicalSort0(stack, visited, refCodes, refBookCode);
             }
         }
+
         return stack;
     }
 
-    private static void topologicalSort0(LinkedList<String> stack, Set<String> visited, Map<String, DictionaryNode> m, String code) {
-        visited.add(code);
-        for (String s : m.get(code).child) {
-            if (!visited.contains(s))
-                topologicalSort0(stack, visited, m, s);
+    private static void topologicalSort0(LinkedList<String> stack, Set<String> visited,
+                                         Map<String, DictionaryNode> refCodes, String refBookCode) {
+
+        visited.add(refBookCode);
+
+        for (String referenceCode : refCodes.get(refBookCode).child) {
+            if (!visited.contains(referenceCode)) {
+                topologicalSort0(stack, visited, refCodes, referenceCode);
+            }
         }
-        stack.push(code);
+
+        stack.push(refBookCode);
     }
 
     private static class DictionaryNode {
-        private Collection<String> child = new LinkedList<>();
+
+        private final Collection<String> child = new LinkedList<>();
     }
 
 }
