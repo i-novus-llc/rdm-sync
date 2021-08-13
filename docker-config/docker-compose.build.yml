@@ -3,7 +3,7 @@ version: "3.6"
 services:
   sync:
     build:
-      context: .
+      context: rdm-sync-service/
       args:
         JAR_FILE: rdm-sync-service/target/rdm-sync-service.jar
 
