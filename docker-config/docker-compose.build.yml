@@ -5,7 +5,7 @@ services:
     build:
       context: rdm-sync-service/
       args:
-        JAR_FILE: rdm-sync-service/target/rdm-sync-service.jar
+        JAR_FILE: target/rdm-sync-service.jar
 
   sync-db:
     build:
