@@ -47,6 +47,8 @@
         <module>rdm-sync-api</module>
         <module>rdm-sync-spring-boot-starter</module>
         <module>rdm-sync-service</module>
+        <module>rdm-sync-admin-api</module>
+        <module>rdm-sync-admin-n2o</module>
     </modules>
 
     <dependencies>
