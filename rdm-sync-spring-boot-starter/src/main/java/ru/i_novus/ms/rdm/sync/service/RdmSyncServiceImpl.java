@@ -210,7 +210,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         if (refBookCodes.stream().noneMatch("all"::equalsIgnoreCase)) {
             versionMappings = versionMappings.stream()
-                    .filter(vm -> refBookCodes.contains(vm.getCode()))
+                    .filter(mapping -> refBookCodes.contains(mapping.getCode()))
                     .collect(toList());
         }
 
@@ -229,9 +229,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
                 marshaller.marshal(xmlMapping, out);
                 out.flush();
+
             } catch (JAXBException e) {
-//              Не выбросится
-                throw new RdmException(e);
+                throw new RdmException(e); // Не выбросится
             }
         };
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"") .entity(stream).build();
@@ -243,7 +243,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
 
         final String primaryField = versionMapping.getPrimaryField();
-        if (fieldMappings.stream().noneMatch(f -> f.getSysField().equals(primaryField)))
+        if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
             throw new IllegalArgumentException(String.format(NO_MAPPING_FOR_PRIMARY_KEY, primaryField));
 
         return versionMapping;
@@ -276,6 +276,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         for (VersionMapping versionMapping : versionMappings) {
             try {
                 refBooks.add(getLastPublishedVersionFromRdm(versionMapping.getCode()));
+
             } catch (RuntimeException ex) {
                 logger.error(String.format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, versionMapping.getCode()), ex);
                 loggingService.logError(versionMapping.getCode(), null, null, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
@@ -289,11 +290,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         Integer oldVersionId = versionService.getVersion(versionMapping.getVersion(), versionMapping.getCode()).getId();
         StructureDiff structureDiff = compareService.compareStructures(oldVersionId, newVersion.getId());
         if (!CollectionUtils.isEmpty(structureDiff.getUpdated()) || !CollectionUtils.isEmpty(structureDiff.getDeleted()) || !CollectionUtils.isEmpty(structureDiff.getInserted())) {
+
             dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
             uploadNew(newVersion, versionMapping);
+
             return;
         }
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
 
         CompareDataCriteria compareDataCriteria = new CompareDataCriteria();
         compareDataCriteria.setOldVersionId(oldVersionId);
@@ -303,7 +305,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         RefBookDataDiff diff = compareService.compareData(compareDataCriteria);
 
         // Если изменилась структура, проверяем актуальность полей в маппинге
+        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
         validateStructureChanges(versionMapping, fieldMappings, diff);
+
         if (diff.getRows().getTotalElements() > 0) {
             compareDataCriteria.setCountOnly(false);
             compareDataCriteria.setPageSize(MAX_SIZE);
