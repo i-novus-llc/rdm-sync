@@ -25,6 +25,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
+import javax.annotation.Nonnull;
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
 import java.time.Clock;
@@ -366,7 +367,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         getJdbcTemplate().batchUpdate(sqlInsert,
                 new BatchPreparedStatementSetter() {
 
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    public void setValues(@Nonnull PreparedStatement ps, int i) throws SQLException {
+
                         ps.setString(1, code);
                         ps.setString(2, fieldMappings.get(i).getSysField());
                         ps.setString(3, fieldMappings.get(i).getSysDataType());
@@ -466,40 +468,48 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public Page<Map<String, Object>> getData(String table, String pk, int limit, int offset, RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters) {
+    public Page<Map<String, Object>> getData(String table, String pk, int limit, int offset,
+                                             RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters) {
 
-        String query = String.format("FROM %s WHERE %s = :state ", table, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+        String sql = String.format("  FROM %s %n WHERE %s = :state %n",
+                table, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
         Map<String, Object> args = new HashMap<>();
         args.put("state", state.name());
+
         if (filters != null) {
-            query += filters.entrySet().stream().
-                peek(entry -> args.put(entry.getKey(), entry.getValue())).
-                map(entry -> "AND " + addDoubleQuotes(entry.getKey()) + " IN (:" + entry.getKey() + ")").
-                collect(joining(" "));
+            args.putAll(filters);
+
+            sql += filters.keySet().stream()
+                    .map(key -> "   AND " + addDoubleQuotes(key) + " IN (:" + key + ")")
+                    .collect(joining("\n"));
         }
 
-        int count = namedParameterJdbcTemplate.queryForObject("SELECT COUNT(*) " + query, args, Integer.class);
-        if (count == 0)
+        Integer count = namedParameterJdbcTemplate.queryForObject("SELECT count(*) \n" + sql, args, Integer.class);
+        if (count == null || count == 0)
             return Page.empty();
 
-        query += String.format(" ORDER BY %s LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, offset);
+        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, offset);
         var wrap = new Object() {
             int internalStateColumnIndex = -1;
         };
 
-        List<Map<String, Object>> result = namedParameterJdbcTemplate.query("SELECT * " + query, args, (rs, rowNum) -> {
-            Map<String, Object> map = new HashMap<>();
-            if (wrap.internalStateColumnIndex == -1)
-                wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), table);
-            for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                if (i != wrap.internalStateColumnIndex) {
-                    Object val = rs.getObject(i);
-                    String key = rs.getMetaData().getColumnName(i);
-                    map.put(key, val);
-                }
-            }
-            return map;
-        });
+        List<Map<String, Object>> result = namedParameterJdbcTemplate.query("SELECT * \n" + sql,
+                args, (rs, rowNum) -> {
+                    Map<String, Object> map = new HashMap<>();
+                    if (wrap.internalStateColumnIndex == -1) {
+                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), table);
+                    }
+
+                    for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                        if (i != wrap.internalStateColumnIndex) {
+                            Object val = rs.getObject(i);
+                            String key = rs.getMetaData().getColumnName(i);
+                            map.put(key, val);
+                        }
+                    }
+
+                    return map;
+                });
 
         RestCriteria dataCriteria = new AbstractCriteria();
         dataCriteria.setPageNumber(offset / limit);
@@ -512,10 +522,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private int getInternalStateColumnIdx(ResultSetMetaData meta, String table) throws SQLException {
 
         for (int i = 1; i <= meta.getColumnCount(); i++) {
+
             if (meta.getColumnName(i).equals(RDM_SYNC_INTERNAL_STATE_COLUMN)) {
                 return i;
             }
         }
+
         throw new RdmException("Internal state \"" + RDM_SYNC_INTERNAL_STATE_COLUMN + "\" column not found in " + table);
     }
 
@@ -526,8 +538,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return false;
 
         String query = String.format("SELECT COUNT(*) FROM %s WHERE %s IN (:primaryValues)", table, addDoubleQuotes(pk));
-        int count = namedParameterJdbcTemplate.queryForObject(query, Map.of("primaryValues", primaryValues), Integer.class);
-        if (count == 0)
+        Integer count = namedParameterJdbcTemplate.queryForObject(query, Map.of("primaryValues", primaryValues), Integer.class);
+        if (count == null || count == 0)
             return false;
 
         query = String.format("UPDATE %1$s SET %2$s = :toState WHERE %3$s IN (:primaryValues) AND %2$s = :expectedState", table, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), addDoubleQuotes(pk));
@@ -555,11 +567,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createRefBookTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
-        String q = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
-        q += fieldMappings.stream().map(fm -> String.format("%s %s", fm.getSysField(), fm.getSysDataType())).collect(Collectors.joining(", "));
-        q += String.format(", %s BOOLEAN)", isDeletedFieldName);
+        String ddl = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
+        ddl += fieldMappings.stream()
+                .map(mapping -> String.format("%s %s", mapping.getSysField(), mapping.getSysDataType()))
+                .collect(Collectors.joining(", "));
+        ddl += String.format(", %s BOOLEAN)", isDeletedFieldName);
 
-        getJdbcTemplate().execute(q);
+        getJdbcTemplate().execute(ddl);
     }
 
     private JdbcTemplate getJdbcTemplate() {
