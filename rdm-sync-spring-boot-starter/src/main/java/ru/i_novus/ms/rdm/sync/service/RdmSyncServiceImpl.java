@@ -43,7 +43,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.io.Serializable;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
