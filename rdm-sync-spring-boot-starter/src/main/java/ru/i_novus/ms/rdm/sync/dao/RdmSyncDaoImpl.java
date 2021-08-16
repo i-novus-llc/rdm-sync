@@ -171,21 +171,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public List<Object> getDataIds(String table, FieldMapping primaryField) {
+    public List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping) {
 
-        final String sql = String.format("SELECT %s FROM %s", addDoubleQuotes(primaryField.getSysField()), table);
+        final String sql = String.format("SELECT %s FROM %s",
+                addDoubleQuotes(primaryFieldMapping.getSysField()), schemaTable);
 
-        DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryField.getSysDataType());
+        DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
         return namedParameterJdbcTemplate.query(sql,
             (rs, rowNum) -> rdmMappingService.map(FieldType.STRING, dataType, rs.getObject(1))
         );
     }
 
     @Override
-    public boolean isIdExists(String table, String primaryField, Object primaryValue) {
+    public boolean isIdExists(String schemaTable, String primaryField, Object primaryValue) {
 
         final String sql = String.format("SELECT count(*) > 0 FROM %s WHERE %s = :primary",
-                table, addDoubleQuotes(primaryField));
+                schemaTable, addDoubleQuotes(primaryField));
 
         final Boolean result = namedParameterJdbcTemplate.queryForObject(sql,
                 Map.of("primary", primaryValue),
@@ -212,7 +213,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void insertRow(String table, Map<String, Object> row, boolean markSynced) {
+    public void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced) {
 
         List<String> values = new ArrayList<>();
         List<Object> data = new ArrayList<>();
@@ -232,22 +233,23 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
-                table, keys, String.join(",", values));
+                schemaTable, keys, String.join(",", values));
         getJdbcTemplate().update(sql, data.toArray());
     }
 
     @Override
-    public void updateRow(String table, String primaryField, Map<String, Object> row, boolean markSynced) {
+    public void updateRow(String schemaTable, String primaryField, Map<String, Object> row, boolean markSynced) {
 
         if (markSynced) {
             row.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
         }
 
-        executeUpdate(table, row, primaryField);
+        executeUpdate(schemaTable, row, primaryField);
     }
 
     @Override
-    public void markDeleted(String table, String primaryField, String isDeletedField, Object primaryValue, boolean deleted, boolean markSynced) {
+    public void markDeleted(String schemaTable, String primaryField, String isDeletedField,
+                            Object primaryValue, boolean deleted, boolean markSynced) {
 
         Map<String, Object> args = markSynced
                 ? Map.of(primaryField, primaryValue,
@@ -256,18 +258,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 : Map.of(primaryField, primaryValue,
                 isDeletedField, deleted);
 
-        executeUpdate(table, args, primaryField);
+        executeUpdate(schemaTable, args, primaryField);
     }
 
     @Override
-    public void markDeleted(String table, String isDeletedField, boolean deleted, boolean markSynced) {
+    public void markDeleted(String schemaTable, String isDeletedField, boolean deleted, boolean markSynced) {
 
         Map<String, Object> args = markSynced
                 ? Map.of(isDeletedField, deleted,
                 RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name())
                 : Map.of(isDeletedField, deleted);
 
-        executeUpdate(table, args, null);
+        executeUpdate(schemaTable, args, null);
     }
 
     private void executeUpdate(String table, Map<String, Object> args, String primaryField) {
@@ -469,11 +471,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public Page<Map<String, Object>> getData(String table, String pk, int limit, int offset,
+    public Page<Map<String, Object>> getData(String schemaTable, String pk, int limit, int offset,
                                              RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters) {
 
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
-                table, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+                schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
         Map<String, Object> args = new HashMap<>();
         args.put("state", state.name());
 
@@ -498,7 +500,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 args, (rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
                     if (wrap.internalStateColumnIndex == -1) {
-                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), table);
+                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), schemaTable);
                     }
 
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
@@ -533,25 +535,25 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public <T> boolean setLocalRecordsState(String table, String pk, List<? extends T> primaryValues, RdmSyncLocalRowState expectedState, RdmSyncLocalRowState toState) {
+    public <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues, RdmSyncLocalRowState expectedState, RdmSyncLocalRowState toState) {
 
         if (primaryValues.isEmpty())
             return false;
 
-        String query = String.format("SELECT COUNT(*) FROM %s WHERE %s IN (:primaryValues)", table, addDoubleQuotes(pk));
+        String query = String.format("SELECT COUNT(*) FROM %s WHERE %s IN (:primaryValues)", schemaTable, addDoubleQuotes(pk));
         Integer count = namedParameterJdbcTemplate.queryForObject(query, Map.of("primaryValues", primaryValues), Integer.class);
         if (count == null || count == 0)
             return false;
 
-        query = String.format("UPDATE %1$s SET %2$s = :toState WHERE %3$s IN (:primaryValues) AND %2$s = :expectedState", table, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), addDoubleQuotes(pk));
+        query = String.format("UPDATE %1$s SET %2$s = :toState WHERE %3$s IN (:primaryValues) AND %2$s = :expectedState", schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), addDoubleQuotes(pk));
         int numUpdatedRecords = namedParameterJdbcTemplate.update(query, Map.of("toState", toState.name(), "primaryValues", primaryValues, "expectedState", expectedState.name()));
         return numUpdatedRecords == count;
     }
 
     @Override
-    public RdmSyncLocalRowState getLocalRowState(String table, String pk, Object pv) {
+    public RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv) {
 
-        String query = String.format("SELECT %s FROM %s WHERE %s = :pv", addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), table, addDoubleQuotes(pk));
+        String query = String.format("SELECT %s FROM %s WHERE %s = :pv", addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), schemaTable, addDoubleQuotes(pk));
         List<String> list = namedParameterJdbcTemplate.query(query, Map.of("pv", pv), (rs, rowNum) -> rs.getString(1));
         if (list.size() > 1)
             throw new RdmException("Cannot identify record by " + pk);
@@ -566,7 +568,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createRefBookTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
         String ddl = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
         ddl += fieldMappings.stream()
