@@ -81,9 +81,9 @@ public final class RdmSyncDataUtils {
         return list;
     }
 
-    public static <T extends Serializable> Map<String, Object> mapForPgInsert(T t, List<Pair<String, String>> schema) {
+    public static <T extends Serializable> Map<String, Object> mapForPgInsert(T t, List<Pair<String, String>> columnTypes) {
 
-        Set<String> columnsSnakeCase = schema.stream().map(Pair::getFirst).collect(toSet());
+        Set<String> columnsSnakeCase = columnTypes.stream().map(Pair::getFirst).collect(toSet());
         return tToMap(t, true, columnsSnakeCase);
     }
 

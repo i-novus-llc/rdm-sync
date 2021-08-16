@@ -145,7 +145,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public List<Pair<String, String>> getColumnNameAndDataTypeFromLocalDataTable(String schemaTable) {
+    public List<Pair<String, String>> getLocalColumnTypes(String schemaTable) {
 
         String[] split = schemaTable.split("\\.");
         String schema = split[0];

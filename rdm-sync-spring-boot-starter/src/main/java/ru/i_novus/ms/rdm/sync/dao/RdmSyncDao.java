@@ -40,7 +40,7 @@ public interface RdmSyncDao {
      */
     List<FieldMapping> getFieldMapping(String refbookCode);
 
-    List<Pair<String, String>> getColumnNameAndDataTypeFromLocalDataTable(String table);
+    List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
     void updateVersionMapping(Integer id, String version, LocalDateTime publishDate);
 

@@ -124,8 +124,8 @@ public abstract class RdmChangeDataClient {
     public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable) {
 
         VersionMapping versionMapping = getVersionMappingByTableOrElseThrow(localTable);
-        List<Pair<String, String>> schema = dao.getColumnNameAndDataTypeFromLocalDataTable(versionMapping.getTable());
-        lazyUpdateData(addUpdate, localTable, t -> mapForPgInsert(t, schema));
+        List<Pair<String, String>> columnTypes = dao.getLocalColumnTypes(versionMapping.getTable());
+        lazyUpdateData(addUpdate, localTable, t -> mapForPgInsert(t, columnTypes));
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract class RdmChangeDataClient {
      *
      * @param addUpdate  Записи, которые нужно вставить/изменить в локальной таблице и, со временем, в RDM.
      * @param localTable Локальная таблица с данными (с явно указанными схемой и названием таблицы)
-     * @param map        Функция для преобразования экземляра класса {@code <T>} в {@code Map<String, Object>},
+     * @param map        Функция для преобразования экземпляра класса {@code <T>} в {@code Map<String, Object>},
      *                   ключами которой идут соответствующие колонки и типы данных в локальной таблице клиента.
      * @param <T>        Этот параметр должен реализовывать интерфейс Serializable (для единообразия)
      */
