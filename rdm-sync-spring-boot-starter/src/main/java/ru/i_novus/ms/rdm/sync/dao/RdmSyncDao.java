@@ -38,7 +38,7 @@ public interface RdmSyncDao {
      * @param refbookCode код справочника НСИ
      * @return Список
      */
-    List<FieldMapping> getFieldMapping(String refbookCode);
+    List<FieldMapping> getFieldMappings(String refbookCode);
 
     List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 

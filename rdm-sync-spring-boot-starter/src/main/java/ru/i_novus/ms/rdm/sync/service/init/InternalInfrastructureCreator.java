@@ -32,7 +32,7 @@ class InternalInfrastructureCreator {
         if (autoCreateRefBookCodes.contains(code)) {
 
             dao.createSchemaIfNotExists(schema);
-            dao.createRefBookTableIfNotExists(schema, table, dao.getFieldMapping(code), isDeletedFieldName);
+            dao.createRefBookTableIfNotExists(schema, table, dao.getFieldMappings(code), isDeletedFieldName);
         }
 
         logger.info("Preparing table {} in schema {}.", table, schema);

@@ -128,7 +128,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public List<FieldMapping> getFieldMapping(String refbookCode) {
+    public List<FieldMapping> getFieldMappings(String refbookCode) {
 
         final String sql = "SELECT sys_field, sys_data_type, rdm_field \n" +
                 "  FROM rdm_sync.field_mapping \n" +

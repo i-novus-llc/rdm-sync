@@ -117,13 +117,13 @@ public class RdmSyncDaoImplTest {
     }
 
     @Test
-    public void testGetFieldMapping() {
+    public void testGetFieldMappings() {
 
         List<FieldMapping> fieldMappings = newFieldMappings();
         when(namedParameterJdbcTemplate.query(any(String.class), any(Map.class), any(RowMapper.class)))
                 .thenReturn(fieldMappings);
 
-        List<FieldMapping> list = dao.getFieldMapping(REFBOOK_CODE);
+        List<FieldMapping> list = dao.getFieldMappings(REFBOOK_CODE);
         assertSame(fieldMappings, list);
 
         ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);

@@ -48,11 +48,12 @@ public abstract class RdmChangeDataClient {
     public <T extends Serializable> void changeData(String refBookCode,
                                                     List<? extends T> addUpdate, List<? extends T> delete) {
 
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(refBookCode);
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(refBookCode);
         changeData(refBookCode, addUpdate, delete, t -> {
             Map<String, Object> map = tToMap(t, true, null);
-            if (!fieldMappings.isEmpty())
+            if (!fieldMappings.isEmpty()) {
                 reindex(fieldMappings, map);
+            }
             return map;
         });
     }
@@ -74,8 +75,8 @@ public abstract class RdmChangeDataClient {
                                                     List<? extends T> addUpdate, List<? extends T> delete,
                                                     Function<? super T, Map<String, Object>> map) {
 
-        VersionMapping vm = dao.getVersionMapping(refBookCode);
-        if (vm == null || (addUpdate.isEmpty() && delete.isEmpty())) {
+        VersionMapping mapping = dao.getVersionMapping(refBookCode);
+        if (mapping == null || (addUpdate.isEmpty() && delete.isEmpty())) {
             return;
         }
 
@@ -87,18 +88,19 @@ public abstract class RdmChangeDataClient {
         }
 
         if (ensureState) {
-            List<Object> list = new ArrayList<>(extractSnakeCaseKey(vm.getPrimaryField(), addUpdate));
-            list.addAll(extractSnakeCaseKey(vm.getPrimaryField(), delete));
+            List<Object> list = new ArrayList<>(extractSnakeCaseKey(mapping.getPrimaryField(), addUpdate));
+            list.addAll(extractSnakeCaseKey(mapping.getPrimaryField(), delete));
 
-            dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
+            dao.disableInternalLocalRowStateUpdateTrigger(mapping.getTable());
             try {
-                boolean stateChanged = dao.setLocalRecordsState(vm.getTable(), vm.getPrimaryField(), list, RdmSyncLocalRowState.DIRTY, RdmSyncLocalRowState.PENDING);
+                boolean stateChanged = dao.setLocalRecordsState(mapping.getTable(), mapping.getPrimaryField(),
+                        list, RdmSyncLocalRowState.DIRTY, RdmSyncLocalRowState.PENDING);
                 if (!stateChanged) {
                     logger.info("State change did not pass. Skipping request on {}.", refBookCode);
                     throw new RdmException();
                 }
             } finally {
-                dao.enableInternalLocalRowStateUpdateTrigger(vm.getTable());
+                dao.enableInternalLocalRowStateUpdateTrigger(mapping.getTable());
             }
         }
 
@@ -140,36 +142,42 @@ public abstract class RdmChangeDataClient {
      *
      * @param addUpdate  Записи, которые нужно вставить/изменить в локальной таблице и, со временем, в RDM.
      * @param localTable Локальная таблица с данными (с явно указанными схемой и названием таблицы)
-     * @param map        Функция для преобразования экземпляра класса {@code <T>} в {@code Map<String, Object>},
+     * @param toMap        Функция для преобразования экземпляра класса {@code <T>} в {@code Map<String, Object>},
      *                   ключами которой идут соответствующие колонки и типы данных в локальной таблице клиента.
      * @param <T>        Этот параметр должен реализовывать интерфейс Serializable (для единообразия)
      */
     @Transactional
     public <T extends Serializable> void lazyUpdateData(List<? extends T> addUpdate, String localTable,
-                                                        Function<? super T, Map<String, Object>> map) {
+                                                        Function<? super T, Map<String, Object>> toMap) {
 
         VersionMapping versionMapping = getVersionMappingByTableOrElseThrow(localTable);
-        String pk = versionMapping.getPrimaryField();
+        String primaryField = versionMapping.getPrimaryField();
         String isDeletedField = versionMapping.getDeletedField();
         IdentityHashMap<? super T, Map<String, Object>> identityHashMap = new IdentityHashMap<>();
+
         for (T t : addUpdate) {
-            Map<String, Object> m = map.apply(t);
-            Object pv = m.get(pk);
-            if (pv == null)
-                throw new RdmException("No primary key found. Primary field: " + pk);
-            if (!dao.isIdExists(localTable, pk, pv))
-                dao.insertRow(localTable, m, false);
+            Map<String, Object> map = toMap.apply(t);
+            Object primaryValue = map.get(primaryField);
+            if (primaryValue == null)
+                throw new RdmException("No primary key found. Primary field: " + primaryField);
+
+            if (!dao.isIdExists(localTable, primaryField, primaryValue))
+
+                dao.insertRow(localTable, map, false);
+
             else {
-                dao.markDeleted(localTable, pk, isDeletedField, pv, false, false);
-                dao.updateRow(localTable, pk, m, false);
+                dao.markDeleted(localTable, primaryField, isDeletedField, primaryValue, false, false);
+                dao.updateRow(localTable, primaryField, map, false);
             }
-            identityHashMap.put(t, m);
+
+            identityHashMap.put(t, map);
         }
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
+
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
         changeData(versionMapping.getCode(), addUpdate, emptyList(), t -> {
-            Map<String, Object> m = identityHashMap.get(t);
-            reindex(fieldMappings, m);
-            return m;
+            Map<String, Object> map = identityHashMap.get(t);
+            reindex(fieldMappings, map);
+            return map;
         });
     }
 
@@ -180,14 +188,14 @@ public abstract class RdmChangeDataClient {
                 .findAny().orElseThrow(() -> new RdmException("No table " + table + " found."));
     }
 
-    static <T extends Serializable> RdmChangeDataRequest toRdmChangeDataRequest(String refBookCode,
-                                                                                List<? extends T> addUpdate,
-                                                                                List<? extends T> delete,
-                                                                                Function<? super T, Map<String, Object>> map) {
+    static <T extends Serializable> RdmChangeDataRequest toRdmChangeDataRequest(
+            String refBookCode, List<? extends T> addUpdate, List<? extends T> delete,
+            Function<? super T, Map<String, Object>> toMap) {
+
         List<Row> addUpdateRows = new ArrayList<>();
         List<Row> toDeleteRows = new ArrayList<>();
-        for (T t : addUpdate) addUpdateRows.add(new Row(map.apply(t)));
-        for (T t : delete) toDeleteRows.add(new Row(map.apply(t)));
+        for (T t : addUpdate) addUpdateRows.add(new Row(toMap.apply(t)));
+        for (T t : delete) toDeleteRows.add(new Row(toMap.apply(t)));
 
         return new RdmChangeDataRequest(refBookCode, addUpdateRows, toDeleteRows);
     }
