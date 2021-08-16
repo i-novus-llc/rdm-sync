@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
+import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +37,9 @@ public class RdmSyncDaoImplTest {
     private static final int LOCAL_ID = 10;
     private static final String LOCAL_SCHEMA = "schm";
     private static final String LOCAL_TABLE = "ltab";
+    private static final String SCHEMA_TABLE = LOCAL_SCHEMA + "." + LOCAL_TABLE;
+    private static final String CODE_FIELD = "code";
+    private static final String TEXT_FIELD = "text";
 
     @InjectMocks
     private RdmSyncDaoImpl dao;
@@ -152,8 +156,7 @@ public class RdmSyncDaoImplTest {
         when(namedParameterJdbcTemplate.query(any(String.class), any(Map.class), any(RowMapper.class)))
                 .thenReturn(columnTypes);
 
-        final String schemaTable = LOCAL_SCHEMA + "." + LOCAL_TABLE;
-        List<Pair<String, String>> result = dao.getLocalColumnTypes(schemaTable);
+        List<Pair<String, String>> result = dao.getLocalColumnTypes(SCHEMA_TABLE);
         assertSame(columnTypes, result);
 
         ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
@@ -174,16 +177,37 @@ public class RdmSyncDaoImplTest {
         verifyNoMore();
     }
 
+    @Test
+    public void testGetDataIds() {
+
+        List<FieldMapping> fieldMappings = newFieldMappings();
+        FieldMapping primaryFieldMapping = fieldMappings.stream()
+                .filter(mapping -> CODE_FIELD.equals(mapping.getSysField()))
+                .findFirst().orElse(null);
+        assertNotNull(primaryFieldMapping);
+
+        List<Object> dataIds = List.of(1, 2, 3);
+        when(namedParameterJdbcTemplate.query(any(String.class), any(RowMapper.class)))
+                .thenReturn(dataIds);
+
+        List<Object> result = dao.getDataIds(SCHEMA_TABLE, primaryFieldMapping);
+        assertSame(dataIds, result);
+
+        verify(namedParameterJdbcTemplate).query(any(String.class), any(RowMapper.class));
+
+        verifyNoMore();
+    }
+
     private VersionMapping newVersionMapping() {
 
         return new VersionMapping(LOCAL_ID, REFBOOK_CODE, REFBOOK_VERSION, PUBLICATION_DATE,
-                LOCAL_TABLE, "primary", "deleted", LocalDateTime.now(), LocalDateTime.now());
+                SCHEMA_TABLE, "primary", "deleted", LocalDateTime.now(), LocalDateTime.now());
     }
 
     private List<FieldMapping> newFieldMappings() {
 
-        FieldMapping idMapping = new FieldMapping("code", "integer", "id");
-        FieldMapping nameMapping = new FieldMapping("text", "varchar", "name");
+        FieldMapping idMapping = new FieldMapping(CODE_FIELD, "integer", "id");
+        FieldMapping nameMapping = new FieldMapping(TEXT_FIELD, "varchar", "name");
 
         return List.of(idMapping, nameMapping);
     }
