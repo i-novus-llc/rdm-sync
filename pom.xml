@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ru.i-novus.ms.rdm.sync</groupId>
+    <artifactId>rdm-sync</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>rdm-sync</name>
+    <description>Синхронизация с RDM</description>
+
+    <parent>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-boot-platform-parent</artifactId>
+        <version>4.4.0</version>
+    </parent>
+
+    <scm>
+        <connection>scm:git:https://git.i-novus.ru/microservices/rdm-sync.git</connection>
+        <url>https://git.i-novus.ru/microservices/rdm-sync</url>
+        <developerConnection>scm:git:https://git.i-novus.ru/microservices/rdm-sync.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <maven.compiler.version>3.8.1</maven.compiler.version>
+        <maven.compiler.source>14</maven.compiler.source>
+        <maven.compiler.target>14</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+
+        <rdm.version>3.2.0</rdm.version>
+
+        <lombok.version>1.18.4</lombok.version>
+
+        <apache.poi.version>3.17</apache.poi.version>
+        <filestorage.version>2.3</filestorage.version>
+        <commons.text.version>1.6</commons.text.version>
+
+        <jaxws.version>2.3.2</jaxws.version>
+        <javax.activation.version>1.1.1</javax.activation.version>
+
+        <xmlunit.version>1.6</xmlunit.version>
+    </properties>
+
+    <modules>
+        <module>rdm-sync-api</module>
+        <module>rdm-sync-spring-boot-starter</module>
+        <module>rdm-sync-service</module>
+    </modules>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>javax.interceptor</groupId>
+            <artifactId>javax.interceptor-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>ru.i-novus.ms.rdm.sync</groupId>
+                <artifactId>rdm-sync-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ru.i-novus.ms.rdm</groupId>
+                <artifactId>rdm-api</artifactId>
+                <version>${rdm.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-spring-boot-starter</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>rt</artifactId>
+                <version>${jaxws.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${javax.activation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ru.i-novus.common</groupId>
+                <artifactId>fs-file-storage</artifactId>
+                <version>${filestorage.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${apache.poi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${apache.poi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>5.2.12.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
+            </dependency>
+
+            <!-- test -->
+            <dependency>
+                <groupId>xmlunit</groupId>
+                <artifactId>xmlunit</artifactId>
+                <version>${xmlunit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- / test -->
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
