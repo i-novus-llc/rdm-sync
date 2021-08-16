@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -32,6 +34,7 @@ public class RdmSyncDaoImplTest {
     private static final LocalDateTime PUBLICATION_DATE = LocalDateTime.of(2021, 1, 1, 1, 1);
 
     private static final int LOCAL_ID = 10;
+    private static final String LOCAL_SCHEMA = "schm";
     private static final String LOCAL_TABLE = "ltab";
 
     @InjectMocks
@@ -134,6 +137,39 @@ public class RdmSyncDaoImplTest {
         Map<String, Object> map = (Map<String, Object>) mapCaptor.getValue();
         assertNotNull(map);
         assertEquals(REFBOOK_CODE, map.get("code"));
+
+        verifyNoMore();
+    }
+
+    @Test
+    public void testGetLocalColumnTypes() {
+
+        List<FieldMapping> fieldMappings = newFieldMappings();
+        List<Pair<String, String>> columnTypes = fieldMappings.stream()
+                .map(mapping -> Pair.of(mapping.getSysField(), mapping.getSysDataType()))
+                .collect(toList());
+
+        when(namedParameterJdbcTemplate.query(any(String.class), any(Map.class), any(RowMapper.class)))
+                .thenReturn(columnTypes);
+
+        final String schemaTable = LOCAL_SCHEMA + "." + LOCAL_TABLE;
+        List<Pair<String, String>> result = dao.getLocalColumnTypes(schemaTable);
+        assertSame(columnTypes, result);
+
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Map> mapCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(namedParameterJdbcTemplate).query(sqlCaptor.capture(), mapCaptor.capture(), any(RowMapper.class));
+
+        String sql = sqlCaptor.getValue();
+        assertNotNull(sql);
+
+        Map<String, Object> map = (Map<String, Object>) mapCaptor.getValue();
+        assertNotNull(map);
+
+        map.forEach((k, v) -> assertTrue(sql.contains(":" + k)));
+
+        assertEquals(LOCAL_SCHEMA, map.get("schemaName"));
+        assertEquals(LOCAL_TABLE, map.get("tableName"));
 
         verifyNoMore();
     }

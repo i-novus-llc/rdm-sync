@@ -153,12 +153,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         String sql = "SELECT column_name, data_type \n" +
                 "  FROM information_schema.columns \n" +
-                " WHERE table_schema = :schema \n" +
-                "   AND table_name = :table \n" +
+                " WHERE table_schema = :schemaName \n" +
+                "   AND table_name = :tableName \n" +
                 "   AND column_name != :internal_local_row_state_column";
+
         List<Pair<String, String>> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("schema", schema,
-                        "table", table,
+                Map.of("schemaName", schema,
+                        "tableName", table,
                         "internal_local_row_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN),
                 (rs, rowNum) -> Pair.of(rs.getString(1), rs.getString(2))
         );
