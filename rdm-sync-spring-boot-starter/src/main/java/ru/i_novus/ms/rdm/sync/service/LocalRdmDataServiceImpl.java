@@ -32,7 +32,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (page == null) page = 0;
         if (size == null) size = 10;
 
-        MultivaluedMap<String, Object> filters = filtersToObjects(dao.getFieldMapping(refBookCode), uriInfo.getQueryParameters());
+        MultivaluedMap<String, Object> filters = filtersToObjects(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
         filters.putSingle(versionMapping.getDeletedField(), getDeleted);
 
         return dao.getData(versionMapping.getTable(), versionMapping.getPrimaryField(), size, page * size, SYNCED, filters);
@@ -42,19 +42,19 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     public Map<String, Object> getSingle(String refBookCode, String pk) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
-        FieldMapping fieldMapping = dao.getFieldMapping(refBookCode).stream().filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
+        FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream().filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
         DataTypeEnum dt = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
 
         Page<Map<String, Object>> synced = dao.getData(versionMapping.getTable(), versionMapping.getPrimaryField(), 1, 0, SYNCED, new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))));
         return synced.get().findAny().orElseThrow(NotFoundException::new);
     }
 
-    private MultivaluedMap<String, Object> filtersToObjects(List<FieldMapping> fieldMapping,
+    private MultivaluedMap<String, Object> filtersToObjects(List<FieldMapping> fieldMappings,
                                                             MultivaluedMap<String, String> filters) {
 
         MultivaluedMap<String, Object> res = new MultivaluedHashMap<>();
         for (MultivaluedMap.Entry<String, List<String>> e : filters.entrySet()) {
-            fieldMapping.stream().filter(fm -> fm.getSysField().equals(e.getKey())).findAny().ifPresent(fm -> {
+            fieldMappings.stream().filter(fm -> fm.getSysField().equals(e.getKey())).findAny().ifPresent(fm -> {
                 DataTypeEnum dt = DataTypeEnum.getByDataType(fm.getSysDataType());
                 if (dt != null) {
                     res.put(e.getKey(), (List<Object>) dt.castFromString(e.getValue()));

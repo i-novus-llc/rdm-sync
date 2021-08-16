@@ -219,7 +219,11 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
         for (VersionMapping vm : versionMappings) {
             XmlMappingRefBook xmlMappingRefBook = XmlMappingRefBook.createBy(vm);
-            xmlMappingRefBook.setFields(dao.getFieldMapping(vm.getCode()).stream().map(XmlMappingField::createBy).collect(toList()));
+
+            List<XmlMappingField> fields = dao.getFieldMappings(vm.getCode()).stream()
+                    .map(XmlMappingField::createBy)
+                    .collect(toList());
+            xmlMappingRefBook.setFields(fields);
             xmlMapping.getRefbooks().add(xmlMappingRefBook);
         }
 
@@ -240,7 +244,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     private VersionMapping getVersionMapping(String refBookCode) {
 
         VersionMapping versionMapping = dao.getVersionMapping(refBookCode);
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
 
         final String primaryField = versionMapping.getPrimaryField();
         if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
@@ -305,7 +309,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         RefBookDataDiff diff = compareService.compareData(compareDataCriteria);
 
         // Если изменилась структура, проверяем актуальность полей в маппинге
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
         validateStructureChanges(versionMapping, fieldMappings, diff);
 
         if (diff.getRows().getTotalElements() > 0) {
@@ -397,7 +401,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private void uploadNew(RefBook newVersion, VersionMapping versionMapping) {
 
-        List<FieldMapping> fieldMappings = dao.getFieldMapping(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
 
 
         final FieldMapping primaryField = fieldMappings.stream()
