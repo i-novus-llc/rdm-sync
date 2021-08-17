@@ -1,11 +1,8 @@
 version: "3.6"
 
 services:
-  sync:
+  rdm-sync-service:
     image: ${DOCKER_REGISTRY}/rdm/sync:${TAG}
 
-  sync-db:
+  db:
     image: ${DOCKER_REGISTRY}/rdm/sync-db:${TAG}
-
-  activemq:
-    image: "rmohr/activemq:5.15.9"

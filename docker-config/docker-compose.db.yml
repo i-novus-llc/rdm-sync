@@ -2,9 +2,9 @@ version: "3.6"
 
 services:
 
-  sync-db:
+  db:
     volumes:
-      - sync-db-data:/pg/12/data
+      - rdm-sync-db-data:/pg/11/data
     ports:
       - 5432
     command: postgres -c 'max_connections=500'
@@ -16,10 +16,9 @@ services:
         constraints:
         - node.labels.type == db
 
-  sync:
+  rdm-sync-service:
     environment:
-      SPRING_CLOUD_CONSUL_CONFIG_PREFIX: "rdm_sync"
-      SPRING_DATASOURCE_URL: jdbc:postgresql://sync-db:5432/rdm_sync
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/rdm_sync
 
 volumes:
-  sync-db-data:
+  rdm-sync-db-data:

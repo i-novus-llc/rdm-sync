@@ -1,17 +1,10 @@
 version: "3.6"
 
-networks:
-  default:
-    driver: overlay
-    attachable: true
-#    ipam:
-#      config:
-#      - subnet: 192.168.1.0/24
-
 services:
 
-  sync:
+  rdm-sync-service:
     environment:
+      SPRING_CLOUD_CONSUL_CONFIG_PREFIX: "rdm-sync"
       SERVER_TOMCAT_ACCESSLOG_ENABLED: "true"
       JAVA_OPTS: -Xmx200m
       SPRING_DATASOURCE_USERNAME: postgres

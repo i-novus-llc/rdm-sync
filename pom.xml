@@ -29,7 +29,7 @@
         <maven.compiler.target>14</maven.compiler.target>
         <encoding>UTF-8</encoding>
 
-        <rdm.version>3.2.0</rdm.version>
+        <rdm.version>3.2.2</rdm.version>
 
         <lombok.version>1.18.4</lombok.version>
 
