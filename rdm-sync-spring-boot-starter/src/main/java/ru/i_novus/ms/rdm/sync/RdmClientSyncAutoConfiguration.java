@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
 import ru.i_novus.ms.rdm.api.provider.*;
@@ -34,6 +35,8 @@ import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author lgalimova
@@ -41,7 +44,7 @@ import java.time.OffsetDateTime;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@EnableConfigurationProperties(RdmClientSyncProperties.class)
+@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncAutoConfiguration.class})
 @EnableJaxRsProxyClient(
         classes = {RefBookService.class, VersionRestService.class, CompareService.class},
         address = "${rdm.client.sync.url}"
@@ -57,10 +60,11 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public RdmClientSyncConfig rdmClientSyncConfig(RdmClientSyncProperties properties) {
+
         String url = properties.getUrl();
-        if (StringUtils.isEmpty(url)) {
+        if (StringUtils.isEmpty(url))
             throw new IllegalArgumentException("Rdm client synchronizer properties not configured properly: url is missing");
-        }
+
         RdmClientSyncConfig config = new RdmClientSyncConfig();
         config.put("url", url);
         return config;
@@ -68,11 +72,18 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @DependsOn("liquibase")
-    public SpringLiquibase liquibaseRdm(DataSource dataSource) {
+    public SpringLiquibase liquibaseRdm(DataSource dataSource, RdmClientSyncLiquibaseParameters parameters) {
+
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setDatabaseChangeLogLockTable("databasechangeloglock_rdms");
         liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelog.xml");
+
+        Map<String, String> changeLogParameters = new HashMap<>(2);
+        changeLogParameters.put("quartz_schema_name", parameters.getQuartzSchemaName());
+        changeLogParameters.put("quartz_table_prefix", parameters.getQuartzTablePrefix());
+        liquibase.setChangeLogParameters(changeLogParameters);
+
         return liquibase;
     }
 
@@ -155,10 +166,12 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
     @ConditionalOnClass(name = "org.apache.activemq.ActiveMQConnectionFactory")
     public DefaultJmsListenerContainerFactory unsharedPublishContainerFactory(ConnectionFactory connectionFactory) {
+
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setPubSubDomain(true);
         factory.setSubscriptionShared(false);
+
         return factory;
     }
 
@@ -166,19 +179,23 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
     @ConditionalOnClass(name = "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory")
     public DefaultJmsListenerContainerFactory sharedPublishContainerFactory(ConnectionFactory connectionFactory) {
+
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setPubSubDomain(true);
         factory.setSubscriptionShared(true);
+
         return factory;
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data_mode", havingValue = "async")
+    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "async")
     public DefaultJmsListenerContainerFactory rdmChangeDataQueueMessageListenerContainerFactory(ConnectionFactory connectionFactory) {
+
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setSessionTransacted(true);
+
         return factory;
     }
 
@@ -189,23 +206,25 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "rdm_sync.change_data_mode", havingValue = "async")
-    public RdmChangeDataListener rdmChangeDataListener(RefBookService refBookService, RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
+    @ConditionalOnProperty(name = "rdm_sync.change_data.mode", havingValue = "async")
+    public RdmChangeDataListener rdmChangeDataListener(RefBookService refBookService,
+                                                       RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
         return new RdmChangeDataListener(refBookService, rdmChangeDataRequestCallback);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data_mode", havingValue = "sync")
-    public RdmChangeDataClient syncRdmChangeDataClient() {
-        return new SyncRdmChangeDataClient();
+    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "sync")
+    public RdmChangeDataClient syncRdmChangeDataClient(RefBookService refBookService) {
+        return new SyncRdmChangeDataClient(refBookService);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data_mode", havingValue = "async")
-    public RdmChangeDataClient asyncRdmChangeDataClient() {
-        return new AsyncRdmChangeDataClient();
+    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "async")
+    public RdmChangeDataClient asyncRdmChangeDataClient(JmsTemplate jmsTemplate,
+                                                        @Value("${rdm_sync.change_data.queue:rdmChangeData}")
+                                                        String rdmChangeDataQueue) {
+        return new AsyncRdmChangeDataClient(jmsTemplate, rdmChangeDataQueue);
     }
-
 
     @Bean
     public RdmChangeDataRequestCallback rdmChangeDataRequestCallback() {
@@ -221,13 +240,6 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public RdmSyncLocalRowStateService rdmSyncLocalRowStateService() {
         return new RdmSyncLocalRowStateService();
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data_mode", havingValue = "")
-    @SuppressWarnings("squid:S2440")
-    public RdmSyncJobContext rdmSyncJobContext(RdmSyncDao rdmSyncDao, RdmChangeDataClient rdmChangeDataClient, @Value("${rdm_sync.export_from_local.batch_size:100}") int exportToRdmBatchSize) {
-        return new RdmSyncJobContext(rdmSyncDao, rdmChangeDataClient, exportToRdmBatchSize);
     }
 
     @Bean

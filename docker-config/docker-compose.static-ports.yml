@@ -1,11 +1,10 @@
 version: "3.6"
 
 services:
-  sync:
+  rdm-sync-service:
     ports:
       - "8183:8080"
 
-  activemq:
+  db:
     ports:
-      - "8213:61616"
-      - "8214:8161"
+      - "8187:5432"

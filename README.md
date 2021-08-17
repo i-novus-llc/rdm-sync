@@ -8,7 +8,6 @@
 
 - Java 14
 - JDBC
-- JPA 2
 - JAX-RS
 - JMS
 - Spring Boot 2.1

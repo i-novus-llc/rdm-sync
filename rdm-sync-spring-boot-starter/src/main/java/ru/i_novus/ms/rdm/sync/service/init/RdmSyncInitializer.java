@@ -26,7 +26,7 @@ class RdmSyncInitializer {
     private RdmSyncDao dao;
 
     @Autowired(required = false)
-    private QuartzConfigurer quartzConfigurer;
+    private RdmSyncConfigurer rdmSyncConfigurer;
 
     @Autowired
     private LocalTableAutoCreateService localTableAutoCreateService;
@@ -37,29 +37,34 @@ class RdmSyncInitializer {
     @Value("${rdm_sync.auto_create.schema:rdm}")
     private String autoCreateSchema;
 
-    @Value("${rdm_sync.auto_create.ref_book_codes:}")
+    @Value("${rdm_sync.auto_create.refbook_codes:}")
     private List<String> autoCreateRefBookCodes;
 
     @PostConstruct
     public void start() {
+
         mappingLoaderService.load();
         autoCreate();
         createInternalInfrastructure();
-        if (quartzConfigurer != null) {
-            quartzConfigurer.setupJobs();
+
+        if (rdmSyncConfigurer != null) {
+            rdmSyncConfigurer.setupJobs();
         } else
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
     }
 
     private void autoCreate() {
-        if (autoCreateRefBookCodes != null) {
-            for (String refBookCode : autoCreateRefBookCodes) {
-                localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
-            }
+
+        if (autoCreateRefBookCodes == null)
+            return;
+
+        for (String refBookCode : autoCreateRefBookCodes) {
+            localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
         }
     }
 
     private void createInternalInfrastructure() {
+
         List<VersionMapping> versionMappings = dao.getVersionMappings();
         for (VersionMapping versionMapping : versionMappings) {
             internalInfrastructureCreator.createInternalInfrastructure(versionMapping.getTable(), versionMapping.getCode(), versionMapping.getDeletedField(), autoCreateRefBookCodes);

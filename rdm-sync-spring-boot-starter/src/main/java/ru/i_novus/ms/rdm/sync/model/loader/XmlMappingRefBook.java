@@ -40,7 +40,7 @@ public class XmlMappingRefBook {
         return fields;
     }
 
-    public void setField(List<XmlMappingField> fields) {
+    public void setFields(List<XmlMappingField> fields) {
         this.fields = fields;
     }
 
@@ -80,14 +80,16 @@ public class XmlMappingRefBook {
         this.sysTable = sysTable;
     }
 
-    public static XmlMappingRefBook createBy(VersionMapping vm) {
-        XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
-        xmlMappingRefBook.setCode(vm.getCode());
-        xmlMappingRefBook.setMappingVersion(-1);
-        xmlMappingRefBook.setUniqueSysField(vm.getPrimaryField());
-        xmlMappingRefBook.setDeletedField(vm.getDeletedField());
-        xmlMappingRefBook.setSysTable(vm.getTable());
-        return xmlMappingRefBook;
-    }
+    public static XmlMappingRefBook createBy(VersionMapping mapping) {
 
+        XmlMappingRefBook result = new XmlMappingRefBook();
+
+        result.setCode(mapping.getCode());
+        result.setMappingVersion(-1);
+        result.setUniqueSysField(mapping.getPrimaryField());
+        result.setDeletedField(mapping.getDeletedField());
+        result.setSysTable(mapping.getTable());
+
+        return result;
+    }
 }

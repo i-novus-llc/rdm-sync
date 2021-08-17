@@ -8,6 +8,7 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
+import ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -29,6 +30,7 @@ public abstract class RdmChangeDataRequestCallback {
      */
     @Transactional
     public <T extends Serializable> void onSuccess(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete) {
+
         casState(refBookCode, addUpdate, RdmSyncLocalRowState.SYNCED);
         onSuccess0(refBookCode, addUpdate, delete);
     }
@@ -43,6 +45,7 @@ public abstract class RdmChangeDataRequestCallback {
      */
     @Transactional
     public <T extends Serializable> void onError(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Exception ex) {
+
         casState(refBookCode, addUpdate, RdmSyncLocalRowState.ERROR);
         casState(refBookCode, delete, RdmSyncLocalRowState.ERROR);
         onError0(refBookCode, addUpdate, delete, ex);
@@ -58,7 +61,7 @@ public abstract class RdmChangeDataRequestCallback {
 
         String pk = vm.getPrimaryField();
         String table = vm.getTable();
-        List<Object> pks = RdmSyncChangeDataUtils.extractSnakeCaseKey(pk, addUpdate);
+        List<Object> pks = RdmSyncDataUtils.extractSnakeCaseKey(pk, addUpdate);
 
         dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
         try {
@@ -76,14 +79,19 @@ public abstract class RdmChangeDataRequestCallback {
 
         private static final Logger logger = LoggerFactory.getLogger(DefaultRdmChangeDataRequestCallback.class);
 
+        private static final String LOG_PULLED_SUCCESS = "Successfully pulled into RDM for refBook with code {}. " +
+                "Payload:\nAdded/Update objects: {},\nDeleted objects: {}";
+        private static final String LOG_PULLED_FAILURE = "Error occurred while pulling data into RDM for refBook with code {}. " +
+                "Payload:\nattempt to Add/Update objects: {},\nattempt to Delete objects: {}";
+
         @Override
         public <T extends Serializable> void onSuccess0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete) {
-            logger.info("Successfully pulled into RDM into refBook with code {}. Payload:\nAdded/Update objects: {},\nDeleted objects: {}", refBookCode, addUpdate, delete);
+            logger.info(LOG_PULLED_SUCCESS, refBookCode, addUpdate, delete);
         }
 
         @Override
         public <T extends Serializable> void onError0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Exception ex) {
-            logger.error("Error occurred while pulling data into RDM into refBook with code {}. Payload:\nAttempt to add/update objects: {},\nAttempt to delete objects: {}", refBookCode, addUpdate, delete, ex);
+            logger.error(LOG_PULLED_FAILURE, refBookCode, addUpdate, delete, ex);
         }
     }
 }

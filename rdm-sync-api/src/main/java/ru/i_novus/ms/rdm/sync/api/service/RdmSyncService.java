@@ -47,7 +47,7 @@ public interface RdmSyncService {
     @GET
     @Path("/xml-fm")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    Response downloadXmlFieldMapping(@QueryParam("code") List<String> forRefBooks);
+    Response downloadXmlFieldMapping(@QueryParam("code") List<String> refBookCodes);
 
-    RefBook getLastPublishedVersionFromRdm(String code);
+    RefBook getLastPublishedVersionFromRdm(String refBookCode);
 }

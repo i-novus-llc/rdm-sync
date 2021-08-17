@@ -41,12 +41,14 @@ public class XmlMappingField {
         this.sysField = sysField;
     }
 
-    public static XmlMappingField createBy(FieldMapping fm) {
-        XmlMappingField xmlMappingField = new XmlMappingField();
-        xmlMappingField.setSysDataType(fm.getSysDataType());
-        xmlMappingField.setSysField(fm.getSysField());
-        xmlMappingField.setRdmField(fm.getRdmField());
-        return xmlMappingField;
-    }
+    public static XmlMappingField createBy(FieldMapping mapping) {
 
+        XmlMappingField result = new XmlMappingField();
+
+        result.setSysDataType(mapping.getSysDataType());
+        result.setSysField(mapping.getSysField());
+        result.setRdmField(mapping.getRdmField());
+
+        return result;
+    }
 }

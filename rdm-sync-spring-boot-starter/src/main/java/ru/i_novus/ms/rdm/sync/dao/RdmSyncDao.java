@@ -38,64 +38,67 @@ public interface RdmSyncDao {
      * @param refbookCode код справочника НСИ
      * @return Список
      */
-    List<FieldMapping> getFieldMapping(String refbookCode);
+    List<FieldMapping> getFieldMappings(String refbookCode);
 
-    List<Pair<String, String>> getColumnNameAndDataTypeFromLocalDataTable(String table);
+    List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
     void updateVersionMapping(Integer id, String version, LocalDateTime publishDate);
 
     /**
+     * Получить список значений первичных ключей в таблице клиента.
      *
-     * @param table          таблица справочника на стороне клиента
-     * @param primaryField   поле, являющееся первичном ключом справочника, в таблице клиента
+     * @param schemaTable         таблица справочника на стороне клиента
+     * @param primaryFieldMapping маппинг для поля - первичного ключа в таблице клиента
      * @return Список идентификаторов данных справочника клиента
      */
-    List<Object> getDataIds(String table, FieldMapping primaryField);
+    List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping);
 
     /**
+     * Проверить существование значения первичного ключа в таблице клиента.
      *
-     * @param table таблица справочника на стороне клиента
-     * @param primaryField поле, являющееся первичном ключом справочника, в таблице клиента
-     * @return true, если идентификатор есть в таблице
+     * @param schemaTable  таблица справочника на стороне клиента
+     * @param primaryField поле - первичный ключ в таблице клиента
+     * @return true, если значение есть в таблице
      */
-    boolean isIdExists(String table, String primaryField, Object primaryValue);
+    boolean isIdExists(String schemaTable, String primaryField, Object primaryValue);
 
     /**
-     * Вставить строку в справочник клиента.
+     * Вставить строку в таблицу клиента.
      *
-     * @param table таблица справочника на стороне клиента
-     * @param row   строка с данными
+     * @param schemaTable таблица справочника на стороне клиента
+     * @param row         строка с данными
      */
-    void insertRow(String table, Map<String, Object> row, boolean markSynced);
+    void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced);
 
     /**
      * Изменить строку в справочник клиента.
      *
-     * @param table        таблица справочника на стороне клиента
-     * @param primaryField поле, являющееся первичном ключом справочника, в таблице клиента
+     * @param schemaTable  таблица справочника на стороне клиента
+     * @param primaryField поле - первичный ключ в таблице клиента
      * @param row          строка с данными
      */
-    void updateRow(String table, String primaryField, Map<String, Object> row, boolean markSynced);
+    void updateRow(String schemaTable, String primaryField, Map<String, Object> row, boolean markSynced);
 
     /**
      * Пометить запись справочника клиента как (не)удалённую.
      *
-     * @param table          таблица справочника на стороне клиента
-     * @param primaryField   поле, являющееся первичным ключом справочника, в таблице клиента
-     * @param isDeletedField поле, отвечающее за признак удаления, в таблице клиента
+     * @param schemaTable    таблица справочника на стороне клиента
+     * @param primaryField   поле - первичный ключ в таблице клиента
+     * @param isDeletedField поле - признак удаления записи в таблице клиента
      * @param primaryValue   значение первичного ключа записи
      * @param deleted        новое значение для поля isDeletedField
      */
-    void markDeleted(String table, String primaryField, String isDeletedField, Object primaryValue, boolean deleted, boolean markSynced);
+    void markDeleted(String schemaTable, String primaryField, String isDeletedField,
+                     Object primaryValue, boolean deleted, boolean markSynced);
 
     /**
      * Пометить все записи справочника клиента как (не)удалённые.
      *
-     * @param table          таблица справочника на стороне клиента
-     * @param isDeletedField поле, отвечающее за признак удаления, в таблице клиента
+     * @param schemaTable    таблица справочника на стороне клиента
+     * @param isDeletedField поле - признак удаления записи в таблице клиента
      * @param deleted        новое значение для поля isDeletedField
      */
-    void markDeleted(String table, String isDeletedField, boolean deleted, boolean markSynced);
+    void markDeleted(String schemaTable, String isDeletedField, boolean deleted, boolean markSynced);
 
     void log(String status, String refbookCode, String oldVersion, String newVersion, String message, String stack);
 
@@ -113,10 +116,12 @@ public interface RdmSyncDao {
     void disableInternalLocalRowStateUpdateTrigger(String table);
     void enableInternalLocalRowStateUpdateTrigger(String table);
 
-    Page<Map<String, Object>> getData(String table, String pk, int limit, int offset, RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters);
-    <T> boolean setLocalRecordsState(String table, String pk, List<? extends T> primaryValues, RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
-    RdmSyncLocalRowState getLocalRowState(String table, String pk, Object pv);
+    Page<Map<String, Object>> getData(String schemaTable, String pk, int limit, int offset,
+                                      RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters);
+    <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
+                                     RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
+    RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
 
     void createSchemaIfNotExists(String schema);
-    void createRefBookTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
+    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
 }

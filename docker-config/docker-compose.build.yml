@@ -1,0 +1,14 @@
+version: "3.6"
+
+services:
+  rdm-sync-service:
+    build:
+      context: rdm-sync-service/
+      args:
+        JAR_FILE: target/rdm-sync-service.jar
+
+  db:
+    build:
+      context: rdm-sync-db/
+      args:
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY}

@@ -1,0 +1,43 @@
+version: "3.6"
+
+services:
+
+  rdm-sync-service:
+    environment:
+      SPRING_CLOUD_CONSUL_CONFIG_PREFIX: "rdm-sync"
+      SERVER_TOMCAT_ACCESSLOG_ENABLED: "true"
+      JAVA_OPTS: -Xmx200m
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - db
+    restart: on-failure
+    ports:
+    - "8080"
+    deploy:
+      restart_policy:
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 500M
+      placement:
+        constraints:
+        - node.labels.type == service
+    healthcheck:
+      test: curl -f http://localhost:8080/monitoring/health | grep -io '^{"status":"UP"' || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  activemq:
+    image: "rmohr/activemq:5.15.9"
+    ports:
+      - 61616
+      - 8161
+    deploy:
+      restart_policy:
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
