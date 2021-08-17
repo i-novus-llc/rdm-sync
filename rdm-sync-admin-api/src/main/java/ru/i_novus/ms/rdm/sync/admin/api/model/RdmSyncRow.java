@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Запись конфигурации по синхронизируемому справочнику.
+ * Запись о синхронизации справочника.
  */
 @Getter
 @Setter
