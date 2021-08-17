@@ -16,7 +16,7 @@ import java.time.LocalDate;
  */
 @Getter
 @Setter
-@ApiModel("Критерии поиска записи журнала")
+@ApiModel("Критерий поиска записей журнала")
 public class LogCriteria extends AbstractCriteria {
 
     @ApiModelProperty("Код справочника")
