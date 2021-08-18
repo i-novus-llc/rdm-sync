@@ -13,8 +13,8 @@
         </filters>
 
         <columns>
-            <column text-field-id="code" label="Код справочника" sorting-direction="asc"/>
-            <column text-field-id="name" label="Наименование справочника"/>
+            <column text-field-id="code" label="Код справочника" width="250px" sorting-direction="asc"/>
+            <column text-field-id="name" label="Наименование справочника" width="500px"/>
             <column text-field-id="source" label="Источник"/>
             <column text-field-id="version" label="Версия справочника"/>
             <column text-field-id="versioned" label="Поддержка версионности"/>
