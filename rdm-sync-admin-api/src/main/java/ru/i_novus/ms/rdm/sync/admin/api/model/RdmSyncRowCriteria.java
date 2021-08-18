@@ -23,4 +23,8 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
     @ApiParam("Наименование справочника")
     @QueryParam("name")
     private String name;
+
+    @ApiParam("Текст для поиска по нескольким полям")
+    @QueryParam("text")
+    private String text;
 }

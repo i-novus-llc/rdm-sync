@@ -14,6 +14,12 @@
     </unique>
 
     <fields>
+        <field id="text">
+            <filters>
+                <eq filter-id="text">text={text}</eq>
+            </filters>
+        </field>
+
         <field id="code" domain="string">
             <select/>
             <filters>

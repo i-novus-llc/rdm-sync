@@ -6,8 +6,9 @@
 
         <filters>
             <row>
-                <input-text id="code" label="Код справочника"/>
-                <input-text id="name" label="Название справочника"/>
+                <col size="4">
+                    <input-text id="text" no-label-block="true" />
+                </col>
             </row>
         </filters>
 
