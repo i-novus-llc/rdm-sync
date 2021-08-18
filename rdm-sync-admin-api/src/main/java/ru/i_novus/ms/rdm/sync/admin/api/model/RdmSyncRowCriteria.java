@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.admin.api.model;
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 
 import javax.ws.rs.QueryParam;
@@ -13,7 +12,6 @@ import javax.ws.rs.QueryParam;
  */
 @Getter
 @Setter
-@ToString(callSuper = true)
 public class RdmSyncRowCriteria extends AbstractCriteria {
 
     @ApiParam("Код справочника")
