@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="rdmSync">
+
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/rows
+        </rest>
+    </list>
+
+    <unique filters="code">
+        <rest method="GET">
+            ${rdm.sync.admin.backend.path}/sync/admin/rows/{code}
+        </rest>
+    </unique>
+
+    <fields>
+        <field id="code" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="code">code={code}</eq>
+            </filters>
+        </field>
+
+        <field id="name" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="name">name={name}</eq>
+            </filters>
+        </field>
+
+        <field id="version" domain="string">
+            <select/>
+        </field>
+
+        <field id="versioned" domain="boolean">
+            <select/>
+        </field>
+
+        <field id="autoUpdatable" domain="boolean">
+            <select/>
+        </field>
+
+        <field id="source" domain="string">
+            <select/>
+        </field>
+
+        <field id="lastDateTime" domain="localdatetime">
+            <select/>
+            <sorting/>
+        </field>
+
+        <field id="lastStatus" domain="string">
+            <select/>
+        </field>
+
+    </fields>
+</query>
