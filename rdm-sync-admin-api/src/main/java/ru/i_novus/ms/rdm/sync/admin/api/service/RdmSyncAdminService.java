@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 @Path("/sync/admin")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Api(value = "Сервис настройки синхронизации справочников", hidden = true)
+@Api(value = "Сервис настройки синхронизации справочников")
 public interface RdmSyncAdminService {
 
     /**
