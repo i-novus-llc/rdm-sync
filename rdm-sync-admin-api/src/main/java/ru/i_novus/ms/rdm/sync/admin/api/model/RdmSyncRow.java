@@ -34,7 +34,7 @@ public class RdmSyncRow {
     private LocalDateTime lastDateTime;
 
     /** Статус последнего обновления. */
-    private Boolean lastStatus;
+    private String lastStatus;
 
     public RdmSyncRow() {
         // Nothing to do.
