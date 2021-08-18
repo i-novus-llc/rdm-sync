@@ -3,7 +3,7 @@
 
     <list result-mapping="['content']" count-mapping="['totalElements']">
         <rest method="GET" filters-separator="&amp;">
-            ${rdm.sync.admin.backend.path}/sync/admin/rows
+            ${rdm.sync.admin.backend.path}/sync/admin/rows?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
         </rest>
     </list>
 
