@@ -586,7 +586,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private LocalDateTime toLocalDateTime(ResultSet rs, int columnIndex, LocalDateTime defaultValue) throws SQLException {
 
-        return rs.getTimestamp(columnIndex) != null ? rs.getTimestamp(columnIndex).toLocalDateTime() : defaultValue;
+        final Timestamp value = rs.getTimestamp(columnIndex);
+        return value != null ? value.toLocalDateTime() : defaultValue;
     }
 
     private String getInternalLocalStateUpdateTriggerName(String schema, String table) {
