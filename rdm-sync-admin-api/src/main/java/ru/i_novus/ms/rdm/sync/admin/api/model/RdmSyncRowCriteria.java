@@ -6,6 +6,7 @@ import lombok.Setter;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 
 import javax.ws.rs.QueryParam;
+import java.util.Objects;
 
 /**
  * Критерий поиска записей о синхронизации справочников.
@@ -29,4 +30,22 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
     @ApiParam("Общее количество записей")
     @QueryParam("count")
     private Integer count;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        RdmSyncRowCriteria that = (RdmSyncRowCriteria) o;
+        return Objects.equals(code, that.code) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(text, that.text) &&
+                Objects.equals(count, that.count);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), code, name, text, count);
+    }
 }
