@@ -25,10 +25,10 @@ public class RdmSyncRow implements Serializable {
     private String version;
 
     /** Признак версионности. */
-    private boolean versioned;
+    private boolean versioned = false;
 
     /** Признак автообновления. */
-    private boolean autoUpdatable;
+    private boolean autoUpdatable = false;
 
     /** Источник для обновления. */
     private String sourceType;
