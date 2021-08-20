@@ -2,7 +2,9 @@ package ru.i_novus.ms.rdm.sync.admin.api.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.api.util.json.JsonUtil;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -10,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-public class RdmSyncRow {
+public class RdmSyncRow implements Serializable {
 
     /** Код справочника. */
     private String code;
@@ -28,7 +30,7 @@ public class RdmSyncRow {
     private Boolean autoUpdatable;
 
     /** Источник для обновления. */
-    private String source;
+    private String sourceType;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
@@ -38,5 +40,10 @@ public class RdmSyncRow {
 
     public RdmSyncRow() {
         // Nothing to do.
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.toJsonString(this);
     }
 }

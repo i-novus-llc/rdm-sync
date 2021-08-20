@@ -46,7 +46,7 @@
             <select/>
         </field>
 
-        <field id="source" domain="string">
+        <field id="sourceType" domain="string">
             <select/>
         </field>
 
