@@ -35,7 +35,7 @@ public interface RdmSyncAdminService {
     Page<RdmSyncRow> search(@BeanParam RdmSyncRowCriteria criteria);
 
     @GET
-    @Path("/rows/{code}")
+    @Path("/rows/code/{code}")
     @ApiOperation(value = "Получение записи о синхронизации справочника по коду справочника")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Запись о синхронизации"),
