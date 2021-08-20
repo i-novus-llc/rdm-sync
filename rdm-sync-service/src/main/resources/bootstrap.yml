@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: rdm-sync-service
+  cloud:
+    consul:
+      config:
+        enabled: ${config.server.enable}

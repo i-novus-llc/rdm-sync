@@ -11,9 +11,6 @@
     </parent>
 
     <properties>
-        <sync.default.port>8083</sync.default.port>
-        <rdm.backend.path>http://localhost:8081/rdm/api</rdm.backend.path>
-
         <maven.deploy.skip>true</maven.deploy.skip>
         <jacoco.skip>false</jacoco.skip>
         <sonar.coverage.exclusions>**/SyncApplication.java, **/SyncAppConfig.java</sonar.coverage.exclusions>
@@ -22,8 +19,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>ru.i-novus.ms.rdm.sync</groupId>
-            <artifactId>rdm-sync-api</artifactId>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-starter-ms</artifactId>
         </dependency>
 
         <dependency>
@@ -34,22 +31,12 @@
 
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-jaxrs-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
         </dependency>
 
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-starter-ms</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-rs-client</artifactId>
+            <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
         </dependency>
 
         <dependency>
@@ -58,18 +45,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz-jobs</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
         </dependency>
 
         <dependency>
@@ -101,8 +78,7 @@
         <profile>
             <id>production</id>
             <properties>
-                <sync.default.port>8080</sync.default.port>
-                <rdm.backend.path>http://backend:8080/rdm/api</rdm.backend.path>
+                <config.server.enable>true</config.server.enable>
             </properties>
             <activation>
                 <activeByDefault>false</activeByDefault>
