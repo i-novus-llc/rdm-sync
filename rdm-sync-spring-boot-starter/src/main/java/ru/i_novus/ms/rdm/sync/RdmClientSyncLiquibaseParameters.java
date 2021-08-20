@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "liquibase.param")
+@ConfigurationProperties(prefix = "rdm.sync.liquibase.param")
 public class RdmClientSyncLiquibaseParameters {
 
     private static final String QUARTZ_SCHEMA_NAME = "rdm_sync_qz";
