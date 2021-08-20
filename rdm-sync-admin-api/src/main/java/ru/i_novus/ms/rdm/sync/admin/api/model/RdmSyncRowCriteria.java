@@ -25,4 +25,8 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
     @ApiParam("Текст для поиска по нескольким полям")
     @QueryParam("text")
     private String text;
+
+    @ApiParam("Общее количество записей")
+    @QueryParam("count")
+    private Integer count;
 }
