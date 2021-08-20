@@ -22,7 +22,7 @@
     <dependency>
         <groupId>ru.i-novus.ms.rdm</groupId>
         <artifactId>rdm-sync-spring-boot-starter</artifactId>
-        <version>${rdm.version}</version>
+        <version>${rdm.sync.version}</version>
     </dependency>
     ```
 2. Настроить маппинг.
