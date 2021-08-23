@@ -13,7 +13,6 @@
     <properties>
         <config.server.enable>false</config.server.enable>
 
-        <maven.deploy.skip>true</maven.deploy.skip>
         <jacoco.skip>false</jacoco.skip>
         <sonar.coverage.exclusions>**/ClientConfiguration.java</sonar.coverage.exclusions>
     </properties>
