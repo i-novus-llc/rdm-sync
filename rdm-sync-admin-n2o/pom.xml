@@ -11,8 +11,6 @@
     </parent>
 
     <properties>
-        <frontend.default.port>8080</frontend.default.port>
-        <backend.default.path>http://localhost:8081/rdm/api</backend.default.path>
         <config.server.enable>false</config.server.enable>
 
         <maven.deploy.skip>true</maven.deploy.skip>
