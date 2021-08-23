@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.admin.api.model;
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 
 import javax.ws.rs.QueryParam;
 import java.util.Objects;
