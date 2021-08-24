@@ -17,5 +17,5 @@
 
 # Структура проекта
 
-- `rdm-sync-spring-boot-starter` - стартер для синхронизации с RDM.
-- `rdm-sync-service` - запускаемый модуль для синхронизации с RDM на основе стартера.
+- [rdm-sync-spring-boot-starter](rdm-sync-spring-boot-starter/README.md) - стартер для синхронизации с RDM.
+- [rdm-sync-service](rdm-sync-service/README.md) - запускаемый модуль для синхронизации с RDM на основе стартера.

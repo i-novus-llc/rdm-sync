@@ -29,7 +29,8 @@
         <maven.compiler.target>14</maven.compiler.target>
         <encoding>UTF-8</encoding>
 
-        <rdm.version>3.2.2</rdm.version>
+        <rdm.version>3.3.0</rdm.version>
+        <n2o.version>7.16.10</n2o.version>
 
         <lombok.version>1.18.4</lombok.version>
 
@@ -47,6 +48,8 @@
         <module>rdm-sync-api</module>
         <module>rdm-sync-spring-boot-starter</module>
         <module>rdm-sync-service</module>
+        <module>rdm-sync-admin-api</module>
+        <module>rdm-sync-admin-n2o</module>
     </modules>
 
     <dependencies>
