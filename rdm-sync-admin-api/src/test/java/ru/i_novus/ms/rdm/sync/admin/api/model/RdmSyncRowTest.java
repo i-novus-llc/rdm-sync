@@ -1,23 +1,12 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import ru.i_novus.ms.rdm.sync.admin.api.BaseTest;
-import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
 
 import java.time.LocalDateTime;
 
 public class RdmSyncRowTest extends BaseTest {
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Before
-    @SuppressWarnings("java:S2696")
-    public void setUp() {
-        JsonUtil.jsonMapper = objectMapper;
-    }
 
     @Test
     public void testEmpty() {
