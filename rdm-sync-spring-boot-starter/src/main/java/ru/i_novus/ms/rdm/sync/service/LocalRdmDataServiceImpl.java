@@ -7,6 +7,8 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
+import ru.i_novus.ms.rdm.sync.dao.DeletedCriteria;
+import ru.i_novus.ms.rdm.sync.dao.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
@@ -33,9 +35,15 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (size == null) size = 10;
 
         MultivaluedMap<String, Object> filters = filtersToObjects(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
-        filters.putSingle(versionMapping.getDeletedField(), getDeleted);
-
-        return dao.getData(versionMapping.getTable(), versionMapping.getPrimaryField(), size, page * size, SYNCED, filters);
+        LocalDataCriteria localDataCriteria =
+                new LocalDataCriteria(versionMapping.getTable(),
+                        versionMapping.getPrimaryField(),
+                        size,
+                        page * size,
+                        SYNCED,
+                        filters,
+                        new DeletedCriteria(versionMapping.getDeletedField(), getDeleted));
+        return dao.getData(localDataCriteria);
     }
 
     @Override
@@ -44,8 +52,15 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
         FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream().filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
         DataTypeEnum dt = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
-
-        Page<Map<String, Object>> synced = dao.getData(versionMapping.getTable(), versionMapping.getPrimaryField(), 1, 0, SYNCED, new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))));
+        LocalDataCriteria localDataCriteria =
+                new LocalDataCriteria(versionMapping.getTable(),
+                        versionMapping.getPrimaryField(),
+                        1,
+                        0,
+                        SYNCED,
+                        new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))),
+                        null);
+        Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
         return synced.get().findAny().orElseThrow(NotFoundException::new);
     }
 
