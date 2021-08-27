@@ -116,8 +116,7 @@ public interface RdmSyncDao {
     void disableInternalLocalRowStateUpdateTrigger(String table);
     void enableInternalLocalRowStateUpdateTrigger(String table);
 
-    Page<Map<String, Object>> getData(String schemaTable, String pk, int limit, int offset,
-                                      RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters);
+    Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
     <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
                                      RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);

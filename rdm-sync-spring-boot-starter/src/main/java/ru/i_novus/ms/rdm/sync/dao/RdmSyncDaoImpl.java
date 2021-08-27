@@ -471,14 +471,21 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public Page<Map<String, Object>> getData(String schemaTable, String pk, int limit, int offset,
-                                             RdmSyncLocalRowState state, MultivaluedMap<String, Object> filters) {
+    public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
 
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
-                schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+                localDataCriteria.getSchemaTable(), addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
         Map<String, Object> args = new HashMap<>();
-        args.put("state", state.name());
+        args.put("state", localDataCriteria.getState().name());
+        if(localDataCriteria.getDeleted() != null) {
+            if(Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
+                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " = true";
+            } else {
+                sql += " AND coalesce(" + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + ", false) = false";
+            }
+        }
 
+        MultivaluedMap<String, Object> filters = localDataCriteria.getFilters();
         if (filters != null) {
             args.putAll(filters);
 
@@ -491,7 +498,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         if (count == null || count == 0)
             return Page.empty();
 
-        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, offset);
+        String pk = localDataCriteria.getPk();
+        int limit = localDataCriteria.getLimit();
+        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, localDataCriteria.getOffset());
         var wrap = new Object() {
             int internalStateColumnIndex = -1;
         };
@@ -500,7 +509,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 args, (rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
                     if (wrap.internalStateColumnIndex == -1) {
-                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), schemaTable);
+                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), localDataCriteria.getSchemaTable());
                     }
 
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
@@ -515,7 +524,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 });
 
         RestCriteria dataCriteria = new AbstractCriteria();
-        dataCriteria.setPageNumber(offset / limit);
+        dataCriteria.setPageNumber(localDataCriteria.getOffset() / limit);
         dataCriteria.setPageSize(limit);
         dataCriteria.setOrders(Sort.by(Sort.Order.asc(pk)).get().collect(Collectors.toList()));
 
