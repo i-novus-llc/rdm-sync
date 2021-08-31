@@ -15,6 +15,12 @@ import java.util.Objects;
 @Setter
 public class RdmSyncRow implements Serializable {
 
+    /** Идентификатор записи. */
+    private String id;
+
+    /** Код локального хранилища. */
+    private String storageCode;
+
     /** Код справочника. */
     private String code;
 
@@ -49,7 +55,9 @@ public class RdmSyncRow implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         RdmSyncRow that = (RdmSyncRow) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(storageCode, that.storageCode) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
 
                 Objects.equals(version, that.version) &&
@@ -63,7 +71,7 @@ public class RdmSyncRow implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name,
+        return Objects.hash(id, storageCode, code, name,
                 version, versioned, autoUpdatable,
                 sourceType, lastDateTime, lastStatus);
     }

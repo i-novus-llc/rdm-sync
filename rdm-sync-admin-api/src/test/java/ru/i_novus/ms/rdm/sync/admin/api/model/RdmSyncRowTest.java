@@ -36,6 +36,8 @@ public class RdmSyncRowTest extends BaseTest {
     private RdmSyncRow createModel() {
 
         RdmSyncRow model = new RdmSyncRow();
+        model.setId("12");
+        model.setStorageCode("storage");
         model.setCode("code");
         model.setName("name");
 
@@ -56,6 +58,8 @@ public class RdmSyncRowTest extends BaseTest {
             return null;
 
         RdmSyncRow model = new RdmSyncRow();
+        model.setId(that.getId());
+        model.setStorageCode(that.getStorageCode());
         model.setCode(that.getCode());
         model.setName(that.getName());
 
