@@ -2,8 +2,8 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncRow;
-import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncRowCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRow;
+import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRowCriteria;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

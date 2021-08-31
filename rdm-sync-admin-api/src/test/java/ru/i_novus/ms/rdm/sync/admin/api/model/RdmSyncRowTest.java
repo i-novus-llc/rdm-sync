@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.model;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.i_novus.ms.rdm.sync.admin.api.BaseTest;
+import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRow;
 
 import java.time.LocalDateTime;
 
