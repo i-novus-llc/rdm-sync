@@ -30,7 +30,7 @@ public class RdmSyncRow implements Serializable {
     /** Версия (номер) справочника. */
     private String version;
 
-    /** Признак версионности. */
+    /** Поддержка версионности. */
     private boolean versioned = false;
 
     /** Признак автообновления. */
