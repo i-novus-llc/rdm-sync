@@ -44,7 +44,7 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncAutoConfiguration.class})
+@EnableConfigurationProperties(RdmClientSyncProperties.class)
 @EnableJaxRsProxyClient(
         classes = {RefBookService.class, VersionRestService.class, CompareService.class},
         address = "${rdm.client.sync.url}"
