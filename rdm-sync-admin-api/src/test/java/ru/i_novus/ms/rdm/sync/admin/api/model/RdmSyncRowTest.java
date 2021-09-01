@@ -46,7 +46,7 @@ public class RdmSyncRowTest extends BaseTest {
         model.setVersioned(true);
         model.setAutoUpdatable(false);
 
-        model.setSourceType("test");
+        model.setSource(new RdmSyncSource());
         model.setLastDateTime(LocalDateTime.now());
         model.setLastStatus("ok");
 
@@ -68,7 +68,7 @@ public class RdmSyncRowTest extends BaseTest {
         model.setVersioned(that.getVersioned());
         model.setAutoUpdatable(that.getAutoUpdatable());
 
-        model.setSourceType(that.getSourceType());
+        model.setSource(that.getSource());
         model.setLastDateTime(that.getLastDateTime());
         model.setLastStatus(that.getLastStatus());
 

@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.row;
 import lombok.Getter;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
+import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncSource;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -37,7 +38,7 @@ public class RdmSyncRow implements Serializable {
     private boolean autoUpdatable = false;
 
     /** Источник для обновления. */
-    private String sourceType;
+    private RdmSyncSource source;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
@@ -64,7 +65,7 @@ public class RdmSyncRow implements Serializable {
                 versioned == that.versioned &&
                 autoUpdatable == that.autoUpdatable &&
 
-                Objects.equals(sourceType, that.sourceType) &&
+                Objects.equals(source, that.source) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus);
     }
@@ -73,7 +74,7 @@ public class RdmSyncRow implements Serializable {
     public int hashCode() {
         return Objects.hash(id, storageCode, code, name,
                 version, versioned, autoUpdatable,
-                sourceType, lastDateTime, lastStatus);
+                source, lastDateTime, lastStatus);
     }
 
     @Override

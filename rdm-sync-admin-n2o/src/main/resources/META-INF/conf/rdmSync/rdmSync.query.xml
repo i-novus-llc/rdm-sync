@@ -47,7 +47,7 @@
         </field>
 
         <field id="sourceType" domain="string">
-            <select/>
+            <select mapping="['source']['caption']"/>
         </field>
 
         <field id="lastDateTime" domain="localdatetime">
