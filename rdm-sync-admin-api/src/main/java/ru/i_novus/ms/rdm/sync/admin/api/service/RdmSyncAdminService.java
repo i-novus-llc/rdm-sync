@@ -35,6 +35,15 @@ public interface RdmSyncAdminService {
     Page<RdmSyncRow> search(@BeanParam RdmSyncRowCriteria criteria);
 
     @GET
+    @Path("/rows/{id}")
+    @ApiOperation(value = "Получение записи о синхронизации справочника по идентификатору записи")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Запись о синхронизации"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    RdmSyncRow getById(@ApiParam("Идентификатор записи") @PathParam("id") String id);
+
+    @GET
     @Path("/rows/code/{code}")
     @ApiOperation(value = "Получение записи о синхронизации справочника по коду справочника")
     @ApiResponses({

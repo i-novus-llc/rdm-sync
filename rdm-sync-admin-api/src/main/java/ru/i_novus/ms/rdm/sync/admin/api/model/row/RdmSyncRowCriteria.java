@@ -15,6 +15,10 @@ import java.util.Objects;
 @Setter
 public class RdmSyncRowCriteria extends AbstractCriteria {
 
+    @ApiParam("Идентификатор записи")
+    @QueryParam("id")
+    private String id;
+
     @ApiParam("Код справочника")
     @QueryParam("code")
     private String code;
@@ -38,7 +42,8 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
         if (!super.equals(o)) return false;
 
         RdmSyncRowCriteria that = (RdmSyncRowCriteria) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(text, that.text) &&
                 Objects.equals(count, that.count);
@@ -46,6 +51,6 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), code, name, text, count);
+        return Objects.hash(super.hashCode(), id, code, name, text, count);
     }
 }

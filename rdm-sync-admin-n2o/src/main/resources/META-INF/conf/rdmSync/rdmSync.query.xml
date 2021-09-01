@@ -7,9 +7,9 @@
         </rest>
     </list>
 
-    <unique filters="code">
+    <unique filters="id">
         <rest method="GET">
-            ${rdm.sync.admin.backend.path}/sync/admin/rows/{code}
+            ${rdm.sync.admin.backend.path}/sync/admin/rows/{id}
         </rest>
     </unique>
 
@@ -17,6 +17,13 @@
         <field id="text">
             <filters>
                 <eq filter-id="text">text={text}</eq>
+            </filters>
+        </field>
+
+        <field id="id" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="id">id={id}</eq>
             </filters>
         </field>
 
