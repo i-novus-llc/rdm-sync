@@ -14,11 +14,7 @@
 
         <toolbar place="topRight">
             <button id="create" label="Создать" icon="fa fa-plus">
-                <open-page page-id="rdmSyncCreate" page-name="Добавление справочника" upload="defaults"
-                           submit-operation-id="create"/>
-                <!--<open-page page-id="rdmSyncCreate" page-name="Добавление справочника" upload="defaults"-->
-                <!--           submit-operation-id="create"-->
-                <!--           redirect-url-after-submit="../:rdmSyncId/mapping"/>-->
+                <open-page page-id="rdmSyncCreate" page-name="Добавление справочника" upload="defaults"/>
             </button>
 
             <button id="edit" label="Изменить" icon="fa fa-pencil">
@@ -29,20 +25,12 @@
                 <!--    <query-param name="code" value="{code}"/>-->
                 <!--</open-page>-->
             </button>
-
-            <!--<button id="edit" label="Настроить" icon="fa fa-pencil">-->
-            <!--    <open-page page-id="rdmSyncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
-            <!--               route="/:rdmSyncId/mapping">-->
-            <!--        <path-param name="rdmSyncId" value="{id}"/>-->
-            <!--        <query-param name="name" value="{name}"/>-->
-            <!--        <query-param name="code" value="{code}"/>-->
-            <!--    </open-page>-->
-            <!--</button>-->
         </toolbar>
 
         <columns>
             <column text-field-id="code" label="Код справочника" width="250px" sorting-direction="asc"/>
             <column text-field-id="name" label="Наименование справочника" width="500px"/>
+
             <column text-field-id="sourceType" label="Источник"/>
             <column text-field-id="version" label="Версия справочника"/>
             <column text-field-id="versioned" label="Поддержка версионности">
@@ -51,6 +39,7 @@
             <column text-field-id="autoUpdatable" label="Автоматическое обновление">
                 <checkbox/>
             </column>
+
             <column text-field-id="lastDateTime" label="Дата последнего обновления">
                 <text format="date DD.MM.YYYY"/>
             </column>
