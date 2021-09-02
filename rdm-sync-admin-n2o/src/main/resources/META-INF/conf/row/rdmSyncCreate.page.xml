@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0" name="Создание записи о синхронизации">
+    <form name="Справочник" query-id="rdmSync" object-id="rdmSync">
+        <fields>
+            <set field-label-location="left">
+                <input-select id="source" label="Источник "
+                              query-id="rdmSyncSourceList" label-field-id="name" search="false"
+                              required="true" label-class="w-50"/>
+
+                <!--<input-select id="refbook" label="Справочник "-->
+                <!--              query-id="rdmSyncRefBookList" label-field-id="name"-->
+                <!--              required="true" label-class="w-50">-->
+                <!--    <dependencies>-->
+                <!--        <enabling on="source">-->
+                <!--            typeof source != 'undefined' || source?.id != null-->
+                <!--        </enabling>-->
+                <!--    </dependencies>-->
+                <!--</input-select>-->
+
+                <checkbox id="autoUpdatable" label="Автоматически обновлять" default-value="true" label-class="w-50">
+                    <!--<dependencies>-->
+                    <!--    <enabling on="refbook">-->
+                    <!--        typeof refbook != 'undefined' || refbook?.id != null-->
+                    <!--    </enabling>-->
+                    <!--</dependencies>-->
+                </checkbox>
+
+                <checkbox id="versioned" label="Поддерживать версионность" label-class="w-50">
+                    <!--<dependencies>-->
+                    <!--    <enabling on="refbook">-->
+                    <!--        typeof refbook != 'undefined' || refbook?.id != null-->
+                    <!--    </enabling>-->
+                    <!--</dependencies>-->
+                </checkbox>
+
+                <!--<input-select id="version" label="Загрузить с версии "-->
+                <!--              query-id="rdmSyncVersionList" label-field-id="name"-->
+                <!--              required="true" label-class="w-50">-->
+                <!--    <dependencies>-->
+                <!--        <enabling on="refbook">-->
+                <!--            typeof refbook != 'undefined' || refbook?.id != null-->
+                <!--        </enabling>-->
+                <!--    </dependencies>-->
+                <!--</input-select>-->
+            </set>
+
+            <row>
+                <output-text id="link">
+                    <dependencies>
+                        <set-value on="source">source.link</set-value>
+                    </dependencies>
+                </output-text>
+            </row>
+        </fields>
+
+        <toolbar place="bottomRight">
+            <button id="edit" label="Настроить поля">
+                    <!--<open-page page-id="rdmSyncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
+                    <!--           route="/:rdmSyncId/mapping">-->
+                    <!--    <path-param name="rdmSyncId" value="{id}"/>-->
+                    <!--    <query-param name="sourceId" value="{source.id}"/>-->
+                    <!--    <query-param name="refbookCode" value="{refbook.id}"/>-->
+                    <!--    <query-param name="autoUpdatable" value="{autoUpdatable}"/>-->
+                    <!--    <query-param name="versioned" value="{versioned}"/>-->
+                    <!--    <query-param name="version" value="{version.name}"/>-->
+                    <!--</open-page>-->
+            </button>
+
+            <button id="cancel" label="Отмена">
+                <close/>
+            </button>
+
+        </toolbar>
+    </form>
+</simple-page>
