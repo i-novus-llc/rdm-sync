@@ -13,8 +13,8 @@ import java.io.Serializable;
 @Setter
 public class RdmSyncRowCreateRequest implements Serializable {
 
-    @ApiModelProperty("Источник для обновления")
-    private String sourceType;
+    @ApiModelProperty("Источник для синхронизации")
+    private String sourceCode;
 
     @ApiModelProperty("Код справочника")
     private String code;
