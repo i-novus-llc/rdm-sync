@@ -2,6 +2,8 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
+import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncSource;
 import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRow;
 import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRowCriteria;
 
@@ -17,12 +19,6 @@ import javax.ws.rs.core.MediaType;
 @Api(value = "Сервис настройки синхронизации справочников")
 public interface RdmSyncAdminService {
 
-    /**
-     * Поиск записей о синхронизации справочников
-     *
-     * @param criteria критерий поиска
-     * @return Список записей
-     */
     @GET
     @Path("/rows")
     @ApiOperation(value = "Поиск записей о синхронизации справочников")
@@ -51,4 +47,13 @@ public interface RdmSyncAdminService {
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
     RdmSyncRow getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
+
+    @GET
+    @Path("/sources")
+    @ApiOperation(value = "Поиск источников для синхронизации справочников")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список источников"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    Page<RdmSyncSource> searchSources(@BeanParam AbstractCriteria criteria);
 }
