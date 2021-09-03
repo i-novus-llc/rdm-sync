@@ -1,23 +1,23 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
 
-import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Модель справочника для синхронизации.
+ */
 @Getter
 @Setter
-public class SyncRefBook implements Serializable {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SyncRefBook extends SyncVersion {
 
-    private String id;
-
-    private String code;
-
-    private String name;
-
-    private SyncStructure structure;
+    /** Отображаемое наименование. */
+    private String displayName;
 
     public SyncRefBook() {
         // Nothing to do.
@@ -27,21 +27,14 @@ public class SyncRefBook implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         SyncRefBook that = (SyncRefBook) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(code, that.code) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(structure, that.structure);
+        return Objects.equals(displayName, that.displayName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, structure);
-    }
-
-    @Override
-    public String toString() {
-        return JsonUtil.toJsonString(this);
+        return Objects.hash(super.hashCode(), displayName);
     }
 }
