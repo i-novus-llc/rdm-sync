@@ -2,10 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
-import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncSource;
-import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncEntry;
-import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncEntryCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -55,5 +52,5 @@ public interface SyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncSource> searchSources(@BeanParam AbstractCriteria criteria);
+    Page<SyncSource> searchSources(@BeanParam SyncSourceCriteria criteria);
 }
