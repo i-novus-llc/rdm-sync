@@ -2,6 +2,8 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBook;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBookCriteria;
 import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
 
 import javax.ws.rs.*;
@@ -53,4 +55,13 @@ public interface SyncAdminService {
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
     Page<SyncSource> searchSources(@BeanParam SyncSourceCriteria criteria);
+
+    @GET
+    @Path("/refbooks")
+    @ApiOperation(value = "Поиск справочников в источнике")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список источников"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    Page<SyncRefBook> searchRefBooks(@BeanParam SyncRefBookCriteria criteria);
 }
