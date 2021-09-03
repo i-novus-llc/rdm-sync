@@ -3,9 +3,9 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
-import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncSource;
-import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRow;
-import ru.i_novus.ms.rdm.sync.admin.api.model.row.RdmSyncRowCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncSource;
+import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncEntry;
+import ru.i_novus.ms.rdm.sync.admin.api.model.entry.SyncEntryCriteria;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -17,10 +17,10 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Сервис настройки синхронизации справочников")
-public interface RdmSyncAdminService {
+public interface SyncAdminService {
 
     @GET
-    @Path("/rows")
+    @Path("/entries")
     @ApiOperation(value = "Поиск записей о синхронизации справочников")
     @ApiImplicitParams(@ApiImplicitParam(name = "sort", value = "Параметры сортировки",
             required = false, allowMultiple = true, paramType = "query", dataType = "string"))
@@ -28,25 +28,25 @@ public interface RdmSyncAdminService {
             @ApiResponse(code = 200, message = "Список записей о синхронизации"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<RdmSyncRow> search(@BeanParam RdmSyncRowCriteria criteria);
+    Page<SyncEntry> search(@BeanParam SyncEntryCriteria criteria);
 
     @GET
-    @Path("/rows/{id}")
+    @Path("/entries/{id}")
     @ApiOperation(value = "Получение записи о синхронизации справочника по идентификатору записи")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Запись о синхронизации"),
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
-    RdmSyncRow getById(@ApiParam("Идентификатор записи") @PathParam("id") String id);
+    SyncEntry getById(@ApiParam("Идентификатор записи") @PathParam("id") String id);
 
     @GET
-    @Path("/rows/code/{code}")
+    @Path("/entries/code/{code}")
     @ApiOperation(value = "Получение записи о синхронизации справочника по коду справочника")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Запись о синхронизации"),
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
-    RdmSyncRow getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
+    SyncEntry getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
 
     @GET
     @Path("/sources")
@@ -55,5 +55,5 @@ public interface RdmSyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<RdmSyncSource> searchSources(@BeanParam AbstractCriteria criteria);
+    Page<SyncSource> searchSources(@BeanParam AbstractCriteria criteria);
 }

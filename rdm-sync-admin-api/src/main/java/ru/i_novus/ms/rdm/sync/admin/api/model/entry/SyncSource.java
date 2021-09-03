@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class RdmSyncSource implements Serializable {
+public class SyncSource implements Serializable {
 
     /** Код (идентификатор). */
     private String code;
@@ -26,12 +26,12 @@ public class RdmSyncSource implements Serializable {
     private String caption;
 
     /** Ссылка на источник. */
-    private String link;
+    private String url;
 
     /** Токен аутентификации. */
     private String token;
 
-    public RdmSyncSource() {
+    public SyncSource() {
         // Nothing to do.
     }
 
@@ -42,7 +42,7 @@ public class RdmSyncSource implements Serializable {
                 StringUtils.isEmpty(name) &&
                 StringUtils.isEmpty(caption) &&
 
-                StringUtils.isEmpty(link) &&
+                StringUtils.isEmpty(url) &&
                 StringUtils.isEmpty(token);
     }
 
@@ -51,18 +51,18 @@ public class RdmSyncSource implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RdmSyncSource that = (RdmSyncSource) o;
+        SyncSource that = (SyncSource) o;
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(caption, that.caption) &&
 
-                Objects.equals(link, that.link) &&
+                Objects.equals(url, that.url) &&
                 Objects.equals(token, that.token);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, caption, link, token);
+        return Objects.hash(code, name, caption, url, token);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.row;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class RdmSyncRowCriteria extends AbstractCriteria {
+public class SyncEntryCriteria extends AbstractCriteria {
 
     @ApiParam("Идентификатор записи")
     @QueryParam("id")
@@ -41,7 +41,7 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        RdmSyncRowCriteria that = (RdmSyncRowCriteria) o;
+        SyncEntryCriteria that = (SyncEntryCriteria) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&

@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.ref;
+package ru.i_novus.ms.rdm.sync.admin.api.model.book;
 
 import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
 

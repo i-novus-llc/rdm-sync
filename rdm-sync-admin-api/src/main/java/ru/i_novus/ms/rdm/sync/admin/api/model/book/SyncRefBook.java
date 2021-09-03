@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.ref;
+package ru.i_novus.ms.rdm.sync.admin.api.model.book;
 
 import lombok.Getter;
 import lombok.Setter;

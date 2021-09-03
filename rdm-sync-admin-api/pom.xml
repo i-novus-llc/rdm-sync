@@ -13,7 +13,7 @@
     <properties>
 
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/model/RdmSync*.java, **/model/row/*.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/model/Sync*.java, **/model/mapping/*.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>

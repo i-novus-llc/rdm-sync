@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0" name="Создание записи о синхронизации">
-    <form name="Справочник" query-id="rdmSync" object-id="rdmSync">
+    <form name="Справочник" query-id="syncEntry" object-id="syncEntry">
         <fields>
             <set field-label-location="left">
                 <input-select id="source" label="Источник "
-                              query-id="rdmSyncSourceList" label-field-id="name" search="false"
+                              query-id="syncSourceList" label-field-id="name" search="false"
                               required="true" label-class="w-50"/>
 
                 <!--<input-select id="refbook" label="Справочник "-->
-                <!--              query-id="rdmSyncRefBookList" label-field-id="name"-->
+                <!--              query-id="syncRefBookList" label-field-id="name"-->
                 <!--              required="true" label-class="w-50">-->
                 <!--    <dependencies>-->
                 <!--        <enabling on="source">-->
@@ -34,7 +34,7 @@
                 </checkbox>
 
                 <!--<input-select id="version" label="Загрузить с версии "-->
-                <!--              query-id="rdmSyncVersionList" label-field-id="name"-->
+                <!--              query-id="syncVersionList" label-field-id="name"-->
                 <!--              required="true" label-class="w-50">-->
                 <!--    <dependencies>-->
                 <!--        <enabling on="refbook">-->
@@ -55,9 +55,9 @@
 
         <toolbar place="bottomRight">
             <button id="edit" label="Настроить поля">
-                    <!--<open-page page-id="rdmSyncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
-                    <!--           route="/:rdmSyncId/mapping">-->
-                    <!--    <path-param name="rdmSyncId" value="{id}"/>-->
+                    <!--<open-page page-id="syncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
+                    <!--           route="/:entryId/mapping">-->
+                    <!--    <path-param name="entryId" value="{id}"/>-->
                     <!--    <query-param name="sourceId" value="{source.id}"/>-->
                     <!--    <query-param name="refbookCode" value="{refbook.id}"/>-->
                     <!--    <query-param name="autoUpdatable" value="{autoUpdatable}"/>-->

@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.row;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,7 +11,7 @@ import java.io.Serializable;
         description = "Набор входных параметров для создания записи о синхронизации")
 @Getter
 @Setter
-public class RdmSyncRowCreateRequest implements Serializable {
+public class SyncEntryCreateRequest implements Serializable {
 
     @ApiModelProperty("Источник для синхронизации")
     private String sourceCode;

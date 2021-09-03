@@ -1,9 +1,8 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.row;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import lombok.Getter;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
-import ru.i_novus.ms.rdm.sync.admin.api.model.RdmSyncSource;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -14,7 +13,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class RdmSyncRow implements Serializable {
+public class SyncEntry implements Serializable {
 
     /** Идентификатор записи. */
     private String id;
@@ -38,7 +37,7 @@ public class RdmSyncRow implements Serializable {
     private boolean autoUpdatable = false;
 
     /** Источник для обновления. */
-    private RdmSyncSource source;
+    private SyncSource source;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
@@ -46,7 +45,7 @@ public class RdmSyncRow implements Serializable {
     /** Статус последнего обновления. */
     private String lastStatus;
 
-    public RdmSyncRow() {
+    public SyncEntry() {
         // Nothing to do.
     }
 
@@ -55,7 +54,7 @@ public class RdmSyncRow implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RdmSyncRow that = (RdmSyncRow) o;
+        SyncEntry that = (SyncEntry) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(storageCode, that.storageCode) &&
                 Objects.equals(code, that.code) &&

@@ -1,6 +1,6 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.mapping;
 
-import ru.i_novus.ms.rdm.sync.admin.api.model.ref.SyncStructure;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncStructure;
 
 import java.util.List;
 import java.util.Map;
