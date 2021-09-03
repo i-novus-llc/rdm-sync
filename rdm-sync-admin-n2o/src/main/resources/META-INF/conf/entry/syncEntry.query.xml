@@ -14,7 +14,7 @@
     </unique>
 
     <fields>
-        <field id="text">
+        <field id="text" domain="string">
             <filters>
                 <eq filter-id="text">text={text}</eq>
             </filters>
