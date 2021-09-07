@@ -44,7 +44,7 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(id) || StringUtils.isEmpty(code) || StringUtils.isEmpty(name) ||
+        return StringUtils.isEmpty(id) && StringUtils.isEmpty(code) && StringUtils.isEmpty(name) &&
                 StringUtils.isEmpty(text);
     }
 

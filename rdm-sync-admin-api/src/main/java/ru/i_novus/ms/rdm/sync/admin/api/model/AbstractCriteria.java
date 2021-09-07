@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.model;
 
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.springframework.data.domain.Sort;
-import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
+import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.util.Collections;
 import java.util.List;

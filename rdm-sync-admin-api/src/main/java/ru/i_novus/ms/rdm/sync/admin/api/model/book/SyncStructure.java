@@ -3,7 +3,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.book;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.util.CollectionUtils;
-import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
+import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
