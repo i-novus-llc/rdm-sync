@@ -19,10 +19,10 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncVersion implements Serializable {
 
-    /** Идентификатор. */
+    /** Идентификатор версии. */
     private String id;
 
-    /** Справочник. */
+    /** Идентификатор справочника. */
     private String refBookId;
 
     /** Структура версии. */
