@@ -4,6 +4,7 @@ import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
 import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBookCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncVersionCriteria;
 import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
 
 import javax.ws.rs.*;
@@ -78,14 +79,11 @@ public interface SyncAdminService {
     );
 
     @GET
-    @Path("/refbooks/versions/{sourceCode}/{code}")
+    @Path("/refbooks/versions")
     @ApiOperation(value = "Поиск версий справочника")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncRefBook> searchVersions(
-            @ApiParam("Код источника") @PathParam("sourceCode") String sourceCode,
-            @ApiParam("Код справочника") @PathParam("code") String code
-    );
+    Page<SyncRefBook> searchVersions(@BeanParam SyncVersionCriteria criteria);
 }
