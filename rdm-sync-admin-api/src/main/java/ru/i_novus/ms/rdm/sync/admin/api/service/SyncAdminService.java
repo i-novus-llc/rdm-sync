@@ -64,4 +64,28 @@ public interface SyncAdminService {
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
     Page<SyncRefBook> searchRefBooks(@BeanParam SyncRefBookCriteria criteria);
+
+    @GET
+    @Path("/refbooks/validate/{sourceCode}/{code}")
+    @ApiOperation(value = "Валидация справочника по источнику и коду")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список источников"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    String validateRefBook(
+            @ApiParam("Код источника") @PathParam("sourceCode") String sourceCode,
+            @ApiParam("Код справочника") @PathParam("code") String code
+    );
+
+    @GET
+    @Path("/refbooks/versions/{sourceCode}/{code}")
+    @ApiOperation(value = "Поиск версий справочника")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список источников"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    Page<SyncRefBook> searchVersions(
+            @ApiParam("Код источника") @PathParam("sourceCode") String sourceCode,
+            @ApiParam("Код справочника") @PathParam("code") String code
+    );
 }
