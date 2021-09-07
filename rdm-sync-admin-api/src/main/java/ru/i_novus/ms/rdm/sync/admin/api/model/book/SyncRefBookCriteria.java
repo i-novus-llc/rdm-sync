@@ -17,10 +17,6 @@ import java.util.Objects;
 @Setter
 public class SyncRefBookCriteria extends AbstractCriteria {
 
-    @ApiParam("Идентификатор записи")
-    @QueryParam("id")
-    private String id;
-
     @ApiParam("Код справочника")
     @QueryParam("code")
     private String code;
@@ -44,8 +40,7 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(id) && StringUtils.isEmpty(code) && StringUtils.isEmpty(name) &&
-                StringUtils.isEmpty(text);
+        return StringUtils.isEmpty(code) && StringUtils.isEmpty(name) && StringUtils.isEmpty(text);
     }
 
     @Override
@@ -54,8 +49,7 @@ public class SyncRefBookCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncRefBookCriteria that = (SyncRefBookCriteria) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(code, that.code) &&
+        return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(text, that.text) &&
                 Objects.equals(sourceCode, that.sourceCode);
@@ -63,6 +57,6 @@ public class SyncRefBookCriteria extends AbstractCriteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name, text, sourceCode);
+        return Objects.hash(code, name, text, sourceCode);
     }
 }
