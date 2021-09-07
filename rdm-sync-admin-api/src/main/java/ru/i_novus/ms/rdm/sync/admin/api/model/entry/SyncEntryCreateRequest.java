@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Setter
 public class SyncEntryCreateRequest implements Serializable {
 
-    @ApiModelProperty("Источник для синхронизации")
+    @ApiModelProperty("Код (идентификатор) источника")
     private String sourceCode;
 
     @ApiModelProperty("Код справочника")
