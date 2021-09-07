@@ -28,10 +28,10 @@ public class SyncVersion implements Serializable {
     /** Структура версии. */
     private SyncStructure structure;
 
-    /** Код версии. */
+    /** Код (справочника в) версии. */
     private String code;
 
-    /** Наименование версии. */
+    /** Наименование (справочника в) версии. */
     private String name;
 
     /** Версия (номер). */
