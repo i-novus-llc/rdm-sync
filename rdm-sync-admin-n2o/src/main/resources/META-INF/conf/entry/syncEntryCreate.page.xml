@@ -3,51 +3,139 @@
     <form name="Справочник" query-id="syncEntry" object-id="syncEntry">
         <fields>
             <set field-label-location="left">
-                <input-select id="source" label="Источник "
-                              query-id="syncSourceList" label-field-id="name" search="false"
-                              required="true" label-class="w-50"/>
+                <select id="source" label="Источник "
+                        query-id="syncSourceList" label-field-id="name" search="false"
+                        label-class="w-50" required="true"/>
 
-                <!--<input-select id="refbook" label="Справочник "-->
-                <!--              query-id="syncRefBookList" label-field-id="name"-->
-                <!--              required="true" label-class="w-50">-->
+                <!--<input-text id="refBook" label="Справочник "-->
+                <!--            required="true" label-class="w-50">-->
                 <!--    <dependencies>-->
                 <!--        <enabling on="source">-->
                 <!--            typeof source != 'undefined' || source?.id != null-->
                 <!--        </enabling>-->
                 <!--    </dependencies>-->
-                <!--</input-select>-->
+
+                <!--    &lt;!&ndash;<validations white-list="validateRefBook"/>&ndash;&gt;-->
+                <!--    <validations>-->
+                <!--        &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
+                <!--        &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
+                <!--        &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
+                <!--        &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1002'&ndash;&gt;-->
+                <!--        &lt;!&ndash;</condition>&ndash;&gt;-->
+
+                <!--        <constraint id="validateRefBook" severity="danger"-->
+                <!--                    result="#this == null" message="{result}"-->
+                <!--                    side="client,server" server-moment="before-operation">-->
+                <!--            <invocation>-->
+                <!--                <rest method="GET">-->
+                <!--                    ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{source}/{code}-->
+                <!--                </rest>-->
+                <!--            </invocation>-->
+                <!--            <in>-->
+                <!--                <field id="source.id" mapping="['source']" domain="string"/>-->
+                <!--                <field id="refBook" mapping="['code']" domain="string"/>-->
+                <!--            </in>-->
+                <!--            <out>-->
+                <!--                <field id="result" mapping="(#this)" domain="string"/>-->
+                <!--            </out>-->
+                <!--        </constraint>-->
+                <!--    </validations>-->
+                <!--</input-text>-->
+
+                <input-select id="refBook" label="Справочник "
+                              query-id="syncRefBookList" label-field-id="displayName"
+                              label-class="w-50" required="true">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <enabling on="source">
+                            typeof source != 'undefined' || source?.id != null
+                        </enabling>
+                    </dependencies>
+
+                    <!-- NB: Валидация отключена до исправления NNO-6951 -->
+                    <!--<validations white-list="validateRefBook"/>-->
+                    <!--<validations>-->
+                    <!--    &lt;!&ndash; Проверочная валидация &ndash;&gt;-->
+                    <!--    &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
+                    <!--    &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
+                    <!--    &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
+                    <!--    &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1005'&ndash;&gt;-->
+                    <!--    &lt;!&ndash;</condition>&ndash;&gt;-->
+
+                    <!--    <constraint id="validateRefBook" severity="danger"-->
+                    <!--                result="#this == null" message="{result}"-->
+                    <!--                side="client,server" server-moment="before-operation">-->
+                    <!--        <invocation>-->
+                    <!--            <rest method="GET">-->
+                    <!--                ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{sourceCode}/{code}-->
+                    <!--            </rest>-->
+                    <!--        </invocation>-->
+                    <!--        <in>-->
+                    <!--            <field id="source.id" mapping="sourceCode" domain="string"/>-->
+                    <!--            <field id="refBook.id" mapping="code" domain="string"/>-->
+                    <!--        </in>-->
+                    <!--        <out>-->
+                    <!--            <field id="result" mapping="(#this)" domain="string"/>-->
+                    <!--        </out>-->
+                    <!--    </constraint>-->
+                    <!--</validations>-->
+                </input-select>
+
+                <output-text id="refBokName" no-label="true" no-label-block="true" enabled="false">
+                <!--<output-text id="refBokName" label="" no-label="true"-->
+                <!--             label-class="w-50" enabled="false">-->
+                    <dependencies>
+                        <set-value on="refBook">
+                            if (typeof refBook != 'undefined' || refBook?.id != null)
+                              return refBook.name;
+                            else
+                              return null;
+                        </set-value>
+                        <visibility on="refBook">
+                            typeof refBook != 'undefined' || refBook?.id != null
+                        </visibility>
+                    </dependencies>
+                </output-text>
 
                 <checkbox id="autoUpdatable" label="Автоматически обновлять" default-value="true" label-class="w-50">
-                    <!--<dependencies>-->
-                    <!--    <enabling on="refbook">-->
-                    <!--        typeof refbook != 'undefined' || refbook?.id != null-->
-                    <!--    </enabling>-->
-                    <!--</dependencies>-->
+                    <dependencies>
+                        <enabling on="refBook">
+                            typeof refBook != 'undefined' || refBook?.id != null
+                        </enabling>
+                    </dependencies>
                 </checkbox>
 
                 <checkbox id="versioned" label="Поддерживать версионность" label-class="w-50">
-                    <!--<dependencies>-->
-                    <!--    <enabling on="refbook">-->
-                    <!--        typeof refbook != 'undefined' || refbook?.id != null-->
-                    <!--    </enabling>-->
-                    <!--</dependencies>-->
+                    <dependencies>
+                        <enabling on="refBook">
+                            typeof refBook != 'undefined' || refBook?.id != null
+                        </enabling>
+                    </dependencies>
                 </checkbox>
 
-                <!--<input-select id="version" label="Загрузить с версии "-->
-                <!--              query-id="syncVersionList" label-field-id="name"-->
-                <!--              required="true" label-class="w-50">-->
-                <!--    <dependencies>-->
-                <!--        <enabling on="refbook">-->
-                <!--            typeof refbook != 'undefined' || refbook?.id != null-->
-                <!--        </enabling>-->
-                <!--    </dependencies>-->
-                <!--</input-select>-->
+                <input-select id="version" label="Загрузить с версии "
+                              query-id="syncVersionList" label-field-id="displayName"
+                              required="true" label-class="w-50">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="code" value="{refBook.id}"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <enabling on="refBook">
+                            typeof refBook != 'undefined' || refBook?.id != null
+                        </enabling>
+                    </dependencies>
+                </input-select>
             </set>
 
             <row>
-                <output-text id="link">
+                <output-text id="url">
                     <dependencies>
-                        <set-value on="source">source.link</set-value>
+                        <set-value on="source">source.url</set-value>
                     </dependencies>
                 </output-text>
             </row>
@@ -56,10 +144,9 @@
         <toolbar place="bottomRight">
             <button id="edit" label="Настроить поля">
                     <!--<open-page page-id="syncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
-                    <!--           route="/:entryId/mapping">-->
-                    <!--    <path-param name="entryId" value="{id}"/>-->
-                    <!--    <query-param name="sourceId" value="{source.id}"/>-->
-                    <!--    <query-param name="refbookCode" value="{refbook.id}"/>-->
+                    <!--           route="/:sourceCode/:code/mapping">-->
+                    <!--    <query-param name="sourceCode" value="{source.id}"/>-->
+                    <!--    <query-param name="code" value="{refbook.id}"/>-->
                     <!--    <query-param name="autoUpdatable" value="{autoUpdatable}"/>-->
                     <!--    <query-param name="versioned" value="{versioned}"/>-->
                     <!--    <query-param name="version" value="{version.name}"/>-->
