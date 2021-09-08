@@ -11,6 +11,10 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
+/**
+ * Провайдер для формирования объекта по выполнению операции
+ * создания/изменения маппинга полей версии справочника.
+ */
 @Service
 public class SyncMappingObjectProvider extends SyncMappingBaseProvider implements DynamicMetadataProvider {
 
