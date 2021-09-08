@@ -17,6 +17,10 @@ import java.util.Objects;
 @Setter
 public class SyncRefBookCriteria extends AbstractCriteria {
 
+    @ApiParam("Код (идентификатор) источника")
+    @QueryParam("sourceCode")
+    private String sourceCode;
+
     @ApiParam("Код справочника")
     @QueryParam("code")
     private String code;
@@ -32,10 +36,6 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @ApiParam("Текст для поиска по нескольким полям")
     @QueryParam("text")
     private String text;
-
-    @ApiParam("Код (идентификатор) источника")
-    @QueryParam("sourceCode")
-    private String sourceCode;
 
     @ApiParam("Наличие записи о синхронизации")
     @QueryParam("hasEntry")
@@ -62,16 +62,16 @@ public class SyncRefBookCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncRefBookCriteria that = (SyncRefBookCriteria) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(sourceCode, that.sourceCode) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(version, that.version) &&
                 Objects.equals(text, that.text) &&
-                Objects.equals(sourceCode, that.sourceCode) &&
                 Objects.equals(hasEntry, that.hasEntry);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, version, text, sourceCode, hasEntry);
+        return Objects.hash(sourceCode, code, name, version, text, hasEntry);
     }
 }

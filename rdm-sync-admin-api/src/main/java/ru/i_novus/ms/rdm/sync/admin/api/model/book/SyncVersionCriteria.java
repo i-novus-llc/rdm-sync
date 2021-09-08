@@ -17,6 +17,10 @@ import java.util.Objects;
 @Setter
 public class SyncVersionCriteria extends AbstractCriteria {
 
+    @ApiParam("Код (идентификатор) источника")
+    @QueryParam("sourceCode")
+    private String sourceCode;
+
     @ApiParam("Код справочника")
     @QueryParam("code")
     private String code;
@@ -28,10 +32,6 @@ public class SyncVersionCriteria extends AbstractCriteria {
     @ApiParam("Текст для поиска по нескольким полям")
     @QueryParam("text")
     private String text;
-
-    @ApiParam("Код (идентификатор) источника")
-    @QueryParam("sourceCode")
-    private String sourceCode;
 
     public SyncVersionCriteria() {
         // Nothing to do.
@@ -49,14 +49,14 @@ public class SyncVersionCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncVersionCriteria that = (SyncVersionCriteria) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(sourceCode, that.sourceCode) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(version, that.version) &&
-                Objects.equals(text, that.text) &&
-                Objects.equals(sourceCode, that.sourceCode);
+                Objects.equals(text, that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, version, text, sourceCode);
+        return Objects.hash(sourceCode, code, version, text);
     }
 }
