@@ -142,15 +142,17 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="edit" label="Настроить поля">
-                    <!--<open-page page-id="syncMapping" page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"-->
-                    <!--           route="/:sourceCode/:code/mapping">-->
-                    <!--    <query-param name="sourceCode" value="{source.id}"/>-->
-                    <!--    <query-param name="code" value="{refbook.id}"/>-->
-                    <!--    <query-param name="autoUpdatable" value="{autoUpdatable}"/>-->
-                    <!--    <query-param name="versioned" value="{versioned}"/>-->
-                    <!--    <query-param name="version" value="{version.name}"/>-->
-                    <!--</open-page>-->
+            <button id="createMapping" label="Настроить поля">
+                    <show-modal page-id="syncMappingPage?{source.id}&amp;{refBook.id}&amp;{version.version}&amp;create"
+                                page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"
+                                route="/mapping/create">
+                        <query-param name="sourceCode" value="{source.id}"/>
+                        <query-param name="code" value="{refBook.id}"/>
+                        <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                        <query-param name="versioned" value="{versioned}"/>
+                        <query-param name="version" value="{version.version}"/>
+                        <query-param name="name" value="{refBokName}"/>
+                    </show-modal>
             </button>
 
             <button id="cancel" label="Отмена">
