@@ -57,5 +57,10 @@
             <select/>
         </field>
 
+        <field id="hasEntry" domain="string">
+            <filters>
+                <eq filter-id="hasEntry">hasEntry=false</eq>
+            </filters>
+        </field>
     </fields>
 </query>

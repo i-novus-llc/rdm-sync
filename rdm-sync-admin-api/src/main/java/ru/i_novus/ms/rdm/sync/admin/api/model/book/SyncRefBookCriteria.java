@@ -37,6 +37,10 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @QueryParam("sourceCode")
     private String sourceCode;
 
+    @ApiParam("Наличие записи о синхронизации")
+    @QueryParam("hasEntry")
+    private Boolean hasEntry;
+
     public SyncRefBookCriteria() {
         // Nothing to do.
     }
@@ -62,11 +66,12 @@ public class SyncRefBookCriteria extends AbstractCriteria {
                 Objects.equals(name, that.name) &&
                 Objects.equals(version, that.version) &&
                 Objects.equals(text, that.text) &&
-                Objects.equals(sourceCode, that.sourceCode);
+                Objects.equals(sourceCode, that.sourceCode) &&
+                Objects.equals(hasEntry, that.hasEntry);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, version, text, sourceCode);
+        return Objects.hash(code, name, version, text, sourceCode, hasEntry);
     }
 }
