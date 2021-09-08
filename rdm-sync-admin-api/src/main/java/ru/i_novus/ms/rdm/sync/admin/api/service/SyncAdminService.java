@@ -88,7 +88,7 @@ public interface SyncAdminService {
     );
 
     @GET
-    @Path("/versions")
+    @Path("/refbooks/versions")
     @ApiOperation(value = "Поиск версий справочника")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
