@@ -43,7 +43,7 @@
                 <!--</input-text>-->
 
                 <input-select id="refBook" label="Справочник "
-                              query-id="syncRefBookList" label-field-id="displayName"
+                              query-id="syncSourceRefBookList" label-field-id="displayName"
                               label-class="w-50" required="true">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
@@ -117,7 +117,7 @@
                 </checkbox>
 
                 <input-select id="version" label="Загрузить с версии "
-                              query-id="syncVersionList" label-field-id="displayName"
+                              query-id="syncSourceVersionList" label-field-id="displayName"
                               required="true" label-class="w-50">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
