@@ -25,6 +25,10 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @QueryParam("name")
     private String name;
 
+    @ApiParam("Версия")
+    @QueryParam("version")
+    private String version;
+
     @ApiParam("Текст для поиска по нескольким полям")
     @QueryParam("text")
     private String text;
@@ -37,10 +41,15 @@ public class SyncRefBookCriteria extends AbstractCriteria {
         // Nothing to do.
     }
 
+    /**
+     * Проверка на отсутствие заполненности полей, ключевых для поиска.
+     *
+     * @return Результат проверки
+     */
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(code) && StringUtils.isEmpty(name) && StringUtils.isEmpty(text);
+        return StringUtils.isEmpty(code) && StringUtils.isEmpty(text);
     }
 
     @Override
@@ -51,12 +60,13 @@ public class SyncRefBookCriteria extends AbstractCriteria {
         SyncRefBookCriteria that = (SyncRefBookCriteria) o;
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(version, that.version) &&
                 Objects.equals(text, that.text) &&
                 Objects.equals(sourceCode, that.sourceCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, text, sourceCode);
+        return Objects.hash(code, name, version, text, sourceCode);
     }
 }

@@ -67,6 +67,15 @@ public interface SyncAdminService {
     Page<SyncRefBook> searchRefBooks(@BeanParam SyncRefBookCriteria criteria);
 
     @GET
+    @Path("/refbooks/find")
+    @ApiOperation(value = "Поиск справочника (с заданной версией)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список источников"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    SyncRefBook findRefBook(@BeanParam SyncRefBookCriteria criteria);
+
+    @GET
     @Path("/refbooks/validate/{sourceCode}/{code}")
     @ApiOperation(value = "Валидация справочника по источнику и коду")
     @ApiResponses({
