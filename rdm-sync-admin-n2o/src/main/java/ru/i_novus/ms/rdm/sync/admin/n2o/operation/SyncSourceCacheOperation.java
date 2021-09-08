@@ -16,12 +16,13 @@ import java.util.function.Supplier;
  * Переопределение SourceCacheOperation,
  * чтобы не кешировать динамические метаданные syncMapping.
  */
-public class RdmSyncSourceCacheOperation<S extends SourceMetadata> extends SourceCacheOperation<S> {
+public class SyncSourceCacheOperation<S extends SourceMetadata> extends SourceCacheOperation<S> {
 
-    public RdmSyncSourceCacheOperation() {
+    public SyncSourceCacheOperation() {
+        // Nothing to do.
     }
 
-    public RdmSyncSourceCacheOperation(CacheTemplate cacheTemplate, MetadataRegister metadataRegister) {
+    public SyncSourceCacheOperation(CacheTemplate cacheTemplate, MetadataRegister metadataRegister) {
         super(cacheTemplate, metadataRegister);
     }
 

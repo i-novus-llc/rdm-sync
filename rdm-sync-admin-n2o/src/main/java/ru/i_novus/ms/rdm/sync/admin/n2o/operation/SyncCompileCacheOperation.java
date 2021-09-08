@@ -14,12 +14,13 @@ import java.util.function.Supplier;
  * Переопределение CompileCacheOperation,
  * чтобы не кешировать динамические метаданные syncMapping.
  */
-public class RdmSyncCompileCacheOperation<S> extends CompileCacheOperation<S> {
+public class SyncCompileCacheOperation<S> extends CompileCacheOperation<S> {
 
-    public RdmSyncCompileCacheOperation() {
+    public SyncCompileCacheOperation() {
+        // Nothing to do.
     }
 
-    public RdmSyncCompileCacheOperation(CacheTemplate cacheTemplate) {
+    public SyncCompileCacheOperation(CacheTemplate cacheTemplate) {
         super(cacheTemplate);
     }
 

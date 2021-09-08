@@ -7,8 +7,8 @@ import net.n2oapp.framework.config.compile.pipeline.operation.SourceCacheOperati
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.i_novus.ms.rdm.sync.admin.n2o.operation.RdmSyncCompileCacheOperation;
-import ru.i_novus.ms.rdm.sync.admin.n2o.operation.RdmSyncSourceCacheOperation;
+import ru.i_novus.ms.rdm.sync.admin.n2o.operation.SyncCompileCacheOperation;
+import ru.i_novus.ms.rdm.sync.admin.n2o.operation.SyncSourceCacheOperation;
 
 @Configuration
 @SuppressWarnings({"rawtypes","java:S3740"})
@@ -16,11 +16,11 @@ public class SyncN2oConfig {
 
     @Bean
     public CompileCacheOperation compileCacheOperation(CacheManager cacheManager) {
-        return new RdmSyncCompileCacheOperation(new SyncCacheTemplate(cacheManager));
+        return new SyncCompileCacheOperation(new SyncCacheTemplate(cacheManager));
     }
 
     @Bean
     public SourceCacheOperation sourceCacheOperation(CacheManager cacheManager, MetadataRegister metadataRegister) {
-        return new RdmSyncSourceCacheOperation(new SyncCacheTemplate(cacheManager), metadataRegister);
+        return new SyncSourceCacheOperation(new SyncCacheTemplate(cacheManager), metadataRegister);
     }
 }
