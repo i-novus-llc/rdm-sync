@@ -58,41 +58,41 @@ public interface SyncAdminService {
     Page<SyncSource> searchSources(@BeanParam SyncSourceCriteria criteria);
 
     @GET
-    @Path("/refbooks")
+    @Path("/sources/refbooks")
     @ApiOperation(value = "Поиск справочников в источнике")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncRefBook> searchRefBooks(@BeanParam SyncRefBookCriteria criteria);
+    Page<SyncRefBook> searchSourceRefBooks(@BeanParam SyncRefBookCriteria criteria);
 
     @GET
-    @Path("/refbooks/find")
-    @ApiOperation(value = "Поиск справочника (с заданной версией)")
+    @Path("/sources/refbooks/find")
+    @ApiOperation(value = "Поиск справочника (с заданной версией) в источнике")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    SyncRefBook findRefBook(@BeanParam SyncRefBookCriteria criteria);
+    SyncRefBook findSourceRefBook(@BeanParam SyncRefBookCriteria criteria);
 
     @GET
-    @Path("/refbooks/validate/{sourceCode}/{code}")
+    @Path("/sources/refbooks/validate/{sourceCode}/{code}")
     @ApiOperation(value = "Валидация справочника по источнику и коду")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    String validateRefBook(
+    String validateSourceRefBook(
             @ApiParam("Код источника") @PathParam("sourceCode") String sourceCode,
             @ApiParam("Код справочника") @PathParam("code") String code
     );
 
     @GET
-    @Path("/refbooks/versions")
-    @ApiOperation(value = "Поиск версий справочника")
+    @Path("/sources/versions")
+    @ApiOperation(value = "Поиск версий справочника в источнике")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncRefBook> searchVersions(@BeanParam SyncVersionCriteria criteria);
+    Page<SyncRefBook> searchSourceVersions(@BeanParam SyncVersionCriteria criteria);
 }

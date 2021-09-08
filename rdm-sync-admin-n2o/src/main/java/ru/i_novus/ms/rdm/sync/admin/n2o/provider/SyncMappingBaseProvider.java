@@ -64,7 +64,7 @@ public class SyncMappingBaseProvider {
         criteria.setVersion(request.getVersion());
 
         try {
-            return syncAdminService.findRefBook(criteria);
+            return syncAdminService.findSourceRefBook(criteria);
 
         } catch (Exception e) {
             logger.error("RefBook is not received for metadata", e);
