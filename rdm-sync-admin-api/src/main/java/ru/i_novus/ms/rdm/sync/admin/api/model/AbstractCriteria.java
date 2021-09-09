@@ -32,8 +32,14 @@ public class AbstractCriteria extends RestCriteria {
     }
 
     public void makeUnpaged() {
+
         setPageSize(NO_PAGINATION_SIZE);
         setPageNumber(DEFAULT_PAGE_NUMBER);
+    }
+
+    public boolean madeUnpaged() {
+
+        return getPageNumber() == DEFAULT_PAGE_NUMBER && getPageSize() == NO_PAGINATION_SIZE;
     }
 
     public List<Sort.Order> getOrders() {
