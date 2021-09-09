@@ -4,7 +4,7 @@
         <fields>
             <set field-label-location="left">
                 <select id="source" label="Источник "
-                        query-id="syncSourceList" label-field-id="name" search="false"
+                        query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true"/>
 
                 <!--<input-text id="refBook" label="Справочник "-->

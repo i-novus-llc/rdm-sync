@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.source;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class SyncSource implements Serializable {
+public class SyncEntrySource implements Serializable {
 
     /** Код (идентификатор). */
     private String code;
@@ -31,7 +31,7 @@ public class SyncSource implements Serializable {
     /** Токен аутентификации. */
     private String token;
 
-    public SyncSource() {
+    public SyncEntrySource() {
         // Nothing to do.
     }
 
@@ -51,7 +51,7 @@ public class SyncSource implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SyncSource that = (SyncSource) o;
+        SyncEntrySource that = (SyncEntrySource) o;
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(caption, that.caption) &&

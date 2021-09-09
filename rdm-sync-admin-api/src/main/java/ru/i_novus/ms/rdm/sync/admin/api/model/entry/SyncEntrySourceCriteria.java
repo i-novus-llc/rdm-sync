@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.source;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiParam;
@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class SyncSourceCriteria extends AbstractCriteria {
+public class SyncEntrySourceCriteria extends AbstractCriteria {
 
     @ApiParam("Код (идентификатор) источника")
     @QueryParam("code")
@@ -29,7 +29,7 @@ public class SyncSourceCriteria extends AbstractCriteria {
     @QueryParam("caption")
     private String caption;
 
-    public SyncSourceCriteria() {
+    public SyncEntrySourceCriteria() {
         // Nothing to do.
     }
 
@@ -46,7 +46,7 @@ public class SyncSourceCriteria extends AbstractCriteria {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SyncSourceCriteria that = (SyncSourceCriteria) o;
+        SyncEntrySourceCriteria that = (SyncEntrySourceCriteria) o;
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(caption, that.caption);

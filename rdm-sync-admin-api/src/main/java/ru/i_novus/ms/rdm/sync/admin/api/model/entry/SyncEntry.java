@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSource;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
@@ -38,7 +37,7 @@ public class SyncEntry implements Serializable {
     private boolean autoUpdatable = false;
 
     /** Источник для обновления. */
-    private SyncSource source;
+    private SyncEntrySource source;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;

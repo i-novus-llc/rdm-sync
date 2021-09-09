@@ -53,7 +53,7 @@ public interface SyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncSource> searchSources(@BeanParam SyncSourceCriteria criteria);
+    Page<SyncEntrySource> searchSources(@BeanParam SyncEntrySourceCriteria criteria);
 
     @GET
     @Path("/sources/refbooks")
