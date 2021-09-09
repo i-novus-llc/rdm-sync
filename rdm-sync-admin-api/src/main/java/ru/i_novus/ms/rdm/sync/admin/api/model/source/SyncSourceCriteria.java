@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
+package ru.i_novus.ms.rdm.sync.admin.api.model.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiParam;
@@ -8,7 +8,6 @@ import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
 import javax.ws.rs.QueryParam;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**

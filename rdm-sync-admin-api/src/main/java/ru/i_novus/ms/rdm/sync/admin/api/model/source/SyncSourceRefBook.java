@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.book;
+package ru.i_novus.ms.rdm.sync.admin.api.model.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

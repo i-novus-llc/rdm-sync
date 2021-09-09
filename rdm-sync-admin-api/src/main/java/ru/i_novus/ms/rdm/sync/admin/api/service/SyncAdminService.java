@@ -2,9 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBook;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBookCriteria;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceVersionCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.*;
 import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
 
 import javax.ws.rs.*;

@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
+package ru.i_novus.ms.rdm.sync.admin.api.model.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;

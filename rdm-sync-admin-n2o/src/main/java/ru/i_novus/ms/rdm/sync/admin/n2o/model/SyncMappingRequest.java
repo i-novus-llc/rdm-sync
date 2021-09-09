@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.n2o.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBook;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceRefBook;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;

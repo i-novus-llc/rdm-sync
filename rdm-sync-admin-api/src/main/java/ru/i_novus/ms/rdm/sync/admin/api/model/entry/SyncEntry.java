@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSource;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;

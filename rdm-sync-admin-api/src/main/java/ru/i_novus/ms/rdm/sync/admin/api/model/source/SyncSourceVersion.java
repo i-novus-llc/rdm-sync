@@ -1,9 +1,10 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model.book;
+package ru.i_novus.ms.rdm.sync.admin.api.model.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.sync.admin.api.model.refbook.SyncStructure;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
