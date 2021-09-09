@@ -2,8 +2,7 @@ package ru.i_novus.ms.rdm.sync.admin.n2o.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBook;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncStructure;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBook;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
@@ -29,7 +28,7 @@ public class SyncMappingRequest implements Serializable {
     private String actionType;
 
     /** Справочник. */
-    private SyncRefBook refBook;
+    private SyncSourceRefBook refBook;
 
     @Override
     public boolean equals(Object o) {

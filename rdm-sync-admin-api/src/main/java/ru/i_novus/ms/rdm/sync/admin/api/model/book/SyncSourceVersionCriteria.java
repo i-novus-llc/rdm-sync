@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class SyncRefBookCriteria extends AbstractCriteria {
+public class SyncSourceVersionCriteria extends AbstractCriteria {
 
     @ApiParam("Код (идентификатор) источника")
     @QueryParam("sourceCode")
@@ -25,10 +25,6 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @QueryParam("code")
     private String code;
 
-    @ApiParam("Наименование справочника")
-    @QueryParam("name")
-    private String name;
-
     @ApiParam("Версия")
     @QueryParam("version")
     private String version;
@@ -37,23 +33,14 @@ public class SyncRefBookCriteria extends AbstractCriteria {
     @QueryParam("text")
     private String text;
 
-    @ApiParam("Наличие записи о синхронизации")
-    @QueryParam("hasEntry")
-    private Boolean hasEntry;
-
-    public SyncRefBookCriteria() {
+    public SyncSourceVersionCriteria() {
         // Nothing to do.
     }
 
-    /**
-     * Проверка на отсутствие заполненности полей, ключевых для поиска.
-     *
-     * @return Результат проверки
-     */
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(code) && StringUtils.isEmpty(text);
+        return StringUtils.isEmpty(code) && StringUtils.isEmpty(version) && StringUtils.isEmpty(text);
     }
 
     @Override
@@ -61,17 +48,15 @@ public class SyncRefBookCriteria extends AbstractCriteria {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SyncRefBookCriteria that = (SyncRefBookCriteria) o;
+        SyncSourceVersionCriteria that = (SyncSourceVersionCriteria) o;
         return Objects.equals(sourceCode, that.sourceCode) &&
                 Objects.equals(code, that.code) &&
-                Objects.equals(name, that.name) &&
                 Objects.equals(version, that.version) &&
-                Objects.equals(text, that.text) &&
-                Objects.equals(hasEntry, that.hasEntry);
+                Objects.equals(text, that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sourceCode, code, name, version, text, hasEntry);
+        return Objects.hash(sourceCode, code, version, text);
     }
 }

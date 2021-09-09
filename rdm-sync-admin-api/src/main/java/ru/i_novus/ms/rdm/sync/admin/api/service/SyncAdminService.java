@@ -2,9 +2,9 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBook;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncRefBookCriteria;
-import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncVersionCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBook;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceRefBookCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.book.SyncSourceVersionCriteria;
 import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
 
 import javax.ws.rs.*;
@@ -64,7 +64,7 @@ public interface SyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncRefBook> searchSourceRefBooks(@BeanParam SyncRefBookCriteria criteria);
+    Page<SyncSourceRefBook> searchSourceRefBooks(@BeanParam SyncSourceRefBookCriteria criteria);
 
     @GET
     @Path("/sources/refbooks/find")
@@ -73,7 +73,7 @@ public interface SyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    SyncRefBook findSourceRefBook(@BeanParam SyncRefBookCriteria criteria);
+    SyncSourceRefBook findSourceRefBook(@BeanParam SyncSourceRefBookCriteria criteria);
 
     @GET
     @Path("/sources/refbooks/validate/{sourceCode}/{code}")
@@ -94,5 +94,5 @@ public interface SyncAdminService {
             @ApiResponse(code = 200, message = "Список источников"),
             @ApiResponse(code = 400, message = "Некорректный запрос")
     })
-    Page<SyncRefBook> searchSourceVersions(@BeanParam SyncVersionCriteria criteria);
+    Page<SyncSourceRefBook> searchSourceVersions(@BeanParam SyncSourceVersionCriteria criteria);
 }

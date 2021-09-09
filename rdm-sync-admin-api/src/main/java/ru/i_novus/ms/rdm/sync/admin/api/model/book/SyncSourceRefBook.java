@@ -8,18 +8,18 @@ import lombok.Setter;
 import java.util.Objects;
 
 /**
- * Модель справочника для синхронизации.
+ * Модель справочника из источника.
  */
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncRefBook extends SyncVersion {
+public class SyncSourceRefBook extends SyncSourceVersion {
 
-    /** Отображаемое наименование. */
-    private String displayName;
+    /** Возможность удаления. */
+    private Boolean removable;
 
-    public SyncRefBook() {
+    public SyncSourceRefBook() {
         // Nothing to do.
     }
 
@@ -29,12 +29,12 @@ public class SyncRefBook extends SyncVersion {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        SyncRefBook that = (SyncRefBook) o;
-        return Objects.equals(displayName, that.displayName);
+        SyncSourceRefBook that = (SyncSourceRefBook) o;
+        return Objects.equals(removable, that.removable);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), displayName);
+        return Objects.hash(super.hashCode(), removable);
     }
 }

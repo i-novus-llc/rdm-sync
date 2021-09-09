@@ -11,18 +11,18 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Модель версии справочника для синхронизации.
+ * Модель версии справочника из источника.
  */
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncVersion implements Serializable {
+public class SyncSourceVersion implements Serializable {
 
     /** Идентификатор версии. */
     private String id;
 
-    /** Идентификатор справочника. */
+    /** Идентификатор (код) справочника. */
     private String refBookId;
 
     /** Структура версии. */
@@ -52,7 +52,10 @@ public class SyncVersion implements Serializable {
     /** Дата последнего действия. */
     private LocalDateTime lastActionDate;
 
-    public SyncVersion() {
+    /** Отображаемое наименование. */
+    private String displayName;
+
+    public SyncSourceVersion() {
         // Nothing to do.
     }
 
@@ -61,7 +64,7 @@ public class SyncVersion implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SyncVersion that = (SyncVersion) o;
+        SyncSourceVersion that = (SyncSourceVersion) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(refBookId, that.refBookId) &&
                 Objects.equals(structure, that.structure) &&
@@ -73,13 +76,16 @@ public class SyncVersion implements Serializable {
                 Objects.equals(fromDate, that.fromDate) &&
                 Objects.equals(toDate, that.toDate) &&
                 Objects.equals(creationDate, that.creationDate) &&
-                Objects.equals(lastActionDate, that.lastActionDate);
+                Objects.equals(lastActionDate, that.lastActionDate) &&
+
+                Objects.equals(displayName, that.displayName);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, refBookId, structure, code, name, comment,
-                fromDate, toDate, creationDate, lastActionDate);
+                fromDate, toDate, creationDate, lastActionDate,
+                displayName);
     }
 
     @Override
