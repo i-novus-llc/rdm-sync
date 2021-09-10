@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0" name="Создание записи о синхронизации">
+<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
+             name="Создание записи о синхронизации">
     <form name="Справочник" query-id="syncEntry" object-id="syncEntry">
         <fields>
             <set field-label-location="left">
@@ -20,7 +21,7 @@
                 <!--        &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
                 <!--        &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
                 <!--        &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
-                <!--        &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1002'&ndash;&gt;-->
+                <!--        &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1005'&ndash;&gt;-->
                 <!--        &lt;!&ndash;</condition>&ndash;&gt;-->
 
                 <!--        <constraint id="validateRefBook" severity="danger"-->
@@ -131,20 +132,12 @@
                     </dependencies>
                 </input-select>
             </set>
-
-            <row>
-                <output-text id="url">
-                    <dependencies>
-                        <set-value on="source">source.url</set-value>
-                    </dependencies>
-                </output-text>
-            </row>
         </fields>
 
         <toolbar place="bottomRight">
             <button id="createMapping" label="Настроить поля">
-                    <show-modal page-id="syncMappingPage?{source.id}&amp;{refBook.id}&amp;{version.version}&amp;create"
-                                page-name="Настройка полей справочника &quot;{name}&quot; [{code}]"
+                    <show-modal page-id="syncMapping"
+                                page-name="Настройка полей справочника"
                                 route="/mapping/create">
                         <query-param name="sourceCode" value="{source.id}"/>
                         <query-param name="code" value="{refBook.id}"/>

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
+             name="Настройка полей для синхронизации"
+             modal-size="">
+    <form name="Настройка полей" query-id="syncMapping" object-id="syncMapping">
+
+        <pre-filters>
+            <eq field-id="sourceCode" param="sourceCode"/>
+
+            <eq field-id="code" param="code"/>
+            <eq field-id="name" param="name"/>
+            <eq field-id="version" param="version"/>
+
+            <eq field-id="versioned" param="versioned"/>
+            <eq field-id="autoUpdatable" param="autoUpdatable"/>
+
+            <eq field-id="actionType" param="actionType"/>
+
+        </pre-filters>
+
+        <fields>
+            <set field-label-location="left">
+                <output-text id="actionType" visible="false"
+                             label-class="w-50" enabled="false"/>
+
+                <select id="source" label="Источник "
+                        query-id="syncEntrySourceList" label-field-id="name" search="false"
+                        label-class="w-50" required="true" enabled="false"/>
+
+                <row>
+                    <output-text id="code" label="Справочник "
+                                 label-class="w-50" enabled="false"/>
+                    <output-text id="version" label="Версия "
+                                 label-class="w-50" enabled="false" visible="{actionType == 'create'}"/>
+                </row>
+                <output-text id="name" no-label="true" no-label-block="true" enabled="false"/>
+                <!--<output-text id="name" label="Наименование " label-class="w-50" enabled="false"/>-->
+
+                <row>
+                    <checkbox id="autoUpdatable" label="Автоматически обновлять"
+                              visible="{actionType != 'create'}"/>
+                    <!--visible="true" enabled="false"/>-->
+
+                    <checkbox id="versioned" label="Поддерживать версионность"
+                              visible="{actionType != 'create'}"/>
+                    <!--visible="true" enabled="false"/>-->
+                </row>
+
+                <input-text id="storageCode" label="Таблица"
+                            required="true" label-class="w-50"/>
+            </set>
+
+            <multi-set id="fieldMappings" label="Настройка полей" field-label-location="top"
+                       can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
+                <row>
+                    <input-text id="originCode" label="Исходное поле" enabled="false"/>
+                    <input-text id="type" label="Тип" enabled="false"/>
+                    <input-text id="code" label="Наименование"/>
+                    <input-text id="name" label="Описание"/>
+                </row>
+            </multi-set>
+
+        </fields>
+
+        <toolbar place="bottomRight">
+            <button id="save" label="Сохранить">
+            </button>
+
+            <button id="cancel" label="Отмена">
+                <close/>
+            </button>
+
+        </toolbar>
+    </form>
+</simple-page>

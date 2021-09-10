@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<object xmlns="http://n2oapp.net/framework/config/schema/object-4.0"
+        name="Маппинг версии записи">
+
+    <fields>
+        <list id="fieldMappings">
+            <field id="originCode" domain="string"/>
+
+            <field id="code" domain="string"/>
+            <field id="name" domain="string"/>
+            <field id="type" domain="string"/>
+
+            <field id="isPrimary" domain="boolean"/>
+            <field id="description" domain="string"/>
+        </list>
+    </fields>
+
+    <operations/>
+
+</object>
