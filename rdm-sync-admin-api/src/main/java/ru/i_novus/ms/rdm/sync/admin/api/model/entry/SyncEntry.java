@@ -31,10 +31,10 @@ public class SyncEntry implements Serializable {
     private String version;
 
     /** Поддержка версионности. */
-    private boolean versioned = false;
+    private boolean versioned;
 
     /** Признак автообновления. */
-    private boolean autoUpdatable = false;
+    private boolean autoUpdatable;
 
     /** Источник для обновления. */
     private SyncEntrySource source;
