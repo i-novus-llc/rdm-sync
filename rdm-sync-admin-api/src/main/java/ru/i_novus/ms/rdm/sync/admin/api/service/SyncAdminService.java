@@ -47,6 +47,24 @@ public interface SyncAdminService {
     SyncEntry getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
 
     @GET
+    @Path("/entries/versions/")
+    @ApiOperation(value = "Получение версий записи о синхронизации")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список версий записи"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    Page<SyncEntryVersion> searchVersions(@BeanParam SyncEntryVersionCriteria criteria);
+
+    @GET
+    @Path("/entries/mapping")
+    @ApiOperation(value = "Получение маппинга версии записи о синхронизации")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Запись о синхронизации"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    SyncEntryMapping findMapping(@BeanParam SyncEntryMappingCriteria criteria);
+
+    @GET
     @Path("/sources")
     @ApiOperation(value = "Поиск источников для синхронизации справочников")
     @ApiResponses({
