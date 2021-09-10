@@ -31,12 +31,20 @@ public class AbstractCriteria extends RestCriteria {
         return Collections.emptyList();
     }
 
+    /**
+     * Формирование нестраничности.
+     */
     public void makeUnpaged() {
 
         setPageSize(NO_PAGINATION_SIZE);
         setPageNumber(DEFAULT_PAGE_NUMBER);
     }
 
+    /**
+     * Проверка на нестраничность.
+     *
+     * @return Результат проверки
+     */
     public boolean madeUnpaged() {
 
         return getPageNumber() == DEFAULT_PAGE_NUMBER && getPageSize() == NO_PAGINATION_SIZE;
