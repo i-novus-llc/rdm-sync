@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.refbook;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.util.CollectionUtils;
@@ -13,6 +14,9 @@ import java.util.function.UnaryOperator;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Структура (версии) справочника.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncStructure implements Serializable {
@@ -52,6 +56,16 @@ public class SyncStructure implements Serializable {
         return fields.stream()
                 .filter(field -> field.getCode().equals(code))
                 .findAny().orElse(null);
+    }
+
+    /**
+     * Проверка наличия структуры.
+     *
+     * @return {@code true}, если есть хотя бы один атрибут, иначе - {@code false}.
+     */
+    @JsonIgnore
+    public boolean isEmpty() {
+        return CollectionUtils.isEmpty(fields);
     }
 
     private static <T> List<T> getOrCreateList(List<T> list) {
