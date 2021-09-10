@@ -84,7 +84,7 @@
                     <!--</validations>-->
                 </input-select>
 
-                <output-text id="refBokName" no-label="true" no-label-block="true" enabled="false">
+                <output-text id="refBookName" no-label="true" no-label-block="true" enabled="false">
                 <!--<output-text id="refBokName" label="" no-label="true"-->
                 <!--             label-class="w-50" enabled="false">-->
                     <dependencies>
@@ -116,7 +116,7 @@
                     </dependencies>
                 </checkbox>
 
-                <input-select id="version" label="Загрузить с версии "
+                <input-select id="startVersion" label="Загрузить с версии "
                               query-id="syncSourceVersionList" label-field-id="displayName"
                               required="true" label-class="w-50">
                     <pre-filters>
@@ -148,10 +148,11 @@
                                 route="/mapping/create">
                         <query-param name="sourceCode" value="{source.id}"/>
                         <query-param name="code" value="{refBook.id}"/>
-                        <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                        <query-param name="name" value="{refBookName}"/>
+                        <query-param name="version" value="{startVersion.id}"/>
                         <query-param name="versioned" value="{versioned}"/>
-                        <query-param name="version" value="{version.version}"/>
-                        <query-param name="name" value="{refBokName}"/>
+                        <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                        <query-param name="actionType" value="create"/>
                     </show-modal>
             </button>
 
