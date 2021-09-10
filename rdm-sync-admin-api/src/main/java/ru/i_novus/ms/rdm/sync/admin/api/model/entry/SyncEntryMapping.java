@@ -17,41 +17,17 @@ import java.util.Objects;
 @Setter
 public class SyncEntryMapping implements Serializable {
 
-    //public static final String KEY_INDEX_NAME_SEPARATOR = ".";
-    //public static final String KEY_NAME_OLD_FIELD_CODE = "old";
-    //public static final String KEY_NAME_NEW_FIELD_CODE = "new";
-    //public static final String KEY_NAME_NEW_FIELD_NAME = "name";
-    //public static final String KEY_NAME_NEW_FIELD_TYPE = "type";
-
     /** Запись о синхронизации. */
     private SyncEntry entry;
 
     /** Версия записи о синхронизации. */
     private SyncEntryVersion version;
 
-    ///** Идентификатор записи. */
-    //private String entryId;
-    //
-    ///** Идентификатор версии записи. */
-    //private String versionId;
-    //
-    ///** Код (идентификатор) источника. */
-    //private String sourceCode;
-    //
-    ///** Код справочника. */
-    //private String code;
-    //
-    ///** Версия (номер) справочника. */
-    //private String version;
-    //
-    ///** Поддержка версионности. */
-    //private boolean versioned = false;
-    //
-    ///** Признак автообновления. */
-    //private boolean autoUpdatable = false;
-
-    //private Map<String, Serializable> fieldMappings;
+    /** Маппинг полей версии. */
     private List<SyncMappingField> fieldMappings;
+
+    /** Тип выполняемого действия. */
+    private String actionType; // из критерия!
 
     public SyncEntryMapping() {
         // Nothing to do.
@@ -63,28 +39,15 @@ public class SyncEntryMapping implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncEntryMapping that = (SyncEntryMapping) o;
-        return //Objects.equals(entryId, that.entryId) &&
-                //Objects.equals(versionId, that.versionId) &&
-                //
-                //Objects.equals(sourceCode, that.sourceCode) &&
-                //Objects.equals(code, that.code) &&
-                //Objects.equals(version, that.version) &&
-                //
-                //Objects.equals(versioned, that.versioned) &&
-                //Objects.equals(autoUpdatable, that.autoUpdatable) &&
-
-                Objects.equals(entry, that.entry) &&
+        return Objects.equals(entry, that.entry) &&
                 Objects.equals(version, that.version) &&
-                Objects.equals(fieldMappings, that.fieldMappings);
+                Objects.equals(fieldMappings, that.fieldMappings) &&
+                Objects.equals(actionType, that.actionType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(//entryId, versionId,
-                //sourceCode, code, version,
-                //versioned, autoUpdatable,
-                entry, version,
-                fieldMappings);
+        return Objects.hash(entry, version, fieldMappings, actionType);
     }
 
     @Override
