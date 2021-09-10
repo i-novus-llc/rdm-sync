@@ -4,6 +4,7 @@ package ru.i_novus.ms.rdm.sync.model;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.util.TimeUtils;
+import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -63,20 +64,18 @@ public enum DataTypeEnum {
         return dataType == null ? null : DATA_TYPE_FROM_STR.get(dataType);
     }
 
-    public static DataTypeEnum getByRdmAttr(Structure.Attribute attr) {
-        switch (attr.getType()) {
-            case DATE: return DATE;
-            case FLOAT: return FLOAT;
-            case INTEGER: return INTEGER;
-            case STRING:
-            case REFERENCE:
-                return VARCHAR;
-            case BOOLEAN: return BOOLEAN;
-            default:
-                throw new RdmException("Not supported field type: " + attr.getType());
-        }
+    public static DataTypeEnum getByRdmAttr(Structure.Attribute attribute) {
+
+        final FieldType type = attribute.getType();
+
+        return switch (type) {
+            case DATE -> DATE;
+            case FLOAT -> FLOAT;
+            case INTEGER -> INTEGER;
+            case STRING, REFERENCE -> VARCHAR;
+            case BOOLEAN -> BOOLEAN;
+            default -> throw new RdmException(String.format("Attribute type '%s' is not supported", type));
+        };
     }
-
-
 }
 
