@@ -5,9 +5,15 @@ import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Значение поля (версии) справочника.
+ */
 public class SyncFieldValue<T extends Serializable> implements Serializable {
 
+    /** Код поля. */
     private String field;
+
+    /** Значение поля. */
     private T value;
 
     @SuppressWarnings("unused")

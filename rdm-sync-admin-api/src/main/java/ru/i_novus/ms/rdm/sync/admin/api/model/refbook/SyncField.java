@@ -9,20 +9,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Поле (версии) справочника.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncField implements Serializable {
 
+    /** Код поля (наименование колонки). */
     private String code;
 
+    /** Наименование поля. */
     private String name;
 
+    /** Тип поля. */
     private String type;
 
+    /** Признак первичного ключа. */
     private Boolean isPrimary = Boolean.FALSE;
 
+    /** Описание поля. */
     private String description;
 
+    /** Другие параметры. */
     private final Map<String, Serializable> params = new HashMap<>();
 
     public SyncField() {
@@ -34,6 +43,7 @@ public class SyncField implements Serializable {
         this.code = field.code;
         this.name = field.name;
         this.type = field.type;
+
         this.isPrimary = field.isPrimary;
         this.description = field.description;
 
@@ -93,6 +103,7 @@ public class SyncField implements Serializable {
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(type, that.type) &&
+
                 Objects.equals(isPrimary, that.isPrimary) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(params, that.params);
