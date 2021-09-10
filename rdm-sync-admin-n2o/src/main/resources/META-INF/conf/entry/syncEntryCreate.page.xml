@@ -138,6 +138,7 @@
             <button id="createMapping" label="Настроить поля">
                     <show-modal page-id="syncMapping"
                                 page-name="Настройка полей справочника"
+                                modal-size="xl" scrollable="true"
                                 route="/mapping/create">
                         <query-param name="sourceCode" value="{source.id}"/>
                         <query-param name="code" value="{refBook.id}"/>
