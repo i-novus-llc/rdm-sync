@@ -52,7 +52,7 @@
 
                     <dependencies>
                         <enabling on="source">
-                            typeof source != 'undefined' || source?.id != null
+                            (typeof source != 'undefined' &amp;&amp; source?.id != null)
                         </enabling>
                     </dependencies>
 
@@ -89,33 +89,46 @@
                 <!--<output-text id="refBokName" label="" no-label="true"-->
                 <!--             label-class="w-50" enabled="false">-->
                     <dependencies>
-                        <set-value on="refBook">
-                            if (typeof refBook != 'undefined' || refBook?.id != null)
-                              return refBook.name;
-                            else
-                              return null;
-                        </set-value>
                         <visibility on="refBook">
-                            typeof refBook != 'undefined' || refBook?.id != null
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </visibility>
+                        <set-value on="refBook">
+                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                                return refBook.name;
+                            else
+                                return null;
+                        </set-value>
                     </dependencies>
                 </output-text>
 
                 <checkbox id="autoUpdatable" label="Автоматически обновлять" default-value="true" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
-                            typeof refBook != 'undefined' || refBook?.id != null
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </enabling>
                     </dependencies>
                 </checkbox>
 
-                <checkbox id="versioned" label="Поддерживать версионность" label-class="w-50">
+                <checkbox id="versioned" label="Поддерживать версионность" default-value="false" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
-                            typeof refBook != 'undefined' || refBook?.id != null
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </enabling>
                     </dependencies>
                 </checkbox>
+
+                <output-text id="lastVersion" label="Последняя версия "
+                             required="true" label-class="w-50">
+                    <dependencies>
+                        <set-value on="refBook">
+                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {
+                                return refBook.version;
+                            } else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
+                <!--return { 'id': refBook.versionId, 'name': refBook.version };-->
 
                 <input-select id="startVersion" label="Загрузить с версии "
                               query-id="syncSourceVersionList" label-field-id="displayName"
@@ -126,8 +139,16 @@
                     </pre-filters>
 
                     <dependencies>
-                        <enabling on="refBook">
-                            typeof refBook != 'undefined' || refBook?.id != null
+                        <set-value on="refBook,versioned">
+                            if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                                (typeof versioned == 'undefined' || !versioned))
+                                return { 'id': refBook.versionId, 'displayName': refBook.version };
+                            else
+                                return;
+                        </set-value>
+                        <enabling on="refBook,versioned">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                            (typeof versioned != 'undefined' &amp;&amp; versioned)
                         </enabling>
                     </dependencies>
                 </input-select>
