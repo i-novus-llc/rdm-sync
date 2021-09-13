@@ -2,8 +2,10 @@ package ru.i_novus.ms.rdm.sync.admin.api.service;
 
 import io.swagger.annotations.*;
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.admin.api.model.source.*;
 import ru.i_novus.ms.rdm.sync.admin.api.model.entry.*;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceRefBook;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceRefBookCriteria;
+import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceVersionCriteria;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -45,6 +47,14 @@ public interface SyncAdminService {
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
     SyncEntry getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
+
+    @POST
+    @ApiOperation(value = "Создание новой записи о синхронизации (добавление справочника)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Справочник"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    SyncEntry create(SyncEntryCreateRequest request);
 
     @GET
     @Path("/entries/versions/")

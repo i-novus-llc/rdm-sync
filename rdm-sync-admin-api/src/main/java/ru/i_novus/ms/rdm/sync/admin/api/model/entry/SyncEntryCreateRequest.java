@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.List;
 
 @ApiModel(value = "Модель создания записи о синхронизации",
         description = "Набор входных параметров для создания записи о синхронизации")
@@ -30,4 +31,10 @@ public class SyncEntryCreateRequest implements Serializable {
 
     @ApiModelProperty("Признак автообновления")
     private Boolean autoUpdatable;
+
+    @ApiModelProperty("Код локального хранилища")
+    private String storageCode;
+
+    @ApiModelProperty("Маппинг полей версии")
+    private List<SyncMappingField> fieldMappings;
 }
