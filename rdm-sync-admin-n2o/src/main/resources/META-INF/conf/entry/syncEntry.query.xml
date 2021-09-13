@@ -9,7 +9,7 @@
 
     <unique filters="id">
         <rest method="GET">
-            ${rdm.sync.admin.backend.path}/sync/admin/entries/id/{id}
+            ${rdm.sync.admin.backend.path}/sync/admin/entry/{id}
         </rest>
     </unique>
 
