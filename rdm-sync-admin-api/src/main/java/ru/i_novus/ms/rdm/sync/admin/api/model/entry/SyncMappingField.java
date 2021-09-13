@@ -7,7 +7,7 @@ import ru.i_novus.ms.rdm.sync.admin.api.model.refbook.SyncField;
 import java.util.Objects;
 
 /**
- * Поле (версии) справочника при маппинге сполем из источника.
+ * Поле (версии) справочника при маппинге с полем из источника.
  */
 @Getter
 @Setter
