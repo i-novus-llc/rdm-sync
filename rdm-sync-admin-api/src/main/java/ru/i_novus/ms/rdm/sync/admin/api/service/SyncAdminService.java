@@ -29,7 +29,7 @@ public interface SyncAdminService {
     Page<SyncEntry> search(@BeanParam SyncEntryCriteria criteria);
 
     @GET
-    @Path("/entries/{id}")
+    @Path("/entries/id/{id}")
     @ApiOperation(value = "Получение записи о синхронизации справочника по идентификатору записи")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Запись о синхронизации"),
