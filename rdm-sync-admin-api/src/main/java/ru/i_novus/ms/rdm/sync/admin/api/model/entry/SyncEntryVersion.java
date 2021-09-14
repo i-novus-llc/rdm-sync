@@ -15,7 +15,7 @@ import java.util.Objects;
 @Setter
 public class SyncEntryVersion implements Serializable {
 
-    /** Идентификатор версии записи. */
+    /** Идентификатор версии. */
     private String id;
 
     /** Идентификатор записи. */
@@ -35,6 +35,9 @@ public class SyncEntryVersion implements Serializable {
 
     /** Дата окончания действия. */
     private LocalDateTime toDate;
+
+    /** Наличие в системе. */
+    private boolean isPresent;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
@@ -61,6 +64,7 @@ public class SyncEntryVersion implements Serializable {
                 Objects.equals(fromDate, that.fromDate) &&
                 Objects.equals(toDate, that.toDate) &&
 
+                Objects.equals(isPresent, that.isPresent) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus);
     }
@@ -69,7 +73,7 @@ public class SyncEntryVersion implements Serializable {
     public int hashCode() {
         return Objects.hash(id, entryId, code, name,
                 version, fromDate, toDate,
-                lastDateTime, lastStatus);
+                isPresent, lastDateTime, lastStatus);
     }
 
     @Override
