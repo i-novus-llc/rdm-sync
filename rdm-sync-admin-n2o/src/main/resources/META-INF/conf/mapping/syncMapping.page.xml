@@ -9,6 +9,7 @@
             <eq field-id="code" param="code"/>
             <eq field-id="name" param="name"/>
             <eq field-id="version" param="version"/>
+            <eq field-id="startVersion" param="version"/>
 
             <eq field-id="versioned" param="versioned"/>
             <eq field-id="autoUpdatable" param="autoUpdatable"/>
@@ -29,7 +30,7 @@
                 <row>
                     <output-text id="code" label="Справочник "
                                  label-class="w-50" enabled="false"/>
-                    <output-text id="version" label="Версия "
+                    <output-text id="startVersion" label="Версия "
                                  label-class="w-50" enabled="false" visible="{actionType == 'create'}"/>
                 </row>
                 <output-text id="name" no-label="true" no-label-block="true" enabled="false"/>

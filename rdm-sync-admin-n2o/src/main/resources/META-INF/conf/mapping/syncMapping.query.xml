@@ -60,9 +60,16 @@
         </field>
 
         <field id="version" domain="string">
-            <select mapping="['entry']['version']"/>
+            <!--<select mapping="['entry']['version']"/>-->
             <filters>
                 <eq filter-id="version">version={version}</eq>
+            </filters>
+        </field>
+
+        <field id="startVersion" domain="string">
+            <select mapping="['entry']['version']"/>
+            <filters>
+                <eq filter-id="startVersion">version={startVersion}</eq>
             </filters>
         </field>
 
