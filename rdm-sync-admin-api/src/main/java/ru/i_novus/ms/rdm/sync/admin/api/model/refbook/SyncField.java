@@ -2,6 +2,9 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.refbook;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
@@ -12,6 +15,8 @@ import java.util.Objects;
 /**
  * Поле (версии) справочника.
  */
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncField implements Serializable {
@@ -26,12 +31,13 @@ public class SyncField implements Serializable {
     private String type;
 
     /** Признак первичного ключа. */
-    private Boolean isPrimary = Boolean.FALSE;
+    private boolean isPrimary;
 
     /** Описание поля. */
     private String description;
 
     /** Другие параметры. */
+    @Setter(AccessLevel.NONE)
     private final Map<String, Serializable> params = new HashMap<>();
 
     public SyncField() {
@@ -48,50 +54,6 @@ public class SyncField implements Serializable {
         this.description = field.description;
 
         this.params.putAll(field.params);
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Boolean getIsPrimary() {
-        return isPrimary;
-    }
-
-    public void setIsPrimary(Boolean isPrimary) {
-        this.isPrimary = isPrimary != null && isPrimary;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Map<String, Serializable> getParams() {
-        return params;
     }
 
     @Override
