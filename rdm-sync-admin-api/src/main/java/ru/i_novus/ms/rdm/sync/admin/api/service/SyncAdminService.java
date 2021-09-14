@@ -49,6 +49,7 @@ public interface SyncAdminService {
     SyncEntry getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
 
     @POST
+    @Path("/entries")
     @ApiOperation(value = "Создание новой записи о синхронизации (добавление справочника)")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Справочник"),
