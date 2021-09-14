@@ -15,6 +15,24 @@
         </list>
     </fields>
 
-    <operations/>
+    <operations>
+        <operation id="createEntry">
+            <invocation>
+                <rest method="POST">${rdm.sync.admin.backend.path}/sync/admin/entries</rest>
+            </invocation>
+            <in>
+                <field id="source.id" mapping="['sourceCode']"/>
+                <field id="code" mapping="['code']"/>
+                <field id="name" mapping="['name']"/>
+
+                <field id="startVersion" mapping="['startVersion']"/>
+                <field id="versioned" mapping="['versioned']"/>
+                <field id="autoUpdatable" mapping="['autoUpdatable']"/>
+
+                <field id="storageCode" mapping="['storageCode']"/>
+                <field id="fieldMappings" mapping="['fieldMappings']"/>
+            </in>
+        </operation>
+    </operations>
 
 </object>

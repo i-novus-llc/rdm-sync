@@ -28,6 +28,8 @@
                         label-class="w-50" required="true" enabled="false"/>
 
                 <row>
+                    <!--<input-text id="code" label="Справочник "-->
+                    <!--             label-class="w-50"/>-->
                     <output-text id="code" label="Справочник "
                                  label-class="w-50" enabled="false"/>
                     <output-text id="startVersion" label="Версия "
@@ -46,8 +48,16 @@
                     <!--visible="true" enabled="false"/>-->
                 </row>
 
-                <input-text id="storageCode" label="Таблица"
-                            required="true" label-class="w-50"/>
+                <input-text id="storageCode" label="Хранилище"
+                            required="true" label-class="w-50">
+                    <validations>
+                        <!-- Также нужна валидация на длину. -->
+                        <condition id="checkStorageCode" severity="danger" side="client"
+                                   message="Код хранилища должен содержать только строчные латинские символы и цифры и начинаться с символа">
+                            typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^[a-z][a-z0-9_]*$/.test(storageCode)
+                        </condition>
+                    </validations>
+                </input-text>
             </set>
 
             <multi-set id="fieldMappings" label="Настройка полей" field-label-location="top"
@@ -60,7 +70,15 @@
                         <input-text id="type" label="Тип" enabled="false"/>
                     </col>
                     <col size="2">
-                        <input-text id="code" label="Наименование"/>
+                        <input-text id="code" label="Поле"/>
+                        <!--<input-text id="code" label="Поле">-->
+                            <!--<validations>-->
+                            <!--    <condition id="checkCode" severity="danger" side="client"-->
+                            <!--               message="Код поля должен содержать только латинские символы и цифры и начинаться с символа">-->
+                            <!--        typeof code == 'undefined' || code == null || code == '' || /^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)-->
+                            <!--    </condition>-->
+                            <!--</validations>-->
+                        <!--</input-text>-->
                     </col>
                     <col size="6">
                         <input-text id="name" label="Описание"/>
@@ -71,7 +89,9 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="save" label="Сохранить">
+            <button id="save" label="Сохранить" >
+                <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
+                        redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
             </button>
 
             <button id="cancel" label="Отмена">
