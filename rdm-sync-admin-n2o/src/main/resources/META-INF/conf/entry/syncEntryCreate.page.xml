@@ -64,7 +64,7 @@
                     <!--    &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
                     <!--    &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
                     <!--    &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
-                    <!--    &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1005'&ndash;&gt;-->
+                    <!--    &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1006'&ndash;&gt;-->
                     <!--    &lt;!&ndash;</condition>&ndash;&gt;-->
 
                     <!--    <constraint id="validateRefBook" severity="danger"-->
@@ -129,7 +129,6 @@
                         </set-value>
                     </dependencies>
                 </output-text>
-                <!--return { 'id': refBook.versionId, 'name': refBook.version };-->
 
                 <input-select id="startVersion" label="Загрузить с версии "
                               query-id="syncSourceVersionList" label-field-id="displayName"
@@ -143,7 +142,7 @@
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
-                                return { 'id': refBook.versionId, 'displayName': refBook.version };
+                                return { 'id': refBook.version, 'displayName': refBook.version };
                             else
                                 return;
                         </set-value>
