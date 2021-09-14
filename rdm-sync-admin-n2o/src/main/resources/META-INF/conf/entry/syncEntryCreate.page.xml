@@ -48,6 +48,7 @@
                               label-class="w-50" required="true">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="hasEntry" value="false"/>
                     </pre-filters>
 
                     <dependencies>
