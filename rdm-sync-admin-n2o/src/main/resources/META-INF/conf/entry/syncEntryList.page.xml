@@ -26,6 +26,10 @@
                 <!--    <query-param name="code" value="{code}"/>-->
                 <!--</open-page>-->
             </button>
+
+            <button id="delete" label="Удалить" icon="fa fa-trash" color="danger" enabled="{removable}">
+                <invoke operation-id="delete"/>
+            </button>
         </toolbar>
 
         <columns>
