@@ -41,6 +41,10 @@
             </filters>
         </field>
 
+        <field id="removable" domain="boolean">
+            <select/>
+        </field>
+
         <field id="version" domain="string">
             <select/>
         </field>

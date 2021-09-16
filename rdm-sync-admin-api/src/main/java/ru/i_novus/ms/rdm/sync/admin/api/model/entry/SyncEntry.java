@@ -18,14 +18,17 @@ public class SyncEntry implements Serializable {
     /** Идентификатор записи. */
     private String id;
 
-    /** Код локального хранилища. */
-    private String storageCode;
-
     /** Код справочника. */
     private String code;
 
     /** Наименование справочника. */
     private String name;
+
+    /** Код локального хранилища. */
+    private String storageCode;
+
+    /** Признак удаляемости. */
+    private boolean removable;
 
     /** Версия (номер) справочника. */
     private String version;
@@ -56,9 +59,11 @@ public class SyncEntry implements Serializable {
 
         SyncEntry that = (SyncEntry) o;
         return Objects.equals(id, that.id) &&
-                Objects.equals(storageCode, that.storageCode) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+
+                Objects.equals(storageCode, that.storageCode) &&
+                Objects.equals(removable, that.removable) &&
 
                 Objects.equals(version, that.version) &&
                 versioned == that.versioned &&
@@ -71,7 +76,8 @@ public class SyncEntry implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, storageCode, code, name,
+        return Objects.hash(id, code, name,
+                storageCode, removable,
                 version, versioned, autoUpdatable,
                 source, lastDateTime, lastStatus);
     }
