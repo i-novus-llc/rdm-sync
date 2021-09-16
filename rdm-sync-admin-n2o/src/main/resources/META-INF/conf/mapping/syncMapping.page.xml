@@ -69,6 +69,9 @@
                     <col size="2">
                         <input-text id="type" label="Тип" enabled="false"/>
                     </col>
+                    <col size="1" visible="false">
+                        <checkbox id="isPrimary" no-label="true" no-label-block="true" enabled="false"/>
+                    </col>
                     <col size="2">
                         <input-text id="code" label="Поле"/>
                         <!--<input-text id="code" label="Поле">-->
