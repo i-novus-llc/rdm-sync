@@ -8,8 +8,7 @@ import ru.i_novus.ms.rdm.sync.admin.api.BaseTest;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class AbstractCriteriaTest extends BaseTest {
 
@@ -19,6 +18,9 @@ public class AbstractCriteriaTest extends BaseTest {
         AbstractCriteria criteria = new AbstractCriteria();
         assertNotNull(criteria);
         assertSpecialEquals(criteria);
+
+        AbstractCriteria copyCriteria = new AbstractCriteria(criteria);
+        assertObjects(Assert::assertEquals, criteria, copyCriteria);
 
         AbstractCriteria sameCriteria = new AbstractCriteria(criteria.getPageNumber(), criteria.getPageSize());
         assertObjects(Assert::assertEquals, criteria, sameCriteria);
@@ -31,9 +33,11 @@ public class AbstractCriteriaTest extends BaseTest {
 
         AbstractCriteria unpagedCriteria = new AbstractCriteria();
         unpagedCriteria.makeUnpaged();
+        assertTrue(unpagedCriteria.madeUnpaged());
         assertObjects(Assert::assertNotEquals, criteria, unpagedCriteria);
 
         AbstractCriteria pagedCriteria = new AbstractCriteria(1000, 1000);
+        assertFalse(pagedCriteria.madeUnpaged());
         assertObjects(Assert::assertNotEquals, criteria, pagedCriteria);
         assertObjects(Assert::assertNotEquals, unpagedCriteria, pagedCriteria);
     }
