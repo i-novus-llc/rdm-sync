@@ -57,6 +57,16 @@ public interface SyncAdminService {
     })
     SyncEntry create(SyncEntryCreateRequest request);
 
+    @DELETE
+    @Path("/entries")
+    @ApiOperation(value = "Удаление записи о синхронизации (удаление справочника)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Справочник удалён"),
+            @ApiResponse(code = 400, message = "Некорректный запрос"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    void delete(@ApiParam("Идентификатор записи") @QueryParam("id") String id);
+
     @GET
     @Path("/entries/versions/")
     @ApiOperation(value = "Получение версий записи о синхронизации")
