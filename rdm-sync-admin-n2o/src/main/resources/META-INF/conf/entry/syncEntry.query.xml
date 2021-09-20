@@ -57,7 +57,11 @@
             <select/>
         </field>
 
-        <field id="sourceCaption" domain="string">
+        <field id="source.code" domain="string">
+            <select mapping="['source']['code']"/>
+        </field>
+
+        <field id="source.caption" domain="string">
             <select mapping="['source']['caption']"/>
         </field>
 

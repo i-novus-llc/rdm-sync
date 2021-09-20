@@ -18,13 +18,19 @@
                 <open-page page-id="syncEntryCreate" page-name="Добавление справочника" upload="defaults"/>
             </button>
 
-            <button id="edit" label="Изменить" icon="fa fa-pencil">
-                <!--<open-page page-id="syncEntryEdit" page-name="Настройка обновления справочника &quot;{name}&quot; [{code}]"-->
-                <!--           route="/:entryId/edit">-->
-                <!--    <path-param name="entryId" value="{id}"/>-->
-                <!--    <query-param name="name" value="{name}"/>-->
-                <!--    <query-param name="code" value="{code}"/>-->
-                <!--</open-page>-->
+            <button id="edit" label="Изменить" icon="fa fa-pencil" visible="false">
+                <show-modal page-id="syncMapping"
+                            page-name="Настройка полей справочника"
+                            modal-size="xl" scrollable="true"
+                            route="/mapping/edit">
+                    <query-param name="sourceCode" value="{source.code}"/>
+                    <query-param name="code" value="{code}"/>
+                    <query-param name="name" value="{name}"/>
+                    <query-param name="version" value="{version}"/>
+                    <query-param name="versioned" value="{versioned}"/>
+                    <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                    <query-param name="actionType" value="update"/>
+                </show-modal>
             </button>
 
             <button id="delete" label="Удалить" icon="fa fa-trash" color="danger" enabled="{removable}">
@@ -36,7 +42,7 @@
             <column text-field-id="code" label="Код справочника" width="250px" sorting-direction="asc"/>
             <column text-field-id="name" label="Наименование справочника" width="500px"/>
 
-            <column text-field-id="sourceCaption" label="Источник"/>
+            <column text-field-id="source.caption" label="Источник"/>
             <column text-field-id="version" label="Версия справочника"/>
             <column text-field-id="versioned" label="Поддержка версионности">
                 <checkbox/>
