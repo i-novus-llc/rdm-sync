@@ -6,8 +6,8 @@
         <pre-filters>
             <eq field-id="sourceCode" param="sourceCode"/>
 
-            <eq field-id="code" param="code"/>
-            <eq field-id="name" param="name"/>
+            <eq field-id="refBook.code" param="code"/>
+            <eq field-id="refBook.name" param="name"/>
             <eq field-id="version" param="version"/>
             <eq field-id="startVersion" param="version"/>
 
@@ -28,30 +28,28 @@
                         label-class="w-50" required="true" enabled="false"/>
 
                 <row>
-                    <!--<input-text id="code" label="Справочник "-->
-                    <!--             label-class="w-50"/>-->
-                    <output-text id="code" label="Справочник "
+                    <output-text id="refBook.code" label="Справочник "
                                  label-class="w-50" enabled="false"/>
                     <output-text id="startVersion" label="Версия "
-                                 label-class="w-50" enabled="false" visible="{actionType == 'create'}"/>
+                                 label-class="w-50" enabled="false"
+                                 visible="{actionType == 'create'}"/>
                 </row>
-                <output-text id="name" no-label="true" no-label-block="true" enabled="false"/>
-                <!--<output-text id="name" label="Наименование " label-class="w-50" enabled="false"/>-->
+                <input-text id="refBook.name" label="Наименование "
+                            label-class="w-50" required="true"/>
 
                 <row>
+                    <!--<checkbox id="autoUpdatable" label="Автоматически обновлять"/>-->
                     <checkbox id="autoUpdatable" label="Автоматически обновлять"
                               visible="{actionType != 'create'}"/>
-                    <!--visible="true" enabled="false"/>-->
 
+                    <!--<checkbox id="versioned" label="Поддерживать версионность"/>-->
                     <checkbox id="versioned" label="Поддерживать версионность"
                               visible="{actionType != 'create'}"/>
-                    <!--visible="true" enabled="false"/>-->
                 </row>
 
                 <input-text id="storageCode" label="Хранилище"
                             required="true" label-class="w-50">
                     <validations>
-                        <!-- Также нужна валидация на длину. -->
                         <condition id="checkStorageCode" severity="danger" side="client"
                                    message="Код хранилища должен содержать только строчные латинские символы и цифры и начинаться с символа">
                             typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^[a-z][a-z0-9_]*$/.test(storageCode)

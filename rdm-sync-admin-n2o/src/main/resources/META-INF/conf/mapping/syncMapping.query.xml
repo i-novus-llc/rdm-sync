@@ -59,6 +59,20 @@
             </filters>
         </field>
 
+        <field id="refBook.code" domain="string">
+            <select mapping="['entry']['code']"/>
+            <filters>
+                <eq filter-id="refBook.code">code={refBook.code}</eq>
+            </filters>
+        </field>
+
+        <field id="refBook.name" domain="string">
+            <select mapping="['entry']['name']"/>
+            <filters>
+                <eq filter-id="refBook.name">name={refBook.name}</eq>
+            </filters>
+        </field>
+
         <field id="version" domain="string">
             <!--<select mapping="['entry']['version']"/>-->
             <filters>
