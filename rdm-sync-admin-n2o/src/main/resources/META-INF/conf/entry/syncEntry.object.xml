@@ -4,8 +4,7 @@
 
     <operations>
         <operation id="delete" submit-label="Удалить" success-text="Запись о справочнике удалена"
-                   confirm="true" confirm-text="В случае подтверждения действия будут удалены все данные о справочнике: содержимое, настройки полей и версии.
-                   Вы уверены, что хотите удалить запись о справочнике &quot;{name}&quot; [{code}]?">
+                   confirm="true" confirm-text="${sync.entry.page.delete.confirm}">
             <invocation>
                 <rest method="DELETE">${rdm.sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
             </invocation>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
-             name="Настройка полей для синхронизации">
-    <form name="Настройка полей" query-id="syncMapping" object-id="syncMapping">
+             name="${sync.mapping.page.default.name}">
+    <form name="${sync.mapping.page.form.name}" query-id="syncMapping" object-id="syncMapping">
 
         <pre-filters>
             <eq field-id="sourceCode" param="sourceCode"/>
@@ -23,66 +23,66 @@
                 <output-text id="actionType" visible="false"
                              label-class="w-50" enabled="false"/>
 
-                <select id="source" label="Источник "
+                <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true" enabled="false"/>
 
                 <row>
-                    <output-text id="refBook.code" label="Справочник "
+                    <output-text id="refBook.code" label="${sync.entry.page.refbook}"
                                  label-class="w-50" enabled="false"/>
-                    <output-text id="startVersion" label="Версия "
+                    <output-text id="startVersion" label="${sync.entry.page.refbook.version}"
                                  label-class="w-50" enabled="false"
                                  visible="{actionType == 'create'}"/>
                 </row>
-                <input-text id="refBook.name" label="Наименование "
+                <input-text id="refBook.name" label="${sync.entry.page.refbook.name}"
                             label-class="w-50" required="true"/>
 
                 <row>
-                    <!--<checkbox id="autoUpdatable" label="Автоматически обновлять"/>-->
-                    <checkbox id="autoUpdatable" label="Автоматически обновлять"
+                    <!--<checkbox id="autoUpdatable" label="${sync.mapping.page.refbook.auto-updatable}"/>-->
+                    <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
                               visible="{actionType != 'create'}"/>
 
-                    <!--<checkbox id="versioned" label="Поддерживать версионность"/>-->
-                    <checkbox id="versioned" label="Поддерживать версионность"
+                    <!--<checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}"/>-->
+                    <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}"
                               visible="{actionType != 'create'}"/>
                 </row>
 
-                <input-text id="storageCode" label="Хранилище"
+                <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
                             required="true" label-class="w-50">
                     <validations>
                         <condition id="checkStorageCode" severity="danger" side="client"
-                                   message="Код хранилища должен содержать только строчные латинские символы и цифры и начинаться с символа">
+                                   message="${sync.mapping.page.storage.code.check}">
                             typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^[a-z][a-z0-9_]*$/.test(storageCode)
                         </condition>
                     </validations>
                 </input-text>
             </set>
 
-            <multi-set id="fieldMappings" label="Настройка полей" field-label-location="top"
+            <multi-set id="fieldMappings" label="${sync.mapping.page.field.mappings}" field-label-location="top"
                        can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
                 <row>
                     <col size="2">
-                        <input-text id="originCode" label="Исходное поле" enabled="false"/>
+                        <input-text id="originCode" label="${sync.mapping.page.field.origin.code}" enabled="false"/>
                     </col>
                     <col size="2">
-                        <input-text id="type" label="Тип" enabled="false"/>
+                        <input-text id="type" label="${sync.mapping.page.field.type}" enabled="false"/>
                     </col>
                     <col size="1" visible="false">
                         <checkbox id="isPrimary" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                     <col size="2">
-                        <input-text id="code" label="Поле"/>
+                        <input-text id="code" label="${sync.mapping.page.field.code}"/>
                         <!--<input-text id="code" label="Поле">-->
                             <!--<validations>-->
                             <!--    <condition id="checkCode" severity="danger" side="client"-->
-                            <!--               message="Код поля должен содержать только латинские символы и цифры и начинаться с символа">-->
+                            <!--               message="${sync.mapping.page.field.code.check}">-->
                             <!--        typeof code == 'undefined' || code == null || code == '' || /^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)-->
                             <!--    </condition>-->
                             <!--</validations>-->
                         <!--</input-text>-->
                     </col>
                     <col size="6">
-                        <input-text id="name" label="Описание"/>
+                        <input-text id="name" label="${sync.mapping.page.field.name}"/>
                     </col>
                 </row>
             </multi-set>
@@ -90,12 +90,12 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="save" label="Сохранить" >
+            <button id="save" label="${sync.mapping.page.button.create}" >
                 <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
                         redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
             </button>
 
-            <button id="cancel" label="Отмена">
+            <button id="cancel" label="${sync.mapping.page.button.cancel}">
                 <close/>
             </button>
 

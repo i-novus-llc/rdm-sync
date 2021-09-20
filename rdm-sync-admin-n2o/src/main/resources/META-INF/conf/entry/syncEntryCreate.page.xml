@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
-             name="Создание записи о синхронизации">
-    <form name="Справочник" query-id="syncEntry" object-id="syncEntry">
+             name="${sync.entry.page.create.default.name}">
+    <form name="${sync.entry.page.form.name}" query-id="syncEntry" object-id="syncEntry">
         <fields>
             <set field-label-location="left">
-                <select id="source" label="Источник "
+                <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true"/>
 
-                <!--<input-text id="refBook" label="Справочник "-->
+                <!--<input-text id="refBook" label="${sync.entry.page.refbook}"-->
                 <!--            required="true" label-class="w-50">-->
                 <!--    <dependencies>-->
                 <!--        <enabling on="source">-->
@@ -43,7 +43,7 @@
                 <!--    </validations>-->
                 <!--</input-text>-->
 
-                <input-select id="refBook" label="Справочник "
+                <input-select id="refBook" label="${sync.entry.page.refbook}"
                               query-id="syncSourceRefBookList" label-field-id="displayName"
                               label-class="w-50" required="true">
                     <pre-filters>
@@ -101,7 +101,7 @@
                     </dependencies>
                 </output-text>
 
-                <checkbox id="autoUpdatable" label="Автоматически обновлять" default-value="true" label-class="w-50">
+                <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" default-value="true" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
@@ -109,7 +109,7 @@
                     </dependencies>
                 </checkbox>
 
-                <checkbox id="versioned" label="Поддерживать версионность" default-value="false" label-class="w-50">
+                <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" default-value="false" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
@@ -129,7 +129,7 @@
                 <!--    </dependencies>-->
                 <!--</output-text>-->
 
-                <input-select id="startVersion" label="Загрузить с версии "
+                <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
                               required="true" label-class="w-50">
                     <pre-filters>
@@ -155,9 +155,9 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="createMapping" label="Настроить поля">
+            <button id="createMapping" label="${sync.entry.page.create.button.mapping}">
                     <show-modal page-id="syncMapping"
-                                page-name="Настройка полей справочника"
+                                page-name="${sync.entry.page.create.button.mapping.page}"
                                 modal-size="xl" scrollable="true"
                                 route="/mapping/create">
                         <query-param name="sourceCode" value="{source.id}"/>
@@ -170,7 +170,7 @@
                     </show-modal>
             </button>
 
-            <button id="cancel" label="Отмена">
+            <button id="cancel" label="${sync.entry.page.create.button.cancel}">
                 <close/>
             </button>
 
