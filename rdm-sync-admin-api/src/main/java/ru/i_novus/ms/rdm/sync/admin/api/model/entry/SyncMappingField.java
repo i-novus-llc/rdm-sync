@@ -18,6 +18,9 @@ public class SyncMappingField extends SyncField {
     /** Код исходного поля (из источника). */
     private String originCode;
 
+    /** Тип исходного поля (из источника). */
+    private String originType;
+
     public SyncMappingField() {
         // nothing to do.
     }
