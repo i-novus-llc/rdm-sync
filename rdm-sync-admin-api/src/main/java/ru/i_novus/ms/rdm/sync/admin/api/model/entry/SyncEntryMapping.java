@@ -24,7 +24,7 @@ public class SyncEntryMapping implements Serializable {
     private SyncEntryVersion version;
 
     /** Маппинг полей версии. */
-    private List<SyncMappingField> fieldMappings;
+    private List<SyncMappingField> mappingFields;
 
     /** Тип выполняемого действия. */
     private String actionType; // из критерия!
@@ -41,13 +41,13 @@ public class SyncEntryMapping implements Serializable {
         SyncEntryMapping that = (SyncEntryMapping) o;
         return Objects.equals(entry, that.entry) &&
                 Objects.equals(version, that.version) &&
-                Objects.equals(fieldMappings, that.fieldMappings) &&
+                Objects.equals(mappingFields, that.mappingFields) &&
                 Objects.equals(actionType, that.actionType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entry, version, fieldMappings, actionType);
+        return Objects.hash(entry, version, mappingFields, actionType);
     }
 
     @Override
