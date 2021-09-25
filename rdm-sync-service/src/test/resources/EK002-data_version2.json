@@ -1,0 +1,107 @@
+[
+    {
+      "type": "RefBookRowValue",
+      "systemId": 1,
+      "fieldValues": [
+        {
+          "type": "IntegerFieldValue",
+          "field": "id",
+          "value": 2
+        },
+        {
+          "type": "BooleanFieldValue",
+          "field": "is_cold",
+          "value": true
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "code_en",
+          "value": "blue"
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "name_ru",
+          "value": "Голубой"
+        },
+        {
+          "type": "ReferenceFieldValue",
+          "field": "ref",
+          "value": {
+            "value": "tab",
+            "displayValue": "Стол1"
+          }
+        }
+      ],
+      "hash": "0f592faa1a007ca83c3e8d7a51776db0",
+      "id": "0f592faa1a007ca83c3e8d7a51776db0$286"
+    },
+    {
+      "type": "RefBookRowValue",
+      "systemId": 2,
+      "fieldValues": [
+        {
+          "type": "IntegerFieldValue",
+          "field": "id",
+          "value": 3
+        },
+        {
+          "type": "BooleanFieldValue",
+          "field": "is_cold",
+          "value": false
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "code_en",
+          "value": "yello"
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "name_ru",
+          "value": "желтый"
+        },
+        {
+          "type": "ReferenceFieldValue",
+          "field": "ref",
+          "value": {
+            "value": "st",
+            "displayValue": "Стул1"
+          }
+        }
+      ],
+      "hash": "9f566007e0f8b1788f18b5d13b134364",
+      "id": "9f566007e0f8b1788f18b5d13b134364$286"
+    },
+    {
+      "type": "RefBookRowValue",
+      "systemId": 7,
+      "fieldValues": [
+        {
+          "type": "IntegerFieldValue",
+          "field": "id",
+          "value": 4
+        },
+        {
+          "type": "BooleanFieldValue",
+          "field": "is_cold",
+          "value": false
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "code_en",
+          "value": "green"
+        },
+        {
+          "type": "StringFieldValue",
+          "field": "name_ru",
+          "value": "зеленый"
+        },
+        {
+          "type": "ReferenceFieldValue",
+          "field": "ref",
+          "value": {}
+        }
+      ],
+      "hash": "a484ee608f1cea172bcac05ab44cab3f",
+      "id": "a484ee608f1cea172bcac05ab44cab3f$286"
+    }
+  ]

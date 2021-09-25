@@ -1,10 +1,10 @@
 package ru.i_novus.ms.rdm.sync.api.service;
 
 import io.swagger.annotations.*;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,7 +33,7 @@ public interface RdmSyncService {
     @ApiOperation(value = "Синхронизация отдельного справочника")
     void update(@PathParam("refBookCode") String refBookCode);
 
-    void update(RefBook refBook, VersionMapping versionMapping);
+    void update(RefBook refBook, VersionMapping versionMapping, SyncSourceService syncSourceService);
 
     @GET
     @Path("/log")
@@ -49,5 +49,5 @@ public interface RdmSyncService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     Response downloadXmlFieldMapping(@QueryParam("code") List<String> refBookCodes);
 
-    RefBook getLastPublishedVersionFromRdm(String refBookCode);
+    RefBook getLastPublishedVersion(String refBookCode);
 }

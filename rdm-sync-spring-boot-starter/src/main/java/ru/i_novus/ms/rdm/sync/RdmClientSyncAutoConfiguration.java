@@ -44,14 +44,14 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncAutoConfiguration.class})
+@EnableConfigurationProperties({RdmClientSyncProperties.class})
 @EnableJaxRsProxyClient(
         classes = {RefBookService.class, VersionRestService.class, CompareService.class},
         address = "${rdm.client.sync.url}"
 )
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
-@ComponentScan({"ru.i_novus.ms.rdm.sync.service.init"})
+@ComponentScan({"ru.i_novus.ms.rdm"})
 @ConditionalOnProperty(
         value="rdm_sync.enabled",
         matchIfMissing = true)

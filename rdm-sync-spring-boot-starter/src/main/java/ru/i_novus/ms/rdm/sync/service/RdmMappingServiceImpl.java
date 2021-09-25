@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.platform.datastorage.temporal.model.Reference;
@@ -23,14 +24,14 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
     @Override
-    public Object map(FieldType rdmType, DataTypeEnum clientType, Object value) {
+    public Object map(AttributeTypeEnum attributeType, DataTypeEnum clientType, Object value) {
 
         if (value == null) {
-            return FieldType.BOOLEAN.equals(rdmType) ? mapBoolean(clientType, value) : null;
+            return AttributeTypeEnum.BOOLEAN.equals(attributeType) ? mapBoolean(clientType, value) : null;
         }
 
         Object result = null;
-        switch (rdmType) {
+        switch (attributeType) {
             case STRING:
                 return mapVarchar(clientType, value);
             case INTEGER:

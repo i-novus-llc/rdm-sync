@@ -1,11 +1,11 @@
 {
-  "id": 199,
-  "optLockValue": 3,
+  "id": 286,
+  "optLockValue": 4,
   "refBookId": 173,
   "code": "EK002",
   "type": "DEFAULT",
-  "version": "5.1",
-  "fromDate": "2021-02-04T12:38:33",
+  "version": "2",
+  "fromDate": "2021-02-05T12:38:33",
   "status": "PUBLISHED",
   "archived": false,
   "passport": {
@@ -58,11 +58,11 @@
       }
     ]
   },
-  "editDate": "2021-02-04T12:38:33",
+  "editDate": "2021-02-05T12:38:33",
   "removable": false,
-  "lastPublishedVersionId": 199,
-  "lastPublishedVersion": "5.1",
-  "lastPublishedVersionFromDate": "2021-02-04T12:38:33",
+  "lastPublishedVersionId": 286,
+  "lastPublishedVersion": "2",
+  "lastPublishedVersionFromDate": "2021-02-05T12:38:33",
   "hasPrimaryAttribute": true,
   "hasReferrer": false,
   "hasDataConflict": false,

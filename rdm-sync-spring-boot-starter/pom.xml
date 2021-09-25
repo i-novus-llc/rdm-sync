@@ -26,6 +26,13 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.i-novus.ms.rdm.sync</groupId>
+            <artifactId>rdm-sync-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+
+        <dependency>
             <groupId>ru.i-novus.ms.rdm</groupId>
             <artifactId>rdm-api</artifactId>
         </dependency>

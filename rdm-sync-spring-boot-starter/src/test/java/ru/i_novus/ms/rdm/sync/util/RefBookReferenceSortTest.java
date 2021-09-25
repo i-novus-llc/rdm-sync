@@ -4,8 +4,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import ru.i_novus.ms.rdm.api.model.Structure;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 
 import java.util.*;
 
@@ -58,14 +60,14 @@ public class RefBookReferenceSortTest {
         refBook6.setCode("6");
         refBook7.setCode("7");
 
-        refBook0.setStructure(new Structure(emptyList(), emptyList()));
-        refBook1.setStructure(new Structure(emptyList(), singletonList(newReference(refBook0))));
-        refBook2.setStructure(new Structure(emptyList(), singletonList(newReference(refBook1))));
-        refBook3.setStructure(new Structure(emptyList(), singletonList(newReference(refBook1))));
-        refBook4.setStructure(new Structure(emptyList(), emptyList()));
-        refBook5.setStructure(new Structure(emptyList(), List.of(newReference(refBook2), newReference(refBook4))));
-        refBook6.setStructure(new Structure(emptyList(), List.of(newReference(refBook3), newReference(refBook4))));
-        refBook7.setStructure(new Structure(emptyList(), List.of(newReference(refBook5), newReference(refBook6))));
+        refBook0.setStructure(newStructure(emptyMap(), emptyList()));
+        refBook1.setStructure(newStructure(emptyMap(), singletonList(refBook0.getCode())));
+        refBook2.setStructure(newStructure(emptyMap(), singletonList(refBook1.getCode())));
+        refBook3.setStructure(newStructure(emptyMap(), singletonList(refBook1.getCode())));
+        refBook4.setStructure(newStructure(emptyMap(), emptyList()));
+        refBook5.setStructure(newStructure(emptyMap(), List.of(refBook2.getCode(), refBook4.getCode())));
+        refBook6.setStructure(newStructure(emptyMap(), List.of(refBook3.getCode(), refBook4.getCode())));
+        refBook7.setStructure(newStructure(emptyMap(), List.of(refBook5.getCode(), refBook6.getCode())));
 
         List<RefBook> refBooks = List.of(
                 refBook0, refBook1, refBook2, refBook3, refBook4, refBook5, refBook6, refBook7
@@ -80,9 +82,11 @@ public class RefBookReferenceSortTest {
         }
     }
 
-    private Structure.Reference newReference(RefBook refBook) {
-
-        return new Structure.Reference("", refBook.getCode(), "");
+    private RefBookStructure newStructure(Map<String, AttributeTypeEnum> attributesAndTypes, List<String> references) {
+        RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setAttributesAndTypes(attributesAndTypes);
+        refBookStructure.setReferences(references);
+        return refBookStructure;
     }
 
     private void testOrder(List<String> inverseOrder, List<RefBook> refBooks) {
@@ -91,8 +95,7 @@ public class RefBookReferenceSortTest {
 
         Set<String> visited = new HashSet<>();
         Map<String, RefBook> refCodeBooks = refBooks.stream()
-                .map(RefBook::new)
-                .collect(toMap(RefBookVersion::getCode, identity()));
+                .collect(toMap(RefBook::getCode, identity()));
 
         for (String s : inverseOrder) {
 
@@ -103,10 +106,10 @@ public class RefBookReferenceSortTest {
             
             visited.add(refBook.getCode());
             
-            for (Structure.Reference reference : refBook.getStructure().getReferences()) {
+            for (String reference : refBook.getStructure().getReferences()) {
                 // Если здесь false, то сортировка неправильная,
                 // потому что не посещена вершина, на которую есть ссылка.
-                assertTrue(visited.contains(reference.getReferenceCode()));
+                assertTrue(visited.contains(reference));
             }
         }
     }
