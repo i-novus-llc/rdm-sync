@@ -7,6 +7,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class PageMapper {
+
+    private PageMapper() {
+    }
+
     /**
      * т.к в RestPage не корректно работает метод map то делаем такой костыль
      */

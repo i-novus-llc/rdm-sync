@@ -9,7 +9,6 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;

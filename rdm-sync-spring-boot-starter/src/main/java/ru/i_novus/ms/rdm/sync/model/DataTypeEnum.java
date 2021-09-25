@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.model;
 
 
 import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.util.TimeUtils;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 

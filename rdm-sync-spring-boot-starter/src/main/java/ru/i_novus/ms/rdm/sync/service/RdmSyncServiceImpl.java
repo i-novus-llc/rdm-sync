@@ -24,8 +24,6 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
 import ru.i_novus.ms.rdm.sync.util.RefBookReferenceSort;
-import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
-import ru.i_novus.platform.datastorage.temporal.model.value.DiffFieldValue;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

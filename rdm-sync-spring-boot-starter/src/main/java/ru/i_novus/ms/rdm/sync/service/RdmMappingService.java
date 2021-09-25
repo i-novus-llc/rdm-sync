@@ -1,7 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
 /**

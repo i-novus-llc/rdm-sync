@@ -18,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
@@ -54,8 +55,8 @@ public class RdmSyncServiceUseCaseTest {
             Thread.sleep(1000);
         }
         Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
-        Assert.assertEquals(3, result.get("totalElements"));
-        Assert.assertEquals(firstVersionActualData, new ObjectMapper().writeValueAsString(result.get("content")));
+        Assert.assertEquals(3, getTotalElements(result));
+        Assert.assertEquals(firstVersionActualData, new ObjectMapper().writeValueAsString(getContent(result)));
 
         //загрузка след версии
         startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
@@ -66,11 +67,19 @@ public class RdmSyncServiceUseCaseTest {
         }
         result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
         Map<String, Object> deletedResult = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=true", Map.class).getBody();
-        Assert.assertEquals(3, result.get("totalElements"));
-        Assert.assertEquals(secondVersionActualData, new ObjectMapper().writeValueAsString(result.get("content")));
-        Assert.assertEquals(1, deletedResult.get("totalElements"));
-        Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(deletedResult.get("content")));
+        Assert.assertEquals(3, getTotalElements(result));
+        Assert.assertEquals(secondVersionActualData, new ObjectMapper().writeValueAsString(getContent(result)));
+        Assert.assertEquals(1, getTotalElements(deletedResult));
+        Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(getContent(deletedResult)));
 
 
+    }
+
+    private int getTotalElements(Map<String, Object> result) {
+        return (int) result.get("totalElements");
+    }
+
+    private List getContent(Map<String, Object> result) {
+        return (List) result.get("content");
     }
 }

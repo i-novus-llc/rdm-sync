@@ -29,19 +29,19 @@ public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? 
 
     public boolean hasNext() {
         this.criteria.setPageNumber(this.currentPage + 1);
-        this.nextPage = (Page)this.pageSource.apply(this.criteria);
+        this.nextPage = this.pageSource.apply(this.criteria);
         List<? extends T> content = this.nextPage.getContent();
         return !content.isEmpty();
     }
 
     public Page<? extends T> next() {
-        Page result;
+        Page<? extends T>  result;
         if (this.nextPage != null) {
             result = this.nextPage;
             this.nextPage = null;
         } else {
             this.criteria.setPageNumber(this.currentPage + 1);
-            result = (Page)this.pageSource.apply(this.criteria);
+            result = pageSource.apply(this.criteria);
         }
 
         ++this.currentPage;

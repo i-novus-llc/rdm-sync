@@ -5,6 +5,9 @@ import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 public class AttributeTypeMapper {
 
+    private AttributeTypeMapper() {
+    }
+
     public static AttributeTypeEnum map(FieldType fieldType) {
         return AttributeTypeEnum.valueOf(fieldType.name());
     }

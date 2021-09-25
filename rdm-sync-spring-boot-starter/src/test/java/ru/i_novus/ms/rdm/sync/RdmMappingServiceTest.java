@@ -5,9 +5,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
-import ru.i_novus.platform.datastorage.temporal.model.Reference;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
+import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
