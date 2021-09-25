@@ -2,6 +2,19 @@
 <object xmlns="http://n2oapp.net/framework/config/schema/object-4.0"
         name="Запись о синхронизации">
 
-    <operations/>
+    <operations>
+        <operation id="delete" submit-label="Удалить" success-text="Запись о справочнике удалена"
+                   confirm="true" confirm-text="В случае подтверждения действия будут удалены все данные о справочнике: содержимое, настройки полей и версии.
+                   Вы уверены, что хотите удалить запись о справочнике &quot;{name}&quot; [{code}]?">
+            <invocation>
+                <rest method="DELETE">${rdm.sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
+            </invocation>
+
+            <in>
+                <field id="id" mapping="['id']" domain="string"/>
+            </in>
+        </operation>
+
+    </operations>
 
 </object>

@@ -86,9 +86,8 @@
                     <!--</validations>-->
                 </input-select>
 
-                <output-text id="refBookName" no-label="true" no-label-block="true" enabled="false">
-                <!--<output-text id="refBokName" label="" no-label="true"-->
-                <!--             label-class="w-50" enabled="false">-->
+                <output-text id="refBookName" no-label="true"
+                             label-class="w-50" enabled="false">
                     <dependencies>
                         <visibility on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
