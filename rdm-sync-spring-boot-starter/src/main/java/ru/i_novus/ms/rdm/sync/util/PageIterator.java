@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? extends T>> {
@@ -35,6 +36,9 @@ public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? 
     }
 
     public Page<? extends T> next() {
+        if(!hasNext()){
+            throw new NoSuchElementException();
+        }
         Page<? extends T>  result;
         if (this.nextPage != null) {
             result = this.nextPage;

@@ -4,16 +4,16 @@ import java.util.Map;
 
 public class RowDiff {
 
-    private final RowDiffStatus status;
+    private final RowDiffStatusEnum status;
 
     private final Map<String, Object> row;
 
-    public RowDiff(RowDiffStatus status, Map<String, Object> row) {
+    public RowDiff(RowDiffStatusEnum status, Map<String, Object> row) {
         this.status = status;
         this.row = row;
     }
 
-    public RowDiffStatus getStatus() {
+    public RowDiffStatusEnum getStatus() {
         return status;
     }
 

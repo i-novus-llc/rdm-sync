@@ -33,8 +33,8 @@ import javax.xml.bind.Marshaller;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static ru.i_novus.ms.rdm.sync.api.model.RowDiffStatus.DELETED;
-import static ru.i_novus.ms.rdm.sync.api.model.RowDiffStatus.INSERTED;
+import static ru.i_novus.ms.rdm.sync.api.model.RowDiffStatusEnum.DELETED;
+import static ru.i_novus.ms.rdm.sync.api.model.RowDiffStatusEnum.INSERTED;
 
 /**
  * @author lgalimova

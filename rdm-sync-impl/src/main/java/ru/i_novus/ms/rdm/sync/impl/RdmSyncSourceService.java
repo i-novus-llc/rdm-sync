@@ -125,7 +125,7 @@ public class RdmSyncSourceService implements SyncSourceService {
             }
         });
 
-        return new RowDiff(RowDiffStatus.valueOf(diffRowValue.getStatus().name()), row);
+        return new RowDiff(RowDiffStatusEnum.valueOf(diffRowValue.getStatus().name()), row);
 
     }
 

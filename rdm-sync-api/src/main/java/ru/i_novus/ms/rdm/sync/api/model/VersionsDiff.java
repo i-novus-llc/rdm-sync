@@ -20,7 +20,7 @@ public class VersionsDiff {
         return structureChanged;
     }
 
-    public Page getRows() {
+    public Page<RowDiff> getRows() {
         return rows;
     }
 

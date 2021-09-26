@@ -280,14 +280,14 @@ public class RdmSyncServiceTest {
     }
 
     private VersionsDiff prepareUpdateRefBookDataDiff() {
-       RowDiff row1 = new RowDiff(RowDiffStatus.DELETED, Map.of("id", BigInteger.ONE, "name", "London"));
-        RowDiff row2 = new RowDiff( RowDiffStatus.INSERTED, Map.of("id", BigInteger.valueOf(3L), "name", "Guadalupe"));
+       RowDiff row1 = new RowDiff(RowDiffStatusEnum.DELETED, Map.of("id", BigInteger.ONE, "name", "London"));
+        RowDiff row2 = new RowDiff( RowDiffStatusEnum.INSERTED, Map.of("id", BigInteger.valueOf(3L), "name", "Guadalupe"));
         List<RowDiff> rowValues = asList(row1, row2);
         return VersionsDiff.dataChangedInstance(new PageImpl<>(rowValues, createDataCriteria(), 2));
     }
 
     private VersionsDiff prepareInsertRefBookDataDiff() {
-        RowDiff row = new RowDiff(RowDiffStatus.INSERTED, Map.of("id", BigInteger.ONE, "name", "London"));
+        RowDiff row = new RowDiff(RowDiffStatusEnum.INSERTED, Map.of("id", BigInteger.ONE, "name", "London"));
         return VersionsDiff.dataChangedInstance(new PageImpl<>(singletonList(row), createDataCriteria(), 1));
     }
 
