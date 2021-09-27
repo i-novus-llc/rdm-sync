@@ -58,21 +58,46 @@
                 </input-text>
             </set>
 
-            <multi-set id="mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top"
+            <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
+                <row>
+                    <col size="2">
+                        <output-text id="label.originCode" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.origin.code}"/>
+                    </col>
+                    <col size="2">
+                        <output-text id="label.type" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.type}"/>
+                    </col>
+                    <col size="1" visible="false">
+                        <output-text id="label.isPrimary" no-label="true" no-label-block="true"
+                                     default-value="is"/>
+                    </col>
+                    <col size="2">
+                        <output-text id="label.code" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.code}"/>
+                    </col>
+                    <col size="6">
+                        <output-text id="label.name" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.name}"/>
+                    </col>
+                </row>
+            </set>
+
+            <multi-set id="mappingFields" field-label-location="top"
                        can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
                 <row>
                     <col size="2">
-                        <input-text id="originCode" label="${sync.mapping.page.field.origin.code}" enabled="false"/>
+                        <input-text id="originCode" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                     <col size="2">
-                        <input-text id="type" label="${sync.mapping.page.field.type}" enabled="false"/>
+                        <input-text id="type" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                     <col size="1" visible="false">
                         <checkbox id="isPrimary" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                     <col size="2">
-                        <input-text id="code" label="${sync.mapping.page.field.code}"/>
-                        <!--<input-text id="code" label="Поле">-->
+                        <input-text id="code" no-label="true" no-label-block="true"/>
+                        <!--<input-text id="code" no-label="true" no-label-block="true">-->
                             <!--<validations>-->
                             <!--    <condition id="checkCode" severity="danger" side="client"-->
                             <!--               message="${sync.mapping.page.field.code.check}">-->
@@ -82,7 +107,7 @@
                         <!--</input-text>-->
                     </col>
                     <col size="6">
-                        <input-text id="name" label="${sync.mapping.page.field.name}"/>
+                        <input-text id="name" no-label="true" no-label-block="true"/>
                     </col>
                 </row>
             </multi-set>
