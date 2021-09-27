@@ -20,8 +20,10 @@
 
         <fields>
             <set field-label-location="left">
-                <output-text id="actionType" visible="false"
-                             label-class="w-50" enabled="false"/>
+                <row>
+                    <output-text id="entryId" visible="false" enabled="false"/>
+                    <output-text id="actionType" visible="false" enabled="false"/>
+                </row>
 
                 <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
@@ -117,6 +119,11 @@
         <toolbar place="bottomRight">
             <button id="create" label="${sync.mapping.page.button.create}" visible="{actionType == 'create'}">
                 <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
+                        redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
+            </button>
+
+            <button id="update" label="${sync.mapping.page.button.update}" visible="{actionType == 'update'}">
+                <invoke operation-id="updateEntry" close-after-success="true" message-on-success="false"
                         redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
             </button>
 

@@ -34,6 +34,25 @@
                 <field id="mappingFields" mapping="['mappingFields']"/>
             </in>
         </operation>
+
+        <operation id="updateEntry">
+            <invocation>
+                <rest method="PUT">${rdm.sync.admin.backend.path}/sync/admin/entries</rest>
+            </invocation>
+            <in>
+                <field id="entryId" mapping="['id']"/>
+                <field id="source.id" mapping="['sourceCode']"/>
+                <field id="refBook.code" mapping="['code']"/>
+                <field id="refBook.name" mapping="['name']"/>
+
+                <field id="version.id" mapping="['version']"/>
+                <field id="versioned" mapping="['versioned']"/>
+                <field id="autoUpdatable" mapping="['autoUpdatable']"/>
+
+                <field id="storageCode" mapping="['storageCode']"/>
+                <field id="mappingFields" mapping="['mappingFields']"/>
+            </in>
+        </operation>
     </operations>
 
 </object>
