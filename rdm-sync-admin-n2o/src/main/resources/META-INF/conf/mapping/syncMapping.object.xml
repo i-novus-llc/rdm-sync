@@ -3,8 +3,9 @@
         name="Маппинг версии записи">
 
     <fields>
-        <list id="fieldMappings">
+        <list id="mappingFields">
             <field id="originCode" domain="string"/>
+            <field id="originType" domain="string"/>
 
             <field id="code" domain="string"/>
             <field id="name" domain="string"/>
@@ -30,7 +31,7 @@
                 <field id="autoUpdatable" mapping="['autoUpdatable']"/>
 
                 <field id="storageCode" mapping="['storageCode']"/>
-                <field id="fieldMappings" mapping="['fieldMappings']"/>
+                <field id="mappingFields" mapping="['mappingFields']"/>
             </in>
         </operation>
     </operations>

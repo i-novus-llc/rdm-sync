@@ -58,7 +58,7 @@
                 </input-text>
             </set>
 
-            <multi-set id="fieldMappings" label="${sync.mapping.page.field.mappings}" field-label-location="top"
+            <multi-set id="mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top"
                        can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
                 <row>
                     <col size="2">
@@ -90,7 +90,7 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="save" label="${sync.mapping.page.button.create}" >
+            <button id="create" label="${sync.mapping.page.button.create}" visible="{actionType == 'create'}">
                 <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
                         redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
             </button>

@@ -120,7 +120,7 @@
             <select mapping="['entry']['storageCode']"/>
         </field>
 
-        <field id="fieldMappings" domain="object[]">
+        <field id="mappingFields" domain="object[]">
             <select/>
         </field>
 

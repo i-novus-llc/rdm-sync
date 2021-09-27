@@ -36,5 +36,5 @@ public class SyncEntryCreateRequest implements Serializable {
     private String storageCode;
 
     @ApiModelProperty("Маппинг полей версии")
-    private List<SyncMappingField> fieldMappings;
+    private List<SyncMappingField> mappingFields;
 }
