@@ -57,6 +57,15 @@ public interface SyncAdminService {
     })
     SyncEntry create(SyncEntryCreateRequest request);
 
+    @PUT
+    @Path("/entries")
+    @ApiOperation(value = "Изменение записи о синхронизации (изменение параметров справочника)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Справочник"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    SyncEntry update(SyncEntryUpdateRequest request);
+
     @DELETE
     @Path("/entries")
     @ApiOperation(value = "Удаление записи о синхронизации (удаление справочника)")
