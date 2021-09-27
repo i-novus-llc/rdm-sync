@@ -37,6 +37,16 @@ public class SyncSourceVersionCriteria extends AbstractCriteria {
         // Nothing to do.
     }
 
+    public SyncSourceVersionCriteria(SyncSourceVersionCriteria criteria) {
+
+        super(criteria);
+
+        this.sourceCode = criteria.sourceCode;
+        this.code = criteria.code;
+        this.version = criteria.version;
+        this.text = criteria.text;
+    }
+
     @JsonIgnore
     public boolean isEmpty() {
 
