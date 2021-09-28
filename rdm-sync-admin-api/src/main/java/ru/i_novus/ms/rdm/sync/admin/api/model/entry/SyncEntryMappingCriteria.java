@@ -48,6 +48,14 @@ public class SyncEntryMappingCriteria extends AbstractCriteria {
     @QueryParam("actionType")
     private String actionType;
 
+    @ApiParam("Текст для поиска по нескольким полям")
+    @QueryParam("text")
+    private String text;
+
+    @ApiParam("Общее количество записей")
+    @QueryParam("count")
+    private Integer count;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,13 +65,22 @@ public class SyncEntryMappingCriteria extends AbstractCriteria {
         SyncEntryMappingCriteria that = (SyncEntryMappingCriteria) o;
         return Objects.equals(entryId, that.entryId) &&
                 Objects.equals(versionId, that.versionId) &&
+
+                Objects.equals(sourceCode, that.sourceCode) &&
                 Objects.equals(code, that.code) &&
+
                 Objects.equals(version, that.version) &&
-                Objects.equals(actionType, that.actionType);
+                Objects.equals(versioned, that.versioned) &&
+                Objects.equals(autoUpdatable, that.autoUpdatable) &&
+
+                Objects.equals(actionType, that.actionType) &&
+                Objects.equals(text, that.text) &&
+                Objects.equals(count, that.count);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), entryId, versionId, code, version, actionType);
+        return Objects.hash(super.hashCode(), entryId, versionId, sourceCode, code,
+                version, versioned, autoUpdatable, actionType, text, count);
     }
 }
