@@ -44,7 +44,7 @@
             </filters>
         </field>
         <field id="displayName" domain="string">
-            <select mapping="['version']['version'] + ' *'"/>
+            <select mapping="['version']['displayName']"/>
             <filters>
                 <eq filter-id="displayName">text={displayName}</eq>
             </filters>
