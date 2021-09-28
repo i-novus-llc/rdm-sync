@@ -7,6 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Итератор страниц.
+ *
+ * @param <T> класс значения на странице
+ * @param <C> класс критерия поиска
+ */
 public class PageIterator<T, C extends AbstractCriteria> implements Iterator<Page<? extends T>> {
 
     private final Function<? super C, Page<? extends T>> pageSource;
@@ -24,12 +30,14 @@ public class PageIterator<T, C extends AbstractCriteria> implements Iterator<Pag
         this.currentPage = criteria.getPageNumber() - 1;
     }
 
+    protected C getCriteria() {
+        return criteria;
+    }
+
     @Override
     public boolean hasNext() {
 
-        criteria.setPageNumber(currentPage + 1);
-
-        nextPage = pageSource.apply(criteria);
+        nextPage = getNextPage();
         List<? extends T> content = nextPage.getContent();
 
         return !content.isEmpty();
@@ -46,11 +54,16 @@ public class PageIterator<T, C extends AbstractCriteria> implements Iterator<Pag
             nextPage = null;
 
         } else {
-            criteria.setPageNumber(currentPage + 1);
-            result = pageSource.apply(criteria);
+            result = getNextPage();
         }
         currentPage++;
 
         return result;
+    }
+
+    protected Page<? extends T> getNextPage() {
+
+        criteria.setPageNumber(currentPage + 1);
+        return pageSource.apply(criteria);
     }
 }
