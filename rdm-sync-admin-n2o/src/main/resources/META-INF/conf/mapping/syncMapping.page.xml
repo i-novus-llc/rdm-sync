@@ -50,7 +50,8 @@
                 </row>
 
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
-                            required="true" label-class="w-50">
+                            required="true" label-class="w-50"
+                            enabled="{actionType == 'create'}">
                     <validations>
                         <condition id="checkStorageCode" severity="danger" side="client"
                                    message="${sync.mapping.page.storage.code.check}">
