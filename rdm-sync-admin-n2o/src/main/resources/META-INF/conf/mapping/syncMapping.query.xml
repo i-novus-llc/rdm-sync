@@ -1,21 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="syncMapping">
 
-    <!--<list result-mapping="['content']" count-mapping="['totalElements']">-->
-    <!--    <rest method="GET" filters-separator="&amp;">-->
-    <!--        ${rdm.sync.admin.backend.path}/sync/admin/entries/mapping?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}-->
-    <!--    </rest>-->
-    <!--</list>-->
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/entries/mappings?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </list>
 
     <unique>
-        <rest method="GET">
+        <rest method="GET" filters-separator="&amp;">
             ${rdm.sync.admin.backend.path}/sync/admin/entries/mapping?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
         </rest>
     </unique>
 
     <fields>
 
-        <!-- Поле только для префильтра -->
         <field id="sourceCode" domain="string">
             <select mapping="['entry']['source']['code']"/>
             <filters>
@@ -37,10 +36,23 @@
             </filters>
         </field>
 
+        <!-- Используется только для списка версий с маппингами -->
+        <field id="id" domain="string">
+            <select mapping="['version']['id']"/>
+            <filters>
+                <eq filter-id="id">versionId={id}</eq>
+            </filters>
+        </field>
+        <field id="displayName" domain="string">
+            <select mapping="['version']['version'] + ' *'"/>
+            <filters>
+                <eq filter-id="displayName">text={displayName}</eq>
+            </filters>
+        </field>
+
         <field id="source.id" domain="string">
             <select mapping="['entry']['source']['code']"/>
         </field>
-
         <field id="source.name" domain="string">
             <select mapping="['entry']['source']['name']"/>
         </field>
@@ -87,21 +99,6 @@
             </filters>
         </field>
 
-        <!--<field id="version.id" domain="string">-->
-        <!--    <select mapping="['version']['version']"/>-->
-        <!--    <filters>-->
-        <!--        <eq filter-id="version">version={version}</eq>-->
-        <!--    </filters>-->
-        <!--</field>-->
-
-        <!--<field id="version.displayName" domain="string">-->
-        <!--    <select mapping="['version']['version']"/>-->
-        <!--</field>-->
-
-        <!--<field id="versionVersion" domain="string">-->
-        <!--    <select mapping="['version']['version']"/>-->
-        <!--</field>-->
-
         <field id="versioned" domain="boolean">
             <select mapping="['entry']['versioned']"/>
             <filters>
@@ -114,6 +111,17 @@
             <filters>
                 <eq filter-id="autoUpdatable">autoUpdatable={autoUpdatable}</eq>
             </filters>
+        </field>
+
+        <!-- Используется только для инициализации версии с маппингом в списке -->
+        <field id="version.id" domain="string">
+            <select mapping="['version']['version']"/>
+            <filters>
+                <eq filter-id="version.id">version={version}</eq>
+            </filters>
+        </field>
+        <field id="version.displayName" domain="string">
+            <select mapping="['version']['version'] + ' *'"/>
         </field>
 
         <field id="storageCode" domain="string">

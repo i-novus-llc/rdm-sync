@@ -49,6 +49,28 @@
                               visible="{actionType != 'create'}"/>
                 </row>
 
+                <input-select id="version" label="${sync.entry.page.refbook.version}"
+                              query-id="syncMapping" label-field-id="displayName"
+                              required="true" label-class="w-50"
+                              visible="{actionType != 'create'}">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="code" value="{refBook.code}"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <set-value on="versioned">
+                            if ((typeof versioned == 'undefined' || !versioned))
+                                return { 'id': startVersion, 'displayName': startVersion };
+                            else
+                                return;
+                        </set-value>
+                        <enabling on="versioned">
+                            (typeof versioned != 'undefined' &amp;&amp; versioned)
+                        </enabling>
+                    </dependencies>
+                </input-select>
+
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
                             required="true" label-class="w-50"
                             enabled="{actionType == 'create'}">
