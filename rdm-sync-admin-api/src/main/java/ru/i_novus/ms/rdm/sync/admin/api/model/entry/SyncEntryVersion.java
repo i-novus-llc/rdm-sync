@@ -45,6 +45,9 @@ public class SyncEntryVersion implements Serializable {
     /** Статус последнего обновления. */
     private String lastStatus;
 
+    /** Отображаемое наименование. */
+    private String displayName;
+
     public SyncEntryVersion() {
         // Nothing to do.
     }
@@ -66,14 +69,15 @@ public class SyncEntryVersion implements Serializable {
 
                 Objects.equals(isPresent, that.isPresent) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
-                Objects.equals(lastStatus, that.lastStatus);
+                Objects.equals(lastStatus, that.lastStatus) &&
+                Objects.equals(displayName, that.displayName);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, entryId, code, name,
                 version, fromDate, toDate,
-                isPresent, lastDateTime, lastStatus);
+                isPresent, lastDateTime, lastStatus, displayName);
     }
 
     @Override
