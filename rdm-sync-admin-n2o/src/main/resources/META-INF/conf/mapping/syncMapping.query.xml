@@ -37,18 +37,18 @@
         </field>
 
         <!-- Используется только для списка версий с маппингами -->
-        <field id="id" domain="string">
-            <select mapping="['version']['id']"/>
-            <filters>
-                <eq filter-id="id">versionId={id}</eq>
-            </filters>
-        </field>
-        <field id="displayName" domain="string">
-            <select mapping="['version']['displayName']"/>
-            <filters>
-                <eq filter-id="displayName">text={displayName}</eq>
-            </filters>
-        </field>
+        <!--<field id="id" domain="string">-->
+        <!--    <select mapping="['version']['id']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="id">versionId={id}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
+        <!--<field id="displayName" domain="string">-->
+        <!--    <select mapping="['version']['displayName']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="displayName">text={displayName}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
 
         <field id="source.id" domain="string">
             <select mapping="['entry']['source']['code']"/>
@@ -86,14 +86,13 @@
         </field>
 
         <field id="version" domain="string">
-            <!--<select mapping="['entry']['version']"/>-->
             <filters>
                 <eq filter-id="version">version={version}</eq>
             </filters>
         </field>
 
         <field id="startVersion" domain="string">
-            <select mapping="['entry']['version']"/>
+            <select mapping="['version']['version']"/>
             <filters>
                 <eq filter-id="startVersion">version={startVersion}</eq>
             </filters>
@@ -114,15 +113,15 @@
         </field>
 
         <!-- Используется только для инициализации версии с маппингом в списке -->
-        <field id="version.id" domain="string">
-            <select mapping="['version']['version']"/>
-            <filters>
-                <eq filter-id="version.id">version={version}</eq>
-            </filters>
-        </field>
-        <field id="version.displayName" domain="string">
-            <select mapping="['version']['version'] + ' *'"/>
-        </field>
+        <!--<field id="version.id" domain="string">-->
+        <!--    <select mapping="['version']['version']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="version.id">version={version}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
+        <!--<field id="version.displayName" domain="string">-->
+        <!--    <select mapping="['version']['displayName']"/>-->
+        <!--</field>-->
 
         <field id="storageCode" domain="string">
             <select mapping="['entry']['storageCode']"/>

@@ -22,7 +22,7 @@
             <set field-label-location="left">
                 <row>
                     <output-text id="entryId" visible="false" enabled="false"/>
-                    <output-text id="actionType" visible="false" enabled="false"/>
+                    <output-text id="actionType" enabled="false"/>
                 </row>
 
                 <select id="source" label="${sync.entry.page.source}"
@@ -33,43 +33,40 @@
                     <output-text id="refBook.code" label="${sync.entry.page.refbook}"
                                  label-class="w-50" enabled="false"/>
                     <output-text id="startVersion" label="${sync.entry.page.refbook.version}"
-                                 label-class="w-50" enabled="false"
-                                 visible="{actionType == 'create'}"/>
+                                 label-class="w-50" enabled="false"/>
                 </row>
                 <input-text id="refBook.name" label="${sync.entry.page.refbook.name}"
                             label-class="w-50" required="true"/>
 
                 <row>
                     <!--<checkbox id="autoUpdatable" label="${sync.mapping.page.refbook.auto-updatable}"/>-->
-                    <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
-                              visible="{actionType != 'create'}"/>
+                    <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" visible="false"/>
 
                     <!--<checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}"/>-->
-                    <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}"
-                              visible="{actionType != 'create'}"/>
+                    <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" visible="false"/>
                 </row>
 
-                <input-select id="version" label="${sync.entry.page.refbook.version}"
-                              query-id="syncMapping" label-field-id="displayName"
-                              required="true" label-class="w-50"
-                              visible="{actionType != 'create'}">
-                    <pre-filters>
-                        <eq field-id="sourceCode" value="{source.id}"/>
-                        <eq field-id="code" value="{refBook.code}"/>
-                    </pre-filters>
+                <!--<input-select id="version" label="${sync.entry.page.refbook.version}"-->
+                <!--              query-id="syncMapping" label-field-id="displayName"-->
+                <!--              required="true" label-class="w-50"-->
+                <!--              visible="{actionType != 'create'}">-->
+                <!--    <pre-filters>-->
+                <!--        <eq field-id="sourceCode" value="{source.id}"/>-->
+                <!--        <eq field-id="code" value="{refBook.code}"/>-->
+                <!--    </pre-filters>-->
 
-                    <dependencies>
-                        <set-value on="versioned">
-                            if ((typeof versioned == 'undefined' || !versioned))
-                                return { 'id': startVersion, 'displayName': startVersion };
-                            else
-                                return;
-                        </set-value>
-                        <enabling on="versioned">
-                            (typeof versioned != 'undefined' &amp;&amp; versioned)
-                        </enabling>
-                    </dependencies>
-                </input-select>
+                <!--    <dependencies>-->
+                <!--        <set-value on="versioned">-->
+                <!--            if ((typeof versioned == 'undefined' || !versioned))-->
+                <!--                return { 'id': startVersion, 'displayName': startVersion, 'version': startVersion };-->
+                <!--            else-->
+                <!--                return;-->
+                <!--        </set-value>-->
+                <!--        <enabling on="versioned">-->
+                <!--            (typeof versioned != 'undefined' &amp;&amp; versioned)-->
+                <!--        </enabling>-->
+                <!--    </dependencies>-->
+                <!--</input-select>-->
 
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
                             required="true" label-class="w-50"
@@ -85,6 +82,11 @@
 
             <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
+                    <col size="1" visible="{actionType != 'create'}">
+                        <output-text id="label.isPresent" no-label="true" no-label-block="true"
+                                     default-value=""/>
+                    </col>
+
                     <col size="2">
                         <output-text id="label.originCode" no-label="true" no-label-block="true"
                                      default-value="${sync.mapping.page.field.origin.code}"/>
@@ -97,11 +99,12 @@
                         <output-text id="label.isPrimary" no-label="true" no-label-block="true"
                                      default-value="is"/>
                     </col>
+
                     <col size="2">
                         <output-text id="label.code" no-label="true" no-label-block="true"
                                      default-value="${sync.mapping.page.field.code}"/>
                     </col>
-                    <col size="6">
+                    <col size="5">
                         <output-text id="label.name" no-label="true" no-label-block="true"
                                      default-value="${sync.mapping.page.field.name}"/>
                     </col>
@@ -111,6 +114,10 @@
             <multi-set id="mappingFields" field-label-location="top"
                        can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
                 <row>
+                    <col size="1" visible="{actionType != 'create'}">
+                        <checkbox id="isPresent" no-label="true" no-label-block="true" enabled="false"/>
+                    </col>
+
                     <col size="2">
                         <input-text id="originCode" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
@@ -120,6 +127,7 @@
                     <col size="1" visible="false">
                         <checkbox id="isPrimary" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
+
                     <col size="2">
                         <input-text id="code" no-label="true" no-label-block="true"/>
                         <!--<input-text id="code" no-label="true" no-label-block="true">-->
@@ -131,7 +139,7 @@
                             <!--</validations>-->
                         <!--</input-text>-->
                     </col>
-                    <col size="6">
+                    <col size="5">
                         <input-text id="name" no-label="true" no-label-block="true"/>
                     </col>
                 </row>

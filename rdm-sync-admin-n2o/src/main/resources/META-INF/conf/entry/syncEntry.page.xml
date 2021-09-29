@@ -2,11 +2,26 @@
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
              name="${sync.entry.page.create.default.name}">
     <form name="${sync.entry.page.form.name}" query-id="syncEntry" object-id="syncEntry">
+
+        <pre-filters>
+            <eq field-id="entryId" param="entryId"/>
+        </pre-filters>
+
         <fields>
             <set field-label-location="left">
+                <row>
+                    <output-text id="entryId" visible="false"/>
+                    <output-text id="actionType" default-value="create"/>
+                </row>
+
                 <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
-                        label-class="w-50" required="true"/>
+                        label-class="w-50" required="true">
+
+                    <dependencies>
+                        <enabling on="actionType">actionType == 'create'</enabling>
+                    </dependencies>
+                </select>
 
                 <!--<input-text id="refBook" label="${sync.entry.page.refbook}"-->
                 <!--            required="true" label-class="w-50">-->
@@ -52,7 +67,8 @@
                     </pre-filters>
 
                     <dependencies>
-                        <enabling on="source">
+                        <enabling on="actionType,source">
+                            actionType == 'create' &amp;&amp;
                             (typeof source != 'undefined' &amp;&amp; source?.id != null)
                         </enabling>
                     </dependencies>
@@ -117,17 +133,17 @@
                     </dependencies>
                 </checkbox>
 
-                <!--<output-text id="lastVersion" label="Последняя версия "-->
-                <!--             label-class="w-50" enabled="false" visible="false">-->
-                <!--    <dependencies>-->
-                <!--        <set-value on="refBook">-->
-                <!--            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {-->
-                <!--                return refBook.version;-->
-                <!--            } else-->
-                <!--                return null;-->
-                <!--        </set-value>-->
-                <!--    </dependencies>-->
-                <!--</output-text>-->
+                <output-text id="lastVersion" label="Последняя версия"
+                             label-class="w-50" enabled="false" visible="false">
+                    <dependencies>
+                        <set-value on="refBook">
+                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {
+                                return refBook.code + '-v' + refBook.version;
+                            } else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
 
                 <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
@@ -141,7 +157,7 @@
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
-                                return { 'id': refBook.version, 'displayName': refBook.version };
+                                return { 'id': refBook.code + '-v' + refBook.version, 'displayName': refBook.version, 'version': refBook.version };
                             else
                                 return;
                         </set-value>
@@ -155,22 +171,22 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="createMapping" label="${sync.entry.page.create.button.mapping}">
-                    <show-modal page-id="syncMapping"
-                                page-name="${sync.entry.page.create.button.mapping.page}"
-                                modal-size="xl" scrollable="true"
-                                route="/mapping/create">
-                        <query-param name="sourceCode" value="{source.id}"/>
-                        <query-param name="code" value="{refBook.id}"/>
-                        <query-param name="name" value="{refBookName}"/>
-                        <query-param name="version" value="{startVersion.id}"/>
-                        <query-param name="versioned" value="{versioned}"/>
-                        <query-param name="autoUpdatable" value="{autoUpdatable}"/>
-                        <query-param name="actionType" value="create"/>
-                    </show-modal>
+            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}">
+                <show-modal page-id="syncMapping" page-name="${sync.entry.page.button.edit.mapping.page}"
+                            upload="query"
+                            modal-size="xl" scrollable="true"
+                            route="/mapping/edit">
+                    <query-param name="sourceCode" value="{source.id}"/>
+                    <query-param name="code" value="{refBook.id}"/>
+                    <query-param name="name" value="{refBookName}"/>
+                    <query-param name="version" value="{startVersion.version}"/>
+                    <query-param name="versioned" value="{versioned}"/>
+                    <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                    <query-param name="actionType" value="{actionType}"/>
+                </show-modal>
             </button>
 
-            <button id="cancel" label="${sync.entry.page.create.button.cancel}">
+            <button id="cancel" label="${sync.entry.page.button.cancel}">
                 <close/>
             </button>
 

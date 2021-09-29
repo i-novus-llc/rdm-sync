@@ -13,6 +13,8 @@
 
             <field id="isPrimary" domain="boolean"/>
             <field id="description" domain="string"/>
+
+            <field id="isPresent" domain="boolean"/>
         </list>
     </fields>
 
@@ -45,7 +47,7 @@
                 <field id="refBook.code" mapping="['code']"/>
                 <field id="refBook.name" mapping="['name']"/>
 
-                <field id="version.id" mapping="['version']"/>
+                <field id="version.version" mapping="['version']"/>
                 <field id="versioned" mapping="['versioned']"/>
                 <field id="autoUpdatable" mapping="['autoUpdatable']"/>
 
