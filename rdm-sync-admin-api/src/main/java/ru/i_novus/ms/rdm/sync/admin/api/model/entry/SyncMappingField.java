@@ -21,18 +21,31 @@ public class SyncMappingField extends SyncField {
     /** Тип исходного поля (из источника). */
     private String originType;
 
+    /** Признак поля на присутствие. */
+    private boolean isPresent;
+
     public SyncMappingField() {
         // nothing to do.
     }
 
     /**
-     * Проверка поля на присутствие при маппинге.
+     * Проверка кода поля на присутствие в маппинге.
      *
      * @return Результат проверки
      */
     @JsonIgnore
-    public boolean isPresent() {
+    public boolean isCodePresent() {
         return !StringUtils.isEmpty(getCode());
+    }
+
+    /**
+     * Проверка исходного поля на присутствие в маппинге.
+     *
+     * @return Результат проверки
+     */
+    @JsonIgnore
+    public boolean isOriginPresent() {
+        return !StringUtils.isEmpty(getOriginCode());
     }
 
     @Override
@@ -42,11 +55,13 @@ public class SyncMappingField extends SyncField {
         if (!super.equals(o)) return false;
 
         SyncMappingField that = (SyncMappingField) o;
-        return Objects.equals(originCode, that.originCode);
+        return Objects.equals(originCode, that.originCode) &&
+                Objects.equals(originType, that.originType) &&
+                isPresent == that.isPresent;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), originCode);
+        return Objects.hash(super.hashCode(), originCode, originType, isPresent);
     }
 }
