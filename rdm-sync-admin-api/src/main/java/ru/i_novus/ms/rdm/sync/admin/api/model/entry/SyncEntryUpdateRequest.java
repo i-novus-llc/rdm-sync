@@ -17,8 +17,8 @@ import java.util.List;
 public class SyncEntryUpdateRequest implements Serializable {
 
     @ApiParam("Идентификатор записи")
-    @QueryParam("id")
-    private String id;
+    @QueryParam("entryId")
+    private String entryId;
 
     @ApiModelProperty("Код (идентификатор) источника")
     private String sourceCode;
