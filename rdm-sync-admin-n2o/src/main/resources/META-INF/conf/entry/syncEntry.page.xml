@@ -138,12 +138,13 @@
                     <dependencies>
                         <set-value on="refBook">
                             if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {
-                                return refBook.code + '-v' + refBook.version;
+                                return refBook.versionId;
                             } else
                                 return null;
                         </set-value>
                     </dependencies>
                 </output-text>
+                <!--return refBook.code + '-v' + refBook.version;-->
 
                 <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
@@ -153,11 +154,12 @@
                         <eq field-id="code" value="{refBook.id}"/>
                     </pre-filters>
 
+                    <!--return { 'id': refBook.code + '-v' + refBook.version, 'displayName': refBook.version, 'version': refBook.version };-->
                     <dependencies>
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
-                                return { 'id': refBook.code + '-v' + refBook.version, 'displayName': refBook.version, 'version': refBook.version };
+                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
                             else
                                 return;
                         </set-value>

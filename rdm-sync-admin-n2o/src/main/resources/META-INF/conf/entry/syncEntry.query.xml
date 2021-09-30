@@ -103,7 +103,8 @@
         </field>
 
         <field id="startVersion.id" domain="string">
-            <select mapping="['code'] + '-v' + ['version']"/>
+            <select mapping="['versionId']"/>
+            <!--<select mapping="['code'] + '-v' + ['version']"/>-->
         </field>
         <field id="startVersion.displayName" domain="string">
             <select mapping="['version']"/>
