@@ -30,7 +30,7 @@ public class SyncEntryUpdateRequest implements Serializable {
     private String name;
 
     @ApiModelProperty("Версия (номер) справочника, которую планируется сделать текущей")
-    private String version;
+    private String startVersion;
 
     @ApiModelProperty("Поддержка версионности")
     private Boolean versioned;
