@@ -42,12 +42,13 @@
                 <rest method="PUT">${rdm.sync.admin.backend.path}/sync/admin/entries</rest>
             </invocation>
             <in>
-                <field id="entryId" mapping="['id']"/>
+                <field id="entryId" mapping="['entryId']"/>
+
                 <field id="source.id" mapping="['sourceCode']"/>
                 <field id="refBook.code" mapping="['code']"/>
                 <field id="refBook.name" mapping="['name']"/>
 
-                <field id="version.version" mapping="['version']"/>
+                <field id="startVersion" mapping="['startVersion']"/>
                 <field id="versioned" mapping="['versioned']"/>
                 <field id="autoUpdatable" mapping="['autoUpdatable']"/>
 
