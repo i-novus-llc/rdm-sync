@@ -11,7 +11,7 @@
             <set field-label-location="left">
                 <row>
                     <output-text id="entryId" visible="false"/>
-                    <output-text id="actionType" default-value="create"/>
+                    <output-text id="actionType" visible="false" default-value="create"/>
                 </row>
 
                 <select id="source" label="${sync.entry.page.source}"

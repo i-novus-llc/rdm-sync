@@ -21,8 +21,9 @@
         <fields>
             <set field-label-location="left">
                 <row>
-                    <output-text id="entryId" visible="false" enabled="false"/>
-                    <output-text id="actionType" enabled="false"/>
+                    <output-text id="entryId" enabled="false" visible="false"/>
+                    <output-text id="versionId" enabled="false" visible="false"/>
+                    <output-text id="actionType" enabled="false" visible="false"/>
                 </row>
 
                 <select id="source" label="${sync.entry.page.source}"
@@ -129,7 +130,8 @@
                     </col>
 
                     <col size="2">
-                        <input-text id="code" no-label="true" no-label-block="true"/>
+                        <input-text id="code" no-label="true" no-label-block="true"
+                                    enabled="{!isVersionPresent}"/>
                         <!--<input-text id="code" no-label="true" no-label-block="true">-->
                             <!--<validations>-->
                             <!--    <condition id="checkCode" severity="danger" side="client"-->

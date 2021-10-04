@@ -36,6 +36,10 @@
             </filters>
         </field>
 
+        <field id="isVersionPresent" domain="string">
+            <select mapping="['version']['isPresent']"/>
+        </field>
+
         <!-- Используется только для списка версий с маппингами -->
         <!--<field id="id" domain="string">-->
         <!--    <select mapping="['version']['id']"/>-->
