@@ -102,9 +102,19 @@
             <select mapping="['name']"/>
         </field>
 
+        <!--<field id="refBook.versionId" domain="string">-->
+        <!--    <select mapping="['versionId']"/>-->
+        <!--</field>-->
+        <!--<field id="refBook.version" domain="string">-->
+        <!--    <select mapping="['version']"/>-->
+        <!--</field>-->
+
+        <!--<field id="lastVersion">-->
+        <!--    <select mapping="['versionId'] + ' | ' + ['version']"/>-->
+        <!--</field>-->
+
         <field id="startVersion.id" domain="string">
             <select mapping="['versionId']"/>
-            <!--<select mapping="['code'] + '-v' + ['version']"/>-->
         </field>
         <field id="startVersion.displayName" domain="string">
             <select mapping="['version']"/>
