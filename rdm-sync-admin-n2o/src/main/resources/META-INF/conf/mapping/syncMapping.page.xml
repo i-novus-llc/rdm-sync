@@ -131,7 +131,7 @@
 
                     <col size="2">
                         <input-text id="code" no-label="true" no-label-block="true"
-                                    enabled="{!isVersionPresent}"/>
+                                    enabled="{mappingId == null}"/>
                         <!--<input-text id="code" no-label="true" no-label-block="true">-->
                             <!--<validations>-->
                             <!--    <condition id="checkCode" severity="danger" side="client"-->

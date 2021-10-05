@@ -17,6 +17,9 @@ import java.util.Objects;
 @Setter
 public class SyncEntryMapping implements Serializable {
 
+    /** Идентификатор маппинга. */
+    private String id;
+
     /** Запись о синхронизации. */
     private SyncEntry entry;
 
@@ -39,7 +42,8 @@ public class SyncEntryMapping implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncEntryMapping that = (SyncEntryMapping) o;
-        return Objects.equals(entry, that.entry) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(entry, that.entry) &&
                 Objects.equals(version, that.version) &&
                 Objects.equals(mappingFields, that.mappingFields) &&
                 Objects.equals(actionType, that.actionType);
@@ -47,7 +51,7 @@ public class SyncEntryMapping implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(entry, version, mappingFields, actionType);
+        return Objects.hash(id, entry, version, mappingFields, actionType);
     }
 
     @Override

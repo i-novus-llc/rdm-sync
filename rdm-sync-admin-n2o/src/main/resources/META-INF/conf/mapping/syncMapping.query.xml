@@ -22,6 +22,13 @@
             </filters>
         </field>
 
+        <field id="mappingId" domain="string">
+            <select mapping="['id']"/>
+            <filters>
+                <eq filter-id="mappingId">id={mappingId}</eq>
+            </filters>
+        </field>
+
         <field id="entryId" domain="string">
             <select mapping="['entry']['id']"/>
             <filters>

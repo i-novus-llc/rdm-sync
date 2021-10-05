@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +14,10 @@ import java.util.Objects;
 @Getter
 @Setter
 public class SyncEntryMappingCriteria extends AbstractCriteria {
+
+    @ApiParam("Идентификатор маппинга")
+    @QueryParam("id")
+    private String id;
 
     @ApiParam("Идентификатор записи")
     @QueryParam("entryId")
@@ -63,7 +66,8 @@ public class SyncEntryMappingCriteria extends AbstractCriteria {
         if (!super.equals(o)) return false;
 
         SyncEntryMappingCriteria that = (SyncEntryMappingCriteria) o;
-        return Objects.equals(entryId, that.entryId) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(entryId, that.entryId) &&
                 Objects.equals(versionId, that.versionId) &&
 
                 Objects.equals(sourceCode, that.sourceCode) &&
@@ -80,7 +84,7 @@ public class SyncEntryMappingCriteria extends AbstractCriteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), entryId, versionId, sourceCode, code,
+        return Objects.hash(super.hashCode(), id, entryId, versionId, sourceCode, code,
                 version, versioned, autoUpdatable, actionType, text, count);
     }
 }
