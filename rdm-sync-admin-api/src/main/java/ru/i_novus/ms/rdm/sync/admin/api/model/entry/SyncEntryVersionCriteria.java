@@ -48,8 +48,10 @@ public class SyncEntryVersionCriteria extends AbstractCriteria {
         SyncEntryVersionCriteria that = (SyncEntryVersionCriteria) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(entryId, that.entryId) &&
+
                 Objects.equals(code, that.code) &&
                 Objects.equals(version, that.version) &&
+
                 Objects.equals(text, that.text) &&
                 Objects.equals(count, that.count);
     }

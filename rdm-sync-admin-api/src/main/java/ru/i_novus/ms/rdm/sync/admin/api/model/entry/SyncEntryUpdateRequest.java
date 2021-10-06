@@ -2,17 +2,23 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.List;
 
-@ApiModel(value = "Модель создания записи о синхронизации",
-        description = "Набор входных параметров для создания записи о синхронизации")
+@ApiModel(value = "Модель изменения записи о синхронизации",
+        description = "Набор входных параметров для изменения записи о синхронизации")
 @Getter
 @Setter
-public class SyncEntryCreateRequest implements Serializable {
+public class SyncEntryUpdateRequest implements Serializable {
+
+    @ApiParam("Идентификатор записи")
+    @QueryParam("entryId")
+    private String entryId;
 
     @ApiModelProperty("Код (идентификатор) источника")
     private String sourceCode;
@@ -23,7 +29,7 @@ public class SyncEntryCreateRequest implements Serializable {
     @ApiModelProperty("Наименование справочника")
     private String name;
 
-    @ApiModelProperty("Версия (номер) справочника, с которой планируется загрузка справочника")
+    @ApiModelProperty("Версия (номер) справочника, которую планируется сделать текущей")
     private String startVersion;
 
     @ApiModelProperty("Поддержка версионности")

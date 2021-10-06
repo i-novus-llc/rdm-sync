@@ -30,6 +30,9 @@ public class SyncEntry implements Serializable {
     /** Признак удаляемости. */
     private boolean removable;
 
+    /** Идентификатор версии справочника. */
+    private String versionId;
+
     /** Версия (номер) справочника. */
     private String version;
 
@@ -65,6 +68,7 @@ public class SyncEntry implements Serializable {
                 Objects.equals(storageCode, that.storageCode) &&
                 Objects.equals(removable, that.removable) &&
 
+                Objects.equals(versionId, that.versionId) &&
                 Objects.equals(version, that.version) &&
                 versioned == that.versioned &&
                 autoUpdatable == that.autoUpdatable &&
@@ -78,7 +82,7 @@ public class SyncEntry implements Serializable {
     public int hashCode() {
         return Objects.hash(id, code, name,
                 storageCode, removable,
-                version, versioned, autoUpdatable,
+                versionId, version, versioned, autoUpdatable,
                 source, lastDateTime, lastStatus);
     }
 

@@ -15,22 +15,14 @@
 
         <toolbar place="topRight">
             <button id="create" label="Создать" icon="fa fa-plus">
-                <open-page page-id="syncEntryCreate" page-name="Добавление справочника" upload="defaults"/>
+                <open-page page-id="syncEntry" page-name="${sync.entry.page.create.name}" upload="defaults"/>
             </button>
 
-            <button id="edit" label="Изменить" icon="fa fa-pencil" visible="false">
-                <show-modal page-id="syncMapping"
-                            page-name="Настройка полей справочника"
-                            modal-size="xl" scrollable="true"
-                            route="/mapping/edit">
-                    <query-param name="sourceCode" value="{source.code}"/>
-                    <query-param name="code" value="{code}"/>
-                    <query-param name="name" value="{name}"/>
-                    <query-param name="version" value="{version}"/>
-                    <query-param name="versioned" value="{versioned}"/>
-                    <query-param name="autoUpdatable" value="{autoUpdatable}"/>
-                    <query-param name="actionType" value="update"/>
-                </show-modal>
+            <button id="edit" label="Изменить" icon="fa fa-pencil">
+                <open-page page-id="syncEntry" page-name="${sync.entry.page.update.name}" upload="query"
+                           route="/:entryId/edit">
+                    <path-param name="entryId" value="{id}"/>
+                </open-page>
             </button>
 
             <button id="delete" label="Удалить" icon="fa fa-trash" color="danger" enabled="{removable}">

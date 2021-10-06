@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
-             name="Настройка полей для синхронизации">
-    <form name="Настройка полей" query-id="syncMapping" object-id="syncMapping">
+             name="${sync.mapping.page.default.name}">
+    <form name="${sync.mapping.page.form.name}" query-id="syncMapping" object-id="syncMapping">
 
         <pre-filters>
             <eq field-id="sourceCode" param="sourceCode"/>
@@ -20,69 +20,129 @@
 
         <fields>
             <set field-label-location="left">
-                <output-text id="actionType" visible="false"
-                             label-class="w-50" enabled="false"/>
+                <row>
+                    <output-text id="entryId" enabled="false" visible="false"/>
+                    <output-text id="versionId" enabled="false" visible="false"/>
+                    <output-text id="actionType" enabled="false" visible="false"/>
+                </row>
 
-                <select id="source" label="Источник "
+                <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true" enabled="false"/>
 
                 <row>
-                    <output-text id="refBook.code" label="Справочник "
+                    <output-text id="refBook.code" label="${sync.entry.page.refbook}"
                                  label-class="w-50" enabled="false"/>
-                    <output-text id="startVersion" label="Версия "
-                                 label-class="w-50" enabled="false"
-                                 visible="{actionType == 'create'}"/>
+                    <output-text id="startVersion" label="${sync.entry.page.refbook.version}"
+                                 label-class="w-50" enabled="false"/>
                 </row>
-                <input-text id="refBook.name" label="Наименование "
+                <input-text id="refBook.name" label="${sync.entry.page.refbook.name}"
                             label-class="w-50" required="true"/>
 
                 <row>
-                    <!--<checkbox id="autoUpdatable" label="Автоматически обновлять"/>-->
-                    <checkbox id="autoUpdatable" label="Автоматически обновлять"
-                              visible="{actionType != 'create'}"/>
+                    <!--<checkbox id="autoUpdatable" label="${sync.mapping.page.refbook.auto-updatable}"/>-->
+                    <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" visible="false"/>
 
-                    <!--<checkbox id="versioned" label="Поддерживать версионность"/>-->
-                    <checkbox id="versioned" label="Поддерживать версионность"
-                              visible="{actionType != 'create'}"/>
+                    <!--<checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}"/>-->
+                    <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" visible="false"/>
                 </row>
 
-                <input-text id="storageCode" label="Хранилище"
-                            required="true" label-class="w-50">
+                <!--<input-select id="version" label="${sync.entry.page.refbook.version}"-->
+                <!--              query-id="syncMapping" label-field-id="displayName"-->
+                <!--              required="true" label-class="w-50"-->
+                <!--              visible="{actionType != 'create'}">-->
+                <!--    <pre-filters>-->
+                <!--        <eq field-id="sourceCode" value="{source.id}"/>-->
+                <!--        <eq field-id="code" value="{refBook.code}"/>-->
+                <!--    </pre-filters>-->
+
+                <!--    <dependencies>-->
+                <!--        <set-value on="versioned">-->
+                <!--            if ((typeof versioned == 'undefined' || !versioned))-->
+                <!--                return { 'id': startVersion, 'displayName': startVersion, 'version': startVersion };-->
+                <!--            else-->
+                <!--                return;-->
+                <!--        </set-value>-->
+                <!--        <enabling on="versioned">-->
+                <!--            (typeof versioned != 'undefined' &amp;&amp; versioned)-->
+                <!--        </enabling>-->
+                <!--    </dependencies>-->
+                <!--</input-select>-->
+
+                <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
+                            required="true" label-class="w-50"
+                            enabled="{actionType == 'create'}">
                     <validations>
                         <condition id="checkStorageCode" severity="danger" side="client"
-                                   message="Код хранилища должен содержать только строчные латинские символы и цифры и начинаться с символа">
+                                   message="${sync.mapping.page.storage.code.check}">
                             typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^[a-z][a-z0-9_]*$/.test(storageCode)
                         </condition>
                     </validations>
                 </input-text>
             </set>
 
-            <multi-set id="fieldMappings" label="Настройка полей" field-label-location="top"
-                       can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
+            <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
+                    <col size="1" visible="{actionType != 'create'}">
+                        <output-text id="label.isPresent" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.isPresent}"/>
+                    </col>
+
                     <col size="2">
-                        <input-text id="originCode" label="Исходное поле" enabled="false"/>
+                        <output-text id="label.originCode" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.originCode}"/>
                     </col>
                     <col size="2">
-                        <input-text id="type" label="Тип" enabled="false"/>
+                        <output-text id="label.type" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.type}"/>
+                    </col>
+                    <col size="1" visible="false">
+                        <output-text id="label.isPrimary" no-label="true" no-label-block="true"
+                                     default-value="is"/>
+                    </col>
+
+                    <col size="2">
+                        <output-text id="label.code" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.code}"/>
+                    </col>
+                    <col size="5">
+                        <output-text id="label.name" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.name}"/>
+                    </col>
+                </row>
+            </set>
+
+            <multi-set id="mappingFields" field-label-location="top"
+                       can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
+                <row>
+                    <col size="1" visible="{actionType != 'create'}">
+                        <checkbox id="isPresent" no-label="true" no-label-block="true" enabled="false"/>
+                    </col>
+
+                    <col size="2">
+                        <input-text id="originCode" no-label="true" no-label-block="true" enabled="false"/>
+                    </col>
+                    <col size="2">
+                        <input-text id="type" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                     <col size="1" visible="false">
                         <checkbox id="isPrimary" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
+
                     <col size="2">
-                        <input-text id="code" label="Поле"/>
-                        <!--<input-text id="code" label="Поле">-->
+                        <input-text id="code" no-label="true" no-label-block="true"
+                                    enabled="{mappingId == null}"/>
+                        <!--<input-text id="code" no-label="true" no-label-block="true">-->
                             <!--<validations>-->
                             <!--    <condition id="checkCode" severity="danger" side="client"-->
-                            <!--               message="Код поля должен содержать только латинские символы и цифры и начинаться с символа">-->
+                            <!--               message="${sync.mapping.page.field.code.check}">-->
                             <!--        typeof code == 'undefined' || code == null || code == '' || /^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)-->
                             <!--    </condition>-->
                             <!--</validations>-->
                         <!--</input-text>-->
                     </col>
-                    <col size="6">
-                        <input-text id="name" label="Описание"/>
+                    <col size="5">
+                        <input-text id="name" no-label="true" no-label-block="true"/>
                     </col>
                 </row>
             </multi-set>
@@ -90,12 +150,17 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="save" label="Сохранить" >
+            <button id="create" label="${sync.mapping.page.button.create}" visible="{actionType == 'create'}">
                 <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
                         redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
             </button>
 
-            <button id="cancel" label="Отмена">
+            <button id="update" label="${sync.mapping.page.button.update}" visible="{actionType == 'update'}">
+                <invoke operation-id="updateEntry" close-after-success="true" message-on-success="false"
+                        redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
+            </button>
+
+            <button id="cancel" label="${sync.mapping.page.button.cancel}">
                 <close/>
             </button>
 

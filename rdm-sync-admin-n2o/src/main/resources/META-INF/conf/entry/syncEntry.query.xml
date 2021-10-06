@@ -74,5 +74,57 @@
             <select/>
         </field>
 
+        <!-- Поля для редактирования -->
+        <field id="entryId" domain="string">
+            <select mapping="['id']"/>
+            <filters>
+                <eq filter-id="entryId">id={entryId}</eq>
+            </filters>
+        </field>
+        <field id="actionType" domain="string">
+            <select mapping="'update'"/>
+        </field>
+
+        <field id="source.id" domain="string">
+            <select mapping="['source']['code']"/>
+        </field>
+        <field id="source.name" domain="string">
+            <select mapping="['source']['name']"/>
+        </field>
+
+        <field id="refBook.id" domain="string">
+            <select mapping="['code']"/>
+        </field>
+        <field id="refBook.displayName" domain="string">
+            <select mapping="['code']"/>
+        </field>
+        <field id="refBook.name" domain="string">
+            <select mapping="['name']"/>
+        </field>
+        <field id="refBookName" domain="string">
+            <select mapping="['name']"/>
+        </field>
+
+        <!--<field id="refBook.versionId" domain="string">-->
+        <!--    <select mapping="['versionId']"/>-->
+        <!--</field>-->
+        <!--<field id="refBook.version" domain="string">-->
+        <!--    <select mapping="['version']"/>-->
+        <!--</field>-->
+
+        <!--<field id="lastVersion">-->
+        <!--    <select mapping="['versionId'] + ' | ' + ['version']"/>-->
+        <!--</field>-->
+
+        <field id="startVersion.id" domain="string">
+            <select mapping="['versionId']"/>
+        </field>
+        <field id="startVersion.displayName" domain="string">
+            <select mapping="['version']"/>
+        </field>
+        <field id="startVersion.version" domain="string">
+            <select mapping="['version']"/>
+        </field>
+
     </fields>
 </query>

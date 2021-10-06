@@ -45,6 +45,19 @@ public class SyncSourceRefBookCriteria extends AbstractCriteria {
         // Nothing to do.
     }
 
+    public SyncSourceRefBookCriteria(SyncSourceRefBookCriteria criteria) {
+
+        super(criteria);
+
+        this.sourceCode = criteria.sourceCode;
+        this.code = criteria.code;
+        this.name = criteria.name;
+
+        this.version = criteria.version;
+        this.text = criteria.text;
+        this.hasEntry = criteria.hasEntry;
+    }
+
     /**
      * Проверка на отсутствие заполненности полей, ключевых для поиска.
      *
@@ -65,6 +78,7 @@ public class SyncSourceRefBookCriteria extends AbstractCriteria {
         return Objects.equals(sourceCode, that.sourceCode) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+
                 Objects.equals(version, that.version) &&
                 Objects.equals(text, that.text) &&
                 Objects.equals(hasEntry, that.hasEntry);

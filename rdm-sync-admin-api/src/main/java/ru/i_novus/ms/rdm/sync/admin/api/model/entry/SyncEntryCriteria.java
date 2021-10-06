@@ -45,6 +45,7 @@ public class SyncEntryCriteria extends AbstractCriteria {
         return Objects.equals(id, that.id) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+
                 Objects.equals(text, that.text) &&
                 Objects.equals(count, that.count);
     }

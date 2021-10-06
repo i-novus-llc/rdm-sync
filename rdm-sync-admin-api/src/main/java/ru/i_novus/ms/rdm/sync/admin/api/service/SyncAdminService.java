@@ -57,6 +57,15 @@ public interface SyncAdminService {
     })
     SyncEntry create(SyncEntryCreateRequest request);
 
+    @PUT
+    @Path("/entries")
+    @ApiOperation(value = "Изменение записи о синхронизации (изменение параметров справочника)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Справочник"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    SyncEntry update(SyncEntryUpdateRequest request);
+
     @DELETE
     @Path("/entries")
     @ApiOperation(value = "Удаление записи о синхронизации (удаление справочника)")
@@ -78,12 +87,21 @@ public interface SyncAdminService {
 
     @GET
     @Path("/entries/mapping")
-    @ApiOperation(value = "Получение маппинга версии записи о синхронизации")
+    @ApiOperation(value = "Получение маппинга для версии записи о синхронизации")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Запись о синхронизации"),
+            @ApiResponse(code = 200, message = "Маппинг для версии записи о синхронизации"),
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
     SyncEntryMapping findMapping(@BeanParam SyncEntryMappingCriteria criteria);
+
+    @GET
+    @Path("/entries/mappings")
+    @ApiOperation(value = "Получение маппингов для версий записи о синхронизации")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Список маппингов для версий записи о синхронизации"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    Page<SyncEntryMapping> searchMappings(@BeanParam SyncEntryMappingCriteria criteria);
 
     @GET
     @Path("/sources")
