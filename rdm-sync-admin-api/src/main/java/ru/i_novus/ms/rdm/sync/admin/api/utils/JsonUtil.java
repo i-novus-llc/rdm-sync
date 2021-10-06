@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.admin.api;
+package ru.i_novus.ms.rdm.sync.admin.api.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

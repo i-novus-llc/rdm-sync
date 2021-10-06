@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="syncSourceVersionList">
+
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/sources/versions?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </list>
+
+    <unique result-mapping="['content'][0]" filters="sourceCode,id">
+        <rest method="GET">
+            ${rdm.sync.admin.backend.path}/sync/admin/sources/versions?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </unique>
+
+    <fields>
+        <field id="sourceCode" domain="string">
+            <filters>
+                <eq filter-id="sourceCode">sourceCode={sourceCode}</eq>
+            </filters>
+        </field>
+
+        <field id="id" domain="string">
+            <select mapping="['version']"/>
+            <filters>
+                <eq filter-id="id">version={id}</eq>
+            </filters>
+        </field>
+
+        <field id="displayName" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="displayName">text={displayName}</eq>
+            </filters>
+        </field>
+
+        <field id="code" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="code">code={code}</eq>
+            </filters>
+        </field>
+
+        <field id="name" domain="string">
+            <select/>
+        </field>
+
+        <field id="version" domain="string">
+            <select/>
+        </field>
+
+        <field id="comment" domain="string">
+            <select/>
+        </field>
+
+    </fields>
+</query>

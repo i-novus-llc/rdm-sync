@@ -14,7 +14,7 @@
         <config.server.enable>false</config.server.enable>
 
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/ClientConfiguration.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/SyncN2oConfig.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
