@@ -98,6 +98,9 @@
         <field id="refBook.displayName" domain="string">
             <select mapping="['code']"/>
         </field>
+        <field id="refBook.name" domain="string">
+            <select mapping="['name']"/>
+        </field>
         <field id="refBookName" domain="string">
             <select mapping="['name']"/>
         </field>
