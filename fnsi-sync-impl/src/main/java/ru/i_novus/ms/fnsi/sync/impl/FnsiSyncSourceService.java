@@ -3,14 +3,9 @@ package ru.i_novus.ms.fnsi.sync.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.i_novus.ms.rdm.sync.api.model.*;
@@ -170,11 +165,16 @@ public class FnsiSyncSourceService implements SyncSourceService {
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         try {
-            return restTemplate.exchange(
-                    new URI(builder.toUriString()),
+            String url = builder.toUriString();
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
+                    new URI(url),
                     HttpMethod.GET,
                     entity,
-                    JsonNode.class).getBody();
+                    JsonNode.class);
+            if(response.getBody() == null) {
+                throw new FnsiErrorException("response from "+ url + " is empty");
+            }
+            return response.getBody();
         } catch (URISyntaxException e) {
             logger.error("cannot create uri ", e);
             throw new IllegalArgumentException(e);
