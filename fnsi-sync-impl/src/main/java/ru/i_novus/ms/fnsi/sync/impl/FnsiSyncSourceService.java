@@ -166,15 +166,15 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
         try {
             String url = builder.toUriString();
-            ResponseEntity<JsonNode> response = restTemplate.exchange(
+            JsonNode body = restTemplate.exchange(
                     new URI(url),
                     HttpMethod.GET,
                     entity,
-                    JsonNode.class);
-            if(response.getBody() == null) {
+                    JsonNode.class).getBody();
+            if(body == null) {
                 throw new FnsiErrorException("response from "+ url + " is empty");
             }
-            return response.getBody();
+            return body;
         } catch (URISyntaxException e) {
             logger.error("cannot create uri ", e);
             throw new IllegalArgumentException(e);
