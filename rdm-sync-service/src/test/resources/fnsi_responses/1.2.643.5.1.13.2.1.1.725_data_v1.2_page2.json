@@ -1,0 +1,422 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 103,
+  "list": [
+    [
+      {
+        "column": "ID",
+        "value": "81"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "20"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "25"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "29"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "82"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "20"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "1"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "30"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "83"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "20"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "1"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "28"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "84"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "20"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "1"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "29"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "85"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "21"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "85"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "86"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "21"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "86"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "87"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "21"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "87"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "88"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "21"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "88"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "89"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "21"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "89"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "90"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "22"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "13"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "21"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "91"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "23"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "12"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "10"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "92"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "23"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "12"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "23"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "93"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "23"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "12"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "93"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "94"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "23"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "33"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "94"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "95"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "95"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "96"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "96"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "97"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "97"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "98"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "98"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "99"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "99"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "100"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "100"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "101"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "20"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "102"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "102"
+      }
+    ],
+    [
+      {
+        "column": "ID",
+        "value": "103"
+      },
+      {
+        "column": "MNN_ID",
+        "value": "24"
+      },
+      {
+        "column": "DRUG_FORM_ID",
+        "value": "16"
+      },
+      {
+        "column": "DOSE_ID",
+        "value": "103"
+      }
+    ]
+  ]
+}

@@ -69,7 +69,7 @@ class LocalTableAutoCreateService {
 
         XmlMappingRefBook mapping = new XmlMappingRefBook();
         mapping.setCode(refBookCode);
-        mapping.setSysTable(String.format("%s.%s", autoCreateSchema, refBookCode.replaceAll("[-.]", "_").toLowerCase()));
+        mapping.setSysTable(String.format("%s.%s", autoCreateSchema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase()));
         mapping.setDeletedField(isDeletedField);
         mapping.setUniqueSysField(uniqueSysField);
         mapping.setMappingVersion(-1);

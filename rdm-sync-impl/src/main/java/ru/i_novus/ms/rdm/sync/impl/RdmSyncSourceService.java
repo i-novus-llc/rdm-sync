@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
+
 public class RdmSyncSourceService implements SyncSourceService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncSourceService.class);

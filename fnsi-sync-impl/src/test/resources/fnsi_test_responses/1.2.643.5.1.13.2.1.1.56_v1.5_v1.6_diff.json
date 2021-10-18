@@ -1,0 +1,1929 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "fields": [
+    {
+      "field": {
+        "Name": "ID",
+        "Alias": "",
+        "Description": "",
+        "DataType": "VARCHAR",
+        "Number": 1,
+        "Visible": true
+      },
+      "operation": "ALTER_ADD_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "SYNONYM",
+        "Alias": "",
+        "Description": "",
+        "DataType": "VARCHAR",
+        "Number": 3,
+        "Visible": true
+      },
+      "operation": "ALTER_ADD_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "SCTID",
+        "Alias": "",
+        "Description": "",
+        "DataType": "VARCHAR",
+        "Number": 4,
+        "Visible": true
+      },
+      "operation": "ALTER_ADD_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "REL",
+        "Alias": "",
+        "Description": "",
+        "DataType": "VARCHAR",
+        "Number": 5,
+        "Visible": true
+      },
+      "operation": "ALTER_ADD_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "RECID",
+        "Alias": "",
+        "Description": "Уникальный идентификатор (УИ). (первичный ключ)",
+        "DataType": "INTEGER",
+        "Number": 1,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "CODE",
+        "Alias": "",
+        "Description": "Код записи",
+        "DataType": "VARCHAR",
+        "Number": 2,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "LATNAME",
+        "Alias": "",
+        "Description": "Латинское название лекарственного средства",
+        "DataType": "VARCHAR",
+        "Number": 4,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "NUM",
+        "Alias": "",
+        "Description": "",
+        "DataType": "VARCHAR",
+        "Number": 5,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "HIGH",
+        "Alias": "",
+        "Description": "УИ родительской записи",
+        "DataType": "INTEGER",
+        "Number": 6,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    }
+  ],
+  "keys": [
+    {
+      "key": {
+        "number": 1,
+        "field": "RECID",
+        "type": "PRIMARY"
+      },
+      "operation": "ALTER_DROP_KEY"
+    },
+    {
+      "key": {
+        "number": 1,
+        "field": "ID",
+        "type": "PRIMARY"
+      },
+      "operation": "ALTER_ADD_KEY"
+    }
+  ],
+  "data": {
+    "total": 4830,
+    "list": [
+      {
+        "RECID": 16,
+        "CODE": "A01AB06",
+        "NAME": "Домифена бромид",
+        "LATNAME": "Domiphen bromide",
+        "NUM": "0014",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 177,
+        "CODE": "A03AX08",
+        "NAME": "Алверин",
+        "LATNAME": "Alverine",
+        "NUM": "0162",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 7,
+        "CODE": "A01AA03",
+        "NAME": "Олафлур",
+        "LATNAME": "Olaflur",
+        "NUM": "0007",
+        "HIGH": 4,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 205,
+        "CODE": "A03CA08",
+        "NAME": "Дифеманил метилсульфат в комбинации с психотропными препаратами",
+        "LATNAME": "Diphemanil and Psycholeptics",
+        "NUM": "0188",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 178,
+        "CODE": "A03AX09",
+        "NAME": "Трепибутон",
+        "LATNAME": "Trepibutone",
+        "NUM": "0163",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 17,
+        "CODE": "A01AB07",
+        "NAME": "Оксихинолин",
+        "LATNAME": "Oxyquinoline",
+        "NUM": "0015",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 33,
+        "CODE": "A01AC01",
+        "NAME": "Триамцинолон",
+        "LATNAME": "Triamcinolone",
+        "NUM": "0030",
+        "HIGH": 32,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 187,
+        "CODE": "A03BA01",
+        "NAME": "Атропин сульфат",
+        "LATNAME": "Atropine",
+        "NUM": "0170",
+        "HIGH": 186,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 77,
+        "CODE": "A02AX",
+        "NAME": "Антациды в комбинации с другими препаратами",
+        "LATNAME": "Antacids, Other Combinations",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 213,
+        "CODE": "A03CB31",
+        "NAME": "Гиосциамин в комбинации с психотропными препаратами",
+        "LATNAME": "Hyoscyamine and Psycholeptics",
+        "NUM": "0196",
+        "HIGH": 208,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 145,
+        "CODE": "A03AB11",
+        "NAME": "Польдин метилсульфат",
+        "LATNAME": "Poldine",
+        "NUM": "0132",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 130,
+        "CODE": "A03AA07",
+        "NAME": "Дицикловерин",
+        "LATNAME": "Dicycloverine",
+        "NUM": "0117",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 123,
+        "CODE": "A03A",
+        "NAME": "Синтетические спазмолитики и холиноблокаторы",
+        "LATNAME": "Synthetic Antispasm. and Antichol. Agents",
+        "NUM": null,
+        "HIGH": 122,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 150,
+        "CODE": "A03AB16",
+        "NAME": "(2-Бензгидрилоксиэтил) Диэтилметиламмония йодид",
+        "LATNAME": "(2-Benzhydryloxyethyl) Diethylmethylammonium Iodide",
+        "NUM": "0137",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 55,
+        "CODE": "A02AB02",
+        "NAME": "Алгелдрат",
+        "LATNAME": "Algeldrate",
+        "NUM": "0051",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 18,
+        "CODE": "A01AB08",
+        "NAME": "Неомицин",
+        "LATNAME": "Neomycin",
+        "NUM": "0016",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 114,
+        "CODE": "A02BX10",
+        "NAME": "Золимидин",
+        "LATNAME": "Zolimidine",
+        "NUM": "0102",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 104,
+        "CODE": "A02BX",
+        "NAME": "Прочие препараты для лечения язвенной болезни желудка и двенадцатиперстной кишки",
+        "LATNAME": "Other Drugs For Treatment Of Peptic Ulcer",
+        "NUM": null,
+        "HIGH": 78,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 65,
+        "CODE": "A02AC10",
+        "NAME": "Комбинация препаратов кальция",
+        "LATNAME": "Combinations",
+        "NUM": "0061",
+        "HIGH": 62,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 193,
+        "CODE": "A03BB03",
+        "NAME": "Метилскополамин",
+        "LATNAME": "Methylscopolamine",
+        "NUM": "0176",
+        "HIGH": 190,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 143,
+        "CODE": "A03AB09",
+        "NAME": "Изопропамид йодид",
+        "LATNAME": "Isopropamide",
+        "NUM": "0130",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 154,
+        "CODE": "A03AB20",
+        "NAME": "Троспий хлорид",
+        "LATNAME": "Trospium",
+        "NUM": "0141",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 146,
+        "CODE": "A03AB12",
+        "NAME": "Мепензолат бромид",
+        "LATNAME": "Mepenzolate",
+        "NUM": "0133",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 2,
+        "CODE": "A01",
+        "NAME": "Стоматологические препараты",
+        "LATNAME": "Stomatological Preparations",
+        "NUM": null,
+        "HIGH": 1,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 56,
+        "CODE": "A02AB03",
+        "NAME": "Алюминия фосфат",
+        "LATNAME": "Aluminium Phosphate",
+        "NUM": "0052",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 23,
+        "CODE": "A01AB13",
+        "NAME": "Тетрациклин",
+        "LATNAME": "Tetracycline",
+        "NUM": "0021",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 204,
+        "CODE": "A03CA07",
+        "NAME": "Амбутоний в комбинации с психотропными препаратами",
+        "LATNAME": "Ambutonium and Psycholeptics",
+        "NUM": "0187",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 134,
+        "CODE": "A03AB",
+        "NAME": "Синтетические холиноблокаторы - четвертичные аммониевые соединения",
+        "LATNAME": "Synt Anticholinergicsquaternary Ammonium Comp.",
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 72,
+        "CODE": "A02AF",
+        "NAME": "Антациды в комбинации с ветрогонными препаратами",
+        "LATNAME": "Antacids With Antiflatulents",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 158,
+        "CODE": "A03AC02",
+        "NAME": "Диметиламинопропионилфенотиазин",
+        "LATNAME": "Dimethylaminopropionylphenothiazine",
+        "NUM": "0145",
+        "HIGH": 157,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 159,
+        "CODE": "A03AC04",
+        "NAME": "Никофетамид",
+        "LATNAME": "Nicofetamide",
+        "NUM": "0146",
+        "HIGH": 157,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 210,
+        "CODE": "A03CB02",
+        "NAME": "Сумма алкалоидов белладонны в комбинации с психотропными препаратами",
+        "LATNAME": "Belladonna Total Alkaloids and Psycholeptics",
+        "NUM": "0193",
+        "HIGH": 208,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 112,
+        "CODE": "A02BX08",
+        "NAME": "Сулгликотид",
+        "LATNAME": "Sulglicotide",
+        "NUM": "0100",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 106,
+        "CODE": "A02BX02",
+        "NAME": "Сукралфат",
+        "LATNAME": "Sucralfate",
+        "NUM": "0094",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 138,
+        "CODE": "A03AB04",
+        "NAME": "Пентиенат",
+        "LATNAME": "Penthienate",
+        "NUM": "0125",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 68,
+        "CODE": "A02AD02",
+        "NAME": "Магалдрат",
+        "LATNAME": "Magaldrate",
+        "NUM": "0064",
+        "HIGH": 66,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 171,
+        "CODE": "A03AX02",
+        "NAME": "Диизопромин",
+        "LATNAME": "Diisopromine",
+        "NUM": "0156",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 64,
+        "CODE": "A02AC02",
+        "NAME": "Кальция силикат",
+        "LATNAME": "Calcium Silicate",
+        "NUM": "0060",
+        "HIGH": 62,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 161,
+        "CODE": "A03AD",
+        "NAME": "Папаверин гидрохлорид и его производные",
+        "LATNAME": "Papaverine and Derivatives",
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 151,
+        "CODE": "A03AB17",
+        "NAME": "Тиемоний йодид",
+        "LATNAME": "Tiemonium Iodide",
+        "NUM": "0138",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 165,
+        "CODE": "A03AD51",
+        "NAME": "Папаверин гидрохлорид в комбинации с другими препаратами",
+        "LATNAME": "Papaverine, Combinations",
+        "NUM": "0152",
+        "HIGH": 161,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 3,
+        "CODE": "A01A",
+        "NAME": "Стоматологические препараты",
+        "LATNAME": "Stomatological Preparations",
+        "NUM": null,
+        "HIGH": 2,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 52,
+        "CODE": "A02AA10",
+        "NAME": "Комбинация препаратов магния",
+        "LATNAME": "Combinations",
+        "NUM": "0048",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 30,
+        "CODE": "A01AB21",
+        "NAME": "Хлортетрациклин",
+        "LATNAME": "Chlortetracycline",
+        "NUM": "0028",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 156,
+        "CODE": "A03AB53",
+        "NAME": "Оксифеноний бромид в комбинации с другими препаратами",
+        "LATNAME": "Oxyphenonium, Combinations",
+        "NUM": "0143",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 45,
+        "CODE": "A02A",
+        "NAME": "Антациды",
+        "LATNAME": "Antacids",
+        "NUM": null,
+        "HIGH": 44,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 147,
+        "CODE": "A03AB13",
+        "NAME": "Бевоний метилсульфат",
+        "LATNAME": "Bevonium",
+        "NUM": "0134",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 189,
+        "CODE": "A03BA04",
+        "NAME": "Сумма алкалолидов белладонны",
+        "LATNAME": "Belladonna Total Alkaloids",
+        "NUM": "0172",
+        "HIGH": 186,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 194,
+        "CODE": "A03BB04",
+        "NAME": "Фентоний бромид",
+        "LATNAME": "Fentonium",
+        "NUM": "0177",
+        "HIGH": 190,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 180,
+        "CODE": "A03AX11",
+        "NAME": "Кароверин",
+        "LATNAME": "Caroverine",
+        "NUM": "0165",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 188,
+        "CODE": "A03BA03",
+        "NAME": "Гиосциамин",
+        "LATNAME": "Hyoscyamine",
+        "NUM": "0171",
+        "HIGH": 186,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 69,
+        "CODE": "A02AD03",
+        "NAME": "Алмагат",
+        "LATNAME": "Almagate",
+        "NUM": "0065",
+        "HIGH": 66,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 11,
+        "CODE": "A01AB",
+        "NAME": "Противомикробные препараты для местного лечения заболеваний полости рта",
+        "LATNAME": "Antiinfectives For Local Oral Treatment",
+        "NUM": null,
+        "HIGH": 3,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 34,
+        "CODE": "A01AC02",
+        "NAME": "Дексаметазон",
+        "LATNAME": "Dexamethasone",
+        "NUM": "0031",
+        "HIGH": 32,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 209,
+        "CODE": "A03CB01",
+        "NAME": "Метилскополамин в комбинации с психотропными препаратами",
+        "LATNAME": "Methylscopolamine and Psycholeptics",
+        "NUM": "0192",
+        "HIGH": 208,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 148,
+        "CODE": "A03AB14",
+        "NAME": "Пипензолат бромид",
+        "LATNAME": "Pipenzolate",
+        "NUM": "0135",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 116,
+        "CODE": "A02BX12",
+        "NAME": "Висмута субнитрат",
+        "LATNAME": "Bismuth subnitrate",
+        "NUM": "0104",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 155,
+        "CODE": "A03AB21",
+        "NAME": "Фенпивериний бромид",
+        "LATNAME": "Fenpiverinium",
+        "NUM": "0142",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 29,
+        "CODE": "A01AB19",
+        "NAME": "Натрия перборат",
+        "LATNAME": "Sodium Perborate",
+        "NUM": "0027",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 66,
+        "CODE": "A02AD",
+        "NAME": "Комбинация препаратов алюминия, кальция и магния",
+        "LATNAME": "Comb and Compl. Of Alumin, Calc. and Magnes.Comp",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 26,
+        "CODE": "A01AB16",
+        "NAME": "Мепартрицин",
+        "LATNAME": "Mepartricin",
+        "NUM": "0024",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 201,
+        "CODE": "A03CA04",
+        "NAME": "Отилоний бромид в комбинации с психотропными препаратами",
+        "LATNAME": "Otilonium Bromide and Psycholeptics",
+        "NUM": "0184",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 97,
+        "CODE": "A02BD",
+        "NAME": null,
+        "LATNAME": "Helicobacter pylori, combinations for eradication of",
+        "NUM": null,
+        "HIGH": 78,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 211,
+        "CODE": "A03CB03",
+        "NAME": "Атропин сульфат в комбинации с психотропными препаратами",
+        "LATNAME": "Atropine and Psycholeptics",
+        "NUM": "0194",
+        "HIGH": 208,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 22,
+        "CODE": "A01AB12",
+        "NAME": "Гексетидин",
+        "LATNAME": "Hexetidine",
+        "NUM": "0020",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 47,
+        "CODE": "A02AA01",
+        "NAME": "Магния карбонат",
+        "LATNAME": "Magnesium Carbonate",
+        "NUM": "0043",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 122,
+        "CODE": "A03",
+        "NAME": "Спазмолитики и антихолинэргические препараты",
+        "LATNAME": "Antispas. and Anticholinergic Agents and Propulsiv",
+        "NUM": null,
+        "HIGH": 1,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 185,
+        "CODE": "A03B",
+        "NAME": "Белладонна и ее производные",
+        "LATNAME": "Belladonna and Derivatives, Plain",
+        "NUM": null,
+        "HIGH": 122,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 82,
+        "CODE": "A02BA03",
+        "NAME": "Фамотидин",
+        "LATNAME": "Famotidine",
+        "NUM": "0078",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 141,
+        "CODE": "A03AB07",
+        "NAME": "Метантелин бромид",
+        "LATNAME": "Methanthelinium",
+        "NUM": "0128",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 173,
+        "CODE": "A03AX04",
+        "NAME": "Пинаверий бромид",
+        "LATNAME": "Pinaverium",
+        "NUM": "0158",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 135,
+        "CODE": "A03AB01",
+        "NAME": "Бензилоний бромид",
+        "LATNAME": "Benzilonium",
+        "NUM": "0122",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 186,
+        "CODE": "A03BA",
+        "NAME": "Алкалоиды белладонны, третичные амины",
+        "LATNAME": "Belladonna Alkaloids, Tertiary Amines",
+        "NUM": null,
+        "HIGH": 185,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 71,
+        "CODE": "A02AD05",
+        "NAME": "Алмасилат (Сималдрат)",
+        "LATNAME": "Almasilate (Simaldrate)",
+        "NUM": "0067",
+        "HIGH": 66,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 127,
+        "CODE": "A03AA04",
+        "NAME": "Мебеверин",
+        "LATNAME": "Mebeverine",
+        "NUM": "0114",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 93,
+        "CODE": "A02BC02",
+        "NAME": "Пантопразол",
+        "LATNAME": "Pantoprazole",
+        "NUM": "0089",
+        "HIGH": 91,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 111,
+        "CODE": "A02BX07",
+        "NAME": "Гефарнат",
+        "LATNAME": "Gefarnate",
+        "NUM": "0099",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 216,
+        "CODE": "A03DA",
+        "NAME": "Синтетические холиноблокаторы в комбинации с анальгетиками",
+        "LATNAME": "Synthetic Anticholin.Agents In Comb.W/Analgesics",
+        "NUM": null,
+        "HIGH": 215,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 200,
+        "CODE": "A03CA03",
+        "NAME": "Оксифенциклимин в комбинации с психотропными препаратами",
+        "LATNAME": "Oxyphencyclimine and Psycholeptics",
+        "NUM": "0183",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 163,
+        "CODE": "A03AD02",
+        "NAME": "Дротаверин",
+        "LATNAME": "Drotaverine",
+        "NUM": "0150",
+        "HIGH": 161,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 57,
+        "CODE": "A02AB04",
+        "NAME": "Карбальдрат",
+        "LATNAME": "Dihydroxialuminium Sodium Carbonate (Carbaldrate)",
+        "NUM": "0053",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 108,
+        "CODE": "A02BX04",
+        "NAME": "Метиосульфония хлорид",
+        "LATNAME": "Methiosulfonium Chloride",
+        "NUM": "0096",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 191,
+        "CODE": "A03BB01",
+        "NAME": "Гиосцина бутилбромид",
+        "LATNAME": "Hyoscine butylbromide",
+        "NUM": "0174",
+        "HIGH": 190,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 85,
+        "CODE": "A02BA06",
+        "NAME": "Роксатидин",
+        "LATNAME": "Roxatidine",
+        "NUM": "0081",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 6,
+        "CODE": "A01AA02",
+        "NAME": "Натрия монофторфосфат",
+        "LATNAME": "Sodium monofluorophosphate",
+        "NUM": "0006",
+        "HIGH": 4,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 199,
+        "CODE": "A03CA02",
+        "NAME": "Клидиний бромид в комбинации с психотропными препаратами",
+        "LATNAME": "Clidinium and Psycholeptics",
+        "NUM": "0182",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 183,
+        "CODE": "A03AX30",
+        "NAME": "Триметилдифенилпропиламин",
+        "LATNAME": "Trimethyldiphenylpropylamine",
+        "NUM": "0166",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 9,
+        "CODE": "A01AA30",
+        "NAME": "Комбинированные препараты",
+        "LATNAME": "Combinations",
+        "NUM": "0008",
+        "HIGH": 4,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 81,
+        "CODE": "A02BA02",
+        "NAME": "Ранитидин",
+        "LATNAME": "Ranitidine",
+        "NUM": "0077",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 86,
+        "CODE": "A02BA07",
+        "NAME": "Ранитидина висмута цитрат",
+        "LATNAME": "Ranitidine Bismuth Citrate",
+        "NUM": "0082",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 137,
+        "CODE": "A03AB03",
+        "NAME": "Оксифеноний бромид",
+        "LATNAME": "Oxyphenonium",
+        "NUM": "0124",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 84,
+        "CODE": "A02BA05",
+        "NAME": "Ниперотидин",
+        "LATNAME": "Niperotidine",
+        "NUM": "0080",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 38,
+        "CODE": "A01AD01",
+        "NAME": "Эпинефрин",
+        "LATNAME": "Epinephrine",
+        "NUM": "0035",
+        "HIGH": 37,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 110,
+        "CODE": "A02BX06",
+        "NAME": "Проглумид",
+        "LATNAME": "Proglumide",
+        "NUM": "0098",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 74,
+        "CODE": "A02AF02",
+        "NAME": "Простая комбинация солей и ветрогонных препаратов",
+        "LATNAME": "Ordinary salt combinations and antiflatulents",
+        "NUM": "0070",
+        "HIGH": 72,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 144,
+        "CODE": "A03AB10",
+        "NAME": "Гексоциклий метилсульфат",
+        "LATNAME": "Hexocyclium",
+        "NUM": "0131",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 212,
+        "CODE": "A03CB04",
+        "NAME": "Метилгоматропин в комбинации с психотропными препаратами",
+        "LATNAME": "Methylhomatropine and Psycholeptics",
+        "NUM": "0195",
+        "HIGH": 208,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 118,
+        "CODE": "A02BX51",
+        "NAME": "Карбеноксолон в комбинации с другими препаратами (исключая психотропные препараты)",
+        "LATNAME": "Carbenoxolone,Combinations Excl.Psycholeptics",
+        "NUM": "0105",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 14,
+        "CODE": "A01AB04",
+        "NAME": "Амфотерицин В",
+        "LATNAME": "Amphotericin B",
+        "NUM": "0012",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 217,
+        "CODE": "A03DA01",
+        "NAME": "Тропензилин бромид в комбинации с анальгетиками",
+        "LATNAME": "Tropenziline and Analgesics",
+        "NUM": "0200",
+        "HIGH": 216,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 63,
+        "CODE": "A02AC01",
+        "NAME": "Кальция карбонат",
+        "LATNAME": "Calcium Carbonate",
+        "NUM": "0059",
+        "HIGH": 62,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 105,
+        "CODE": "A02BX01",
+        "NAME": "Карбеноксолон",
+        "LATNAME": "Carbenoxolone",
+        "NUM": "0093",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 28,
+        "CODE": "A01AB18",
+        "NAME": "Клотримазол",
+        "LATNAME": "Clotrimazole",
+        "NUM": "0026",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 202,
+        "CODE": "A03CA05",
+        "NAME": "Гликопирроний бромид в комбинации с психотропными препаратами",
+        "LATNAME": "Glycopyrronium and Psycholeptics",
+        "NUM": "0185",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 107,
+        "CODE": "A02BX03",
+        "NAME": "Пирензепин",
+        "LATNAME": "Pirenzepine",
+        "NUM": "0095",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 153,
+        "CODE": "A03AB19",
+        "NAME": "Тимепидий бромид",
+        "LATNAME": "Timepidium Bromide",
+        "NUM": "0140",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 162,
+        "CODE": "A03AD01",
+        "NAME": "Папаверин гидрохлорид",
+        "LATNAME": "Papaverine",
+        "NUM": "0149",
+        "HIGH": 161,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 175,
+        "CODE": "A03AX06",
+        "NAME": "Иданпрамин",
+        "LATNAME": "Idanpramine",
+        "NUM": "0160",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 195,
+        "CODE": "A03BB05",
+        "NAME": "Циметропий бромид",
+        "LATNAME": "Cimetropium Bromide",
+        "NUM": "0178",
+        "HIGH": 190,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 128,
+        "CODE": "A03AA05",
+        "NAME": "Тримебутин",
+        "LATNAME": "Trimebutine",
+        "NUM": "0115",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 172,
+        "CODE": "A03AX03",
+        "NAME": "Хлорбензоксамин",
+        "LATNAME": "Chlorbenzoxamine",
+        "NUM": "0157",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 92,
+        "CODE": "A02BC01",
+        "NAME": "Омепразол",
+        "LATNAME": "Omeprazole",
+        "NUM": "0088",
+        "HIGH": 91,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 115,
+        "CODE": "A02BX11",
+        "NAME": "Троксипид",
+        "LATNAME": "Troxipide",
+        "NUM": "0103",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 51,
+        "CODE": "A02AA05",
+        "NAME": "Магния силикат",
+        "LATNAME": "Magnesium Silicate",
+        "NUM": "0047",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 131,
+        "CODE": "A03AA08",
+        "NAME": "Дигексиверин",
+        "LATNAME": "Dihexyverine",
+        "NUM": "0118",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 91,
+        "CODE": "A02BC",
+        "NAME": "Ингибиторы протонового насоса",
+        "LATNAME": "Proton Pump Inhibitors",
+        "NUM": null,
+        "HIGH": 78,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 215,
+        "CODE": "A03D",
+        "NAME": "Спазмолитики в комбинации с анальгетиками",
+        "LATNAME": "Antispasmodics In Combination With Analgesics",
+        "NUM": null,
+        "HIGH": 122,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 129,
+        "CODE": "A03AA06",
+        "NAME": "Роциверин",
+        "LATNAME": "Rociverine",
+        "NUM": "0116",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 37,
+        "CODE": "A01AD",
+        "NAME": "Прочие препараты для лечения заболеваний полости рта",
+        "LATNAME": "Other Agents For Local Oral Treatment",
+        "NUM": null,
+        "HIGH": 3,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 170,
+        "CODE": "A03AX01",
+        "NAME": "Фенпипран",
+        "LATNAME": "Fenpiprane",
+        "NUM": "0155",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 78,
+        "CODE": "A02B",
+        "NAME": "Противоязвенные препараты",
+        "LATNAME": "Drugs For Treatment Of Peptic Ulcer",
+        "NUM": null,
+        "HIGH": 44,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 58,
+        "CODE": "A02AB05",
+        "NAME": "Алюминия ацетоацетат",
+        "LATNAME": "Aluminium Acetoacetate",
+        "NUM": "0054",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 36,
+        "CODE": "A01AC54",
+        "NAME": "Преднизолон в комбинации с другими препаратами",
+        "LATNAME": "Prednisolone, combinations",
+        "NUM": "0033",
+        "HIGH": 32,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 126,
+        "CODE": "A03AA03",
+        "NAME": "Камилофин",
+        "LATNAME": "Camylofin",
+        "NUM": "0113",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 142,
+        "CODE": "A03AB08",
+        "NAME": "Тридигексетил йодид",
+        "LATNAME": "Tridihexethyl",
+        "NUM": "0129",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 87,
+        "CODE": "A02BA51",
+        "NAME": "Циметидин в комбинации с другими препаратами",
+        "LATNAME": "Cimetidine, Combinations",
+        "NUM": "0083",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 4,
+        "CODE": "A01AA",
+        "NAME": "Препараты для профилактики кариеса",
+        "LATNAME": "Caries Prophylactic Agents",
+        "NUM": null,
+        "HIGH": 3,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 39,
+        "CODE": "A01AD02",
+        "NAME": "Бензидамин",
+        "LATNAME": "Benzydamine",
+        "NUM": "0036",
+        "HIGH": 37,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 13,
+        "CODE": "A01AB03",
+        "NAME": "Хлоргексидин",
+        "LATNAME": "Chlorhexidine",
+        "NUM": "0011",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 5,
+        "CODE": "A01AA01",
+        "NAME": "Натрия фторид",
+        "LATNAME": "Sodium fluoride",
+        "NUM": "0005",
+        "HIGH": 4,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 54,
+        "CODE": "A02AB01",
+        "NAME": "Алюминия гидроксид",
+        "LATNAME": "Aluminium Hydroxide",
+        "NUM": "0050",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 124,
+        "CODE": "A03AA",
+        "NAME": "Синтетические холиноблокаторы - эфиры с третичной аминогруппой",
+        "LATNAME": "Synt Anticholin,Esters With Tertiary Amino Group",
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 179,
+        "CODE": "A03AX10",
+        "NAME": "Изометептен",
+        "LATNAME": "Isometheptene",
+        "NUM": "0164",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 152,
+        "CODE": "A03AB18",
+        "NAME": "Прифиний бромид",
+        "LATNAME": "Prifinium Bromide",
+        "NUM": "0139",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 89,
+        "CODE": "A02BB01",
+        "NAME": "Мизопростол",
+        "LATNAME": "Misoprostol",
+        "NUM": "0085",
+        "HIGH": 88,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 90,
+        "CODE": "A02BB02",
+        "NAME": "Энпростил",
+        "LATNAME": "Enprostil",
+        "NUM": "0086",
+        "HIGH": 88,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 176,
+        "CODE": "A03AX07",
+        "NAME": "Проксазол",
+        "LATNAME": "Proxazole",
+        "NUM": "0161",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 132,
+        "CODE": "A03AA09",
+        "NAME": "Дифемерин",
+        "LATNAME": "Difemerine",
+        "NUM": "0119",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 73,
+        "CODE": "A02AF01",
+        "NAME": "Магалдрат и ветрогонные препараты",
+        "LATNAME": "Magaldrate and Antiflatulents",
+        "NUM": "0069",
+        "HIGH": 72,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 50,
+        "CODE": "A02AA04",
+        "NAME": "Магния гидроксид",
+        "LATNAME": "Magnesium Hydroxide",
+        "NUM": "0046",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 184,
+        "CODE": "A03AX58",
+        "NAME": "Алверин в комбинации с другими препаратами",
+        "LATNAME": "Alverine, Combinations",
+        "NUM": "0167",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 121,
+        "CODE": "A02X",
+        "NAME": "Прочие препараты для лечения язвенной болезни и метеоризма",
+        "LATNAME": "Oth.Antac.Drugs For Treatm.Of Pept.Ulc and Flatul",
+        "NUM": null,
+        "HIGH": 44,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 21,
+        "CODE": "A01AB11",
+        "NAME": "Прочие",
+        "LATNAME": "Various",
+        "NUM": "0019",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 164,
+        "CODE": "A03AD30",
+        "NAME": "Моксаверин",
+        "LATNAME": "Moxaverine",
+        "NUM": "0151",
+        "HIGH": 161,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 94,
+        "CODE": "A02BC03",
+        "NAME": "Лансопразол",
+        "LATNAME": "Lansoprazole",
+        "NUM": "0090",
+        "HIGH": 91,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 60,
+        "CODE": "A02AB07",
+        "NAME": "Алюминия глицинат",
+        "LATNAME": "Aluminium Glycinate",
+        "NUM": "0056",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 27,
+        "CODE": "A01AB17",
+        "NAME": "Метронидазол",
+        "LATNAME": "Metronidazole",
+        "NUM": "0025",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 24,
+        "CODE": "A01AB14",
+        "NAME": "Бензоксоний хлорид",
+        "LATNAME": "Benzoxonii Chloride",
+        "NUM": "0022",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 139,
+        "CODE": "A03AB05",
+        "NAME": "Пропантелин бромид",
+        "LATNAME": "Propantheline",
+        "NUM": "0126",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 157,
+        "CODE": "A03AC",
+        "NAME": "Синтетические холиноблокаторы - амиды с третичной аминогруппой",
+        "LATNAME": "Synt Antispasmodics, Amides With Tertiary Amines",
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 35,
+        "CODE": "A01AC03",
+        "NAME": "Гидрокортизон",
+        "LATNAME": "Hydrocortisone",
+        "NUM": "0032",
+        "HIGH": 32,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 43,
+        "CODE": "A01AD11",
+        "NAME": "Прочие препараты для лечения заболеваний полости рта",
+        "LATNAME": "Various",
+        "NUM": "0039",
+        "HIGH": 37,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 59,
+        "CODE": "A02AB06",
+        "NAME": "Алоглутамол",
+        "LATNAME": "Aloglutamol",
+        "NUM": "0055",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 207,
+        "CODE": "A03CA34",
+        "NAME": "Пропантелин бромид в комбинации с психотропными препаратами",
+        "LATNAME": "Propantheline and Psycholeptics",
+        "NUM": "0190",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 174,
+        "CODE": "A03AX05",
+        "NAME": "Феноверин",
+        "LATNAME": "Fenoverine",
+        "NUM": "0159",
+        "HIGH": 169,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 125,
+        "CODE": "A03AA01",
+        "NAME": "Оксифенциклимин",
+        "LATNAME": "Oxyphencyclimine",
+        "NUM": "0112",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 20,
+        "CODE": "A01AB10",
+        "NAME": "Натамицин",
+        "LATNAME": "Natamycin",
+        "NUM": "0018",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 119,
+        "CODE": "A02BX71",
+        "NAME": "Карбеноксолон в комбинации с психотропными препаратами",
+        "LATNAME": "Carbenoxolone, Comb. With Psycholeptics",
+        "NUM": "0106",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 198,
+        "CODE": "A03CA01",
+        "NAME": "Изопропамид в комбинации с психотропными препаратами",
+        "LATNAME": "Isopropamide and Psycholeptics",
+        "NUM": "0181",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 109,
+        "CODE": "A02BX05",
+        "NAME": "Висмута трикалия дицитрат",
+        "LATNAME": "Bismuthate tripotassium dicitrate",
+        "NUM": "0097",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 133,
+        "CODE": "A03AA30",
+        "NAME": "Пиперидолат",
+        "LATNAME": "Piperidolate",
+        "NUM": "0120",
+        "HIGH": 124,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 166,
+        "CODE": "A03AE",
+        "NAME": null,
+        "LATNAME": null,
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 70,
+        "CODE": "A02AD04",
+        "NAME": "Гидроталцит",
+        "LATNAME": "Hydrotalcite",
+        "NUM": "0066",
+        "HIGH": 66,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 160,
+        "CODE": "A03AC05",
+        "NAME": "Тиропрамид",
+        "LATNAME": "Tiropramide",
+        "NUM": "0147",
+        "HIGH": 157,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 197,
+        "CODE": "A03CA",
+        "NAME": "Синтетические холиноблокаторы в комбинации с психотропными препаратами",
+        "LATNAME": "Synthetic Anticholin.Agents In Comb.W/Psycholept",
+        "NUM": null,
+        "HIGH": 196,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 120,
+        "CODE": "A02BX77",
+        "NAME": "Гефарнат в комбинации с психотропными препаратами",
+        "LATNAME": "Gefarnate, Comb. With Psycholeptics",
+        "NUM": "0107",
+        "HIGH": 104,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 67,
+        "CODE": "A02AD01",
+        "NAME": "Простая комбинация  солей",
+        "LATNAME": "Ordinary Salt Combinations",
+        "NUM": "0063",
+        "HIGH": 66,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 41,
+        "CODE": "A01AD06",
+        "NAME": "Адреналон",
+        "LATNAME": "Adrenalone",
+        "NUM": "0038",
+        "HIGH": 37,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 140,
+        "CODE": "A03AB06",
+        "NAME": "Отилоний бромид",
+        "LATNAME": "Otilonium bromide",
+        "NUM": "0127",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 12,
+        "CODE": "A01AB02",
+        "NAME": "Перекись водорода",
+        "LATNAME": "Hydrogen Peroxide",
+        "NUM": "0010",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 44,
+        "CODE": "A02",
+        "NAME": "Антациды, препараты для лечения язвенной болезни желудка и двенадцатиперстной кишки и метеоризма",
+        "LATNAME": "Antacids, Drugs For Treatm.Of Pept.Ulc.And Flatul.",
+        "NUM": null,
+        "HIGH": 1,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 88,
+        "CODE": "A02BB",
+        "NAME": "Простагландины",
+        "LATNAME": "Prostaglandins",
+        "NUM": null,
+        "HIGH": 78,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 53,
+        "CODE": "A02AB",
+        "NAME": "Препараты алюминия",
+        "LATNAME": "Aluminium Compounds",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 32,
+        "CODE": "A01AC",
+        "NAME": "Глюкокортикоиды для местного лечения заболеваний полости рта",
+        "LATNAME": "Corticosteroids For Local Oral Treatment",
+        "NUM": null,
+        "HIGH": 3,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 208,
+        "CODE": "A03CB",
+        "NAME": "Белладонна и ее производные в комбинации с психотропными препаратами",
+        "LATNAME": "Belladonna and Derivatives In Comb.W/Psycholep",
+        "NUM": null,
+        "HIGH": 196,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 1,
+        "CODE": "A",
+        "NAME": "Пищеварительный тракт и обмен веществ",
+        "LATNAME": "Alimentary Tract and Metabolism",
+        "NUM": null,
+        "HIGH": null,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 206,
+        "CODE": "A03CA30",
+        "NAME": "Эмепроний бромид в комбинации с психотропными препаратами",
+        "LATNAME": "Emepronium and Psycholeptics",
+        "NUM": "0189",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 48,
+        "CODE": "A02AA02",
+        "NAME": "Магния оксид",
+        "LATNAME": "Magnesium Oxide",
+        "NUM": "0044",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 62,
+        "CODE": "A02AC",
+        "NAME": "Препараты кальция",
+        "LATNAME": "Calcium Compounds",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 149,
+        "CODE": "A03AB15",
+        "NAME": "Дифенамил метилсульфат",
+        "LATNAME": "Diphemanil",
+        "NUM": "0136",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 40,
+        "CODE": "A01AD05",
+        "NAME": "Ацетилсалициловая кислота",
+        "LATNAME": "Acetylsalicylic Acid",
+        "NUM": "0037",
+        "HIGH": 37,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 75,
+        "CODE": "A02AG",
+        "NAME": "Антациды в комбинации со спазмолитиками",
+        "LATNAME": "Antacids With Antispasmodics",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 214,
+        "CODE": "A03CC",
+        "NAME": "Прочие спазмолитики в комбинации с психотропными препаратами",
+        "LATNAME": "Other Antispasmodics In Comb. W/Psycholep.",
+        "NUM": null,
+        "HIGH": 196,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 76,
+        "CODE": "A02AH",
+        "NAME": "Антациды в комбинации с натрия бикарбонатом",
+        "LATNAME": "Antacids With Sodium Bicarbonate",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 19,
+        "CODE": "A01AB09",
+        "NAME": "Миконазол",
+        "LATNAME": "Miconazole",
+        "NUM": "0017",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 136,
+        "CODE": "A03AB02",
+        "NAME": "Гликопирроний бромид",
+        "LATNAME": "Glycopyrronium",
+        "NUM": "0123",
+        "HIGH": 134,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 49,
+        "CODE": "A02AA03",
+        "NAME": "Магния пероксид",
+        "LATNAME": "Magnesium Peroxide",
+        "NUM": "0045",
+        "HIGH": 46,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 190,
+        "CODE": "A03BB",
+        "NAME": "Полусинтетические алкалоиды белладонны, четвертичные аммониевые соединения",
+        "LATNAME": "Belladonna Alkaloids Semisynt,Quater Ammonium Comp",
+        "NUM": null,
+        "HIGH": 185,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 192,
+        "CODE": "A03BB02",
+        "NAME": "Атропин метонитрат",
+        "LATNAME": "Methylatropine",
+        "NUM": "0175",
+        "HIGH": 190,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 203,
+        "CODE": "A03CA06",
+        "NAME": "Бевоний метилсульфат в комбинации с психотропными препаратами",
+        "LATNAME": "Bevonium and Psycholeptics",
+        "NUM": "0186",
+        "HIGH": 197,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 15,
+        "CODE": "A01AB05",
+        "NAME": "Полиноксилин",
+        "LATNAME": "Polynoxylin",
+        "NUM": "0013",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 196,
+        "CODE": "A03C",
+        "NAME": "Спазмолитики в комбинации с психотропными препаратами",
+        "LATNAME": "Antispasmodics In Combination With Psycholeptics",
+        "NUM": null,
+        "HIGH": 122,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 80,
+        "CODE": "A02BA01",
+        "NAME": "Циметидин",
+        "LATNAME": "Cimetidine",
+        "NUM": "0076",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 79,
+        "CODE": "A02BA",
+        "NAME": "Блокаторы гистаминовых H2-рецепторов",
+        "LATNAME": "H2-Receptor Antagonists",
+        "NUM": null,
+        "HIGH": 78,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 25,
+        "CODE": "A01AB15",
+        "NAME": "Тибезоний йодид",
+        "LATNAME": "Tibezonium Iodide",
+        "NUM": "0023",
+        "HIGH": 11,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 61,
+        "CODE": "A02AB10",
+        "NAME": "Комбинация препаратов алюминия",
+        "LATNAME": "Combinations",
+        "NUM": "0057",
+        "HIGH": 53,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 83,
+        "CODE": "A02BA04",
+        "NAME": "Низатидин",
+        "LATNAME": "Nizatidine",
+        "NUM": "0079",
+        "HIGH": 79,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 169,
+        "CODE": "A03AX",
+        "NAME": "Другие синтетические холиноблокаторы",
+        "LATNAME": "Other Synthetic Anticholinergic Agents",
+        "NUM": null,
+        "HIGH": 123,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 46,
+        "CODE": "A02AA",
+        "NAME": "Препараты магния",
+        "LATNAME": "Magnesium Compounds",
+        "NUM": null,
+        "HIGH": 45,
+        "operation": "DELETE"
+      },
+      {
+        "RECID": 113,
+        "CODE": "A02BX09",
+        "NAME": "Ацетоксолон",
+        "LATNAME": "Acetoxolone",
+        "NUM": "0101",
+        "HIGH": 104,
+        "operation": "DELETE"
+      }
+    ]
+  }
+}

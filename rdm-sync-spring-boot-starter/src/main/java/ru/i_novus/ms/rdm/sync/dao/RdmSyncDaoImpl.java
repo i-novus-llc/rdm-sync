@@ -581,7 +581,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         String ddl = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
         ddl += fieldMappings.stream()
-                .map(mapping -> String.format("%s %s", mapping.getSysField(), mapping.getSysDataType()))
+                .map(mapping -> String.format("%s %s", addDoubleQuotes(mapping.getSysField()), mapping.getSysDataType()))
                 .collect(Collectors.joining(", "));
         ddl += String.format(", %s BOOLEAN)", isDeletedFieldName);
 
