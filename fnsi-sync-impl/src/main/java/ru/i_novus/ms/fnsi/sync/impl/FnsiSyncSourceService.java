@@ -164,8 +164,8 @@ public class FnsiSyncSourceService implements SyncSourceService {
         }
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
+        String url = builder.toUriString();
         try {
-            String url = builder.toUriString();
             JsonNode body = restTemplate.exchange(
                     new URI(url),
                     HttpMethod.GET,
@@ -177,7 +177,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
             return body;
         } catch (URISyntaxException e) {
             logger.error("cannot create uri ", e);
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("invalid uri " + url, e);
         }
     }
 

@@ -2,10 +2,8 @@ package ru.i_novus.ms.rdm.sync.api.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 import java.util.function.Function;
 
 public enum AttributeTypeEnum {

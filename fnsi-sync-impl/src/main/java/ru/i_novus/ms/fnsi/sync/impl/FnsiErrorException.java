@@ -2,7 +2,7 @@ package ru.i_novus.ms.fnsi.sync.impl;
 
 public class FnsiErrorException extends RuntimeException {
 
-    private String message;
+    private final String message;
 
     public FnsiErrorException(String message) {
         this.message = message;
