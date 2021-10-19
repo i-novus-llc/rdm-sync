@@ -1,0 +1,22 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "fields": null,
+  "keys": null,
+  "data": {
+    "total": 1,
+    "list": [
+      {
+        "ID": 1,
+        "SMOCOD": "01003",
+        "CODPVP": "001",
+        "ADDRESS": "Республика Адыгея, г. Майкоп, ул. Советская, 185",
+        "PHONE": "(8772) 59-32-00",
+        "DATEEND": null,
+        "DATEBEG": 1511211600000,
+        "operation": "UPDATE"
+      }
+    ]
+  }
+}

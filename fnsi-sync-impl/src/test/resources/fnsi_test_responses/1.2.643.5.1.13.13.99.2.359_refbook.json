@@ -1,0 +1,36 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 1,
+  "list": [
+    {
+      "result": null,
+      "resultText": null,
+      "resultCode": null,
+      "identifier": "5J6LJG0OIE",
+      "oid": "1.2.643.5.1.13.13.99.2.359",
+      "version": "1.1",
+      "rowsCount": 174,
+      "createDate": "20.11.2019 13:27",
+      "publishDate": "20.11.2019 13:27",
+      "lastUpdate": "20.11.2019 13:25",
+      "fullName": "Наименования видов ВМП",
+      "shortName": "Наименования видов высокотехнологичной медицинской помощи",
+      "description": null,
+      "structureNotes": "1) ID, Код, Целочисленный; 2) NAME, Наименование, Строчный; 3) CODE, Код_ВМП_ФОМС, Строчный; 4) RAZDEL, Раздел, Целочисленный; 5) DATE_BEGIN, Дата начала, Дата; 6) DATE_END, Дата окончания, Дата;",
+      "releaseNotes": null,
+      "laws": [],
+      "respOrganizationId": null,
+      "authOrganizationId": 12,
+      "typeId": 1,
+      "groupId": null,
+      "approveDate": "30.11.2019",
+      "fields": null,
+      "keys": null,
+      "codes": [],
+      "hierarchical": null,
+      "archive": false
+    }
+  ]
+}

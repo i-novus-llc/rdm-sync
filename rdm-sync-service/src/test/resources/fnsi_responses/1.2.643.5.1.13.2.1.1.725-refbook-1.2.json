@@ -1,0 +1,36 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 1,
+  "list": [
+    {
+      "result": null,
+      "resultText": null,
+      "resultCode": null,
+      "identifier": "VZN108",
+      "oid": "1.2.643.5.1.13.2.1.1.725",
+      "version": "1.2",
+      "rowsCount": 65,
+      "createDate": "20.12.2016 00:00",
+      "publishDate": "20.12.2016 00:00",
+      "lastUpdate": "20.12.2016 00:00",
+      "fullName": "Справочник связи международного непатентованного наименования, лекарственной формы лекарственного препарата, дозировки лекарственного средства в лекарственном препарате",
+      "shortName": "Справочник связи МНН, ЛФ ЛП, дозировки",
+      "description": "Справочник связи международного непатентованного наименования, лекарственной формы лекарственного препарата, дозировки лекарственного средства в лекарственном препарате",
+      "structureNotes": "1) ID, Целочисленный, Уникальный идентификатор (УИ).; 2) MNN_ID, Целочисленный, Код МНН; 3) DRUG_FORM_ID, Целочисленный, Код ЛФ; 4) DOSE_ID, Целочисленный, Код дозировки;",
+      "releaseNotes": "Добавлено записей: 0; Изменено записей: 21; Удалено записей: 53;",
+      "laws": [],
+      "respOrganizationId": 11,
+      "authOrganizationId": null,
+      "typeId": null,
+      "groupId": 13,
+      "approveDate": null,
+      "fields": null,
+      "keys": null,
+      "codes": [],
+      "hierarchical": null,
+      "archive": false
+    }
+  ]
+}

@@ -4,11 +4,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
+import net.n2oapp.platform.jaxrs.RestCriteria;
+import org.springframework.data.domain.Sort;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lgalimova
@@ -17,7 +21,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ApiModel("Критерий поиска записей журнала")
-public class LogCriteria extends AbstractCriteria {
+public class LogCriteria extends RestCriteria {
 
     @ApiModelProperty("Код справочника")
     @QueryParam("refbookCode")
@@ -27,4 +31,13 @@ public class LogCriteria extends AbstractCriteria {
     @QueryParam("date")
     @NotNull
     private LocalDate date;
+
+    protected List<Sort.Order> getDefaultOrders() {
+        return Collections.emptyList();
+    }
+
+    public List<Sort.Order> getOrders() {
+        return (List)this.getSort().get().collect(Collectors.toList());
+    }
+
 }

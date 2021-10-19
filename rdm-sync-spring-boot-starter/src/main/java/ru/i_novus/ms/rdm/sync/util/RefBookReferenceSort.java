@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.util;
 
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+
+import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 
 import java.util.*;
 
@@ -18,9 +19,8 @@ public class RefBookReferenceSort {
         for (RefBook version : refBooks) {
 
             DictionaryNode node = refCodes.get(version.getCode());
-            version.getStructure().getReferences().forEach(reference -> {
+            version.getStructure().getReferences().forEach(referenceCode -> {
 
-                String referenceCode = reference.getReferenceCode();
                 if (refCodes.containsKey(referenceCode)) {
                     node.child.add(referenceCode);
                 }

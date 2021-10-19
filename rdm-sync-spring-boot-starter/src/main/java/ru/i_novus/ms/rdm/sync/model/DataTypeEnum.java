@@ -1,9 +1,8 @@
 package ru.i_novus.ms.rdm.sync.model;
 
 import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.util.TimeUtils;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -64,9 +63,8 @@ public enum DataTypeEnum {
         return dataType == null ? null : TYPE_MAP.get(dataType);
     }
 
-    public static DataTypeEnum getByRdmAttr(Structure.Attribute attribute) {
+    public static DataTypeEnum getByRdmAttr(AttributeTypeEnum type) {
 
-        final FieldType type = attribute.getType();
 
         return switch (type) {
             case DATE -> DATE;

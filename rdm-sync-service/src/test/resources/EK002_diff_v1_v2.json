@@ -1,0 +1,269 @@
+{
+  "rows": {
+    "content": [
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 2
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "newValue": true
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "blue_",
+            "newValue": "blue",
+            "status": "UPDATED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "Голубой_r",
+            "newValue": "Голубой",
+            "status": "UPDATED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "newValue": "tab"
+          }
+        ],
+        "status": "UPDATED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 3
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "oldValue": true,
+            "newValue": false,
+            "status": "UPDATED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "yello",
+            "status": "UPDATED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "Фиолетовый",
+            "newValue": "желтый",
+            "status": "UPDATED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "newValue": "st",
+            "status": "UPDATED"
+          }
+        ],
+        "status": "UPDATED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 4,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "newValue": false,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "green",
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "зеленый",
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "status": "INSERTED"
+          }
+        ],
+        "status": "INSERTED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "oldValue": 1,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "oldValue": false,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "red",
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "Красный",
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "status": "DELETED"
+          }
+        ],
+        "status": "DELETED"
+      }
+    ],
+    "totalElements": 4,
+    "sort": []
+  },
+  "newAttributes": [],
+  "oldAttributes": [],
+  "updatedAttributes": []
+}

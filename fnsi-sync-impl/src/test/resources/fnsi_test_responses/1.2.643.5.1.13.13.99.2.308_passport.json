@@ -1,0 +1,81 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "identifier": "28VUA51PR3",
+  "oid": "1.2.643.5.1.13.13.99.2.308",
+  "version": "3.13",
+  "rowsCount": 8848,
+  "createDate": "17.12.2018 11:31",
+  "publishDate": "04.10.2019 17:42",
+  "lastUpdate": "04.10.2019 17:42",
+  "fullName": "Реестр пунктов выдачи полисов (ФОМС)",
+  "shortName": "Реестр ПВП (ФОМС)",
+  "description": "<p>Реестр пунктов выдачи полисов обязательного медицинского страхования в соответствии с форматом и структурой справочника F013 Приказа ФФОМС от 07.04.2011 N 79 &quot;Об утверждении Общих принципов построения и функционирования информационных систем и порядка информационного взаимодействия в сфере обязательного медицинского страхования&quot;</p>\n",
+  "structureNotes": "1)ID, Идентификатор;\n2)SMOCOD, Код СМО в кодировке единого реестра СМО, null;\n3)CODPVP, Порядковый номер пункта выдачи полисов, null;\n4)ADDRESS, Фактический адрес пункта выдачи, null;\n5)PHONE, Номер телефона пункта выдачи полисов, null;\n6)DATEEND, Дата окончания действия записи, null;\n7)DATEBEG, Дата начала действия записи, null;",
+  "releaseNotes": "Добавлено записей: 0;\nИзменено записей: 1;\nУдалено записей: 0;",
+  "laws": [],
+  "respOrganizationId": 11,
+  "authOrganizationId": 12,
+  "typeId": 1,
+  "groupId": 14,
+  "approveDate": null,
+  "fields": [
+    {
+      "field": "ID",
+      "dataType": "INTEGER",
+      "alias": null,
+      "description": "Идентификатор"
+    },
+    {
+      "field": "SMOCOD",
+      "dataType": "VARCHAR",
+      "alias": "Код СМО в кодировке единого реестра СМО",
+      "description": null
+    },
+    {
+      "field": "CODPVP",
+      "dataType": "VARCHAR",
+      "alias": "Порядковый номер пункта выдачи полисов",
+      "description": null
+    },
+    {
+      "field": "ADDRESS",
+      "dataType": "VARCHAR",
+      "alias": "Фактический адрес пункта выдачи",
+      "description": null
+    },
+    {
+      "field": "PHONE",
+      "dataType": "VARCHAR",
+      "alias": "Номер телефона пункта выдачи полисов",
+      "description": null
+    },
+    {
+      "field": "DATEEND",
+      "dataType": "DATETIME",
+      "alias": "Дата окончания действия записи",
+      "description": null
+    },
+    {
+      "field": "DATEBEG",
+      "dataType": "DATETIME",
+      "alias": "Дата начала действия записи",
+      "description": null
+    }
+  ],
+  "keys": [
+    {
+      "field": "ID",
+      "type": "PRIMARY"
+    }
+  ],
+  "codes": [
+    {
+      "value": "1.2.643.5.1.13.13.99.2.308",
+      "type": "TYPE_PRIMARY"
+    }
+  ],
+  "hierarchical": false,
+  "archive": null
+}

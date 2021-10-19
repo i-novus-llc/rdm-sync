@@ -18,12 +18,12 @@ import ru.i_novus.ms.rdm.api.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.core.MultivaluedMap;
@@ -178,7 +178,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
         return namedParameterJdbcTemplate.query(sql,
-            (rs, rowNum) -> rdmMappingService.map(FieldType.STRING, dataType, rs.getObject(1))
+            (rs, rowNum) -> rdmMappingService.map(AttributeTypeEnum.STRING, dataType, rs.getObject(1))
         );
     }
 
@@ -581,7 +581,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         String ddl = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
         ddl += fieldMappings.stream()
-                .map(mapping -> String.format("%s %s", mapping.getSysField(), mapping.getSysDataType()))
+                .map(mapping -> String.format("%s %s", addDoubleQuotes(mapping.getSysField()), mapping.getSysDataType()))
                 .collect(Collectors.joining(", "));
         ddl += String.format(", %s BOOLEAN)", isDeletedFieldName);
 

@@ -20,11 +20,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>ru.i-novus.ms.rdm</groupId>
-            <artifactId>rdm-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
         </dependency>

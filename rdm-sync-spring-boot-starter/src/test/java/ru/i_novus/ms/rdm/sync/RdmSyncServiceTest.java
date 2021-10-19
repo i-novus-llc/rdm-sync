@@ -8,36 +8,28 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import ru.i_novus.ms.rdm.api.enumeration.RefBookSourceType;
-import ru.i_novus.ms.rdm.api.model.Structure;
-import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
-import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
-import ru.i_novus.ms.rdm.api.model.field.CommonField;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.model.refdata.RefBookRowValue;
-import ru.i_novus.ms.rdm.api.model.refdata.SearchDataCriteria;
-import ru.i_novus.ms.rdm.api.rest.VersionRestService;
-import ru.i_novus.ms.rdm.api.service.CompareService;
-import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.*;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncServiceImpl;
-import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
-import ru.i_novus.platform.datastorage.temporal.model.value.*;
+import ru.i_novus.platform.datastorage.temporal.model.value.IntegerFieldValue;
+import ru.i_novus.platform.datastorage.temporal.model.value.StringFieldValue;
 
 import java.math.BigInteger;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -52,27 +44,26 @@ public class RdmSyncServiceTest {
     private static final int MAX_SIZE = 100;
 
     @InjectMocks
-    private RdmSyncServiceImpl rdmSyncRest;
+    private RdmSyncServiceImpl rdmSyncService;
 
     @Mock
     private RdmSyncDao dao;
 
     @Mock
-    private RefBookService refBookService;
-    @Mock
-    private VersionRestService versionService;
-
-    @Mock
-    private CompareService compareService;
-
-    @Mock
     private RdmMappingService mappingService;
+
+    @Mock
+    private SyncSourceService syncSourceService;
+
     @Mock
     private RdmLoggingService rdmLoggingService;
 
+
     @Before
     public void setUp() {
-        rdmSyncRest.setSelf(rdmSyncRest);
+        reset(syncSourceService);
+        rdmSyncService.setSelf(rdmSyncService);
+        rdmSyncService.setSyncSourceServices(singleton(syncSourceService));
     }
 
     /**
@@ -86,7 +77,7 @@ public class RdmSyncServiceTest {
         VersionMapping versionMapping = new VersionMapping(1, "TEST", null, null, "test_table", "id", "is_deleted", null, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
-        Page<RefBookRowValue> data = createFirstRdmData();
+        Page<Map<String, Object>> data = createFirstRdmData();
         List<Map<String, Object>> dataMap = createFirstVerifyDataMap();
 
         final String refBookCode = versionMapping.getCode();
@@ -94,19 +85,19 @@ public class RdmSyncServiceTest {
         when(dao.getFieldMappings(refBookCode)).thenReturn(fieldMappings);
         when(dao.getDataIds(versionMapping.getTable(), primaryFieldMapping)).thenReturn(singletonList(BigInteger.valueOf(1L)));
 
-        when(refBookService.search(any(RefBookCriteria.class))).thenReturn(new PageImpl<>(singletonList(firstVersion), PageRequest.of(0, 10), 1L));
-        when(versionService.search(eq(refBookCode), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() == 0))).thenReturn(data);
-        when(versionService.search(eq(refBookCode), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
-        when(mappingService.map(FieldType.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(1L));
-        when(mappingService.map(FieldType.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).getFieldValues().get(1).getValue())).thenReturn("London");
-        when(mappingService.map(FieldType.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(1).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(2L));
-        when(mappingService.map(FieldType.STRING, DataTypeEnum.VARCHAR, data.getContent().get(1).getFieldValues().get(1).getValue())).thenReturn("Moscow");
+        when(syncSourceService.getRefBook(eq(refBookCode))).thenReturn(firstVersion);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0))).thenReturn(data);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
+        when(mappingService.map(AttributeTypeEnum.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).get("id"))).thenReturn(BigInteger.valueOf(1L));
+        when(mappingService.map(AttributeTypeEnum.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).get("name"))).thenReturn("London");
+        when(mappingService.map(AttributeTypeEnum.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(1).get("id"))).thenReturn(BigInteger.valueOf(2L));
+        when(mappingService.map(AttributeTypeEnum.STRING, DataTypeEnum.VARCHAR, data.getContent().get(1).get("name"))).thenReturn("Moscow");
 
-        rdmSyncRest.update(refBookCode);
+        rdmSyncService.update(refBookCode);
 
         verify(dao).updateRow(versionMapping.getTable(), versionMapping.getPrimaryField(), dataMap.get(0), true);
         verify(dao).insertRow(versionMapping.getTable(), dataMap.get(1), true);
-        verify(dao).updateVersionMapping(versionMapping.getId(), firstVersion.getLastPublishedVersion(), firstVersion.getLastPublishedVersionFromDate());
+        verify(dao).updateVersionMapping(versionMapping.getId(), firstVersion.getLastVersion(), firstVersion.getLastPublishDate());
     }
 
     /**
@@ -118,28 +109,26 @@ public class RdmSyncServiceTest {
 
         RefBook firstVersion = createFirstRdmVersion();
         RefBook secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastPublishedVersion(), firstVersion.getLastPublishedVersionFromDate(), "test_table", "id", "is_deleted", null, null);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(), firstVersion.getLastPublishDate(), "test_table", "id", "is_deleted", null, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createSecondRdmData();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
-        RefBookDataDiff diff = prepareUpdateRefBookDataDiff();
+        VersionsDiff diff = prepareUpdateRefBookDataDiff();
 
         when(dao.getVersionMapping(versionMapping.getCode())).thenReturn(versionMapping);
         when(dao.getFieldMappings(versionMapping.getCode())).thenReturn(fieldMappings);
-        when(versionService.getVersion(versionMapping.getVersion(), versionMapping.getCode())).thenReturn(firstVersion);
-        when(compareService.compareData(argThat(compareDataCriteria -> compareDataCriteria != null && compareDataCriteria.getPageNumber() == 0))).thenReturn(diff);
-        when(compareService.compareData(argThat(compareDataCriteria -> compareDataCriteria != null && compareDataCriteria.getPageNumber() > 0))).thenReturn(new RefBookDataDiff(Page.empty(), emptyList(), emptyList(), emptyList()));
-        when(refBookService.search(any(RefBookCriteria.class))).thenReturn(new PageImpl<>(singletonList(secondVersion), PageRequest.of(0, 10), 1L));
-        when(mappingService.map(FieldType.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(1L));
-        when(mappingService.map(FieldType.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).getFieldValues().get(1).getValue())).thenReturn("London");
-        when(mappingService.map(FieldType.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(2).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(3L));
-        when(mappingService.map(FieldType.STRING, DataTypeEnum.VARCHAR, data.getContent().get(2).getFieldValues().get(1).getValue())).thenReturn("Guadalupe");
-        when(compareService.compareStructures(anyInt(), anyInt())).thenReturn(new StructureDiff(emptyList(), emptyList(), emptyList()));
+        when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
+        when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
+        when(syncSourceService.getRefBook(anyString())).thenReturn(secondVersion);
+        when(mappingService.map(AttributeTypeEnum.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(1L));
+        when(mappingService.map(AttributeTypeEnum.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).getFieldValues().get(1).getValue())).thenReturn("London");
+        when(mappingService.map(AttributeTypeEnum.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(2).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(3L));
+        when(mappingService.map(AttributeTypeEnum.STRING, DataTypeEnum.VARCHAR, data.getContent().get(2).getFieldValues().get(1).getValue())).thenReturn("Guadalupe");
 
-        rdmSyncRest.update(versionMapping.getCode());
+        rdmSyncService.update(versionMapping.getCode());
         verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), true, true);
         verify(dao).insertRow(versionMapping.getTable(), dataMap.get(1), true);
-        verify(dao).updateVersionMapping(versionMapping.getId(), secondVersion.getLastPublishedVersion(), secondVersion.getLastPublishedVersionFromDate());
+        verify(dao).updateVersionMapping(versionMapping.getId(), secondVersion.getLastVersion(), secondVersion.getLastPublishDate());
     }
 
     /**
@@ -151,109 +140,87 @@ public class RdmSyncServiceTest {
 
         RefBook oldVersion = createSecondRdmVersion();
         RefBook newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastPublishedVersion(), oldVersion.getLastPublishedVersionFromDate(), "test_table", "id", "is_deleted", null, null);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(), oldVersion.getLastPublishDate(), "test_table", "id", "is_deleted", null, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
-        RefBookDataDiff diff = prepareInsertRefBookDataDiff();
+        VersionsDiff diff = prepareInsertRefBookDataDiff();
         when(dao.getVersionMapping(versionMapping.getCode())).thenReturn(versionMapping);
         when(dao.getFieldMappings(versionMapping.getCode())).thenReturn(fieldMappings);
-        when(versionService.getVersion(versionMapping.getVersion(), versionMapping.getCode())).thenReturn(oldVersion);
-        when(compareService.compareData(argThat(compareDataCriteria -> compareDataCriteria != null && compareDataCriteria.getPageNumber() == 0))).thenReturn(diff);
-        when(compareService.compareData(argThat(compareDataCriteria -> compareDataCriteria != null && compareDataCriteria.getPageNumber() > 0))).thenReturn(new RefBookDataDiff(Page.empty(), emptyList(), emptyList(), emptyList()));
-        when(refBookService.search(any(RefBookCriteria.class))).thenReturn(new PageImpl<>(singletonList(newVersion), PageRequest.of(0, 10), 1L));
-        when(mappingService.map(FieldType.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(1L));
-        when(mappingService.map(FieldType.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).getFieldValues().get(1).getValue())).thenReturn("London");
+        when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
+        when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
+        when(syncSourceService.getRefBook(anyString())).thenReturn(newVersion);
+        when(mappingService.map(AttributeTypeEnum.INTEGER, DataTypeEnum.INTEGER, data.getContent().get(0).getFieldValues().get(0).getValue())).thenReturn(BigInteger.valueOf(1L));
+        when(mappingService.map(AttributeTypeEnum.STRING, DataTypeEnum.VARCHAR, data.getContent().get(0).getFieldValues().get(1).getValue())).thenReturn("London");
         when(dao.isIdExists(versionMapping.getTable(), versionMapping.getPrimaryField(), BigInteger.ONE)).thenReturn(true);
-        when(compareService.compareStructures(any(Integer.class), any(Integer.class))).thenReturn(new StructureDiff(emptyList(), emptyList(), emptyList()));
-        rdmSyncRest.update(versionMapping.getCode());
+        rdmSyncService.update(versionMapping.getCode());
         verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), false, true);
         verify(dao).updateRow(versionMapping.getTable(), versionMapping.getPrimaryField(), dataMap.get(2), true);
-        verify(dao).updateVersionMapping(versionMapping.getId(), newVersion.getLastPublishedVersion(), newVersion.getLastPublishedVersionFromDate());
+        verify(dao).updateVersionMapping(versionMapping.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
     }
 
     @Test
     public void testSyncAfterMappingChanged() {
 
-        LocalDate date = LocalDate.of(1997, 06, 24);
+        LocalDate date = LocalDate.of(1997, 6, 24);
 
         when(mappingService.map(any(), any(), any())).thenAnswer(invocation -> invocation.getArguments()[2]);
 
         LocalTime version1Publication = LocalTime.of(14, 46); // В рдм публикуется версия справочника со структурой S1
-        LocalTime sync1 = LocalTime.of(15, 00); // В 15:00 мы синхронизируемся со справочником по маппингу M1, соответствующему S1
-        LocalTime version2Publication = LocalTime.of(15, 06); // В 15:06 в рдм выходит новая версия со структурой S2. Мы еще не успели накатить наши скрипты по изменению маппинга.
+        LocalTime sync1 = LocalTime.of(15, 0); // В 15:00 мы синхронизируемся со справочником по маппингу M1, соответствующему S1
+        LocalTime version2Publication = LocalTime.of(15, 6); // В 15:06 в рдм выходит новая версия со структурой S2. Мы еще не успели накатить наши скрипты по изменению маппинга.
         LocalTime sync2 = LocalTime.of(15, 15); // Синхронизируемся со второй версией со структурой S2 по старому маппингу M1
         LocalTime mappingChanged = LocalTime.of(15, 23); // Обновили маппинги, теперь они соответствуют S2.
-        LocalTime sync3 = LocalTime.of(15, 30); // Синхронизируемся в третий раз. diff по структуре в рдм вернет 0 (разница с самим собой равна нулю).
 
         String code = "KOD";
         String table = "table";
         String primaryField = "id";
         String deletedField = "deletedField";
-        RefBook prev;
         RefBook lastPublished = new RefBook();
-        lastPublished.setId(1);
-        lastPublished.setVersion("1.0");
-        lastPublished.setLastPublishedVersionFromDate(version1Publication.atDate(date));
+        lastPublished.setLastVersionId(1);
+        lastPublished.setLastVersion("1.0");
+        lastPublished.setLastPublishDate(version1Publication.atDate(date));
         lastPublished.setCode(code);
-        lastPublished.setStructure(new Structure(singletonList(Structure.Attribute.buildPrimary(primaryField, primaryField, FieldType.INTEGER, "")), emptyList()));
+        RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setAttributesAndTypes(Map.of(primaryField, AttributeTypeEnum.INTEGER));
+        refBookStructure.setPrimaries(List.of(primaryField));
+        lastPublished.setStructure(refBookStructure);
         VersionMapping vm = new VersionMapping(1, code, null, null, table, primaryField, deletedField, LocalDateTime.MIN, LocalDateTime.MIN);
 
         List<FieldMapping> fm = new ArrayList<>(singletonList(new FieldMapping(primaryField, "varchar", primaryField)));
         Map<String, Object> row1version1 = new HashMap<>(Map.of(primaryField, "1"));
         Map<String, Object> row2version1 = new HashMap<>(Map.of(primaryField, "2"));
-        PageImpl<RefBookRowValue> lastPublishedVersionPage = new PageImpl<>(List.of(
-            new RefBookRowValue(1L, singletonList(new StringFieldValue(primaryField, (String) row1version1.get(primaryField))), null),
-            new RefBookRowValue(2L, singletonList(new StringFieldValue(primaryField, (String) row2version1.get(primaryField))), null)
-        ), createSearchDataCriteria(), 2);
+        PageImpl<Map<String, Object>> lastPublishedVersionPage = new PageImpl<>(List.of(row1version1, row2version1), createDataCriteria(), 2);
         when(dao.getVersionMapping(code)).thenReturn(vm);
         when(dao.getFieldMappings(code)).thenReturn(fm);
-        when(refBookService.search(argThat(refBookCriteria -> refBookCriteria.getCodeExact().equals(code) && refBookCriteria.getSourceType() == RefBookSourceType.LAST_PUBLISHED))).thenReturn(new PageImpl<>(singletonList(lastPublished), PageRequest.of(0, 10), 1L));
-        when(versionService.search(eq(lastPublished.getCode()), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() == 0))).thenReturn(lastPublishedVersionPage);
-        when(versionService.search(eq(lastPublished.getCode()), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
-        rdmSyncRest.update(code);
+        when(syncSourceService.getRefBook(eq(code))).thenReturn(lastPublished);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(lastPublished.getCode())))).thenReturn(lastPublishedVersionPage);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
+        rdmSyncService.update(code);
         verify(dao, times(1)).insertRow(eq(table), eq(row1version1), eq(true));
         verify(dao, times(1)).insertRow(eq(table), eq(row2version1), eq(true));
         clearInvocations(dao);
 //      sync1 прошел успешно, выходит новая версия с новой структурой, однако у нас старые маппинги
-        prev = new RefBook(lastPublished);
-        lastPublished.setId(2);
+        lastPublished.setLastVersionId(2);
         vm.setLastSync(sync1.atDate(date));
-        vm.setVersion(lastPublished.getVersion());
+        vm.setVersion(lastPublished.getLastVersion());
         vm.setPublicationDate(version1Publication.atDate(date));
-        when(versionService.getVersion(vm.getVersion(), code)).thenReturn(prev);
         when(dao.getDataIds(table, fm.get(0))).thenReturn(List.of( // Добавленные данные
             "1", "2"
         ));
         String addedField = "addedField";
-        Structure.Attribute addedAttr = Structure.Attribute.build(addedField, addedField, FieldType.STRING, addedField);
-        List<Structure.Attribute> newStructure = new ArrayList<>(lastPublished.getStructure().getAttributes());
-        newStructure.add(addedAttr);
-        lastPublished.setStructure(new Structure(newStructure, emptyList()));
-        lastPublished.setLastPublishedVersionFromDate(version2Publication.atDate(date));
+        Map<String, AttributeTypeEnum> newAttributes = new LinkedHashMap<>(lastPublished.getStructure().getAttributesAndTypes());
+        newAttributes.put(addedField, AttributeTypeEnum.STRING);
+        lastPublished.setStructure(new RefBookStructure(lastPublished.getStructure().getReferences(), lastPublished.getStructure().getPrimaries(), newAttributes));
+        lastPublished.setLastPublishDate(version2Publication.atDate(date));
         String addedVal1 = "ABRA";
         String addedVal2 = "CADABRA";
         row1version1.put(addedField, addedVal1);
         row2version1.put(addedField, addedVal2);
-        lastPublishedVersionPage = new PageImpl<>(List.of(
-                new RefBookRowValue(1L, List.of(new StringFieldValue(primaryField, (String) row1version1.get(primaryField)), new StringFieldValue(addedField, (String) row1version1.get(addedField))), null),
-                new RefBookRowValue(2L, List.of(new StringFieldValue(primaryField, (String) row2version1.get(primaryField)), new StringFieldValue(addedField, (String) row2version1.get(addedField))), null)
-        ), createSearchDataCriteria(), 2);
-        when(versionService.search(eq(lastPublished.getCode()), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() == 0))).thenReturn(lastPublishedVersionPage);
-        when(versionService.search(eq(lastPublished.getCode()), argThat(searchDataCriteria -> searchDataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
-        when(compareService.compareStructures(anyInt(), anyInt())).thenReturn( // Структура изменилась. Добавилось поле.
-            new StructureDiff(
-                singletonList(
-                    new StructureDiff.AttributeDiff(
-                        null,
-                        addedAttr
-                    )
-                ),
-                emptyList(),
-                emptyList()
-            )
-        );
-        rdmSyncRest.update(code);
+        lastPublishedVersionPage = new PageImpl<>(List.of(row1version1, row2version1), createDataCriteria(), 2);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(lastPublished.getCode())))).thenReturn(lastPublishedVersionPage);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0 && dataCriteria.getCode().equals(lastPublished.getCode())))).thenReturn(Page.empty());
+        rdmSyncService.update(code);
 
         verify(dao, never()).insertRow(eq(table), anyMap(), eq(true));
         verify(dao, never()).updateRow(eq(table), eq(primaryField), eq(row1version1), eq(true));
@@ -261,11 +228,11 @@ public class RdmSyncServiceTest {
         clearInvocations(dao);
 //      sync2 прошел успешно, однако мы пропустили добавленное поле, хотя разница по структуре и по данным была ненулевой
         vm.setLastSync(sync2.atDate(date));
-        vm.setVersion(lastPublished.getVersion());
+        vm.setVersion(lastPublished.getLastVersion());
         vm.setPublicationDate(version2Publication.atDate(date));
         fm.add(new FieldMapping(addedField, "varchar", addedField)); // обновили маппинги
         vm.setMappingLastUpdated(mappingChanged.atDate(date));
-        rdmSyncRest.update(code);
+        rdmSyncService.update(code);
         verify(dao, times(1)).updateRow(eq(table), eq(primaryField), eq(row1version1), eq(true));
         verify(dao, times(1)).updateRow(eq(table), eq(primaryField), eq(row2version1), eq(true));
     }
@@ -273,72 +240,60 @@ public class RdmSyncServiceTest {
     private RefBook createFirstRdmVersion() {
 
         RefBook refBook = new RefBook();
-        refBook.setId(1);
+        refBook.setLastVersionId(1);
         refBook.setCode("TEST");
-        refBook.setLastPublishedVersion("1.0");
-        refBook.setLastPublishedVersionFromDate(LocalDateTime.of(2019, Month.FEBRUARY, 26, 10, 0));
-        Structure.Attribute idAttribute = Structure.Attribute.build("id", null, FieldType.INTEGER, null);
-        Structure.Attribute nameAttribute = Structure.Attribute.build("name", null, FieldType.STRING, null);
-        idAttribute.setIsPrimary(true);
-        refBook.setStructure(new Structure(asList(idAttribute, nameAttribute), null));
+        refBook.setLastVersion("1.0");
+        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.FEBRUARY, 26, 10, 0));
+        RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        refBookStructure.setPrimaries(singletonList("id"));
+        refBook.setStructure(refBookStructure);
         return refBook;
     }
 
     private RefBook createSecondRdmVersion() {
 
         RefBook refBook = new RefBook();
-        refBook.setId(2);
+        refBook.setLastVersionId(2);
         refBook.setCode("TEST");
-        refBook.setLastPublishedVersion("1.1");
-        refBook.setLastPublishedVersionFromDate(LocalDateTime.of(2019, Month.FEBRUARY, 27, 10, 0));
-        Structure.Attribute idAttribute = Structure.Attribute.build("id", null, FieldType.INTEGER, null);
-        Structure.Attribute nameAttribute = Structure.Attribute.build("name", null, FieldType.STRING, null);
-        idAttribute.setIsPrimary(true);
-        refBook.setStructure(new Structure(asList(idAttribute, nameAttribute), null));
+        refBook.setLastVersion("1.1");
+        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.FEBRUARY, 27, 10, 0));
+        RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        refBookStructure.setPrimaries(singletonList("id"));
+        refBook.setStructure(refBookStructure);
         return refBook;
     }
 
     private RefBook createThirdRdmVersion() {
 
         RefBook refBook = new RefBook();
-        refBook.setId(3);
+        refBook.setLastVersionId(3);
         refBook.setCode("TEST");
-        refBook.setLastPublishedVersion("1.2");
-        refBook.setLastPublishedVersionFromDate(LocalDateTime.of(2019, Month.MARCH, 7, 10, 0));
-        Structure.Attribute idAttribute = Structure.Attribute.build("id", null, FieldType.INTEGER, null);
-        Structure.Attribute nameAttribute = Structure.Attribute.build("name", null, FieldType.STRING, null);
-        idAttribute.setIsPrimary(true);
-        refBook.setStructure(new Structure(asList(idAttribute, nameAttribute), null));
+        refBook.setLastVersion("1.2");
+        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.MARCH, 7, 10, 0));
+        RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        refBookStructure.setPrimaries(singletonList("id"));
+        refBook.setStructure(refBookStructure);
         return refBook;
     }
 
-    private RefBookDataDiff prepareUpdateRefBookDataDiff() {
-
-        DiffFieldValue<BigInteger> id1 = new DiffFieldValue<>(new CommonField("id"), BigInteger.ONE, null, DiffStatusEnum.DELETED);
-        DiffFieldValue<String> name1 = new DiffFieldValue<>(new CommonField("name"), "London", null, DiffStatusEnum.DELETED);
-        DiffFieldValue<BigInteger> id2 = new DiffFieldValue<>(new CommonField("id"), null, BigInteger.valueOf(3L), DiffStatusEnum.INSERTED);
-        DiffFieldValue<String> name2 = new DiffFieldValue<>(new CommonField("name"), null, "Guadalupe", DiffStatusEnum.INSERTED);
-        DiffRowValue row1 = new DiffRowValue(asList(id1, name1), DiffStatusEnum.DELETED);
-        DiffRowValue row2 = new DiffRowValue(asList(id2, name2), DiffStatusEnum.INSERTED);
-        List<DiffRowValue> rowValues = asList(row1, row2);
-        RefBookDataDiff diff = new RefBookDataDiff();
-        diff.setRows(new PageImpl<>(rowValues, createSearchDataCriteria(), 2));
-        return diff;
+    private VersionsDiff prepareUpdateRefBookDataDiff() {
+       RowDiff row1 = new RowDiff(RowDiffStatusEnum.DELETED, Map.of("id", BigInteger.ONE, "name", "London"));
+        RowDiff row2 = new RowDiff( RowDiffStatusEnum.INSERTED, Map.of("id", BigInteger.valueOf(3L), "name", "Guadalupe"));
+        List<RowDiff> rowValues = asList(row1, row2);
+        return VersionsDiff.dataChangedInstance(new PageImpl<>(rowValues, createDataCriteria(), 2));
     }
 
-    private RefBookDataDiff prepareInsertRefBookDataDiff() {
-
-        DiffFieldValue<BigInteger> id = new DiffFieldValue<>(new CommonField("id"), null, BigInteger.ONE, DiffStatusEnum.INSERTED);
-        DiffFieldValue<String> name = new DiffFieldValue<>(new CommonField("name"),null, "London", DiffStatusEnum.INSERTED);
-        DiffRowValue row = new DiffRowValue(asList(id, name), DiffStatusEnum.INSERTED);
-        RefBookDataDiff diff = new RefBookDataDiff();
-        diff.setRows(new PageImpl<>(singletonList(row), createSearchDataCriteria(), 1));
-        return diff;
+    private VersionsDiff prepareInsertRefBookDataDiff() {
+        RowDiff row = new RowDiff(RowDiffStatusEnum.INSERTED, Map.of("id", BigInteger.ONE, "name", "London"));
+        return VersionsDiff.dataChangedInstance(new PageImpl<>(singletonList(row), createDataCriteria(), 1));
     }
 
-    private SearchDataCriteria createSearchDataCriteria() {
+    private DataCriteria createDataCriteria() {
 
-        SearchDataCriteria searchDataCriteriaCount = new SearchDataCriteria();
+        DataCriteria searchDataCriteriaCount = new DataCriteria();
         searchDataCriteriaCount.setPageSize(MAX_SIZE);
         return searchDataCriteriaCount;
     }
@@ -350,12 +305,12 @@ public class RdmSyncServiceTest {
         return list;
     }
 
-    private Page<RefBookRowValue> createFirstRdmData() {
+    private Page<Map<String, Object>> createFirstRdmData() {
 
-        List<RefBookRowValue> list = new ArrayList<>();
-        list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
-        list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
-        return new PageImpl<>(list, createSearchDataCriteria(), 2);
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(Map.of("id", 1, "name", "London"));
+        list.add(Map.of("id", 2, "name", "Moscow"));
+        return new PageImpl<>(list, createDataCriteria(), 2);
     }
 
     private Page<RefBookRowValue> createSecondRdmData() {
@@ -364,7 +319,7 @@ public class RdmSyncServiceTest {
         list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
         list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
         list.add(new RefBookRowValue(3L, asList(new IntegerFieldValue("id", 3), new StringFieldValue("name", "Guadalupe")), null));
-        return new PageImpl<>(list, createSearchDataCriteria(), 3);
+        return new PageImpl<>(list, createDataCriteria(), 3);
     }
 
     private Page<RefBookRowValue> createThirdRdmData() {
@@ -373,7 +328,7 @@ public class RdmSyncServiceTest {
         list.add(new RefBookRowValue(1L, asList(new IntegerFieldValue("id", 1), new StringFieldValue("name", "London")), null));
         list.add(new RefBookRowValue(2L, asList(new IntegerFieldValue("id", 2), new StringFieldValue("name", "Moscow")), null));
         list.add(new RefBookRowValue(3L, asList(new IntegerFieldValue("id", 3), new StringFieldValue("name", "Guadalupe")), null));
-        return new PageImpl<>(list, createSearchDataCriteria(), 3);
+        return new PageImpl<>(list, createDataCriteria(), 3);
     }
 
     private List<Map<String, Object>> createFirstVerifyDataMap() {

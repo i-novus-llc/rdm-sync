@@ -1,0 +1,544 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "fields": null,
+  "keys": null,
+  "data": {
+    "total": 76,
+    "list": [
+      {
+        "ID": 106,
+        "MNN_ID": 25,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 30,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 111,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 54,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 65,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 29,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 37,
+        "MNN_ID": 15,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 31,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 43,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 43,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 49,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 49,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 47,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 47,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 60,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 30,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 95,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 95,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 18,
+        "MNN_ID": 9,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 18,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 69,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 28,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 99,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 99,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 103,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 103,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 75,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 75,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 16,
+        "MNN_ID": 9,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 16,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 53,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 53,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 64,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 28,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 66,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 30,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 110,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 53,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 101,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 20,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 36,
+        "MNN_ID": 15,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 30,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 40,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 40,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 83,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 28,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 72,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 72,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 44,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 44,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 50,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 50,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 48,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 48,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 61,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 29,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 5,
+        "MNN_ID": 2,
+        "DRUG_FORM_ID": 2,
+        "DOSE_ID": 5,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 100,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 100,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 6,
+        "MNN_ID": 3,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 6,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 70,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 30,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 17,
+        "MNN_ID": 9,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 17,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 96,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 96,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 76,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 76,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 79,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 30,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 54,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 54,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 33,
+        "MNN_ID": 15,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 33,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 67,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 67,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 112,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 20,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 104,
+        "MNN_ID": 25,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 28,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 24,
+        "MNN_ID": 11,
+        "DRUG_FORM_ID": 13,
+        "DOSE_ID": 24,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 41,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 41,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 84,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 29,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 45,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 45,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 73,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 73,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 51,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 51,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 4,
+        "MNN_ID": 2,
+        "DRUG_FORM_ID": 2,
+        "DOSE_ID": 4,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 109,
+        "MNN_ID": 16,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 112,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 62,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 29,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 14,
+        "MNN_ID": 8,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 14,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 97,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 97,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 77,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 77,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 15,
+        "MNN_ID": 8,
+        "DRUG_FORM_ID": 9,
+        "DOSE_ID": 15,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 71,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 29,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 80,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 28,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 68,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 68,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 105,
+        "MNN_ID": 25,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 29,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 42,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 42,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 46,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 10,
+        "DOSE_ID": 46,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 52,
+        "MNN_ID": 17,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 52,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 59,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 28,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 108,
+        "MNN_ID": 27,
+        "DRUG_FORM_ID": 12,
+        "DOSE_ID": 111,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 3,
+        "MNN_ID": 2,
+        "DRUG_FORM_ID": 2,
+        "DOSE_ID": 3,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 107,
+        "MNN_ID": 26,
+        "DRUG_FORM_ID": 13,
+        "DOSE_ID": 110,
+        "operation": "INSERT"
+      },
+      {
+        "ID": 19,
+        "MNN_ID": 9,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 19,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 63,
+        "MNN_ID": 19,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 30,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 13,
+        "MNN_ID": 8,
+        "DRUG_FORM_ID": 4,
+        "DOSE_ID": 13,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 98,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 98,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 82,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 30,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 12,
+        "MNN_ID": 7,
+        "DRUG_FORM_ID": 1,
+        "DOSE_ID": 12,
+        "operation": "UPDATE"
+      },
+      {
+        "ID": 78,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 78,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 74,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 74,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 102,
+        "MNN_ID": 24,
+        "DRUG_FORM_ID": 16,
+        "DOSE_ID": 102,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 81,
+        "MNN_ID": 20,
+        "DRUG_FORM_ID": 25,
+        "DOSE_ID": 29,
+        "operation": "DELETE"
+      },
+      {
+        "ID": 55,
+        "MNN_ID": 18,
+        "DRUG_FORM_ID": 23,
+        "DOSE_ID": 20,
+        "operation": "DELETE"
+      }
+    ]
+  }
+}

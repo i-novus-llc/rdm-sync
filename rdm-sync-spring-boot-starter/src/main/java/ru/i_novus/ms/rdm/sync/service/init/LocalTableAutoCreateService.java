@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.model.Structure;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -15,6 +17,7 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 class LocalTableAutoCreateService {
@@ -49,34 +52,34 @@ class LocalTableAutoCreateService {
 
         RefBook lastPublished;
         try {
-            lastPublished = rdmSyncService.getLastPublishedVersionFromRdm(refBookCode);
+            lastPublished = rdmSyncService.getLastPublishedVersion(refBookCode);
 
         } catch (Exception e) {
             logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
             return;
         }
 
-        Structure structure = lastPublished.getStructure();
+        RefBookStructure structure = lastPublished.getStructure();
         String isDeletedField = "is_deleted";
-        if (structure.getAttribute(isDeletedField) != null) {
+        if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
         }
 
-        Structure.Attribute uniqueSysField = structure.getPrimaries().get(0);
+        String uniqueSysField = structure.getPrimaries().get(0);
 
         XmlMappingRefBook mapping = new XmlMappingRefBook();
         mapping.setCode(refBookCode);
-        mapping.setSysTable(String.format("%s.%s", autoCreateSchema, refBookCode.replaceAll("[-.]", "_").toLowerCase()));
+        mapping.setSysTable(String.format("%s.%s", autoCreateSchema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase()));
         mapping.setDeletedField(isDeletedField);
-        mapping.setUniqueSysField(uniqueSysField.getCode());
+        mapping.setUniqueSysField(uniqueSysField);
         mapping.setMappingVersion(-1);
 
-        List<XmlMappingField> fields = new ArrayList<>(structure.getAttributes().size() + 1);
-        for (Structure.Attribute attr : structure.getAttributes()) {
+        List<XmlMappingField> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
+        for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
             XmlMappingField field = new XmlMappingField();
-            field.setRdmField(attr.getCode());
-            field.setSysField(attr.getCode());
-            field.setSysDataType(DataTypeEnum.getByRdmAttr(attr).getDataTypes().get(0));
+            field.setRdmField(attr.getKey());
+            field.setSysField(attr.getKey());
+            field.setSysDataType(DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0));
             fields.add(field);
         }
 

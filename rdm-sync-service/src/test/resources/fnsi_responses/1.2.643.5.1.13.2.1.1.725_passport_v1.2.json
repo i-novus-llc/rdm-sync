@@ -1,0 +1,63 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "identifier": "VZN108",
+  "oid": "1.2.643.5.1.13.2.1.1.725",
+  "version": "1.2",
+  "rowsCount": 103,
+  "createDate": "20.12.2016 00:00",
+  "publishDate": "20.12.2016 00:00",
+  "lastUpdate": "20.12.2016 00:00",
+  "fullName": "Справочник связи международного непатентованного наименования, лекарственной формы лекарственного препарата, дозировки лекарственного средства в лекарственном препарате",
+  "shortName": "Справочник связи МНН, ЛФ ЛП, дозировки",
+  "description": "Справочник связи международного непатентованного наименования, лекарственной формы лекарственного препарата, дозировки лекарственного средства в лекарственном препарате",
+  "structureNotes": "1)ID, Уникальный идентификатор (УИ).;\n2)MNN_ID, Код МНН;\n3)DRUG_FORM_ID, Код ЛФ;\n4)DOSE_ID, Код дозировки;",
+  "releaseNotes": "",
+  "laws": [],
+  "respOrganizationId": 11,
+  "authOrganizationId": null,
+  "typeId": null,
+  "groupId": 13,
+  "approveDate": null,
+  "fields": [
+    {
+      "field": "ID",
+      "dataType": "INTEGER",
+      "alias": "",
+      "description": "Уникальный идентификатор (УИ)."
+    },
+    {
+      "field": "MNN_ID",
+      "dataType": "INTEGER",
+      "alias": "",
+      "description": "Код МНН"
+    },
+    {
+      "field": "DRUG_FORM_ID",
+      "dataType": "INTEGER",
+      "alias": "",
+      "description": "Код ЛФ"
+    },
+    {
+      "field": "DOSE_ID",
+      "dataType": "INTEGER",
+      "alias": "",
+      "description": "Код дозировки"
+    }
+  ],
+  "keys": [
+    {
+      "field": "ID",
+      "type": "PRIMARY"
+    }
+  ],
+  "codes": [
+    {
+      "value": "1.2.643.5.1.13.2.1.1.725",
+      "type": "TYPE_PRIMARY"
+    }
+  ],
+  "hierarchical": false,
+  "archive": null
+}

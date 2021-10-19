@@ -1,0 +1,75 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "identifier": "5J6LJG0OIE",
+  "oid": "1.2.643.5.1.13.13.99.2.359",
+  "version": "1.1",
+  "rowsCount": 174,
+  "createDate": "20.11.2019 13:27",
+  "publishDate": "20.11.2019 13:27",
+  "lastUpdate": "20.11.2019 13:25",
+  "fullName": "Наименования видов ВМП",
+  "shortName": "Наименования видов высокотехнологичной медицинской помощи",
+  "description": null,
+  "structureNotes": "1)ID, Код, null;\n2)NAME, Наименование, null;\n3)CODE, Код_ВМП_ФОМС, null;\n4)RAZDEL, Раздел, null;\n5)DATE_BEGIN, Дата начала, null;\n6)DATE_END, Дата окончания, null;",
+  "releaseNotes": null,
+  "laws": [],
+  "respOrganizationId": null,
+  "authOrganizationId": 12,
+  "typeId": 1,
+  "groupId": null,
+  "approveDate": "30.11.2019",
+  "fields": [
+    {
+      "field": "ID",
+      "dataType": "INTEGER",
+      "alias": "Код",
+      "description": null
+    },
+    {
+      "field": "NAME",
+      "dataType": "VARCHAR",
+      "alias": "Наименование",
+      "description": null
+    },
+    {
+      "field": "CODE",
+      "dataType": "VARCHAR",
+      "alias": "Код_ВМП_ФОМС",
+      "description": null
+    },
+    {
+      "field": "RAZDEL",
+      "dataType": "INTEGER",
+      "alias": "Раздел",
+      "description": null
+    },
+    {
+      "field": "DATE_BEGIN",
+      "dataType": "DATETIME",
+      "alias": "Дата начала",
+      "description": null
+    },
+    {
+      "field": "DATE_END",
+      "dataType": "DATETIME",
+      "alias": "Дата окончания",
+      "description": null
+    }
+  ],
+  "keys": [
+    {
+      "field": "ID",
+      "type": "PRIMARY"
+    }
+  ],
+  "codes": [
+    {
+      "value": "1.2.643.5.1.13.13.99.2.359",
+      "type": "TYPE_PRIMARY"
+    }
+  ],
+  "hierarchical": false,
+  "archive": null
+}

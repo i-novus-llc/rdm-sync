@@ -17,6 +17,7 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
 import ru.i_novus.ms.rdm.api.provider.*;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
@@ -44,14 +45,10 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@EnableConfigurationProperties(RdmClientSyncProperties.class)
-@EnableJaxRsProxyClient(
-        classes = {RefBookService.class, VersionRestService.class, CompareService.class},
-        address = "${rdm.client.sync.url}"
-)
+@EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
-@ComponentScan({"ru.i_novus.ms.rdm.sync.service.init"})
+@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @ConditionalOnProperty(
         value="rdm_sync.enabled",
         matchIfMissing = true)
@@ -245,5 +242,11 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public LocalRdmDataService localRdmDataService() {
         return new LocalRdmDataServiceImpl();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }
