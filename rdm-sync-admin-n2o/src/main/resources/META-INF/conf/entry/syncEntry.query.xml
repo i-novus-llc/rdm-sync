@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="syncEntry">
+
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/entries?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </list>
+
+    <unique filters="id">
+        <rest method="GET">
+            ${rdm.sync.admin.backend.path}/sync/admin/entry/{id}
+        </rest>
+    </unique>
+
+    <fields>
+        <field id="text" domain="string">
+            <filters>
+                <eq filter-id="text">text={text}</eq>
+            </filters>
+        </field>
+
+        <field id="id" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="id">id={id}</eq>
+            </filters>
+        </field>
+
+        <field id="code" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="code">code={code}</eq>
+            </filters>
+        </field>
+
+        <field id="name" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="name">name={name}</eq>
+            </filters>
+        </field>
+
+        <field id="removable" domain="boolean">
+            <select/>
+        </field>
+
+        <field id="version" domain="string">
+            <select/>
+        </field>
+
+        <field id="versioned" domain="boolean">
+            <select/>
+        </field>
+
+        <field id="autoUpdatable" domain="boolean">
+            <select/>
+        </field>
+
+        <field id="source.code" domain="string">
+            <select mapping="['source']['code']"/>
+        </field>
+
+        <field id="source.caption" domain="string">
+            <select mapping="['source']['caption']"/>
+        </field>
+
+        <field id="lastDateTime" domain="localdatetime">
+            <select/>
+            <sorting/>
+        </field>
+
+        <field id="lastStatus" domain="string">
+            <select/>
+        </field>
+
+        <!-- Поля для редактирования -->
+        <field id="entryId" domain="string">
+            <select mapping="['id']"/>
+            <filters>
+                <eq filter-id="entryId">id={entryId}</eq>
+            </filters>
+        </field>
+        <field id="actionType" domain="string">
+            <select mapping="'update'"/>
+        </field>
+
+        <field id="source.id" domain="string">
+            <select mapping="['source']['code']"/>
+        </field>
+        <field id="source.name" domain="string">
+            <select mapping="['source']['name']"/>
+        </field>
+
+        <field id="refBook.id" domain="string">
+            <select mapping="['code']"/>
+        </field>
+        <field id="refBook.displayName" domain="string">
+            <select mapping="['code']"/>
+        </field>
+        <field id="refBook.name" domain="string">
+            <select mapping="['name']"/>
+        </field>
+        <field id="refBookName" domain="string">
+            <select mapping="['name']"/>
+        </field>
+
+        <!--<field id="refBook.versionId" domain="string">-->
+        <!--    <select mapping="['versionId']"/>-->
+        <!--</field>-->
+        <!--<field id="refBook.version" domain="string">-->
+        <!--    <select mapping="['version']"/>-->
+        <!--</field>-->
+
+        <!--<field id="lastVersion">-->
+        <!--    <select mapping="['versionId'] + ' | ' + ['version']"/>-->
+        <!--</field>-->
+
+        <field id="startVersion.id" domain="string">
+            <select mapping="['versionId']"/>
+        </field>
+        <field id="startVersion.displayName" domain="string">
+            <select mapping="['version']"/>
+        </field>
+        <field id="startVersion.version" domain="string">
+            <select mapping="['version']"/>
+        </field>
+
+    </fields>
+</query>

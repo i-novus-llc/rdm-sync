@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<object xmlns="http://n2oapp.net/framework/config/schema/object-4.0"
+        name="Запись о синхронизации">
+
+    <operations>
+        <operation id="delete" submit-label="Удалить" success-text="Запись о справочнике удалена"
+                   confirm="true" confirm-text="${sync.entry.page.delete.confirm}">
+            <invocation>
+                <rest method="DELETE">${rdm.sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
+            </invocation>
+
+            <in>
+                <field id="id" mapping="['id']" domain="string"/>
+            </in>
+        </operation>
+
+    </operations>
+
+</object>

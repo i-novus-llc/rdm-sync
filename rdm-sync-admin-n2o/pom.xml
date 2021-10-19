@@ -7,14 +7,14 @@
     <parent>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
         <artifactId>rdm-sync</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.1.2-SNAPSHOT</version>
     </parent>
 
     <properties>
         <config.server.enable>false</config.server.enable>
 
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/ClientConfiguration.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/SyncN2oConfig.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>

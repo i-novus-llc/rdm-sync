@@ -1,8 +1,8 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.i_novus.ms.rdm.sync.admin.api.JsonUtil;
+import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,7 +13,10 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class RdmSyncRow implements Serializable {
+public class SyncEntry implements Serializable {
+
+    /** Идентификатор записи. */
+    private String id;
 
     /** Код справочника. */
     private String code;
@@ -21,17 +24,26 @@ public class RdmSyncRow implements Serializable {
     /** Наименование справочника. */
     private String name;
 
+    /** Код локального хранилища. */
+    private String storageCode;
+
+    /** Признак удаляемости. */
+    private boolean removable;
+
+    /** Идентификатор версии справочника. */
+    private String versionId;
+
     /** Версия (номер) справочника. */
     private String version;
 
-    /** Признак версионности. */
-    private boolean versioned = false;
+    /** Поддержка версионности. */
+    private boolean versioned;
 
     /** Признак автообновления. */
-    private boolean autoUpdatable = false;
+    private boolean autoUpdatable;
 
     /** Источник для обновления. */
-    private String sourceType;
+    private SyncEntrySource source;
 
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
@@ -39,7 +51,7 @@ public class RdmSyncRow implements Serializable {
     /** Статус последнего обновления. */
     private String lastStatus;
 
-    public RdmSyncRow() {
+    public SyncEntry() {
         // Nothing to do.
     }
 
@@ -48,24 +60,30 @@ public class RdmSyncRow implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RdmSyncRow that = (RdmSyncRow) o;
-        return Objects.equals(code, that.code) &&
+        SyncEntry that = (SyncEntry) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
 
+                Objects.equals(storageCode, that.storageCode) &&
+                Objects.equals(removable, that.removable) &&
+
+                Objects.equals(versionId, that.versionId) &&
                 Objects.equals(version, that.version) &&
                 versioned == that.versioned &&
                 autoUpdatable == that.autoUpdatable &&
 
-                Objects.equals(sourceType, that.sourceType) &&
+                Objects.equals(source, that.source) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name,
-                version, versioned, autoUpdatable,
-                sourceType, lastDateTime, lastStatus);
+        return Objects.hash(id, code, name,
+                storageCode, removable,
+                versionId, version, versioned, autoUpdatable,
+                source, lastDateTime, lastStatus);
     }
 
     @Override

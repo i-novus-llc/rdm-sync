@@ -1,8 +1,9 @@
-package ru.i_novus.ms.rdm.sync.admin.api.model;
+package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
 import javax.ws.rs.QueryParam;
 import java.util.Objects;
@@ -12,7 +13,11 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class RdmSyncRowCriteria extends AbstractCriteria {
+public class SyncEntryCriteria extends AbstractCriteria {
+
+    @ApiParam("Идентификатор записи")
+    @QueryParam("id")
+    private String id;
 
     @ApiParam("Код справочника")
     @QueryParam("code")
@@ -36,15 +41,17 @@ public class RdmSyncRowCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        RdmSyncRowCriteria that = (RdmSyncRowCriteria) o;
-        return Objects.equals(code, that.code) &&
+        SyncEntryCriteria that = (SyncEntryCriteria) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+
                 Objects.equals(text, that.text) &&
                 Objects.equals(count, that.count);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), code, name, text, count);
+        return Objects.hash(super.hashCode(), id, code, name, text, count);
     }
 }

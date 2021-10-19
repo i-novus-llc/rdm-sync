@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="syncMapping">
+
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/entries/mappings?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </list>
+
+    <unique>
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/entries/mapping?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </unique>
+
+    <fields>
+
+        <field id="sourceCode" domain="string">
+            <select mapping="['entry']['source']['code']"/>
+            <filters>
+                <eq filter-id="sourceCode">sourceCode={sourceCode}</eq>
+            </filters>
+        </field>
+
+        <field id="mappingId" domain="string">
+            <select mapping="['id']"/>
+            <filters>
+                <eq filter-id="mappingId">id={mappingId}</eq>
+            </filters>
+        </field>
+
+        <field id="entryId" domain="string">
+            <select mapping="['entry']['id']"/>
+            <filters>
+                <eq filter-id="entryId">entryId={entryId}</eq>
+            </filters>
+        </field>
+
+        <field id="versionId" domain="string">
+            <select mapping="['version']['id']"/>
+            <filters>
+                <eq filter-id="versionId">versionId={versionId}</eq>
+            </filters>
+        </field>
+
+        <field id="isVersionPresent" domain="string">
+            <select mapping="['version']['isPresent']"/>
+        </field>
+
+        <!-- Используется только для списка версий с маппингами -->
+        <!--<field id="id" domain="string">-->
+        <!--    <select mapping="['version']['id']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="id">versionId={id}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
+        <!--<field id="displayName" domain="string">-->
+        <!--    <select mapping="['version']['displayName']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="displayName">text={displayName}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
+
+        <field id="source.id" domain="string">
+            <select mapping="['entry']['source']['code']"/>
+        </field>
+        <field id="source.name" domain="string">
+            <select mapping="['entry']['source']['name']"/>
+        </field>
+
+        <field id="code" domain="string">
+            <select mapping="['entry']['code']"/>
+            <filters>
+                <eq filter-id="code">code={code}</eq>
+            </filters>
+        </field>
+
+        <field id="name" domain="string">
+            <select mapping="['entry']['name']"/>
+            <filters>
+                <eq filter-id="name">name={name}</eq>
+            </filters>
+        </field>
+
+        <field id="refBook.code" domain="string">
+            <select mapping="['entry']['code']"/>
+            <filters>
+                <eq filter-id="refBook.code">code={refBook.code}</eq>
+            </filters>
+        </field>
+
+        <field id="refBook.name" domain="string">
+            <select mapping="['entry']['name']"/>
+            <filters>
+                <eq filter-id="refBook.name">name={refBook.name}</eq>
+            </filters>
+        </field>
+
+        <field id="version" domain="string">
+            <filters>
+                <eq filter-id="version">version={version}</eq>
+            </filters>
+        </field>
+
+        <field id="startVersion" domain="string">
+            <select mapping="['version']['version']"/>
+            <filters>
+                <eq filter-id="startVersion">version={startVersion}</eq>
+            </filters>
+        </field>
+
+        <field id="versioned" domain="boolean">
+            <select mapping="['entry']['versioned']"/>
+            <filters>
+                <eq filter-id="versioned">versioned={versioned}</eq>
+            </filters>
+        </field>
+
+        <field id="autoUpdatable" domain="boolean">
+            <select mapping="['entry']['autoUpdatable']"/>
+            <filters>
+                <eq filter-id="autoUpdatable">autoUpdatable={autoUpdatable}</eq>
+            </filters>
+        </field>
+
+        <!-- Используется только для инициализации версии с маппингом в списке -->
+        <!--<field id="version.id" domain="string">-->
+        <!--    <select mapping="['version']['version']"/>-->
+        <!--    <filters>-->
+        <!--        <eq filter-id="version.id">version={version}</eq>-->
+        <!--    </filters>-->
+        <!--</field>-->
+        <!--<field id="version.displayName" domain="string">-->
+        <!--    <select mapping="['version']['displayName']"/>-->
+        <!--</field>-->
+
+        <field id="storageCode" domain="string">
+            <select mapping="['entry']['storageCode']"/>
+        </field>
+
+        <field id="mappingFields" domain="object[]">
+            <select/>
+        </field>
+
+        <field id="actionType" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="actionType">actionType={actionType}</eq>
+            </filters>
+        </field>
+
+    </fields>
+</query>

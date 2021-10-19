@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
+             name="${sync.entry.page.create.default.name}">
+    <form name="${sync.entry.page.form.name}" query-id="syncEntry" object-id="syncEntry">
+
+        <pre-filters>
+            <eq field-id="entryId" param="entryId"/>
+        </pre-filters>
+
+        <fields>
+            <set field-label-location="left">
+                <row>
+                    <output-text id="entryId" visible="false"/>
+                    <output-text id="actionType" visible="false" default-value="create"/>
+                </row>
+
+                <select id="source" label="${sync.entry.page.source}"
+                        query-id="syncEntrySourceList" label-field-id="name" search="false"
+                        label-class="w-50" required="true">
+
+                    <dependencies>
+                        <enabling on="actionType">actionType == 'create'</enabling>
+                    </dependencies>
+                </select>
+
+                <!--<input-text id="refBook" label="${sync.entry.page.refbook}"-->
+                <!--            required="true" label-class="w-50">-->
+                <!--    <dependencies>-->
+                <!--        <enabling on="source">-->
+                <!--            typeof source != 'undefined' || source?.id != null-->
+                <!--        </enabling>-->
+                <!--    </dependencies>-->
+
+                <!--    &lt;!&ndash;<validations white-list="validateRefBook"/>&ndash;&gt;-->
+                <!--    <validations>-->
+                <!--        &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
+                <!--        &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
+                <!--        &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
+                <!--        &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1005'&ndash;&gt;-->
+                <!--        &lt;!&ndash;</condition>&ndash;&gt;-->
+
+                <!--        <constraint id="validateRefBook" severity="danger"-->
+                <!--                    result="#this == null" message="{result}"-->
+                <!--                    side="client,server" server-moment="before-operation">-->
+                <!--            <invocation>-->
+                <!--                <rest method="GET">-->
+                <!--                    ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{source}/{code}-->
+                <!--                </rest>-->
+                <!--            </invocation>-->
+                <!--            <in>-->
+                <!--                <field id="source.id" mapping="['source']" domain="string"/>-->
+                <!--                <field id="refBook" mapping="['code']" domain="string"/>-->
+                <!--            </in>-->
+                <!--            <out>-->
+                <!--                <field id="result" mapping="(#this)" domain="string"/>-->
+                <!--            </out>-->
+                <!--        </constraint>-->
+                <!--    </validations>-->
+                <!--</input-text>-->
+
+                <input-select id="refBook" label="${sync.entry.page.refbook}"
+                              query-id="syncSourceRefBookList" label-field-id="displayName"
+                              label-class="w-50" required="true">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="hasEntry" value="false"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <enabling on="actionType,source">
+                            actionType == 'create' &amp;&amp;
+                            (typeof source != 'undefined' &amp;&amp; source?.id != null)
+                        </enabling>
+                    </dependencies>
+
+                    <!-- NB: Валидация отключена до исправления NNO-6951 -->
+                    <!--<validations white-list="validateRefBook"/>-->
+                    <!--<validations>-->
+                    <!--    &lt;!&ndash; Проверочная валидация &ndash;&gt;-->
+                    <!--    &lt;!&ndash;<condition id="checkRefBook" severity="warning"&ndash;&gt;-->
+                    <!--    &lt;!&ndash;           message="Запись с oid уже существует">&ndash;&gt;-->
+                    <!--    &lt;!&ndash;    typeof refBook != 'undefined' &amp;&amp; refBook != null &amp;&amp;&ndash;&gt;-->
+                    <!--    &lt;!&ndash;    refBook !== '1.2.643.5.1.13.13.11.1006'&ndash;&gt;-->
+                    <!--    &lt;!&ndash;</condition>&ndash;&gt;-->
+
+                    <!--    <constraint id="validateRefBook" severity="danger"-->
+                    <!--                result="#this == null" message="{result}"-->
+                    <!--                side="client,server" server-moment="before-operation">-->
+                    <!--        <invocation>-->
+                    <!--            <rest method="GET">-->
+                    <!--                ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{sourceCode}/{code}-->
+                    <!--            </rest>-->
+                    <!--        </invocation>-->
+                    <!--        <in>-->
+                    <!--            <field id="source.id" mapping="sourceCode" domain="string"/>-->
+                    <!--            <field id="refBook.id" mapping="code" domain="string"/>-->
+                    <!--        </in>-->
+                    <!--        <out>-->
+                    <!--            <field id="result" mapping="(#this)" domain="string"/>-->
+                    <!--        </out>-->
+                    <!--    </constraint>-->
+                    <!--</validations>-->
+                </input-select>
+
+                <output-text id="refBookName" no-label="true"
+                             label-class="w-50" enabled="false">
+                    <dependencies>
+                        <visibility on="refBook">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                        </visibility>
+                        <set-value on="refBook">
+                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                                return refBook.name;
+                            else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
+
+                <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" default-value="true" label-class="w-50">
+                    <dependencies>
+                        <enabling on="refBook">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                        </enabling>
+                    </dependencies>
+                </checkbox>
+
+                <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" default-value="false" label-class="w-50">
+                    <dependencies>
+                        <enabling on="refBook">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                        </enabling>
+                    </dependencies>
+                </checkbox>
+
+                <!--<output-text id="lastVersion" label="Последняя версия"-->
+                <!--             label-class="w-50" enabled="false">-->
+                <!--    <dependencies>-->
+                <!--        <set-value on="refBook">-->
+                <!--            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {-->
+                <!--                return refBook.versionId + ' | ' + refBook.version;-->
+                <!--            } else-->
+                <!--                return null;-->
+                <!--        </set-value>-->
+                <!--    </dependencies>-->
+                <!--</output-text>-->
+
+                <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
+                              query-id="syncSourceVersionList" label-field-id="displayName"
+                              required="true" label-class="w-50">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="code" value="{refBook.id}"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <set-value on="refBook,versioned">
+                            if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                                (typeof versioned == 'undefined' || !versioned))
+                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                            else
+                                return;
+                        </set-value>
+                        <enabling on="refBook,versioned">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                            (typeof versioned != 'undefined' &amp;&amp; versioned)
+                        </enabling>
+                    </dependencies>
+                </input-select>
+            </set>
+        </fields>
+
+        <toolbar place="bottomRight">
+            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}">
+                <show-modal page-id="syncMapping" page-name="${sync.entry.page.button.edit.mapping.page}"
+                            upload="query"
+                            modal-size="xl" scrollable="true"
+                            route="/mapping/edit">
+                    <query-param name="sourceCode" value="{source.id}"/>
+                    <query-param name="code" value="{refBook.id}"/>
+                    <query-param name="name" value="{refBookName}"/>
+                    <query-param name="version" value="{startVersion.version}"/>
+                    <query-param name="versioned" value="{versioned}"/>
+                    <query-param name="autoUpdatable" value="{autoUpdatable}"/>
+                    <query-param name="actionType" value="{actionType}"/>
+                </show-modal>
+            </button>
+
+            <button id="cancel" label="${sync.entry.page.button.cancel}">
+                <close/>
+            </button>
+
+        </toolbar>
+    </form>
+</simple-page>

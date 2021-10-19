@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://n2oapp.net/framework/config/schema/query-4.0" object-id="syncSourceRefBookList">
+
+    <list result-mapping="['content']" count-mapping="['totalElements']">
+        <rest method="GET" filters-separator="&amp;">
+            ${rdm.sync.admin.backend.path}/sync/admin/sources/refbooks?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </list>
+
+    <unique result-mapping="['content'][0]" filters="sourceCode,id">
+        <rest method="GET">
+            ${rdm.sync.admin.backend.path}/sync/admin/sources/refbooks?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+        </rest>
+    </unique>
+
+    <fields>
+        <field id="sourceCode" domain="string">
+            <filters>
+                <eq filter-id="sourceCode">sourceCode={sourceCode}</eq>
+            </filters>
+        </field>
+
+        <field id="id" domain="string">
+            <select mapping="['code']"/>
+            <filters>
+                <eq filter-id="id">code={id}</eq>
+            </filters>
+        </field>
+
+        <field id="displayName" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="displayName">text={displayName}</eq>
+            </filters>
+        </field>
+
+        <field id="versionId" domain="string">
+            <select mapping="['id']"/>
+        </field>
+
+        <field id="code" domain="string">
+            <select/>
+            <filters>
+                <eq filter-id="code">code={code}</eq>
+            </filters>
+        </field>
+
+        <field id="name" domain="string">
+            <select/>
+        </field>
+
+        <field id="version" domain="string">
+            <select/>
+        </field>
+
+        <field id="comment" domain="string">
+            <select/>
+        </field>
+
+        <field id="hasEntry" domain="string">
+            <filters>
+                <eq filter-id="hasEntry">hasEntry={hasEntry}</eq>
+            </filters>
+        </field>
+    </fields>
+</query>
