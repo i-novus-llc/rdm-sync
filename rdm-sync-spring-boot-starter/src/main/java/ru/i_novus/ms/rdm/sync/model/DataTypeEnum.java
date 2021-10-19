@@ -63,9 +63,8 @@ public enum DataTypeEnum {
         return dataType == null ? null : TYPE_MAP.get(dataType);
     }
 
-    public static DataTypeEnum getByRdmAttr(Structure.Attribute attribute) {
+    public static DataTypeEnum getByRdmAttr(AttributeTypeEnum type) {
 
-        final FieldType type = attribute.getType();
 
         return switch (type) {
             case DATE -> DATE;
