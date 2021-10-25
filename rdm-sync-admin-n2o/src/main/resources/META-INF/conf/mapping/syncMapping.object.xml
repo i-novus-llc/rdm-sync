@@ -21,7 +21,7 @@
     <operations>
         <operation id="createEntry">
             <invocation>
-                <rest method="POST">${rdm.sync.admin.backend.path}/sync/admin/entries</rest>
+                <rest method="POST">${sync.admin.backend.path}/sync/admin/entries</rest>
             </invocation>
             <in>
                 <field id="source.id" mapping="['sourceCode']"/>
@@ -39,7 +39,7 @@
 
         <operation id="updateEntry">
             <invocation>
-                <rest method="PUT">${rdm.sync.admin.backend.path}/sync/admin/entries</rest>
+                <rest method="PUT">${sync.admin.backend.path}/sync/admin/entries</rest>
             </invocation>
             <in>
                 <field id="entryId" mapping="['entryId']"/>
