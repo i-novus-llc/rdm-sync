@@ -3,13 +3,13 @@
 
     <list result-mapping="['content']" count-mapping="['totalElements']">
         <rest method="GET" filters-separator="&amp;">
-            ${rdm.sync.admin.backend.path}/sync/admin/entries/mappings?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+            ${sync.admin.backend.path}/sync/admin/entries/mappings?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
         </rest>
     </list>
 
     <unique>
         <rest method="GET" filters-separator="&amp;">
-            ${rdm.sync.admin.backend.path}/sync/admin/entries/mapping?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
+            ${sync.admin.backend.path}/sync/admin/entries/mapping?{filters}&amp;size={limit}&amp;page={page}&amp;{sorting}
         </rest>
     </unique>
 

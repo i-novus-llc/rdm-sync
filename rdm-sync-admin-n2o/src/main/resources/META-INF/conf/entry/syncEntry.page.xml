@@ -44,7 +44,7 @@
                 <!--                    side="client,server" server-moment="before-operation">-->
                 <!--            <invocation>-->
                 <!--                <rest method="GET">-->
-                <!--                    ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{source}/{code}-->
+                <!--                    ${sync.admin.backend.path}/sync/admin/refbooks/validate/{source}/{code}-->
                 <!--                </rest>-->
                 <!--            </invocation>-->
                 <!--            <in>-->
@@ -88,7 +88,7 @@
                     <!--                side="client,server" server-moment="before-operation">-->
                     <!--        <invocation>-->
                     <!--            <rest method="GET">-->
-                    <!--                ${rdm.sync.admin.backend.path}/sync/admin/refbooks/validate/{sourceCode}/{code}-->
+                    <!--                ${sync.admin.backend.path}/sync/admin/refbooks/validate/{sourceCode}/{code}-->
                     <!--            </rest>-->
                     <!--        </invocation>-->
                     <!--        <in>-->

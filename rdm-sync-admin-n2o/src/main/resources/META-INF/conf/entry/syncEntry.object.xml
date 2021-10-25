@@ -6,7 +6,7 @@
         <operation id="delete" submit-label="Удалить" success-text="Запись о справочнике удалена"
                    confirm="true" confirm-text="${sync.entry.page.delete.confirm}">
             <invocation>
-                <rest method="DELETE">${rdm.sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
+                <rest method="DELETE">${sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
             </invocation>
 
             <in>
