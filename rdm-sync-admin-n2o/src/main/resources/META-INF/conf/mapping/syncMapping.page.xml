@@ -152,12 +152,12 @@
         <toolbar place="bottomRight">
             <button id="create" label="${sync.mapping.page.button.create}" visible="{actionType == 'create'}">
                 <invoke operation-id="createEntry" close-after-success="true" message-on-success="false"
-                        redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
+                        redirect-target="application" redirect-url="${sync.admin.context-path}/main"/>
             </button>
 
             <button id="update" label="${sync.mapping.page.button.update}" visible="{actionType == 'update'}">
                 <invoke operation-id="updateEntry" close-after-success="true" message-on-success="false"
-                        redirect-target="application" redirect-url="${rdm.sync.admin.context-path}/main"/>
+                        redirect-target="application" redirect-url="${sync.admin.context-path}/main"/>
             </button>
 
             <button id="cancel" label="${sync.mapping.page.button.cancel}">
