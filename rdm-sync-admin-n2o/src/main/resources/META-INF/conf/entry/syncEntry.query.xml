@@ -67,7 +67,6 @@
 
         <field id="lastDateTime" domain="localdatetime">
             <select/>
-            <sorting/>
         </field>
 
         <field id="lastStatus" domain="string">
