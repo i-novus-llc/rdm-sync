@@ -216,26 +216,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced) {
 
-        List<String> values = new ArrayList<>();
-        List<Object> data = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : row.entrySet()) {
-            if (entry.getValue() == null) {
-                values.add("null");
-            } else {
-                values.add("?");
-                data.add(entry.getValue());
-            }
-        }
-
-        String keys = row.keySet().stream().map(StringUtils::addDoubleQuotes).collect(joining(","));
-        if (markSynced) {
-            keys += ", " + addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN);
-            values.add(addSingleQuotes(SYNCED.name()));
-        }
-
-        final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
-                schemaTable, keys, String.join(",", values));
-        getJdbcTemplate().update(sql, data.toArray());
+        insertRows(schemaTable, List.of(row), markSynced);
     }
 
     @Override
