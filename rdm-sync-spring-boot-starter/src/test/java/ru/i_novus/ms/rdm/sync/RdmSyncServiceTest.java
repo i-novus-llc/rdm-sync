@@ -95,8 +95,9 @@ public class RdmSyncServiceTest {
 
         rdmSyncService.update(refBookCode);
 
-        verify(dao).updateRow(versionMapping.getTable(), versionMapping.getPrimaryField(), dataMap.get(0), true);
-        verify(dao).insertRow(versionMapping.getTable(), dataMap.get(1), true);
+        dataMap.get(0).put(versionMapping.getDeletedField(), false);
+        verify(dao).updateRows(versionMapping.getTable(), versionMapping.getPrimaryField(), singletonList(dataMap.get(0)), true);
+        verify(dao).insertRows(versionMapping.getTable(), singletonList(dataMap.get(1)), true);
         verify(dao).updateVersionMapping(versionMapping.getId(), firstVersion.getLastVersion(), firstVersion.getLastPublishDate());
     }
 
@@ -197,8 +198,7 @@ public class RdmSyncServiceTest {
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(lastPublished.getCode())))).thenReturn(lastPublishedVersionPage);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
         rdmSyncService.update(code);
-        verify(dao, times(1)).insertRow(eq(table), eq(row1version1), eq(true));
-        verify(dao, times(1)).insertRow(eq(table), eq(row2version1), eq(true));
+        verify(dao, times(1)).insertRows(eq(table), eq(List.of(row1version1, row2version1)), eq(true));
         clearInvocations(dao);
 //      sync1 прошел успешно, выходит новая версия с новой структурой, однако у нас старые маппинги
         lastPublished.setLastVersionId(2);
@@ -233,8 +233,9 @@ public class RdmSyncServiceTest {
         fm.add(new FieldMapping(addedField, "varchar", addedField)); // обновили маппинги
         vm.setMappingLastUpdated(mappingChanged.atDate(date));
         rdmSyncService.update(code);
-        verify(dao, times(1)).updateRow(eq(table), eq(primaryField), eq(row1version1), eq(true));
-        verify(dao, times(1)).updateRow(eq(table), eq(primaryField), eq(row2version1), eq(true));
+        row1version1.put(vm.getDeletedField(), false);
+        row2version1.put(vm.getDeletedField(), false);
+        verify(dao, times(1)).updateRows(eq(table), eq(primaryField), eq(List.of(row1version1, row2version1)), eq(true));
     }
 
     private RefBook createFirstRdmVersion() {

@@ -1,9 +1,11 @@
 package ru.i_novus.ms.rdm.sync.service;
 
+import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +48,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
-    private static final int MAX_SIZE = 100;
+    @Value("${rdm.sync.load.size: 1000}")
+    private int MAX_SIZE = 1000;
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =
             "No version mapping found for reference book with code '{}'.";
@@ -145,6 +148,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Transactional
     public void update(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
 
+        logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
         validateStructureAndMapping(newVersion, fieldMappings);
@@ -167,7 +171,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             }
             //обновляем версию в таблице версий клиента
             dao.updateVersionMapping(versionMapping.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
-
+            logger.info("{} sync finished", newVersion.getCode());
         } finally {
             dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         }
@@ -392,9 +396,10 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                 syncSourceService::getData, searchDataCriteria, true);
         while (iter.hasNext()) {
             Page<? extends Map<String, ?>> page = iter.next();
-            for (Map<String, ?> refBookRowValue : page.getContent()) {
-                insertOrUpdateRow(refBookRowValue, existingDataIds, versionMapping, fieldMappings, newVersion);
-            }
+
+            insertOrUpdateRow(page.getContent(), existingDataIds, versionMapping, fieldMappings, newVersion);
+            logProgress(versionMapping.getCode(), searchDataCriteria, page);
+
         }
     }
 
@@ -421,5 +426,51 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             // Иначе - создаём новую запись:
             dao.insertRow(versionMapping.getTable(), mappedRow, true);
         }
+    }
+
+
+    private void insertOrUpdateRow(List<? extends Map<String, ?>> rows, List<Object> existingDataIds,
+                                   VersionMapping versionMapping, List<FieldMapping> fieldMappings, RefBook newVersion) {
+
+        final String primaryField = versionMapping.getPrimaryField();
+
+        List<Map<String, Object>> insertRows = new ArrayList<>();
+        List<Map<String, Object>> updateRows = new ArrayList<>();
+
+        for (Map<String, ?> row : rows) {
+            Map<String, Object> mappedRow = new HashMap<>();
+            for (Map.Entry<String, ?> fieldValue : row.entrySet()) {
+                Map<String, Object> mappedValue = mapValue(newVersion, fieldValue.getKey(), fieldValue.getValue(), fieldMappings);
+                if (mappedValue != null) {
+                    mappedRow.putAll(mappedValue);
+                }
+            }
+
+            final Object primaryValue = mappedRow.get(primaryField);
+            if (existingDataIds.contains(primaryValue)) {
+                // Если запись существует, то обновляем её:
+                Map<String, Object> updatedRow = new HashMap<>(mappedRow);
+                updatedRow.put(versionMapping.getDeletedField(), false);
+                updateRows.add(updatedRow);
+
+            } else {
+                // Иначе - создаём новую запись:
+                insertRows.add(mappedRow);
+            }
+        }
+        if(!updateRows.isEmpty()) {
+            dao.updateRows(versionMapping.getTable(), versionMapping.getPrimaryField(), updateRows, true);
+        }
+        if(!insertRows.isEmpty()) {
+            dao.insertRows(versionMapping.getTable(), insertRows, true);
+        }
+    }
+
+    private void logProgress(String refBookCode, RestCriteria criteria, Page currentPage) {
+        int totalPages = currentPage.getContent().size() == 0 ? 1 : (int) Math.ceil((double) currentPage.getTotalElements() / (double) criteria.getPageSize());
+        if(criteria.getPageNumber()%5==0 || totalPages == criteria.getPageNumber() + 1) {
+            logger.info("refbook {} {} rows of {} synchronized", refBookCode,  (criteria.getPageNumber() + 1)*criteria.getPageSize(), currentPage.getTotalElements());
+        }
+
     }
 }

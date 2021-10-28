@@ -3,17 +3,14 @@ package ru.i_novus.ms.rdm.sync;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.jaxrs.RestPage;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -33,10 +30,8 @@ import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.model.refdata.RefBookRowValue;
-import ru.i_novus.ms.rdm.api.model.refdata.RowValueMixin;
 import ru.i_novus.ms.rdm.api.model.refdata.SearchDataCriteria;
 import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
-import ru.i_novus.ms.rdm.api.provider.RdmMapperConfigurer;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
@@ -187,7 +182,7 @@ public class TestConfig {
         return restTemplate;
     }
 
-    private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, Resource body) throws URISyntaxException {
+    private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, ClassPathResource body) throws URISyntaxException {
         ResponseActions responseActions = mockServer.expect(ExpectedCount.manyTimes(),
                 MockRestRequestMatchers.requestTo(Matchers.containsString(fnsiUrl + methodUrl)))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
@@ -205,25 +200,25 @@ public class TestConfig {
 
     }
 
-    private void versionsMockServer(MockRestServiceServer mockServer, String identifier, Resource body) throws URISyntaxException {
+    private void versionsMockServer(MockRestServiceServer mockServer, String identifier, ClassPathResource body) throws URISyntaxException {
         fnsiApiMockServer(mockServer, null,"/rest/versions", Map.of("identifier", identifier, "page", "1", "size", "200"), body);
     }
 
-    private void compareMockServer(MockRestServiceServer mockServer, String identifier, LocalDateTime fromDate, LocalDateTime toDate, int page,  Resource body) throws URISyntaxException {
+    private void compareMockServer(MockRestServiceServer mockServer, String identifier, LocalDateTime fromDate, LocalDateTime toDate, int page,  ClassPathResource body) throws URISyntaxException {
         DateTimeFormatter dtf =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         Map<String, String> params = Map.of("identifier", identifier, "date1", encode(dtf.format(fromDate)), "date2", encode(dtf.format(toDate)), "page", ""+page, "size", "200");
         fnsiApiMockServer(mockServer, null, "/rest/compare", params, body);
     }
 
-    private void searchRefBookMockServer(MockRestServiceServer mockServer, String identifier,  RequestMatcher requestMatcher, Resource body) throws URISyntaxException {
+    private void searchRefBookMockServer(MockRestServiceServer mockServer, String identifier,  RequestMatcher requestMatcher, ClassPathResource body) throws URISyntaxException {
         fnsiApiMockServer(mockServer, requestMatcher, "/rest/searchDictionary", Map.of("identifier",identifier,"page", "1", "size", "200"), body);
     }
 
-    private void passportMockServer(MockRestServiceServer mockServer, String identifier, String version, Resource body) throws URISyntaxException {
+    private void passportMockServer(MockRestServiceServer mockServer, String identifier, String version, ClassPathResource body) throws URISyntaxException {
         fnsiApiMockServer(mockServer, null,"/rest/passport", Map.of("identifier", identifier, "version", version), body);
     }
 
-    private void dataMockServer(MockRestServiceServer mockServer, RequestMatcher requestMatcher, String identifier, int page, int size, Resource body) throws URISyntaxException {
+    private void dataMockServer(MockRestServiceServer mockServer, RequestMatcher requestMatcher, String identifier, int page, int size, ClassPathResource body) throws URISyntaxException {
         fnsiApiMockServer(mockServer, requestMatcher, "/rest/data", Map.of("identifier", identifier, "page", ""+page,"size", ""+size), body);
     }
 
