@@ -182,11 +182,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         return loggingService.getList(criteria.getDate(), criteria.getRefbookCode());
     }
 
-    @Override
-    public String getLastSyncVersion(String refBookCode) {
-        return ""+dao.getLastVersion(refBookCode);
-    }
-
     private boolean isFirstLoad(VersionMapping versionMapping) {
         return versionMapping.getVersion() == null;
     }

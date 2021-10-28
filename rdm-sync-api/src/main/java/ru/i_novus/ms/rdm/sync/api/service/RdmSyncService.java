@@ -45,14 +45,6 @@ public interface RdmSyncService {
     List<Log> getLog(@BeanParam LogCriteria criteria);
 
     @GET
-    @Path("/last-sync/{refBookCode}/version")
-    @ApiOperation(value = "Получение последней синхронизированной версии")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Успех"),
-    })
-    String getLastSyncVersion(@PathParam("refBookCode") String refBookCode);
-
-    @GET
     @Path("/xml-fm")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     Response downloadXmlFieldMapping(@QueryParam("code") List<String> refBookCodes);
