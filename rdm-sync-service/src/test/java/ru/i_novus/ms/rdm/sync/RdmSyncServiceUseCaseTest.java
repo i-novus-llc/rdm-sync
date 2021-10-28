@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -17,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -31,7 +34,12 @@ public class RdmSyncServiceUseCaseTest {
     @LocalServerPort
     private int port;
 
+    @Autowired
+    private RdmSyncDao rdmSyncDao;
+
     private String baseUrl;
+
+    private final static int MAX_TIMEOUT = 10;
 
     @Before
     public void setUp() throws Exception {
@@ -51,7 +59,7 @@ public class RdmSyncServiceUseCaseTest {
         ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<3; i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1".equals(rdmSyncDao.getVersionMapping("EK002").getVersion()); i++) {
             Thread.sleep(1000);
         }
         Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
@@ -62,7 +70,7 @@ public class RdmSyncServiceUseCaseTest {
         startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<3; i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"2".equals(rdmSyncDao.getVersionMapping("EK002").getVersion()); i++) {
             Thread.sleep(1000);
         }
         result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
@@ -84,7 +92,7 @@ public class RdmSyncServiceUseCaseTest {
         ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<3; i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1.2".equals(rdmSyncDao.getVersionMapping("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
             Thread.sleep(1000);
         }
         Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/1.2.643.5.1.13.2.1.1.725?getDeleted=false", Map.class).getBody();
@@ -99,7 +107,7 @@ public class RdmSyncServiceUseCaseTest {
         startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<3; i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1.8".equals(rdmSyncDao.getVersionMapping("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
             Thread.sleep(1000);
         }
         result = restTemplate.getForEntity(baseUrl + "/data/1.2.643.5.1.13.2.1.1.725?getDeleted=false", Map.class).getBody();
@@ -121,7 +129,6 @@ public class RdmSyncServiceUseCaseTest {
 
 
         Assert.assertEquals(47, getTotalElements(deletedResult));
-//        Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(getContent(deletedResult)));
 
     }
 

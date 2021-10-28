@@ -80,6 +80,7 @@ rdm_sync.fnsi.userKey=4191f0cf-b100-4d80-a392-6cee9432deea
 |rdm_sync.scheduling| true| Запуск по расписанию, true - включено|
 |rdm_sync.import.from_rdm.cron| 0 * * * * ?| Крон для загрузки данных из НСИ|
 |rdm_sync.export.to_rdm.cron| 0 * * * * ?| Крон для загрузки данных в НСИ (только для RDM)|
+|rdm.sync.load.size| 100| Кол-во записей на странице при получении данных из нси|
 
 
 ## Настройка маппинга

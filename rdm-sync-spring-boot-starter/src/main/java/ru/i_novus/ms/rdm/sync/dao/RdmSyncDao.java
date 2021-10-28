@@ -70,6 +70,14 @@ public interface RdmSyncDao {
     void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced);
 
     /**
+     * Вставить строки в таблицу
+     * @param schemaTable таблица
+     * @param rows строки
+     * @param markSynced
+     */
+    void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced);
+
+    /**
      * Изменить строку в справочник клиента.
      *
      * @param schemaTable  таблица справочника на стороне клиента
@@ -77,6 +85,8 @@ public interface RdmSyncDao {
      * @param row          строка с данными
      */
     void updateRow(String schemaTable, String primaryField, Map<String, Object> row, boolean markSynced);
+
+    void updateRows(String schemaTable, String primaryField, List<Map<String, Object>> row, boolean markSynced);
 
     /**
      * Пометить запись справочника клиента как (не)удалённую.

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
+import ru.i_novus.ms.rdm.api.enumeration.RefBookSourceType;
 import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.model.compare.CompareDataCriteria;
 import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
@@ -50,8 +51,9 @@ public class RdmSyncSourceService implements SyncSourceService {
     public RefBook getRefBook(String code) {
         RefBookCriteria refBookCriteria = new RefBookCriteria();
         refBookCriteria.setCode(code);
+        refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
         Page<ru.i_novus.ms.rdm.api.model.refbook.RefBook> pageOfRdmRefBooks = refBookService.search(refBookCriteria);
-        if (pageOfRdmRefBooks.isEmpty()) {
+        if (pageOfRdmRefBooks.getContent().isEmpty()) {
             logger.warn("cannot find refbook by code {}", code);
             return null;
         }
@@ -84,11 +86,13 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
-        return versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())).map(refBookRowValue -> {
-            Map<String, Object> mapValue = new LinkedHashMap<>();
-            refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
-            return mapValue;
-        });
+        return PageMapper.map(
+                versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
+                refBookRowValue -> {
+                    Map<String, Object> mapValue = new LinkedHashMap<>();
+                    refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
+                    return mapValue;
+                });
 
     }
 

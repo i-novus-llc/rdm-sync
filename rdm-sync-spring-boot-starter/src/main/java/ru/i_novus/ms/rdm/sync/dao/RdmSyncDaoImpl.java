@@ -12,6 +12,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.api.util.StringUtils;
@@ -238,13 +239,60 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
+    public void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced) {
+        if(CollectionUtils.isEmpty(rows)){
+            return;
+        }
+        int maxColumns = 0;
+        Map<String, Object> longestRow = rows.get(0);
+        for (Map<String, Object> row : rows) {
+            if(row.keySet().size() > maxColumns) {
+                maxColumns = row.keySet().size();
+                longestRow = row;
+            }
+        }
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        for(int i=0; i<rows.size(); i++) {
+            Map<String, Object> row = rows.get(i);
+            Map<String, Object> batchValue = new HashMap<>();
+            for(String key : longestRow.keySet()) {
+                // ставим null если нет ключей
+                batchValue.put(key, row.get(key));
+
+            }
+            batchValues[i] = batchValue;
+        }
+        StringJoiner columns = new StringJoiner(",");
+        StringJoiner values = new StringJoiner(",");
+        for (String key: longestRow.keySet()) {
+            columns.add(StringUtils.addDoubleQuotes(key));
+            values.add(new StringBuilder(":").append(key).toString());
+        }
+        if (markSynced) {
+            columns.add(addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+            values.add(addSingleQuotes(SYNCED.name()));
+        }
+
+        final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
+                schemaTable, columns.toString(), values.toString());
+
+        namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
+    }
+
+    @Override
     public void updateRow(String schemaTable, String primaryField, Map<String, Object> row, boolean markSynced) {
 
         if (markSynced) {
+            row = new HashMap<>(row);
             row.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
         }
 
-        executeUpdate(schemaTable, row, primaryField);
+        executeUpdate(schemaTable, Collections.singletonList(row), primaryField);
+    }
+
+    @Override
+    public void updateRows(String schemaTable, String primaryField, List<Map<String, Object>> rows, boolean markSynced) {
+        executeUpdate(schemaTable, rows, primaryField);
     }
 
     @Override
@@ -258,7 +306,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 : Map.of(primaryField, primaryValue,
                 isDeletedField, deleted);
 
-        executeUpdate(schemaTable, args, primaryField);
+        executeUpdate(schemaTable, Collections.singletonList(args), primaryField);
     }
 
     @Override
@@ -269,24 +317,30 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name())
                 : Map.of(isDeletedField, deleted);
 
-        executeUpdate(schemaTable, args, null);
+        executeUpdate(schemaTable, Collections.singletonList(args), null);
     }
 
-    private void executeUpdate(String table, Map<String, Object> args, String primaryField) {
+
+    private void executeUpdate(String table, List<Map<String, Object>> rows, String primaryField) {
+
+        if(CollectionUtils.isEmpty(rows)){
+            return;
+        }
 
         String sqlFormat = "UPDATE %s SET %s";
         if (primaryField != null) {
             sqlFormat += " WHERE %s = :%s";
         }
 
-        final String fields = args.keySet().stream()
+        final String fields = rows.get(0).keySet().stream()
                 .filter(field -> !field.equals(primaryField))
                 .map(field -> addDoubleQuotes(field) + " = :" + field)
                 .collect(joining(", "));
 
         String sql = String.format(sqlFormat, table, fields, addDoubleQuotes(primaryField), primaryField);
 
-        namedParameterJdbcTemplate.update(sql, args);
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
     }
 
     @Override

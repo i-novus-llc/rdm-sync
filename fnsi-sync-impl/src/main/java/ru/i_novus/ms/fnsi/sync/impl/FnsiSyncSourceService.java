@@ -70,7 +70,6 @@ public class FnsiSyncSourceService implements SyncSourceService {
             });
             data.add(row);
         });
-
         return new PageImpl<>(data, dataCriteria, jsonNode.get("total").asInt());
     }
 

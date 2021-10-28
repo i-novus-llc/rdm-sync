@@ -29,6 +29,9 @@ public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? 
     }
 
     public boolean hasNext() {
+        if(nextPage != null) {
+            return true;
+        }
         this.criteria.setPageNumber(this.currentPage + 1);
         this.nextPage = this.pageSource.apply(this.criteria);
         List<? extends T> content = this.nextPage.getContent();
