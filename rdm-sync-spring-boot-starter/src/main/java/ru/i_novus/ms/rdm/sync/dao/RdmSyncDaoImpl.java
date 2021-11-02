@@ -247,7 +247,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         StringJoiner values = new StringJoiner(",");
         for (String key: longestRow.keySet()) {
             columns.add(StringUtils.addDoubleQuotes(key));
-            values.add(new StringBuilder(":").append(key).toString());
+            values.add(":" + key);
         }
         if (markSynced) {
             columns.add(addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
