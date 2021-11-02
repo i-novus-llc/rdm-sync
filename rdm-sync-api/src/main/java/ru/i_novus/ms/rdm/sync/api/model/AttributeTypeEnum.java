@@ -30,6 +30,10 @@ public enum AttributeTypeEnum {
     }
 
     public Object castValue(String value) {
-        return castFunction.apply(value);
+        try {
+            return castFunction.apply(value);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("cannot cast value=" + value + " to type " + this.name());
+        }
     }
 }

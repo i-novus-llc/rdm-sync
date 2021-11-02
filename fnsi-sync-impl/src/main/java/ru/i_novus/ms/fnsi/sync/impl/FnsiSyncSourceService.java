@@ -65,7 +65,12 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 if (!"null".equals(value.trim())) {
                     String column = cellNode.get("column").asText();
                     AttributeTypeEnum attributeTypeEnum = refBook.getStructure().getAttributesAndTypes().get(column);
-                    row.put(column, attributeTypeEnum.castValue(value));
+                    try {
+                        row.put(column, attributeTypeEnum.castValue(value));
+                    } catch (Exception e) {
+                        logger.error("cannot add value = {} to column {}", value, column);
+                        throw e;
+                    }
                 }
             });
             data.add(row);

@@ -15,9 +15,9 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @JdbcTest
