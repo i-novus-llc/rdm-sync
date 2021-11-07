@@ -1,4 +1,3 @@
-SET MODE PostgreSQL;
 CREATE TABLE IF NOT EXISTS ref_ek001(
     "name" character varying,
     "id" integer,

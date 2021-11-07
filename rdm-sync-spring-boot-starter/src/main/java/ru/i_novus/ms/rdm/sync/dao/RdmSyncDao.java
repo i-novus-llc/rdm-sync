@@ -77,6 +77,10 @@ public interface RdmSyncDao {
      */
     void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced);
 
+    void insertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
+
+    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
+
     /**
      * Изменить строку в справочник клиента.
      *
@@ -126,10 +130,14 @@ public interface RdmSyncDao {
     void enableInternalLocalRowStateUpdateTrigger(String table);
 
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
+
+    Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria);
+
     <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
                                      RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
 
     void createSchemaIfNotExists(String schema);
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
+    void createVersionedTable(String schema, String table, List<FieldMapping> fieldMappings);
 }

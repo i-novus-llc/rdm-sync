@@ -13,9 +13,9 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.DigestUtils;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
-import ru.i_novus.ms.rdm.api.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -28,6 +28,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.core.MultivaluedMap;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -38,7 +39,6 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static ru.i_novus.ms.rdm.api.util.StringUtils.addDoubleQuotes;
-import static ru.i_novus.ms.rdm.api.util.StringUtils.addSingleQuotes;
 import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.*;
 
 /**
@@ -221,43 +221,17 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced) {
-        if(CollectionUtils.isEmpty(rows)){
-            return;
-        }
-        int maxColumns = 0;
-        Map<String, Object> longestRow = rows.get(0);
-        for (Map<String, Object> row : rows) {
-            if(row.keySet().size() > maxColumns) {
-                maxColumns = row.keySet().size();
-                longestRow = row;
-            }
-        }
-        Map<String, Object>[] batchValues = new Map[rows.size()];
-        for(int i=0; i<rows.size(); i++) {
-            Map<String, Object> row = rows.get(i);
-            Map<String, Object> batchValue = new HashMap<>();
-            for(String key : longestRow.keySet()) {
-                // ставим null если нет ключей
-                batchValue.put(key, row.get(key));
+        List<Map<String, Object>> newRows = rows.stream().map(map -> {
+            Map<String, Object> newMap = new HashMap<>(map);
+            newMap.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
+            return newMap;
+        }).collect(Collectors.toList());
+        insertRows(schemaTable, newRows);
+    }
 
-            }
-            batchValues[i] = batchValue;
-        }
-        StringJoiner columns = new StringJoiner(",");
-        StringJoiner values = new StringJoiner(",");
-        for (String key: longestRow.keySet()) {
-            columns.add(StringUtils.addDoubleQuotes(key));
-            values.add(":" + key);
-        }
-        if (markSynced) {
-            columns.add(addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
-            values.add(addSingleQuotes(SYNCED.name()));
-        }
-
-        final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
-                schemaTable, columns.toString(), values.toString());
-
-        namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
+    @Override
+    public void insertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version) {
+        insertRows(schemaTable, convertToVersionedRows(rows, version));
     }
 
     @Override
@@ -299,6 +273,35 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 : Map.of(isDeletedField, deleted);
 
         executeUpdate(schemaTable, Collections.singletonList(args), null);
+    }
+
+    private List<Map<String, Object>> convertToVersionedRows(List<Map<String, Object>> rows, String version) {
+        return rows.stream().map(row -> {
+            Map<String, Object> newMap = new HashMap<>(row);
+            StringBuilder stringBuilder = new StringBuilder();
+            row.entrySet().stream()
+                    .filter( entry -> entry.getValue() != null)
+                    .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
+            newMap.put("_hash", DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
+            newMap.put("_versions", "{" + version + "}");
+            return newMap;
+        }).collect(Collectors.toList());
+    }
+
+    private void insertRows(String schemaTable, List<Map<String, Object>> rows) {
+        if(CollectionUtils.isEmpty(rows)){
+            return;
+        }
+
+        StringJoiner columns = new StringJoiner(",");
+        StringJoiner values = new StringJoiner(",");
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        concatColumnsAndValues(columns, values, batchValues, rows);
+
+        final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
+                escapeName(schemaTable), columns.toString(), values.toString());
+
+        namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
     }
 
 
@@ -508,9 +511,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
 
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
                 localDataCriteria.getSchemaTable(), addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
-        Map<String, Object> args = new HashMap<>();
         args.put("state", localDataCriteria.getState().name());
         if(localDataCriteria.getDeleted() != null) {
             if(Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
@@ -520,7 +523,75 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             }
         }
 
-        MultivaluedMap<String, Object> filters = localDataCriteria.getFilters();
+        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
+        data.getContent().forEach(row -> row.remove(RDM_SYNC_INTERNAL_STATE_COLUMN));
+        return data;
+    }
+
+    @Override
+    public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
+        Map<String, Object> args = new HashMap<>();
+        String sql = String.format("  FROM %s %n WHERE 1=1 %n",
+                escapeName(localDataCriteria.getSchemaTable()));
+        if(localDataCriteria.getVersion() != null) {
+            sql = sql + " AND _versions like :versions";
+            args.put("versions", "%{" + localDataCriteria.getVersion() + "}%");
+        }
+        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
+        data.getContent().forEach(row -> {
+            row.remove("_versions");
+            row.remove("_hash");
+        });
+        return data;
+    }
+
+    @Override
+    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version) {
+        if(CollectionUtils.isEmpty(rows)){
+            return;
+        }
+        StringJoiner columns = new StringJoiner(",");
+        StringJoiner values = new StringJoiner(",");
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        concatColumnsAndValues(columns, values, batchValues, convertToVersionedRows(rows, version));
+
+        final String sql = String.format("INSERT INTO %s (%s) VALUES(%s) ON CONFLICT ON CONSTRAINT  %s DO UPDATE SET _versions = %s._versions||'{%s}'",
+                schemaTable, columns.toString(), values.toString(), "unique_hash", schemaTable, version);
+
+        namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
+    }
+
+    private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues,  List<Map<String, Object>> rows) {
+
+        int maxColumns = 0;
+        Map<String, Object> longestRow = rows.get(0);
+        for (Map<String, Object> row : rows) {
+            if(row.keySet().size() > maxColumns) {
+                maxColumns = row.keySet().size();
+                longestRow = row;
+            }
+        }
+        for(int i=0; i<rows.size(); i++) {
+            Map<String, Object> row = rows.get(i);
+            Map<String, Object> batchValue = new HashMap<>();
+            for(String key : longestRow.keySet()) {
+                // ставим null если нет ключей
+                batchValue.put(key, row.get(key));
+
+            }
+            batchValues[i] = batchValue;
+        }
+
+        for (String key: longestRow.keySet()) {
+            columns.add(escapeName(key));
+            values.add(":" + key);
+        }
+
+    }
+
+    private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria) {
+
+        MultivaluedMap<String, Object> filters = dataCriteria.getFilters();
         if (filters != null) {
             args.putAll(filters);
 
@@ -533,38 +604,30 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         if (count == null || count == 0)
             return Page.empty();
 
-        String pk = localDataCriteria.getPk();
-        int limit = localDataCriteria.getLimit();
-        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, localDataCriteria.getOffset());
-        var wrap = new Object() {
-            int internalStateColumnIndex = -1;
-        };
+        String pk = dataCriteria.getPk();
+        int limit = dataCriteria.getLimit();
+        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, dataCriteria.getOffset());
 
         List<Map<String, Object>> result = namedParameterJdbcTemplate.query("SELECT * \n" + sql,
                 args, (rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
-                    if (wrap.internalStateColumnIndex == -1) {
-                        wrap.internalStateColumnIndex = getInternalStateColumnIdx(rs.getMetaData(), localDataCriteria.getSchemaTable());
-                    }
-
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                        if (i != wrap.internalStateColumnIndex) {
                             Object val = rs.getObject(i);
                             String key = rs.getMetaData().getColumnName(i);
                             map.put(key, val);
-                        }
                     }
 
                     return map;
                 });
 
-        RestCriteria dataCriteria = new AbstractCriteria();
-        dataCriteria.setPageNumber(localDataCriteria.getOffset() / limit);
-        dataCriteria.setPageSize(limit);
-        dataCriteria.setOrders(Sort.by(Sort.Order.asc(pk)).get().collect(Collectors.toList()));
+        RestCriteria restCriteria = new AbstractCriteria();
+        restCriteria.setPageNumber(dataCriteria.getOffset() / limit);
+        restCriteria.setPageSize(limit);
+        restCriteria.setOrders(Sort.by(Sort.Order.asc(pk)).get().collect(Collectors.toList()));
 
-        return new PageImpl<>(result, dataCriteria, count);
+        return new PageImpl<>(result, restCriteria, count);
     }
+
 
     private int getInternalStateColumnIdx(ResultSetMetaData meta, String table) throws SQLException {
 
@@ -614,13 +677,25 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
-        String ddl = String.format("CREATE TABLE IF NOT EXISTS %s.%s (", schema, table);
-        ddl += fieldMappings.stream()
-                .map(mapping -> String.format("%s %s", addDoubleQuotes(mapping.getSysField()), mapping.getSysDataType()))
-                .collect(Collectors.joining(", "));
-        ddl += String.format(", %s BOOLEAN)", isDeletedFieldName);
+        createTable(schema, table, fieldMappings, Map.of(isDeletedFieldName, "BOOLEAN"));
+    }
 
-        getJdbcTemplate().execute(ddl);
+    @Override
+    public void createVersionedTable(String schema, String table, List<FieldMapping> fieldMappings) {
+        createTable(schema, table, fieldMappings, Map.of("_versions", "text NOT NULL", "_hash", "text NOT NULL"));
+        getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
+    }
+
+    private void createTable(String schema, String table, List<FieldMapping> fieldMappings, Map<String, String> additionalColumns) {
+        StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
+        ddl.append(fieldMappings.stream()
+                .map(mapping -> String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType()))
+                .collect(Collectors.joining(", ")));
+        for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
+            ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
+        }
+        ddl.append(")");
+        getJdbcTemplate().execute(ddl.toString());
     }
 
     private JdbcTemplate getJdbcTemplate() {
@@ -637,5 +712,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private String getInternalLocalStateUpdateTriggerName(String schema, String table) {
 
         return schema + "_" + table + "_intrnl_lcl_rw_stt_updt";
+    }
+
+    private String escapeName(String name){
+        if(name.contains(";")) {
+            throw new IllegalArgumentException(name + "illegal value");
+        }
+        if(name.contains(".")) {
+            String firstPart = escapeName(name.split("\\.")[0]);
+            String secondPart = escapeName(name.split("\\.")[1]);
+            return firstPart + "." + secondPart;
+        }
+        return "\"" + name + "\"";
+
     }
 }
