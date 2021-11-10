@@ -6,7 +6,7 @@
 
     <changeSet id="202111101055_RDM-933" author="shgaripov" dbms="postgresql">
         <sql splitStatements="false">
-            CREATE TABLE rdm_sync.source(id serial, code varchar(50), name text, init_values text);
+            CREATE TABLE rdm_sync.source(id serial, code varchar(50), name text, init_values text)
         </sql>
     </changeSet>
 
