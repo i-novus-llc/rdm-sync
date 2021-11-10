@@ -103,23 +103,6 @@
                     <!--</validations>-->
                 </input-select>
 
-                <!--<output-text id="refBookDisplayName" no-label="true"-->
-                <!--             label-class="w-50" enabled="false"/>-->
-                <!--<output-text id="refBookName" no-label="true"-->
-                <!--             label-class="w-50" enabled="false">-->
-                <!--    <dependencies>-->
-                <!--        <visibility on="refBook">-->
-                <!--            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)-->
-                <!--        </visibility>-->
-                <!--        <set-value on="refBook">-->
-                <!--            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)-->
-                <!--                return refBook.name;-->
-                <!--            else-->
-                <!--                return null;-->
-                <!--        </set-value>-->
-                <!--    </dependencies>-->
-                <!--</output-text>-->
-
                 <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" default-value="true" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
@@ -136,18 +119,6 @@
                         </enabling>
                     </dependencies>
                 </checkbox>
-
-                <!--<output-text id="lastVersion" label="Последняя версия"-->
-                <!--             label-class="w-50" enabled="false">-->
-                <!--    <dependencies>-->
-                <!--        <set-value on="refBook">-->
-                <!--            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {-->
-                <!--                return refBook.versionId + ' | ' + refBook.version;-->
-                <!--            } else-->
-                <!--                return null;-->
-                <!--        </set-value>-->
-                <!--    </dependencies>-->
-                <!--</output-text>-->
 
                 <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"

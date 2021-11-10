@@ -103,23 +103,6 @@
         <field id="refBook.name" domain="string">
             <select mapping="['name']"/>
         </field>
-        <!--<field id="refBookDisplayName" domain="string">-->
-        <!--    <select mapping="['displayName']"/>-->
-        <!--</field>-->
-        <!--<field id="refBookName" domain="string">-->
-        <!--    <select mapping="['name']"/>-->
-        <!--</field>-->
-
-        <!--<field id="refBook.versionId" domain="string">-->
-        <!--    <select mapping="['versionId']"/>-->
-        <!--</field>-->
-        <!--<field id="refBook.version" domain="string">-->
-        <!--    <select mapping="['version']"/>-->
-        <!--</field>-->
-
-        <!--<field id="lastVersion">-->
-        <!--    <select mapping="['versionId'] + ' | ' + ['version']"/>-->
-        <!--</field>-->
 
         <field id="startVersion.id" domain="string">
             <select mapping="['versionId']"/>
