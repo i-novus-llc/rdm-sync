@@ -103,9 +103,9 @@
         <field id="refBook.name" domain="string">
             <select mapping="['name']"/>
         </field>
-        <field id="refBookName" domain="string">
-            <select mapping="['name']"/>
-        </field>
+        <!--<field id="refBookName" domain="string">-->
+        <!--    <select mapping="['name']"/>-->
+        <!--</field>-->
 
         <!--<field id="refBook.versionId" domain="string">-->
         <!--    <select mapping="['versionId']"/>-->
