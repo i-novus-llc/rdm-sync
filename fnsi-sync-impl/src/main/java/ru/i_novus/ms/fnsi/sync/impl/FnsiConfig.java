@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 
 @Configuration
 public class FnsiConfig {
