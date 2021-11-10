@@ -67,7 +67,7 @@
                     </pre-filters>
 
                     <dependencies>
-                        <reset on="source"/>
+                        <reset on="source" apply-on-init="false"/>
                         <enabling on="actionType,source">
                             actionType == 'create' &amp;&amp;
                             (typeof source != 'undefined' &amp;&amp; source?.id != null)
