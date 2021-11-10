@@ -113,7 +113,7 @@
 
                 <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" default-value="false" label-class="w-50">
                     <dependencies>
-                        <reset on="refBook"/>
+                        <reset on="refBook" apply-on-init="false"/>
                         <enabling on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </enabling>
