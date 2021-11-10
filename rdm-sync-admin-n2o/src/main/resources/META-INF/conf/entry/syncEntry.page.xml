@@ -103,6 +103,8 @@
                     <!--</validations>-->
                 </input-select>
 
+                <!--<output-text id="refBookDisplayName" no-label="true"-->
+                <!--             label-class="w-50" enabled="false"/>-->
                 <!--<output-text id="refBookName" no-label="true"-->
                 <!--             label-class="w-50" enabled="false">-->
                 <!--    <dependencies>-->
