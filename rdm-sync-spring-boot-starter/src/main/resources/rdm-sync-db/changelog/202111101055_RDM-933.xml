@@ -6,7 +6,12 @@
 
     <changeSet id="202111101055_RDM-933" author="shgaripov" dbms="postgresql">
         <sql splitStatements="false">
-            CREATE TABLE rdm_sync.source(id serial, code varchar(50), name text, init_values text)
+            CREATE TABLE rdm_sync.source(id serial, code varchar(50), name text, init_values text);
+            COMMENT ON TABLE rdm_sync.source IS 'Таблица хранения НСИ-источников';
+            COMMENT ON COLUMN rdm_sync.source.id IS 'id';
+            COMMENT ON COLUMN rdm_sync.source.code IS 'Код НСИ-источника';
+            COMMENT ON COLUMN rdm_sync.source.name IS 'Имя НСИ-источника';
+            COMMENT ON COLUMN rdm_sync.source.init_values IS 'Источник';
         </sql>
     </changeSet>
 
