@@ -70,6 +70,7 @@ public class SyncEntryVersion implements Serializable {
                 Objects.equals(isPresent, that.isPresent) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus) &&
+
                 Objects.equals(displayName, that.displayName);
     }
 

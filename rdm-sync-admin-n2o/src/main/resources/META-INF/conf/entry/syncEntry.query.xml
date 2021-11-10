@@ -95,7 +95,7 @@
             <select mapping="['code']"/>
         </field>
         <field id="refBook.displayName" domain="string">
-            <select mapping="['code']"/>
+            <select mapping="['displayName']"/>
         </field>
         <field id="refBook.version" domain="string">
             <select mapping="['version']"/>
