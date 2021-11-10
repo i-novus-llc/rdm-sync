@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
@@ -27,7 +28,9 @@ public interface RdmSyncDao {
      */
     List<VersionMapping> getVersionMappings();
 
-    VersionMapping getVersionMapping(String refbookCode);
+    LoadedVersion getLoadedVersion(String code);
+
+    VersionMapping getVersionMapping(String refbookCode, String version);
 
     int getLastVersion(String refbookCode);
 
@@ -41,7 +44,9 @@ public interface RdmSyncDao {
 
     List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
-    void updateVersionMapping(Integer id, String version, LocalDateTime publishDate);
+    void insertLoadedVersion(String code, String version, LocalDateTime publishDate);
+
+    void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate);
 
     /**
      * Получить список значений первичных ключей в таблице клиента.
@@ -117,9 +122,11 @@ public interface RdmSyncDao {
 
     List<Log> getList(LocalDate date, String refbookCode);
 
-    void upsertVersionMapping(XmlMappingRefBook versionMapping);
+    void insertVersionMapping(XmlMappingRefBook versionMapping);
 
-    void insertFieldMapping(String code, List<XmlMappingField> fieldMappings);
+    void updateVersionMapping(XmlMappingRefBook versionMapping);
+
+    void insertFieldMapping(Integer mappingId, List<XmlMappingField> fieldMappings);
 
     boolean lockRefBookForUpdate(String code, boolean blocking);
 

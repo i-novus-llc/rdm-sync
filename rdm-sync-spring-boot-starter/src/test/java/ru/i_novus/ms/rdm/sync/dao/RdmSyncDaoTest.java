@@ -13,20 +13,21 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import java.io.Serializable;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
-@RunWith(SpringRunner.class)
-@JdbcTest(properties = {"spring.liquibase.enabled=false"})
+
 @Sql({"/dao-test.sql"})
-@AutoConfigureEmbeddedDatabase(type = AutoConfigureEmbeddedDatabase.DatabaseType.POSTGRES, provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.ZONKY)
-public class RdmSyncDaoTest {
+public class RdmSyncDaoTest extends BaseDaoTest {
 
     private static final String IS_DELETED_COLUMN = "is_deleted";
 
@@ -138,4 +139,55 @@ public class RdmSyncDaoTest {
 
         //просто проставление версии
     }
+
+    @Test
+    public void testAddingLoadedVersion() {
+        String code = "test";
+        LoadedVersion actual = new LoadedVersion(1, "test", "version",  LocalDateTime.of(2021, 11, 9, 17, 0), null);
+        rdmSyncDao.insertLoadedVersion(actual.getCode(), actual.getVersion(), actual.getPublicationDate());
+        LoadedVersion expected = rdmSyncDao.getLoadedVersion(code);
+        Assert.assertNotNull(expected.getLastSync());
+        expected.setLastSync(null);
+        Assert.assertEquals(actual, expected);
+        //редактируем
+        actual.setVersion("2");
+        rdmSyncDao.updateLoadedVersion(actual.getId(), actual.getVersion(), actual.getPublicationDate());
+        expected = rdmSyncDao.getLoadedVersion(code);
+        expected.setLastSync(null);
+        Assert.assertEquals(actual, expected);
+    }
+
+
+    @Test
+    public void testSaveVersionMappingFromXml() {
+        XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
+        xmlMappingRefBook.setCode("test");
+        xmlMappingRefBook.setDeletedField("is_deleted");
+        xmlMappingRefBook.setUniqueSysField("id");
+        xmlMappingRefBook.setSysTable("test_table");
+        xmlMappingRefBook.setMappingVersion(-1);
+
+        rdmSyncDao.insertVersionMapping(xmlMappingRefBook);
+        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
+        Assert.assertEquals(xmlMappingRefBook.getCode(), versionMapping.getCode());
+        Assert.assertEquals("CURRENT", versionMapping.getVersion());
+        assertEquals(xmlMappingRefBook, versionMapping);
+
+        xmlMappingRefBook.setDeletedField("is_deleted2");
+        xmlMappingRefBook.setSysTable("test_table2");
+        xmlMappingRefBook.setMappingVersion(1);
+        rdmSyncDao.updateVersionMapping(xmlMappingRefBook);
+        versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
+        Assert.assertEquals("CURRENT", versionMapping.getVersion());
+        assertEquals(xmlMappingRefBook, versionMapping);
+
+    }
+
+    private void assertEquals(XmlMappingRefBook xmlMappingRefBook, VersionMapping versionMapping) {
+        Assert.assertEquals(xmlMappingRefBook.getMappingVersion(), versionMapping.getMappingVersion());
+        Assert.assertEquals(xmlMappingRefBook.getDeletedField(), versionMapping.getDeletedField());
+        Assert.assertEquals(xmlMappingRefBook.getUniqueSysField(), versionMapping.getPrimaryField());
+        Assert.assertEquals(xmlMappingRefBook.getSysTable(), versionMapping.getTable());
+    }
 }
+

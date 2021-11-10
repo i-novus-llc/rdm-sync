@@ -35,6 +35,7 @@ import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.platform.datastorage.temporal.model.value.RowValue;
@@ -79,11 +80,11 @@ public class TestConfig {
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002");
-            if(refBookCriteria.getCode().equals("EK002") && (ek002VersionMapping == null || !"1".equals(ek002VersionMapping.getVersion())) ) {
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK002");
+            if(refBookCriteria.getCode().equals("EK002") && loadedVersion == null  ) {
                 return new RestPage<>(Collections.singletonList(ek002Ver1));
             }
-            if (refBookCriteria.getCode().equals("EK002") && ek002VersionMapping != null || "1".equals(ek002VersionMapping.getVersion()))
+            if (refBookCriteria.getCode().equals("EK002") && loadedVersion != null && "1".equals(loadedVersion.getVersion()))
                 return new RestPage<>(Collections.singletonList(ek002Ver2));
 
             return new RestPage<>(Collections.emptyList());
@@ -104,7 +105,7 @@ public class TestConfig {
                     if (searchDataCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002");
+                    VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002", "CURRENT");
                     if(searchDataCriteria.getPageNumber() == 0 &&
                             (ek002VersionMapping == null || !"1".equals(ek002VersionMapping.getVersion())) ) {
                         return new RestPage<>(Arrays.asList(firstVersionRows));
@@ -236,11 +237,11 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                VersionMapping versionMapping = rdmSyncDao.getVersionMapping(oid);
+                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
                 if(version == null) {
-                    Assert.assertNull(versionMapping.getVersion());
+                    Assert.assertNull(loadedVersion);
                 } else {
-                    Assert.assertEquals(version, versionMapping.getVersion());
+                    Assert.assertEquals(version, loadedVersion.getVersion());
                 }
             }
         };
@@ -255,8 +256,8 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                VersionMapping versionMapping = rdmSyncDao.getVersionMapping(oid);
-                Assert.assertNull(versionMapping);
+                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
+                Assert.assertNull(loadedVersion);
             }
         };
     }

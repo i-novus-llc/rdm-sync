@@ -15,6 +15,7 @@ import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -56,8 +57,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Value("${rdm.sync.load.size: 1000}")
     private int MAX_SIZE = 1000;
 
-    @Value("${rdm.sync.threads.count:1}")
-    private int threadsCount = 1;
+    @Value("${rdm.sync.threads.count:3}")
+    private int threadsCount = 3;
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =
             "No version mapping found for reference book with code '{}'.";
@@ -143,7 +144,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
 
-        if (dao.getVersionMapping(refBookCode) == null) {
+        if (dao.getVersionMapping(refBookCode, "CURRENT" ) == null) {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
@@ -158,8 +159,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
 
         VersionMapping versionMapping = getVersionMapping(refBookCode);
+        LoadedVersion loadedVersion = dao.getLoadedVersion(refBookCode);
         try {
-            if (isFirstLoad(versionMapping) || isNewVersionPublished(newVersionWithSource.getKey(), versionMapping) || isMappingChanged(versionMapping)) {
+            if (loadedVersion == null || isNewVersionPublished(newVersionWithSource.getKey(), loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
 
                 self.update(newVersionWithSource.getKey(), versionMapping, newVersionWithSource.getValue());
                 loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersionWithSource.getKey().getLastVersion());
@@ -183,25 +185,30 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         // Если изменилась структура, проверяем актуальность полей в маппинге
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
         validateStructureAndMapping(newVersion, fieldMappings);
+        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
 
         dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         try {
-            if (isFirstLoad(versionMapping)) {
+            if (loadedVersion == null) {
                 //заливаем с нуля
                 uploadNew(newVersion, versionMapping, syncSourceService);
                 
-            } else if (isNewVersionPublished(newVersion, versionMapping)) {
+            } else if (isNewVersionPublished(newVersion, loadedVersion)) {
                 //если версия и дата публикация не совпадают - нужно обновить справочник
-                mergeData(newVersion, versionMapping, syncSourceService, fieldMappings);
+                mergeData(newVersion, versionMapping, loadedVersion, syncSourceService, fieldMappings);
 
-            } else if (isMappingChanged(versionMapping)) {
+            } else if (isMappingChanged(versionMapping, loadedVersion)) {
 //              Значит в прошлый раз мы синхронизировались по старому маппингу.
 //              Необходимо полностью залить свежую версию.
                 dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
                 uploadNew(newVersion, versionMapping, syncSourceService);
             }
-            //обновляем версию в таблице версий клиента
-            dao.updateVersionMapping(versionMapping.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
+            if(loadedVersion != null) {
+                //обновляем версию в таблице версий клиента
+                dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
+            } else {
+                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getLastVersion(),  newVersion.getLastPublishDate());
+            }
             logger.info("{} sync finished", newVersion.getCode());
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
@@ -216,18 +223,16 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         return loggingService.getList(criteria.getDate(), criteria.getRefbookCode());
     }
 
-    private boolean isFirstLoad(VersionMapping versionMapping) {
-        return versionMapping.getVersion() == null;
+
+
+    private boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
+
+        return !loadedVersion.getVersion().equals(newVersion.getLastVersion())
+                && !loadedVersion.getPublicationDate().equals(newVersion.getLastPublishDate());
     }
 
-    private boolean isNewVersionPublished(RefBook newVersion, VersionMapping versionMapping) {
-
-        return !versionMapping.getVersion().equals(newVersion.getLastVersion())
-                && !versionMapping.getPublicationDate().equals(newVersion.getLastPublishDate());
-    }
-
-    private boolean isMappingChanged(VersionMapping versionMapping) {
-        return versionMapping.changed();
+    private boolean isMappingChanged(VersionMapping versionMapping, LoadedVersion loadedVersion) {
+        return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
     }
 
     @Override
@@ -270,7 +275,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private VersionMapping getVersionMapping(String refBookCode) {
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode);
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
 
         final String primaryField = versionMapping.getPrimaryField();
@@ -323,9 +328,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         return refBooks;
     }
 
-    private void mergeData(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings) {
+    private void mergeData(RefBook newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings) {
 
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(versionMapping.getCode(), newVersion.getLastVersion(), versionMapping.getVersion());
+        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(versionMapping.getCode(), newVersion.getLastVersion(), loadedVersion.getVersion());
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         if (diff.isStructureChanged()) {
 

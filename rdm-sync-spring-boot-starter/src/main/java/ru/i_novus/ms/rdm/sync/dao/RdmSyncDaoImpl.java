@@ -11,13 +11,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -69,47 +72,62 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<VersionMapping> getVersionMappings() {
 
-        final String sql = "SELECT id, code, version, publication_dt, \n" +
+        final String sql = "SELECT r.id, code, version, \n" +
                 "       sys_table, unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, update_dt \n" +
-                "  FROM rdm_sync.version";
+                "       mapping_last_updated, mapping_version, mapping_id  \n" +
+                "  FROM rdm_sync.refbook r\n" +
+                "  inner join rdm_sync.mapping m on m.id = r.mapping_id";
 
         return namedParameterJdbcTemplate.query(sql,
                 (rs, rowNum) -> new VersionMapping(
                         rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
-                        toLocalDateTime(rs, 4, null),
+                        rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
-                        rs.getString(7),
-                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN)
+                        toLocalDateTime(rs, 7, LocalDateTime.MIN),
+                        rs.getInt(8),
+                        rs.getInt(9)
                 )
         );
     }
 
     @Override
-    public VersionMapping getVersionMapping(String refbookCode) {
+    public LoadedVersion getLoadedVersion(String code) {
+        List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code", Map.of("code", code),
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), rs.getTimestamp("update_dt").toLocalDateTime())
+        );
 
-        final String sql = "SELECT id, code, version, publication_dt, \n" +
+        if(result.isEmpty()) {
+            return null;
+        }
+
+        return result.get(0);
+
+    }
+
+    @Override
+    public VersionMapping getVersionMapping(String refbookCode, String version) {
+        final String sql = "SELECT r.id, code, version, \n" +
                 "       sys_table, unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, update_dt \n" +
-                "  FROM rdm_sync.version \n" +
-                " WHERE code = :code";
+                "       mapping_last_updated, mapping_version, mapping_id  \n" +
+                "  FROM rdm_sync.refbook r\n" +
+                "  inner join rdm_sync.mapping m on m.id = r.mapping_id " +
+                "WHERE code = :code and version = :version ";
 
         List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("code", refbookCode),
+                Map.of("code", refbookCode, "version", version),
                 (rs, rowNum) -> new VersionMapping(
                         rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
-                        toLocalDateTime(rs, 4, null),
+                        rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
-                        rs.getString(7),
-                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN)
+                        toLocalDateTime(rs, 7, LocalDateTime.MIN),
+                        rs.getInt(8),
+                        rs.getInt(9)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -133,7 +151,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT sys_field, sys_data_type, rdm_field \n" +
                 "  FROM rdm_sync.field_mapping \n" +
-                " WHERE code = :code";
+                " WHERE mapping_id = (select mapping_id from rdm_sync.refbook where code = :code)";
 
         return namedParameterJdbcTemplate.query(sql,
             Map.of("code", refbookCode),
@@ -197,9 +215,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void updateVersionMapping(Integer id, String version, LocalDateTime publishDate) {
+    public void insertLoadedVersion(String code, String version, LocalDateTime publishDate) {
+        final String sql = "INSERT INTO rdm_sync.loaded_version(code, version, publication_dt, update_dt) \n" +
+                "   VALUES(:code, :version, :publishDate, :updateDate) ";
 
-        final String sql = "UPDATE rdm_sync.version \n" +
+        namedParameterJdbcTemplate.update(sql,
+                Map.of("version", version,
+                        "publishDate", publishDate,
+                        "updateDate", LocalDateTime.now(Clock.systemUTC()),
+                        "code", code)
+        );
+    }
+
+    @Override
+    public void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate) {
+
+        final String sql = "UPDATE rdm_sync.loaded_version \n" +
                 "   SET version = :version, \n" +
                 "       publication_dt = :publication_dt, \n" +
                 "       update_dt = :update_dt \n" +
@@ -372,37 +403,55 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
     }
 
+
+
     @Override
-    public void upsertVersionMapping(XmlMappingRefBook versionMapping) {
+    @Transactional
+    public void insertVersionMapping(XmlMappingRefBook mappingRefBook) {
+        final String insMappingSql = "insert into rdm_sync.mapping (\n" +
+                "    deleted_field,\n" +
+                "    mapping_version,\n" +
+                "    sys_table,\n" +
+                "    unique_sys_field)\n" +
+                "values (\n" +
+                "    :deleted_field,\n" +
+                "    :mapping_version,\n" +
+                "    :sys_table,\n" +
+                "    :unique_sys_field) RETURNING id";
 
-        final String sql = "INSERT INTO rdm_sync.version \n" +
-                "      (code, sys_table, unique_sys_field, deleted_field, mapping_version) \n" +
-                "VALUES(?, ?, ?, ?, ? ) \n" +
-                "ON CONFLICT (code) \n" +
-                "DO UPDATE \n" +
-                "   SET (sys_table, unique_sys_field, deleted_field, mapping_version) = \n" +
-                "       (?, ?, ?, ?)";
-
-        getJdbcTemplate().update(sql,
-                // insert:
-                versionMapping.getCode(),
-                versionMapping.getSysTable(), versionMapping.getUniqueSysField(),
-                versionMapping.getDeletedField(), versionMapping.getMappingVersion(),
-                // update:
-                versionMapping.getSysTable(), versionMapping.getUniqueSysField(),
-                versionMapping.getDeletedField(), versionMapping.getMappingVersion()
+        Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql,
+                Map.of("deleted_field", mappingRefBook.getDeletedField(),
+                        "mapping_version", mappingRefBook.getMappingVersion(),
+                        "sys_table", mappingRefBook.getSysTable(),
+                        "unique_sys_field", mappingRefBook.getUniqueSysField()),
+                Integer.class
         );
+
+        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id) values(:code, :version, :mapping_id)";
+        namedParameterJdbcTemplate.update(insRefSql,
+                Map.of("code", mappingRefBook.getCode(), "version", "CURRENT", "mapping_id", mappingId));
     }
 
     @Override
-    public void insertFieldMapping(String code, List<XmlMappingField> fieldMappings) {
+    public void updateVersionMapping(XmlMappingRefBook versionMapping) {
+        final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
+                " where id = (select mapping_id from rdm_sync.refbook where code = :code)";
+        namedParameterJdbcTemplate.update(sql,
+                Map.of("deleted_field", versionMapping.getDeletedField(),
+                        "mapping_version", versionMapping.getMappingVersion(),
+                        "sys_table", versionMapping.getSysTable(), "unique_sys_field",
+                        versionMapping.getUniqueSysField(), "code", versionMapping.getCode()));
+    }
 
-        final String sqlDelete = "DELETE FROM rdm_sync.field_mapping WHERE code = ?";
+    @Override
+    public void insertFieldMapping(Integer mappingId, List<XmlMappingField> fieldMappings) {
 
-        getJdbcTemplate().update(sqlDelete, code);
+        final String sqlDelete = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id = ?";
+
+        getJdbcTemplate().update(sqlDelete, mappingId);
 
         final String sqlInsert = "INSERT INTO rdm_sync.field_mapping \n" +
-                "      (code, sys_field, sys_data_type, rdm_field) \n" +
+                "      (mapping_id, sys_field, sys_data_type, rdm_field) \n" +
                 "VALUES(?, ?, ?, ?)";
 
         getJdbcTemplate().batchUpdate(sqlInsert,
@@ -410,7 +459,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
                     public void setValues(@Nonnull PreparedStatement ps, int i) throws SQLException {
 
-                        ps.setString(1, code);
+                        ps.setInt(1, mappingId);
                         ps.setString(2, fieldMappings.get(i).getSysField());
                         ps.setString(3, fieldMappings.get(i).getSysDataType());
                         ps.setString(4, fieldMappings.get(i).getRdmField());
@@ -426,7 +475,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public boolean lockRefBookForUpdate(String code, boolean blocking) {
 
-        String sql = "SELECT 1 FROM rdm_sync.version WHERE code = :code FOR UPDATE";
+        String sql = "SELECT 1 FROM rdm_sync.refbook WHERE code = :code FOR UPDATE";
         if (!blocking)
             sql += " NOWAIT";
         

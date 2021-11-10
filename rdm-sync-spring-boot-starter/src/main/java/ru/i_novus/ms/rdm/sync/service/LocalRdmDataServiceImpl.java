@@ -81,7 +81,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     private VersionMapping getVersionMappingOrThrowRefBookNotFound(String refBookCode) {
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode);
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
         if (versionMapping == null)
             throw new RdmException("RefBook with code '" + refBookCode + "' is not maintained in system.");
 

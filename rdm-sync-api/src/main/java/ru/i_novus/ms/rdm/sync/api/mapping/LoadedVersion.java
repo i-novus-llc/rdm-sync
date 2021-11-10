@@ -7,23 +7,16 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-/**
- * @author lgalimova
- * @since 21.02.2019
- */
 @Getter
 @Setter
 @AllArgsConstructor
 @EqualsAndHashCode
-public class VersionMapping {
+public class LoadedVersion {
 
     private Integer id;
     private String code;
     private String version;
-    private String table;
-    private String primaryField;
-    private String deletedField;
-    private LocalDateTime mappingLastUpdated;
-    private int mappingVersion;
-    private Integer mappingId;
+    private LocalDateTime publicationDate;
+    private LocalDateTime lastSync;
+
 }
