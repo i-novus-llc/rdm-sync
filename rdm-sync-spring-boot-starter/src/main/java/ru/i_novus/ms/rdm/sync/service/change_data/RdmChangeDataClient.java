@@ -75,7 +75,7 @@ public abstract class RdmChangeDataClient {
                                                     List<? extends T> addUpdate, List<? extends T> delete,
                                                     Function<? super T, Map<String, Object>> map) {
 
-        VersionMapping mapping = dao.getVersionMapping(refBookCode);
+        VersionMapping mapping = dao.getVersionMapping(refBookCode, "CURRENT");
         if (mapping == null || (addUpdate.isEmpty() && delete.isEmpty())) {
             return;
         }

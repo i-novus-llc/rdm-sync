@@ -43,7 +43,7 @@ class LocalTableAutoCreateService {
     @Transactional
     public void autoCreate(String refBookCode, String autoCreateSchema) {
 
-        if (dao.getVersionMapping(refBookCode) != null) {
+        if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
             return;
         }
@@ -83,8 +83,9 @@ class LocalTableAutoCreateService {
             fields.add(field);
         }
 
-        dao.upsertVersionMapping(mapping);
-        dao.insertFieldMapping(refBookCode, fields);
+
+        dao.insertVersionMapping(mapping);
+        dao.insertFieldMapping(dao.getVersionMapping(refBookCode, "CURRENT").getMappingId(), fields);
 
         logger.info(LOG_AUTOCREATE_FINISH, refBookCode);
     }

@@ -55,7 +55,7 @@ public abstract class RdmChangeDataRequestCallback {
 
     private <T extends Serializable> void casState(String refBookCode, List<? extends T> addUpdate, RdmSyncLocalRowState state) {
 
-        VersionMapping vm = dao.getVersionMapping(refBookCode);
+        VersionMapping vm = dao.getVersionMapping(refBookCode, "CURRENT");
         if (vm == null)
             return;
 
