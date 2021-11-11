@@ -1,38 +1,44 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 
-@JdbcTest
-@RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(locations = "/application-test.properties")
-class SyncSourceDaoImplTest {
+class SyncSourceDaoImplTest extends BaseDaoTest {
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
     @Configuration
     static class Config {
+
+        @Bean
+        public SyncSourceDaoImpl syncSourceDao() {
+            return new SyncSourceDaoImpl();
+        }
     }
 
     @Autowired
-    private NamedParameterJdbcTemplate jdbcTemplate;
+    SyncSourceDaoImpl syncSourceDao;
 
     @Test
     void testSave() {
-        SyncSourceDaoImpl syncSourceDao = new SyncSourceDaoImpl(jdbcTemplate);
-        SyncSource syncSource = new SyncSource("", "", "{}");
-        syncSourceDao.save(syncSource);
+
+        SyncSource actualSyncSource = new SyncSource("name", "CODE-1", "{}");
+        syncSourceDao.save(actualSyncSource);
+        SyncSource expectedSyncSource = syncSourceDao.findByCode("CODE-1");
+        Assertions.assertEquals(expectedSyncSource,actualSyncSource);
+
+        SyncSource actualSyncSourceOnConflict = new SyncSource("new-name", "CODE-1", "{new json}");
+        syncSourceDao.save(actualSyncSourceOnConflict);
+        SyncSource expectedSyncSourceOnConflict = syncSourceDao.findByCode("CODE-1");
+        Assertions.assertEquals(expectedSyncSourceOnConflict,actualSyncSourceOnConflict);
 
     }
 }

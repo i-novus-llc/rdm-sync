@@ -4,11 +4,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="202111101513-RDM-933" author="shgaripov">
+    <changeSet id="202111111702_RDM-933" author="shgaripov" dbms="postgresql">
         <sql splitStatements="false">
-            CREATE SCHEMA IF NOT EXISTS rdm_sync;
-
-            CREATE TABLE rdm_sync.source(id serial primary key, code varchar(50) not null, name text, init_values text);
+            CREATE TABLE rdm_sync.source(id serial primary key, code varchar(50) not null unique, name text, init_values text);
             COMMENT ON TABLE rdm_sync.source IS 'Таблица хранения НСИ-источников';
             COMMENT ON COLUMN rdm_sync.source.id IS 'Первичный ключ';
             COMMENT ON COLUMN rdm_sync.source.code IS 'Код НСИ-источника';

@@ -4,4 +4,6 @@ public interface SyncSourceDao {
 
     void save(SyncSource syncSource);
 
+    SyncSource findByCode(String code);
+
 }

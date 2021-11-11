@@ -140,11 +140,20 @@
             <scope>test</scope>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>io.zonky.test</groupId>-->
+<!--            <artifactId>embedded-postgres</artifactId>-->
+<!--            <version>1.3.1</version>-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/com.opentable.components/otj-pg-embedded -->
         <dependency>
-            <groupId>io.zonky.test</groupId>
-            <artifactId>embedded-postgres</artifactId>
-            <version>1.3.0</version>
+            <groupId>com.opentable.components</groupId>
+            <artifactId>otj-pg-embedded</artifactId>
+            <version>0.13.4</version>
+            <scope>test</scope>
         </dependency>
+
 
         <dependency>
             <groupId>org.postgresql</groupId>

@@ -40,4 +40,13 @@ public class SyncSource {
     public int hashCode() {
         return Objects.hash(name, code, initValues);
     }
+
+    @Override
+    public String toString() {
+        return "SyncSource{" +
+                "name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", initValues='" + initValues + '\'' +
+                '}';
+    }
 }
