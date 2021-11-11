@@ -133,6 +133,8 @@
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
                                 return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                            else if (typeof refBook == 'undefined' || refBook?.id == null)
+                                return null;
                             else
                                 return;
                         </set-value>
