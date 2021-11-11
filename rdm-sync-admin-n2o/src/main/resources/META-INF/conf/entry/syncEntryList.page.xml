@@ -14,7 +14,7 @@
         </filters>
 
         <toolbar place="topRight">
-            <button id="create" label="Создать" icon="fa fa-plus">
+            <button id="create" label="Создать" icon="fa fa-plus" model="filter">
                 <open-page page-id="syncEntry" page-name="${sync.entry.page.create.name}" upload="defaults"/>
             </button>
 
