@@ -67,6 +67,7 @@
                     </pre-filters>
 
                     <dependencies>
+                        <reset on="source" apply-on-init="false"/>
                         <enabling on="actionType,source">
                             actionType == 'create' &amp;&amp;
                             (typeof source != 'undefined' &amp;&amp; source?.id != null)
@@ -102,21 +103,6 @@
                     <!--</validations>-->
                 </input-select>
 
-                <output-text id="refBookName" no-label="true"
-                             label-class="w-50" enabled="false">
-                    <dependencies>
-                        <visibility on="refBook">
-                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
-                        </visibility>
-                        <set-value on="refBook">
-                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
-                                return refBook.name;
-                            else
-                                return null;
-                        </set-value>
-                    </dependencies>
-                </output-text>
-
                 <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" default-value="true" label-class="w-50">
                     <dependencies>
                         <enabling on="refBook">
@@ -127,23 +113,12 @@
 
                 <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" default-value="false" label-class="w-50">
                     <dependencies>
+                        <reset on="refBook" apply-on-init="false"/>
                         <enabling on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </enabling>
                     </dependencies>
                 </checkbox>
-
-                <!--<output-text id="lastVersion" label="Последняя версия"-->
-                <!--             label-class="w-50" enabled="false">-->
-                <!--    <dependencies>-->
-                <!--        <set-value on="refBook">-->
-                <!--            if (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) {-->
-                <!--                return refBook.versionId + ' | ' + refBook.version;-->
-                <!--            } else-->
-                <!--                return null;-->
-                <!--        </set-value>-->
-                <!--    </dependencies>-->
-                <!--</output-text>-->
 
                 <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
@@ -178,7 +153,7 @@
                             route="/mapping/edit">
                     <query-param name="sourceCode" value="{source.id}"/>
                     <query-param name="code" value="{refBook.id}"/>
-                    <query-param name="name" value="{refBookName}"/>
+                    <query-param name="name" value="{refBook.name}"/>
                     <query-param name="version" value="{startVersion.version}"/>
                     <query-param name="versioned" value="{versioned}"/>
                     <query-param name="autoUpdatable" value="{autoUpdatable}"/>
