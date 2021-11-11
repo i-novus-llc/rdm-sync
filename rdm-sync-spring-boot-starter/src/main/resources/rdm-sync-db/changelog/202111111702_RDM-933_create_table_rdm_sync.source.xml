@@ -4,7 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="202111111702_RDM-933" author="shgaripov" dbms="postgresql">
+    <changeSet id="202111111702_RDM-933_create_table_rdm_sync.source" author="shgaripov" dbms="postgresql">
         <sql splitStatements="false">
             CREATE TABLE rdm_sync.source(id serial primary key, code varchar(50) not null unique, name text, init_values text);
             COMMENT ON TABLE rdm_sync.source IS 'Таблица хранения НСИ-источников';
