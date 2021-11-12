@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
@@ -21,6 +22,9 @@ class RdmSyncInitializer {
 
     @Autowired
     private XmlMappingLoaderService mappingLoaderService;
+
+    @Autowired
+    private List<SourceLoaderService> sourceLoaderServiceList;
 
     @Autowired
     private RdmSyncDao dao;
@@ -46,6 +50,7 @@ class RdmSyncInitializer {
         mappingLoaderService.load();
         autoCreate();
         createInternalInfrastructure();
+        sourceLoaderServiceInit();
 
         if (rdmSyncConfigurer != null) {
             rdmSyncConfigurer.setupJobs();
@@ -69,6 +74,10 @@ class RdmSyncInitializer {
         for (VersionMapping versionMapping : versionMappings) {
             internalInfrastructureCreator.createInternalInfrastructure(versionMapping.getTable(), versionMapping.getCode(), versionMapping.getDeletedField(), autoCreateRefBookCodes);
         }
+    }
+
+    private void sourceLoaderServiceInit() {
+        sourceLoaderServiceList.forEach(SourceLoaderService::load);
     }
 
 }
