@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
-             name="${sync.entry.page.create.default.name}">
+             name="${sync.entry.page.default.name}">
     <form name="${sync.entry.page.form.name}" query-id="syncEntry" object-id="syncEntry">
 
         <pre-filters>
@@ -133,6 +133,8 @@
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
                                 return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                            else if (typeof refBook == 'undefined' || refBook?.id == null)
+                                return null;
                             else
                                 return;
                         </set-value>
@@ -142,11 +144,28 @@
                         </enabling>
                     </dependencies>
                 </input-select>
+
+                <output-text id="versionName" no-label="true"
+                             label-class="w-50" enabled="false">
+                    <dependencies>
+                        <visibility on="startVersion">
+                            (typeof startVersion != 'undefined' &amp;&amp; startVersion?.name != null)
+                        </visibility>
+                        <set-value on="startVersion">
+                            if (typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null)
+                                return startVersion.name;
+                            else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
+
             </set>
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}">
+            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}"
+                    enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
                 <show-modal page-id="syncMapping" page-name="${sync.entry.page.button.edit.mapping.page}"
                             upload="query"
                             modal-size="xl" scrollable="true"

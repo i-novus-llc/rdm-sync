@@ -21,7 +21,7 @@ public class SyncMappingField extends SyncField {
     /** Тип исходного поля (из источника). */
     private String originType;
 
-    /** Признак поля на присутствие. */
+    /** Присутствие поля. */
     private boolean isPresent;
 
     public SyncMappingField() {

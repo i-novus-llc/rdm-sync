@@ -113,6 +113,9 @@
         <field id="startVersion.version" domain="string">
             <select mapping="['version']"/>
         </field>
+        <field id="startVersion.name" domain="string">
+            <select mapping="['name']"/>
+        </field>
 
     </fields>
 </query>
