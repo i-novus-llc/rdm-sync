@@ -92,8 +92,8 @@
             <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
                     <col size="1" visible="{actionType != 'create'}">
-                        <output-text id="label.isPresent" no-label="true" no-label-block="true"
-                                     default-value="${sync.mapping.page.field.isPresent}"/>
+                        <button id="label.isPresent" label="${sync.mapping.page.field.isPresent}" enabled="false"
+                                description="${sync.mapping.page.field.hint.isPresent}" tooltip-position="top"/>
                     </col>
 
                     <col size="2">
