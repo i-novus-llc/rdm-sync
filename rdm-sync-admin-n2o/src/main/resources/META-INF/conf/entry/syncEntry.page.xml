@@ -144,6 +144,22 @@
                         </enabling>
                     </dependencies>
                 </input-select>
+
+                <output-text id="versionName" no-label="true"
+                             label-class="w-50" enabled="false">
+                    <dependencies>
+                        <visibility on="startVersion">
+                            (typeof startVersion != 'undefined' &amp;&amp; startVersion?.name != null)
+                        </visibility>
+                        <set-value on="startVersion">
+                            if (typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null)
+                                return startVersion.name;
+                            else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
+
             </set>
         </fields>
 
