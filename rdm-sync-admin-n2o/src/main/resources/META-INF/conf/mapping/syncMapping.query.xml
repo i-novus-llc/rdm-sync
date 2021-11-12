@@ -109,6 +109,10 @@
             </filters>
         </field>
 
+        <field id="startVersionName" domain="string">
+            <select mapping="['version']['name']"/>
+        </field>
+
         <field id="versioned" domain="boolean">
             <select mapping="['entry']['versioned']"/>
             <filters>
