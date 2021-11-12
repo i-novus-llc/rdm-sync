@@ -44,13 +44,6 @@
                 <output-text id="startVersionName" label="${sync.mapping.page.refbook.version.name}"
                              label-class="w-50" enabled="false"
                              visible="{startVersionName != null &amp;&amp; startVersionName != refBook.name}"/>
-                <!--<button id="copyStartVersionName" label="Копировать"-->
-                <!--        visible="{startVersionName != null &amp;&amp; startVersionName != refBook.name}">-->
-                <!--    <set-value target-field-id="refBook.name">-->
-                <!--        return startVersionName;-->
-                <!--    </set-value>-->
-                <!--</button>-->
-
                 <input-text id="refBook.name" label="${sync.mapping.page.refbook.name}"
                             label-class="w-50" required="true"/>
 
