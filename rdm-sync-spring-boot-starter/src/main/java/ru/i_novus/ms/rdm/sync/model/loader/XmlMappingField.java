@@ -1,11 +1,13 @@
 package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 @EqualsAndHashCode
+@ToString
 public class XmlMappingField {
 
     private String rdmField;

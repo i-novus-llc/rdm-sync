@@ -407,7 +407,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     @Transactional
-    public void insertVersionMapping(XmlMappingRefBook mappingRefBook) {
+    public Integer insertVersionMapping(XmlMappingRefBook mappingRefBook) {
         final String insMappingSql = "insert into rdm_sync.mapping (\n" +
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
@@ -430,6 +430,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id) values(:code, :version, :mapping_id)";
         namedParameterJdbcTemplate.update(insRefSql,
                 Map.of("code", mappingRefBook.getCode(), "version", "CURRENT", "mapping_id", mappingId));
+
+        return mappingId;
     }
 
     @Override

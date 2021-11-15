@@ -122,7 +122,7 @@ public interface RdmSyncDao {
 
     List<Log> getList(LocalDate date, String refbookCode);
 
-    void insertVersionMapping(XmlMappingRefBook versionMapping);
+    Integer insertVersionMapping(XmlMappingRefBook versionMapping);
 
     void updateVersionMapping(XmlMappingRefBook versionMapping);
 
