@@ -14,7 +14,7 @@ import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
-import ru.i_novus.ms.rdm.sync.service.persister.ActualDataPersisterService;
+import ru.i_novus.ms.rdm.sync.service.persister.NotVersionedPersisterService;
 import ru.i_novus.platform.datastorage.temporal.model.value.IntegerFieldValue;
 import ru.i_novus.platform.datastorage.temporal.model.value.StringFieldValue;
 
@@ -29,16 +29,16 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ActualDataPersisterServiceTest {
+public class NotVersionedPersisterServiceTest {
 
-    private ActualDataPersisterService persisterService;
+    private NotVersionedPersisterService persisterService;
 
     @Mock
     private RdmSyncDao dao;
 
     @Before
     public void setUp() throws Exception {
-        persisterService = new ActualDataPersisterService(dao, 100, new RdmMappingServiceImpl());
+        persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl());
     }
 
     /**
@@ -49,7 +49,7 @@ public class ActualDataPersisterServiceTest {
     public void testFirstTimeUpdate() {
 
         RefBook firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
         Page<Map<String, Object>> data = createFirstRdmData();
@@ -79,7 +79,7 @@ public class ActualDataPersisterServiceTest {
 
         RefBook firstVersion = createFirstRdmVersion();
         RefBook secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createSecondRdmData();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
@@ -105,7 +105,7 @@ public class ActualDataPersisterServiceTest {
 
         RefBook oldVersion = createSecondRdmVersion();
         RefBook newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
@@ -129,7 +129,7 @@ public class ActualDataPersisterServiceTest {
         RefBook firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
         when(dao.getFieldMappings(firstRdmVersion.getCode())).thenReturn(fieldMappings);
-        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), firstRdmVersion.getLastVersion(), testTable, "id", "is_deleted", LocalDateTime.now(), 2, null, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), firstRdmVersion.getLastVersion(), testTable, "id", "is_deleted", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(firstRdmVersion.getCode())))).thenReturn(data);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());

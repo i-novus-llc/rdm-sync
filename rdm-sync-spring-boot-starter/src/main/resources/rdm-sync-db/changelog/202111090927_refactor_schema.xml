@@ -130,8 +130,8 @@
         </preConditions>
         <sql splitStatements="false">
             ALTER TABLE rdm_sync.refbook ADD COLUMN type varchar;
-            COMMENT ON COLUMN rdm_sync.refbook.type IS 'Тип синхронизации. ACTUAL_DATA - актуальные данные, VERSIONED - версионная синхронизация';
-            UPDATE rdm_sync.refbook set type = 'ACTUAL_DATA';
+            COMMENT ON COLUMN rdm_sync.refbook.type IS 'Тип синхронизации. NOT_VERSIONED - неверсионная синхронизация, VERSIONED - версионная синхронизация';
+            UPDATE rdm_sync.refbook set type = 'NOT_VERSIONED';
             ALTER TABLE rdm_sync.refbook ALTER COLUMN type SET NOT NULL;
         </sql>
     </changeSet>

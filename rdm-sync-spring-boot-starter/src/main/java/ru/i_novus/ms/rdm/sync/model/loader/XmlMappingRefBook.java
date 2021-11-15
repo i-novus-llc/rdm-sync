@@ -84,7 +84,7 @@ public class XmlMappingRefBook {
     }
 
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, version, sysTable, uniqueSysField, deletedField, null, mappingVersion, null, SyncTypeEnum.ACTUAL_DATA);
+        return new VersionMapping(null, code, version, sysTable, uniqueSysField, deletedField, null, mappingVersion, null, SyncTypeEnum.NOT_VERSIONED);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {

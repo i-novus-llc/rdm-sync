@@ -14,7 +14,6 @@ import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +100,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
         String sysTable = String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase());
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {

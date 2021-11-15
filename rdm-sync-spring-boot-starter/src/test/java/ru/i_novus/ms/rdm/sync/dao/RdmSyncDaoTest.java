@@ -11,7 +11,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
@@ -157,7 +156,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test
     public void testSaveVersionMappingFromXml() {
         String version = "CURRENT";
-        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table", "id", "is_deleted", null, -1, null, SyncTypeEnum.ACTUAL_DATA);
+        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(versionMapping.getCode(), actual.getCode());
