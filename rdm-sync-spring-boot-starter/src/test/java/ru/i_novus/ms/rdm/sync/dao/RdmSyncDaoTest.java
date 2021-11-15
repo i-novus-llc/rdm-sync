@@ -155,34 +155,29 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     @Test
     public void testSaveVersionMappingFromXml() {
-        XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
-        xmlMappingRefBook.setCode("test");
-        xmlMappingRefBook.setDeletedField("is_deleted");
-        xmlMappingRefBook.setUniqueSysField("id");
-        xmlMappingRefBook.setSysTable("test_table");
-        xmlMappingRefBook.setMappingVersion(-1);
+        String version = "CURRENT";
+        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table", "id", "is_deleted", null, -1, null);
+        rdmSyncDao.insertVersionMapping(versionMapping);
+        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        Assert.assertEquals(versionMapping.getCode(), actual.getCode());
+        Assert.assertEquals(version, actual.getVersion());
+        assertEquals(versionMapping, actual);
 
-        rdmSyncDao.insertVersionMapping(xmlMappingRefBook);
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-        Assert.assertEquals(xmlMappingRefBook.getCode(), versionMapping.getCode());
-        Assert.assertEquals("CURRENT", versionMapping.getVersion());
-        assertEquals(xmlMappingRefBook, versionMapping);
-
-        xmlMappingRefBook.setDeletedField("is_deleted2");
-        xmlMappingRefBook.setSysTable("test_table2");
-        xmlMappingRefBook.setMappingVersion(1);
-        rdmSyncDao.updateVersionMapping(xmlMappingRefBook);
-        versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-        Assert.assertEquals("CURRENT", versionMapping.getVersion());
-        assertEquals(xmlMappingRefBook, versionMapping);
+        versionMapping.setDeletedField("is_deleted2");
+        versionMapping.setTable("test_table2");
+        versionMapping.setMappingVersion(1);
+        rdmSyncDao.updateVersionMapping(versionMapping);
+        actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        Assert.assertEquals(version, versionMapping.getVersion());
+        assertEquals(versionMapping, actual);
 
     }
 
-    private void assertEquals(XmlMappingRefBook xmlMappingRefBook, VersionMapping versionMapping) {
-        Assert.assertEquals(xmlMappingRefBook.getMappingVersion(), versionMapping.getMappingVersion());
-        Assert.assertEquals(xmlMappingRefBook.getDeletedField(), versionMapping.getDeletedField());
-        Assert.assertEquals(xmlMappingRefBook.getUniqueSysField(), versionMapping.getPrimaryField());
-        Assert.assertEquals(xmlMappingRefBook.getSysTable(), versionMapping.getTable());
+    private void assertEquals(VersionMapping expected, VersionMapping actual) {
+        Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
+        Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
+        Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
+        Assert.assertEquals(expected.getTable(), actual.getTable());
     }
 }
 

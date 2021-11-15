@@ -407,7 +407,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     @Transactional
-    public Integer insertVersionMapping(XmlMappingRefBook mappingRefBook) {
+    public Integer insertVersionMapping(VersionMapping versionMapping) {
         final String insMappingSql = "insert into rdm_sync.mapping (\n" +
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
@@ -420,33 +420,33 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    :unique_sys_field) RETURNING id";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql,
-                Map.of("deleted_field", mappingRefBook.getDeletedField(),
-                        "mapping_version", mappingRefBook.getMappingVersion(),
-                        "sys_table", mappingRefBook.getSysTable(),
-                        "unique_sys_field", mappingRefBook.getUniqueSysField()),
+                Map.of("deleted_field", versionMapping.getDeletedField(),
+                        "mapping_version", versionMapping.getMappingVersion(),
+                        "sys_table", versionMapping.getTable(),
+                        "unique_sys_field", versionMapping.getPrimaryField()),
                 Integer.class
         );
 
         final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id) values(:code, :version, :mapping_id)";
         namedParameterJdbcTemplate.update(insRefSql,
-                Map.of("code", mappingRefBook.getCode(), "version", "CURRENT", "mapping_id", mappingId));
+                Map.of("code", versionMapping.getCode(), "version", "CURRENT", "mapping_id", mappingId));
 
         return mappingId;
     }
 
     @Override
-    public void updateVersionMapping(XmlMappingRefBook versionMapping) {
+    public void updateVersionMapping(VersionMapping versionMapping) {
         final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
                 " where id = (select mapping_id from rdm_sync.refbook where code = :code)";
         namedParameterJdbcTemplate.update(sql,
                 Map.of("deleted_field", versionMapping.getDeletedField(),
                         "mapping_version", versionMapping.getMappingVersion(),
-                        "sys_table", versionMapping.getSysTable(), "unique_sys_field",
-                        versionMapping.getUniqueSysField(), "code", versionMapping.getCode()));
+                        "sys_table", versionMapping.getTable(), "unique_sys_field",
+                        versionMapping.getPrimaryField(), "code", versionMapping.getCode()));
     }
 
     @Override
-    public void insertFieldMapping(Integer mappingId, List<XmlMappingField> fieldMappings) {
+    public void insertFieldMapping(Integer mappingId, List<FieldMapping> fieldMappings) {
 
         final String sqlDelete = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id = ?";
 
