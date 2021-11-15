@@ -38,7 +38,7 @@ public class RdmSyncServiceUseCaseTest {
 
     private String baseUrl;
 
-    private final static int MAX_TIMEOUT = 10;
+    private static final int MAX_TIMEOUT = 10;
 
     @Before
     public void setUp() throws Exception {

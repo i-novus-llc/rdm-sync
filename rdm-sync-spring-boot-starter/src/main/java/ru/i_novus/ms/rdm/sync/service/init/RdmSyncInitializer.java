@@ -34,13 +34,7 @@ class RdmSyncInitializer {
     private RdmSyncConfigurer rdmSyncConfigurer;
 
     @Autowired
-    private LocalTableAutoCreateService localTableAutoCreateService;
-
-    @Autowired
-    private InternalInfrastructureCreator internalInfrastructureCreator;
-
-    @Value("${rdm_sync.auto_create.schema:rdm}")
-    private String autoCreateSchema;
+    private LocalRefBookCreatorLocator localRefBookCreatorLocator;
 
     @Value("#{${rdm_sync.auto_create.refbook_codes:}}")
     private Map<String,String> autoCreateRefBookCodes;
@@ -48,10 +42,10 @@ class RdmSyncInitializer {
     @PostConstruct
     public void start() {
 
+        sourceLoaderServiceInit();
         mappingLoaderService.load();
         autoCreate();
-        createInternalInfrastructure();
-        sourceLoaderServiceInit();
+
 
         if (rdmSyncConfigurer != null) {
             rdmSyncConfigurer.setupJobs();
@@ -65,15 +59,8 @@ class RdmSyncInitializer {
             return;
 
         for (String refBookCode : autoCreateRefBookCodes) {
-            localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
-        }
-    }
 
-    private void createInternalInfrastructure() {
-
-        List<VersionMapping> versionMappings = dao.getVersionMappings();
-        for (VersionMapping versionMapping : versionMappings) {
-            internalInfrastructureCreator.createInternalInfrastructure(versionMapping.getTable(), versionMapping.getCode(), versionMapping.getDeletedField(), autoCreateRefBookCodes);
+            localRefBookCreatorLocator.getLocalRefBookCreator(refBookCode).create(refBookCode, null);
         }
     }
 

@@ -1,20 +1,12 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
-import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -26,7 +18,10 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 @Sql({"/dao-test.sql"})
@@ -55,9 +50,6 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Test
     public void testBatchInsertAndUpdate() {
