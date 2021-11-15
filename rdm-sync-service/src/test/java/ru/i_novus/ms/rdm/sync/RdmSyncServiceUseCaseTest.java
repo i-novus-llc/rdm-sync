@@ -58,7 +58,7 @@ public class RdmSyncServiceUseCaseTest {
         ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<MAX_TIMEOUT && !"1".equals(rdmSyncDao.getVersionMapping("EK002", "CURRENT").getVersion()); i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1".equals(rdmSyncDao.getLoadedVersion("EK002").getVersion()); i++) {
             Thread.sleep(1000);
         }
         Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
@@ -69,7 +69,7 @@ public class RdmSyncServiceUseCaseTest {
         startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<MAX_TIMEOUT && !"2".equals(rdmSyncDao.getVersionMapping("EK002", "CURRENT").getVersion()); i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"2".equals(rdmSyncDao.getLoadedVersion("EK002").getVersion()); i++) {
             Thread.sleep(1000);
         }
         result = restTemplate.getForEntity(baseUrl + "/data/EK002?getDeleted=false", Map.class).getBody();
@@ -91,7 +91,7 @@ public class RdmSyncServiceUseCaseTest {
         ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<MAX_TIMEOUT && !"1.2".equals(rdmSyncDao.getVersionMapping("1.2.643.5.1.13.2.1.1.725", "CURRENT").getVersion()); i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1.2".equals(rdmSyncDao.getLoadedVersion("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
             Thread.sleep(1000);
         }
         Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/1.2.643.5.1.13.2.1.1.725?getDeleted=false", Map.class).getBody();
@@ -106,7 +106,7 @@ public class RdmSyncServiceUseCaseTest {
         startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
-        for (int i = 0; i<MAX_TIMEOUT && !"1.8".equals(rdmSyncDao.getVersionMapping("1.2.643.5.1.13.2.1.1.725", "CURRENT").getVersion()); i++) {
+        for (int i = 0; i<MAX_TIMEOUT && !"1.8".equals(rdmSyncDao.getLoadedVersion("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
             Thread.sleep(1000);
         }
         result = restTemplate.getForEntity(baseUrl + "/data/1.2.643.5.1.13.2.1.1.725?getDeleted=false", Map.class).getBody();
