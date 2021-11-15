@@ -11,7 +11,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -23,9 +22,8 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
@@ -74,7 +72,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT r.id, code, version, \n" +
                 "       sys_table, unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id  \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, type  \n" +
                 "  FROM rdm_sync.refbook r\n" +
                 "  inner join rdm_sync.mapping m on m.id = r.mapping_id";
 
@@ -88,7 +86,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(6),
                         toLocalDateTime(rs, 7, LocalDateTime.MIN),
                         rs.getInt(8),
-                        rs.getInt(9)
+                        rs.getInt(9),
+                        SyncTypeEnum.valueOf(rs.getString(10))
                 )
         );
     }
@@ -111,7 +110,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT r.id, code, version, \n" +
                 "       sys_table, unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id  \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, type  \n" +
                 "  FROM rdm_sync.refbook r\n" +
                 "  inner join rdm_sync.mapping m on m.id = r.mapping_id " +
                 "WHERE code = :code and version = :version ";
@@ -127,7 +126,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(6),
                         toLocalDateTime(rs, 7, LocalDateTime.MIN),
                         rs.getInt(8),
-                        rs.getInt(9)
+                        rs.getInt(9),
+                        SyncTypeEnum.valueOf(rs.getString(10))
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -427,9 +427,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Integer.class
         );
 
-        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id) values(:code, :version, :mapping_id)";
+        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id, type) values(:code, :version, :mapping_id, :type)";
         namedParameterJdbcTemplate.update(insRefSql,
-                Map.of("code", versionMapping.getCode(), "version", "CURRENT", "mapping_id", mappingId));
+                Map.of("code", versionMapping.getCode(), "version", "CURRENT", "mapping_id", mappingId, "type", versionMapping.getType().name()));
 
         return mappingId;
     }

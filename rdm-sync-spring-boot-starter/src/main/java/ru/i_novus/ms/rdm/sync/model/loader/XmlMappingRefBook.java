@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -83,7 +84,7 @@ public class XmlMappingRefBook {
     }
 
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, version, sysTable, uniqueSysField, deletedField, null, mappingVersion, null);
+        return new VersionMapping(null, code, version, sysTable, uniqueSysField, deletedField, null, mappingVersion, null, SyncTypeEnum.ACTUAL_DATA);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {

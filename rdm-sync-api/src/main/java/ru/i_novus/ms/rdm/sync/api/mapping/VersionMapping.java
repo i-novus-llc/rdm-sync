@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.time.LocalDateTime;
 
@@ -26,4 +27,5 @@ public class VersionMapping {
     private LocalDateTime mappingLastUpdated;
     private int mappingVersion;
     private Integer mappingId;
+    private SyncTypeEnum type;
 }
