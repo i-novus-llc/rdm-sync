@@ -41,12 +41,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
             return new RdmMappingServiceImpl();
         }
 
-        @Bean
-        public SyncSourceDao syncSourceDao() {return new SyncSourceDaoImpl();}
     }
-
-    @Autowired
-    private SyncSourceDao sourceDao;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
@@ -161,8 +156,6 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     @Test
     public void testSaveVersionMappingFromXml() {
-        SyncSource actualSyncSource1 = new SyncSource("name", "CODE-1", "{}");
-        sourceDao.save(actualSyncSource1);
 
         XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
         xmlMappingRefBook.setCode("test");
@@ -171,10 +164,6 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         xmlMappingRefBook.setSysTable("test_table");
         xmlMappingRefBook.setMappingVersion(-1);
         xmlMappingRefBook.setSource("CODE-1");
-
-        SyncSource actualSyncSource2 = new SyncSource("name", "CODE-2", "{}");
-        sourceDao.save(actualSyncSource2);
-
 
         rdmSyncDao.insertVersionMapping(xmlMappingRefBook);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");

@@ -53,7 +53,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
             return;
         }
         logger.info(LOG_AUTOCREATE_START, refBookCode);
-        XmlMappingRefBook mapping = createMapping(refBookCode);
+        XmlMappingRefBook mapping = createMapping(refBookCode, source);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
         if(mapping != null) {
@@ -80,7 +80,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private XmlMappingRefBook createMapping(String refBookCode) {
+    private XmlMappingRefBook createMapping(String refBookCode, String source) {
         RefBook lastPublished;
         try {
             lastPublished = rdmSyncService.getLastPublishedVersion(refBookCode);
@@ -103,6 +103,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         mapping.setDeletedField(isDeletedField);
         mapping.setUniqueSysField(uniqueSysField);
         mapping.setMappingVersion(-1);
+        mapping.setSource(source);
         Integer mappingId = dao.insertVersionMapping(mapping);
         List<XmlMappingField> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {

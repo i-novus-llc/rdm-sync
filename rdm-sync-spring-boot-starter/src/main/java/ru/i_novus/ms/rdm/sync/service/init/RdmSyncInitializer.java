@@ -58,9 +58,9 @@ class RdmSyncInitializer {
         if (autoCreateRefBookCodes == null)
             return;
 
-        for (String refBookCode : autoCreateRefBookCodes) {
+        for (Map.Entry<String, String> entry : autoCreateRefBookCodes.entrySet()) {
 
-            localRefBookCreatorLocator.getLocalRefBookCreator(refBookCode).create(refBookCode, null);
+            localRefBookCreatorLocator.getLocalRefBookCreator(entry.getKey()).create(entry.getKey(), entry.getValue());
         }
     }
 
