@@ -37,7 +37,7 @@ class RdmSyncInitializer {
     private LocalRefBookCreatorLocator localRefBookCreatorLocator;
 
     @Value("#{${rdm_sync.auto_create.refbook_codes:}}")
-    private Map<String,String> autoCreateRefBookCodes;
+    private Map<String, String> autoCreateRefBookCodes;
 
     @PostConstruct
     public void start() {
@@ -45,7 +45,6 @@ class RdmSyncInitializer {
         sourceLoaderServiceInit();
         mappingLoaderService.load();
         autoCreate();
-
 
         if (rdmSyncConfigurer != null) {
             rdmSyncConfigurer.setupJobs();
@@ -59,7 +58,6 @@ class RdmSyncInitializer {
             return;
 
         for (Map.Entry<String, String> entry : autoCreateRefBookCodes.entrySet()) {
-
             localRefBookCreatorLocator.getLocalRefBookCreator(entry.getKey()).create(entry.getKey(), entry.getValue());
         }
     }
@@ -67,5 +65,4 @@ class RdmSyncInitializer {
     private void sourceLoaderServiceInit() {
         sourceLoaderServiceList.forEach(SourceLoaderService::load);
     }
-
 }
