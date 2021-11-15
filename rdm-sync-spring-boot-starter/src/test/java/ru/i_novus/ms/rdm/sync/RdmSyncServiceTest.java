@@ -75,7 +75,7 @@ public class RdmSyncServiceTest {
     public void testFirstTimeUpdate() {
 
         RefBook firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "id", "is_deleted", null, -1, 1);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "1","id", "is_deleted", null, -1, 1);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
         Page<Map<String, Object>> data = createFirstRdmData();
@@ -111,7 +111,7 @@ public class RdmSyncServiceTest {
 
         RefBook firstVersion = createFirstRdmVersion();
         RefBook secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "1","id", "is_deleted", null, -1, 1);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createSecondRdmData();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
@@ -143,7 +143,7 @@ public class RdmSyncServiceTest {
 
         RefBook oldVersion = createSecondRdmVersion();
         RefBook newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "id", "is_deleted", null, -1, 1);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "1","id", "is_deleted", null, -1, 1);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
@@ -189,7 +189,7 @@ public class RdmSyncServiceTest {
         refBookStructure.setAttributesAndTypes(Map.of(primaryField, AttributeTypeEnum.INTEGER));
         refBookStructure.setPrimaries(List.of(primaryField));
         lastPublished.setStructure(refBookStructure);
-        VersionMapping vm = new VersionMapping(1, code, null, table, primaryField, deletedField, LocalDateTime.MIN, -1, 1);
+        VersionMapping vm = new VersionMapping(1, code, null, table, "1",primaryField, deletedField, LocalDateTime.MIN, -1, 1);
 
         List<FieldMapping> fm = new ArrayList<>(singletonList(new FieldMapping(primaryField, "varchar", primaryField)));
         Map<String, Object> row1version1 = new HashMap<>(Map.of(primaryField, "1"));

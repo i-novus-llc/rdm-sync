@@ -73,7 +73,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<VersionMapping> getVersionMappings() {
 
         final String sql = "SELECT r.id, code, version, \n" +
-                "       sys_table, unique_sys_field, deleted_field, \n" +
+                "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = 1), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id  \n" +
                 "  FROM rdm_sync.refbook r\n" +
                 "  inner join rdm_sync.mapping m on m.id = r.mapping_id";
@@ -86,9 +86,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
-                        toLocalDateTime(rs, 7, LocalDateTime.MIN),
-                        rs.getInt(8),
-                        rs.getInt(9)
+                        rs.getString(7),
+                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
+                        rs.getInt(9),
+                        rs.getInt(10)
                 )
         );
     }
@@ -99,7 +100,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), rs.getTimestamp("update_dt").toLocalDateTime())
         );
 
-        if(result.isEmpty()) {
+        if (result.isEmpty()) {
             return null;
         }
 
@@ -110,11 +111,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT r.id, code, version, \n" +
-                "       sys_table, unique_sys_field, deleted_field, \n" +
+                "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = source_id) ,unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id  \n" +
                 "  FROM rdm_sync.refbook r\n" +
                 "  inner join rdm_sync.mapping m on m.id = r.mapping_id " +
-                "WHERE code = :code and version = :version ";
+                "  WHERE code = :code and version = :version ";
 
         List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
                 Map.of("code", refbookCode, "version", version),
@@ -125,9 +126,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
-                        toLocalDateTime(rs, 7, LocalDateTime.MIN),
-                        rs.getInt(8),
-                        rs.getInt(9)
+                        rs.getString(7),
+                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
+                        rs.getInt(9),
+                        rs.getInt(10)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -154,12 +156,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 " WHERE mapping_id = (select mapping_id from rdm_sync.refbook where code = :code)";
 
         return namedParameterJdbcTemplate.query(sql,
-            Map.of("code", refbookCode),
-            (rs, rowNum) -> new FieldMapping(
-                rs.getString(1),
-                rs.getString(2),
-                rs.getString(3)
-            )
+                Map.of("code", refbookCode),
+                (rs, rowNum) -> new FieldMapping(
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3)
+                )
         );
     }
 
@@ -197,7 +199,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
         return namedParameterJdbcTemplate.query(sql,
-            (rs, rowNum) -> rdmMappingService.map(AttributeTypeEnum.STRING, dataType, rs.getObject(1))
+                (rs, rowNum) -> rdmMappingService.map(AttributeTypeEnum.STRING, dataType, rs.getObject(1))
         );
     }
 
@@ -311,7 +313,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             Map<String, Object> newMap = new HashMap<>(row);
             StringBuilder stringBuilder = new StringBuilder();
             row.entrySet().stream()
-                    .filter( entry -> entry.getValue() != null)
+                    .filter(entry -> entry.getValue() != null)
                     .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
             newMap.put("_hash", DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
             newMap.put("_versions", "{" + version + "}");
@@ -320,7 +322,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     private void insertRows(String schemaTable, List<Map<String, Object>> rows) {
-        if(CollectionUtils.isEmpty(rows)){
+        if (CollectionUtils.isEmpty(rows)) {
             return;
         }
 
@@ -338,7 +340,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private void executeUpdate(String table, List<Map<String, Object>> rows, String primaryField) {
 
-        if(CollectionUtils.isEmpty(rows)){
+        if (CollectionUtils.isEmpty(rows)) {
             return;
         }
 
@@ -366,7 +368,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "VALUES(?,?,?,?,?,?,?)";
 
         getJdbcTemplate().update(sql,
-            refbookCode, oldVersion, newVersion, status, new Date(), message, stack
+                refbookCode, oldVersion, newVersion, status, new Date(), message, stack
         );
     }
 
@@ -391,18 +393,17 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         final String sql = String.format(sqlFormat, refbookCode != null ? "   AND code = ?" : "");
 
         return getJdbcTemplate().query(sql,
-            (rs, rowNum) -> new Log(rs.getLong(1),
-                rs.getString(2),
-                rs.getString(3),
-                rs.getString(4),
-                rs.getString(5),
-                rs.getTimestamp(6).toLocalDateTime(),
-                rs.getString(7),
-                rs.getString(8)),
-            args.toArray()
+                (rs, rowNum) -> new Log(rs.getLong(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getTimestamp(6).toLocalDateTime(),
+                        rs.getString(7),
+                        rs.getString(8)),
+                args.toArray()
         );
     }
-
 
 
     @Override
@@ -427,13 +428,17 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Integer.class
         );
 
-        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id) values(:code, :version, :mapping_id)";
+        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id, source_id) values(:code, :version, :mapping_id, (SELECT id FROM rdm_sync.source WHERE code=:source_code))";
         namedParameterJdbcTemplate.update(insRefSql,
-                Map.of("code", mappingRefBook.getCode(), "version", "CURRENT", "mapping_id", mappingId));
+                Map.of("code", mappingRefBook.getCode(), "version", "CURRENT", "mapping_id", mappingId, "source_code", mappingRefBook.getSource()));
     }
 
     @Override
     public void updateVersionMapping(XmlMappingRefBook versionMapping) {
+        final String updateSourceIdSql = "update rdm_sync.refbook set source_id = (select id from rdm_sync.source where code=:source_code)" +
+                "where mapping_id = (select mapping_id from rdm_sync.refbook where code = :code)";
+        namedParameterJdbcTemplate.update(updateSourceIdSql, Map.of("source_code", versionMapping.getSource(), "code", versionMapping.getCode()));
+
         final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
                 " where id = (select mapping_id from rdm_sync.refbook where code = :code)";
         namedParameterJdbcTemplate.update(sql,
@@ -478,7 +483,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String sql = "SELECT 1 FROM rdm_sync.refbook WHERE code = :code FOR UPDATE";
         if (!blocking)
             sql += " NOWAIT";
-        
+
         try {
             namedParameterJdbcTemplate.queryForObject(sql, Map.of("code", code), Integer.class);
             logger.info("Lock for refbook {} successfully acquired.", code);
@@ -564,8 +569,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
                 localDataCriteria.getSchemaTable(), addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
         args.put("state", localDataCriteria.getState().name());
-        if(localDataCriteria.getDeleted() != null) {
-            if(Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
+        if (localDataCriteria.getDeleted() != null) {
+            if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
                 sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " = true";
             } else {
                 sql += " AND coalesce(" + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + ", false) = false";
@@ -582,7 +587,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         Map<String, Object> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE 1=1 %n",
                 escapeName(localDataCriteria.getSchemaTable()));
-        if(localDataCriteria.getVersion() != null) {
+        if (localDataCriteria.getVersion() != null) {
             sql = sql + " AND _versions like :versions";
             args.put("versions", "%{" + localDataCriteria.getVersion() + "}%");
         }
@@ -596,7 +601,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version) {
-        if(CollectionUtils.isEmpty(rows)){
+        if (CollectionUtils.isEmpty(rows)) {
             return;
         }
         StringJoiner columns = new StringJoiner(",");
@@ -610,20 +615,20 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
     }
 
-    private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues,  List<Map<String, Object>> rows) {
+    private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
 
         int maxColumns = 0;
         Map<String, Object> longestRow = rows.get(0);
         for (Map<String, Object> row : rows) {
-            if(row.keySet().size() > maxColumns) {
+            if (row.keySet().size() > maxColumns) {
                 maxColumns = row.keySet().size();
                 longestRow = row;
             }
         }
-        for(int i=0; i<rows.size(); i++) {
+        for (int i = 0; i < rows.size(); i++) {
             Map<String, Object> row = rows.get(i);
             Map<String, Object> batchValue = new HashMap<>();
-            for(String key : longestRow.keySet()) {
+            for (String key : longestRow.keySet()) {
                 // ставим null если нет ключей
                 batchValue.put(key, row.get(key));
 
@@ -631,7 +636,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             batchValues[i] = batchValue;
         }
 
-        for (String key: longestRow.keySet()) {
+        for (String key : longestRow.keySet()) {
             columns.add(escapeName(key));
             values.add(":" + key);
         }
@@ -661,9 +666,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 args, (rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                            Object val = rs.getObject(i);
-                            String key = rs.getMetaData().getColumnName(i);
-                            map.put(key, val);
+                        Object val = rs.getObject(i);
+                        String key = rs.getMetaData().getColumnName(i);
+                        map.put(key, val);
                     }
 
                     return map;
@@ -763,11 +768,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return schema + "_" + table + "_intrnl_lcl_rw_stt_updt";
     }
 
-    private String escapeName(String name){
-        if(name.contains(";")) {
+    private String escapeName(String name) {
+        if (name.contains(";")) {
             throw new IllegalArgumentException(name + "illegal value");
         }
-        if(name.contains(".")) {
+        if (name.contains(".")) {
             String firstPart = escapeName(name.split("\\.")[0]);
             String secondPart = escapeName(name.split("\\.")[1]);
             return firstPart + "." + secondPart;

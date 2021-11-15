@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.dao;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -42,7 +45,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         public RdmMappingService rdmMappingService(){
             return new RdmMappingServiceImpl();
         }
+
+        @Bean
+        public SyncSourceDao syncSourceDao() {return new SyncSourceDaoImpl();}
     }
+
+    @Autowired
+    private SyncSourceDao sourceDao;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
@@ -160,12 +169,20 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     @Test
     public void testSaveVersionMappingFromXml() {
+        SyncSource actualSyncSource1 = new SyncSource("name", "CODE-1", "{}");
+        sourceDao.save(actualSyncSource1);
+
         XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
         xmlMappingRefBook.setCode("test");
         xmlMappingRefBook.setDeletedField("is_deleted");
         xmlMappingRefBook.setUniqueSysField("id");
         xmlMappingRefBook.setSysTable("test_table");
         xmlMappingRefBook.setMappingVersion(-1);
+        xmlMappingRefBook.setSource("CODE-1");
+
+        SyncSource actualSyncSource2 = new SyncSource("name", "CODE-2", "{}");
+        sourceDao.save(actualSyncSource2);
+
 
         rdmSyncDao.insertVersionMapping(xmlMappingRefBook);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
@@ -176,6 +193,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         xmlMappingRefBook.setDeletedField("is_deleted2");
         xmlMappingRefBook.setSysTable("test_table2");
         xmlMappingRefBook.setMappingVersion(1);
+        xmlMappingRefBook.setSource("CODE-2");
         rdmSyncDao.updateVersionMapping(xmlMappingRefBook);
         versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
         Assert.assertEquals("CURRENT", versionMapping.getVersion());
@@ -188,6 +206,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Assert.assertEquals(xmlMappingRefBook.getDeletedField(), versionMapping.getDeletedField());
         Assert.assertEquals(xmlMappingRefBook.getUniqueSysField(), versionMapping.getPrimaryField());
         Assert.assertEquals(xmlMappingRefBook.getSysTable(), versionMapping.getTable());
+        Assert.assertEquals(xmlMappingRefBook.getSource(), versionMapping.getSource());
     }
 }
 

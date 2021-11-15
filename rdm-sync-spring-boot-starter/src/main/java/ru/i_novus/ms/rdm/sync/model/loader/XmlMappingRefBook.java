@@ -23,6 +23,8 @@ public class XmlMappingRefBook {
 
     private String sysTable;
 
+    private String source;
+
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
         return code;
@@ -78,6 +80,15 @@ public class XmlMappingRefBook {
 
     public void setSysTable(String sysTable) {
         this.sysTable = sysTable;
+    }
+
+    @XmlAttribute(name = "source", required = true)
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {

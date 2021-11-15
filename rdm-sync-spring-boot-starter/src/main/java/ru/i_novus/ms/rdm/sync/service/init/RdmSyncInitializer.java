@@ -13,6 +13,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @DependsOn("liquibaseRdm")
@@ -41,8 +42,8 @@ class RdmSyncInitializer {
     @Value("${rdm_sync.auto_create.schema:rdm}")
     private String autoCreateSchema;
 
-    @Value("${rdm_sync.auto_create.refbook_codes:}")
-    private List<String> autoCreateRefBookCodes;
+    @Value("#{${rdm_sync.auto_create.refbook_codes:}}")
+    private Map<String,String> autoCreateRefBookCodes;
 
     @PostConstruct
     public void start() {

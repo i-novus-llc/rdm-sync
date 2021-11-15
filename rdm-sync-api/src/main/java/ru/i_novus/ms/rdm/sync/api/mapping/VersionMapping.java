@@ -21,6 +21,7 @@ public class VersionMapping {
     private String code;
     private String version;
     private String table;
+    private String source;
     private String primaryField;
     private String deletedField;
     private LocalDateTime mappingLastUpdated;
