@@ -4,7 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="202111111753_RDM-933_add_column_in_rdm_sync.refbook" author="shgaripov" dbms="postgresql">
+    <changeSet id="202111151454_RDM-933_add_column_in_rdm_sync.refbook" author="shgaripov" dbms="postgresql">
         <sql splitStatements="false">
             ALTER TABLE rdm_sync.refbook ADD COLUMN source_id integer;
             ALTER TABLE rdm_sync.refbook ADD CONSTRAINT source_id_fk

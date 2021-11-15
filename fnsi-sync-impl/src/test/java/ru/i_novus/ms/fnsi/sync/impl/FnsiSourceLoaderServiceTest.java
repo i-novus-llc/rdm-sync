@@ -41,8 +41,8 @@ public class FnsiSourceLoaderServiceTest {
 
     @Test
     public void testLoad() {
-        SyncSource actual1 = new SyncSource("a", "RU_FNSI", "{\"userKey\":\"qwerty\", \"url\":\"http://fnsi.ru\"}");
-        SyncSource actual2 = new SyncSource("b", "WORLD_FNSI", "{\"userKey\":\"asd\", \"url\":\"http://fnsi.com\"}");
+        SyncSource actual1 = new SyncSource("a", "RU_FNSI", "{\"userKey\":\"qwerty\", \"url\":\"http://fnsi.ru\"}", "FnsiSourceLoaderService");
+        SyncSource actual2 = new SyncSource("b", "WORLD_FNSI", "{\"userKey\":\"asd\", \"url\":\"http://fnsi.com\"}", "FnsiSourceLoaderService");
         sourceLoaderService.load();
         verify(syncSourceDao, times(1)).save(eq(actual1));
         verify(syncSourceDao, times(1)).save(eq(actual2));

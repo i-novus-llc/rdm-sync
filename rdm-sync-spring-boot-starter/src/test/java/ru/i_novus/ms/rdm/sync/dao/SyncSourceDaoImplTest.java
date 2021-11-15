@@ -30,12 +30,12 @@ class SyncSourceDaoImplTest extends BaseDaoTest {
     @Test
     void testSave() {
 
-        SyncSource actualSyncSource = new SyncSource("name", "CODE-1", "{}");
+        SyncSource actualSyncSource = new SyncSource("name", "CODE-1", "{}", "service");
         syncSourceDao.save(actualSyncSource);
         SyncSource expectedSyncSource = syncSourceDao.findByCode("CODE-1");
         Assertions.assertEquals(expectedSyncSource,actualSyncSource);
 
-        SyncSource actualSyncSourceOnConflict = new SyncSource("new-name", "CODE-1", "{new json}");
+        SyncSource actualSyncSourceOnConflict = new SyncSource("new-name", "CODE-1", "{new json}", "anotherService");
         syncSourceDao.save(actualSyncSourceOnConflict);
         SyncSource expectedSyncSourceOnConflict = syncSourceDao.findByCode("CODE-1");
         Assertions.assertEquals(expectedSyncSourceOnConflict,actualSyncSourceOnConflict);

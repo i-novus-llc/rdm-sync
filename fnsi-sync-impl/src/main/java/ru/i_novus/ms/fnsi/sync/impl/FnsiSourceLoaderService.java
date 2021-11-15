@@ -7,6 +7,8 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 
+import java.util.Locale;
+
 public class FnsiSourceLoaderService implements SourceLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(FnsiSourceLoaderService.class);
@@ -31,7 +33,8 @@ public class FnsiSourceLoaderService implements SourceLoaderService {
                             fnsiSourcePropertyValue.getName(),
                             fnsiSourcePropertyValue.getCode(),
                             String.format("{\"userKey\":\"%s\", \"url\":\"%s\"}",
-                                    fnsiSourcePropertyValue.getUserKey(), fnsiSourcePropertyValue.getUrl())
+                                    fnsiSourcePropertyValue.getUserKey(), fnsiSourcePropertyValue.getUrl()),
+                            FnsiSyncSourceService.class.getSimpleName()
                     )));
         }
     }

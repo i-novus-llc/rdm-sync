@@ -21,10 +21,10 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
     public void save(SyncSource syncSource) {
         Map<String, Object> mapValues = toMapValues(syncSource);
         String sql = "INSERT INTO rdm_sync.source\n" +
-                "      (code, name, init_values)\n" +
-                "      VALUES(:code, :name, :init_values)\n" +
+                "      (code, name, init_values, service)\n" +
+                "      VALUES(:code, :name, :init_values, :service)\n" +
                 "      ON CONFLICT (code) DO UPDATE\n" +
-                "      SET (name, init_values) = (:name, :init_values);";
+                "      SET (name, init_values, service) = (:name, :init_values, :service);";
         namedParameterJdbcTemplate.update(sql, mapValues);
     }
 
@@ -33,7 +33,7 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
         SqlParameterSource parameter = new MapSqlParameterSource("code", code);
         return namedParameterJdbcTemplate.query("SELECT * FROM rdm_sync.source WHERE code IN (:code)",
                 parameter,
-                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"), rs.getString("init_values"))).get(0);
+                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"), rs.getString("init_values"), rs.getString("service"))).get(0);
     }
 
     private Map<String, Object> toMapValues(SyncSource syncSource) {
@@ -41,6 +41,7 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
         result.put("code", syncSource.getCode());
         result.put("name", syncSource.getName());
         result.put("init_values", syncSource.getInitValues());
+        result.put("service", syncSource.getService());
         return result;
     }
 
