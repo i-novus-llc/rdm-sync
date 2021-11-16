@@ -28,7 +28,7 @@ public class SyncSource {
         return initValues;
     }
 
-    public String getService() {
+    public String getFactoryName() {
         return service;
     }
 

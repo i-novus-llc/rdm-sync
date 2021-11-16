@@ -11,7 +11,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -138,7 +137,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public int getLastVersion(String refbookCode) {
 
-        final String sql = "SELECT mapping_version FROM rdm_sync.version WHERE code = :code";
+        final String sql = "SELECT version FROM rdm_sync.loaded_version WHERE code = :code";
 
         List<Integer> list = namedParameterJdbcTemplate.query(sql,
                 Map.of("code", refbookCode),

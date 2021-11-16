@@ -20,12 +20,6 @@ import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 @Configuration
 public class RdmSyncImplConfig {
 
-
-    @Bean
-    public RdmSyncSourceService rdmSyncSourceService(RefBookService refBookService, VersionRestService versionService, CompareService compareService) {
-        return new RdmSyncSourceService(refBookService, versionService, compareService);
-    }
-
     @Bean
     public SourceLoaderService rdmSourceLoaderService(
             @Value("${rdm.backend.path}") String url, @Qualifier("syncSourceDaoImpl") SyncSourceDao dao){

@@ -7,22 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.api.enumeration.RefBookSourceType;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.*;
-import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
+import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterServiceLocator;
 import ru.i_novus.ms.rdm.sync.util.RefBookReferenceSort;
 
@@ -33,7 +31,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +45,7 @@ import static java.util.stream.Collectors.toList;
  * @since 20.02.2019
  */
 
-@SuppressWarnings({"java:S3740","I-novus:MethodNameWordCountRule"})
+@SuppressWarnings({"java:S3740", "I-novus:MethodNameWordCountRule"})
 public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
@@ -72,9 +72,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             "Field '%s' was deleted in version with code '%s'. Update your mappings.";
 
     @Autowired
-    private Set<SyncSourceService> syncSourceServices;
-
-    @Autowired
     private RdmLoggingService loggingService;
 
     @Autowired
@@ -83,13 +80,16 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Autowired
     private PersisterServiceLocator persisterServiceLocator;
 
+    @Autowired
+    private SyncSourceService syncSourceService;
+
     private RdmSyncService self;
 
     private ExecutorService executorService;
 
     @PostConstruct
-    public void init(){
-         executorService = Executors.newFixedThreadPool(threadsCount);
+    public void init() {
+        executorService = Executors.newFixedThreadPool(threadsCount);
     }
 
     @Autowired
@@ -97,9 +97,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         this.self = self;
     }
 
-    public void setSyncSourceServices(Set<SyncSourceService> syncSourceServices) {
-        this.syncSourceServices = syncSourceServices;
-    }
 
     @PreDestroy
     public void destroy() {
@@ -112,19 +109,18 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     public void update() {
 
         List<VersionMapping> versionMappings = dao.getVersionMappings();
-        Map<RefBook, SyncSourceService> refBooks = getRefBooksWithSource(versionMappings);
+        List<RefBook> refBooks = getRefBooks(versionMappings);
         List<Callable<Void>> tasks = new ArrayList<>();
-        for (String code : RefBookReferenceSort.getSortedCodes(new ArrayList<>(refBooks.keySet()))) {
+        for (String code : RefBookReferenceSort.getSortedCodes(new ArrayList<>(refBooks))) {
             tasks.add(() -> {
-                RefBook refBook = refBooks.keySet().stream()
+                RefBook refBook = refBooks.stream()
                         .filter(refBookItem -> refBookItem.getCode().equals(code))
                         .findFirst().orElseThrow();
                 self.update(
                         refBook,
                         versionMappings.stream()
                                 .filter(versionMapping -> versionMapping.getCode().equals(code))
-                                .findFirst().orElseThrow(),
-                        refBooks.get(refBook)
+                                .findFirst().orElseThrow()
                 );
                 return null;
             });
@@ -141,14 +137,14 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
 
-        if (dao.getVersionMapping(refBookCode, "CURRENT" ) == null) {
+        if (dao.getVersionMapping(refBookCode, "CURRENT") == null) {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
 
-        Map.Entry<RefBook, SyncSourceService> newVersionWithSource;
+        RefBook newVersion;
         try {
-            newVersionWithSource = getLastPublishedVersionWithSource(refBookCode);
+            newVersion = getLastPublishedVersion(refBookCode);
 
         } catch (Exception e) {
             logger.error(String.format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, refBookCode), e);
@@ -158,10 +154,10 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         VersionMapping versionMapping = getVersionMapping(refBookCode);
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookCode);
         try {
-            if (loadedVersion == null || isNewVersionPublished(newVersionWithSource.getKey(), loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
+            if (loadedVersion == null || isNewVersionPublished(newVersion, loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
 
-                self.update(newVersionWithSource.getKey(), versionMapping, newVersionWithSource.getValue());
-                loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersionWithSource.getKey().getLastVersion());
+                self.update(newVersion, versionMapping);
+                loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersion.getLastVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refBookCode);
@@ -169,14 +165,14 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         } catch (Exception e) {
             logger.error(String.format(LOG_ERROR_WHILE_UPDATING_NEW_VERSION, refBookCode), e);
 
-            loggingService.logError(refBookCode, versionMapping.getVersion(), newVersionWithSource.getKey().getLastVersion(),
+            loggingService.logError(refBookCode, versionMapping.getVersion(), newVersion.getLastVersion(),
                     e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
     }
 
     @Override
     @Transactional
-    public void update(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
+    public void update(RefBook newVersion, VersionMapping versionMapping) {
 
         logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
@@ -200,17 +196,16 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 //              Необходимо полностью залить свежую версию.
                 persisterService.repeatVersion(newVersion, versionMapping, syncSourceService);
             }
-            if(loadedVersion != null) {
+            if (loadedVersion != null) {
                 //обновляем версию в таблице версий клиента
                 dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
             } else {
-                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getLastVersion(),  newVersion.getLastPublishDate());
+                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
             }
             logger.info("{} sync finished", newVersion.getCode());
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
-        }
-        finally {
+        } finally {
             dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         }
     }
@@ -219,7 +214,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     public List<Log> getLog(LogCriteria criteria) {
         return loggingService.getList(criteria.getDate(), criteria.getRefbookCode());
     }
-
 
 
     private boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
@@ -267,7 +261,18 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                 throw new RdmException(e); // Не выбросится
             }
         };
-        return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"") .entity(stream).build();
+        return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();
+    }
+
+    @Override
+    public RefBook getLastPublishedVersion(String refBookCode) {
+        RefBook refBook = syncSourceService.getRefBook(refBookCode);
+        if (refBook == null)
+            throw new IllegalArgumentException(String.format(REFBOOK_WITH_CODE_NOT_FOUND, refBookCode));
+
+        if (!refBook.getStructure().hasPrimary())
+            throw new IllegalStateException(String.format(NO_PRIMARY_KEY_FOUND, refBookCode));
+        return refBook;
     }
 
     private VersionMapping getVersionMapping(String refBookCode) {
@@ -282,41 +287,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         return versionMapping;
     }
 
-    public RefBook getLastPublishedVersion(String refBookCode) {
-        return getLastPublishedVersionWithSource(refBookCode).getKey();
-    }
-
-    private Map.Entry<RefBook, SyncSourceService> getLastPublishedVersionWithSource(String refBookCode) {
-
-        RefBookCriteria refBookCriteria = new RefBookCriteria();
-        refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
-        refBookCriteria.setCodeExact(refBookCode);
-        RefBook refBook = null;
-        SyncSourceService resultedSyncSourceService = null;
-        for (SyncSourceService syncSourceService : syncSourceServices) {
-            refBook = syncSourceService.getRefBook(refBookCode);
-            if(refBook != null) {
-                resultedSyncSourceService = syncSourceService;
-                break;
-            }
-        }
-
-        if (refBook == null)
-            throw new IllegalArgumentException(String.format(REFBOOK_WITH_CODE_NOT_FOUND, refBookCode));
-
-        if (!refBook.getStructure().hasPrimary())
-            throw new IllegalStateException(String.format(NO_PRIMARY_KEY_FOUND, refBookCode));
-
-        return Map.entry(refBook, resultedSyncSourceService);
-    }
-
-    private Map<RefBook, SyncSourceService> getRefBooksWithSource(List<VersionMapping> versionMappings) {
-
-        Map<RefBook, SyncSourceService> refBooks = new HashMap<>();
+    private List<RefBook> getRefBooks(List<VersionMapping> versionMappings) {
+        List<RefBook> refBooks = new ArrayList<>();
         for (VersionMapping versionMapping : versionMappings) {
             try {
-                Map.Entry<RefBook, SyncSourceService> lastPublishedVersionWithSource = getLastPublishedVersionWithSource(versionMapping.getCode());
-                refBooks.put(lastPublishedVersionWithSource.getKey(), lastPublishedVersionWithSource.getValue());
+                RefBook lastPublishedVersion = getLastPublishedVersion(versionMapping.getCode());
+                refBooks.add(lastPublishedVersion);
             } catch (RuntimeException ex) {
                 logger.error(String.format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, versionMapping.getCode()), ex);
                 loggingService.logError(versionMapping.getCode(), null, null, ex.getMessage(), ExceptionUtils.getStackTrace(ex));

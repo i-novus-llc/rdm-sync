@@ -41,7 +41,7 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
         result.put("code", syncSource.getCode());
         result.put("name", syncSource.getName());
         result.put("init_values", syncSource.getInitValues());
-        result.put("service", syncSource.getService());
+        result.put("service", syncSource.getFactoryName());
         return result;
     }
 

@@ -117,6 +117,8 @@ public class FnsiSyncSourceService implements SyncSourceService {
         return VersionsDiff.dataChangedInstance(new PageImpl<>(rowDiffList));
     }
 
+
+
     private VersionsDiff getErrorDiff(JsonNode jsonNode) {
         if("03x0002".equals(jsonNode.get("resultCode").asText().trim())){
             return VersionsDiff.dataChangedInstance(Page.empty());
