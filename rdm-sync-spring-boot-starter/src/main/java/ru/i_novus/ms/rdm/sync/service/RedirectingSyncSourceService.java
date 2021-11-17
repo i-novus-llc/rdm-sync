@@ -24,7 +24,7 @@ public class RedirectingSyncSourceService implements SyncSourceService {
 
     private final RdmSyncDao syncDao;
 
-    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
+    private final Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
     @Autowired
     public RedirectingSyncSourceService(SyncSourceDao syncSourceDao, RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet) {
@@ -57,6 +57,6 @@ public class RedirectingSyncSourceService implements SyncSourceService {
 
     private SyncSource getSource(String refBookCode) {
         VersionMapping versionMapping = syncDao.getVersionMapping(refBookCode, "CURRENT");
-        return syncSourceDao.findByCode(versionMapping.getCode());
+        return syncSourceDao.findByCode(versionMapping.getSource());
     }
 }

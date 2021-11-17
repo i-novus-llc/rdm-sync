@@ -87,7 +87,7 @@ public class  RdmSyncSourceService implements SyncSourceService {
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
         return PageMapper.map(
-                versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
+                    versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
                 refBookRowValue -> {
                     Map<String, Object> mapValue = new LinkedHashMap<>();
                     refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
