@@ -5,14 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
             return;
         }
         logger.info(LOG_AUTOCREATE_START, refBookCode);
-        VersionMapping mapping = createMapping(refBookCode);
+        VersionMapping mapping = createMapping(refBookCode, source);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
         if(mapping != null) {
@@ -80,7 +81,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private VersionMapping createMapping(String refBookCode) {
+    private VersionMapping createMapping(String refBookCode, String source) {
         RefBook lastPublished;
         try {
             lastPublished = rdmSyncService.getLastPublishedVersion(refBookCode);
@@ -99,7 +100,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
         String sysTable = String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase());
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, source, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {

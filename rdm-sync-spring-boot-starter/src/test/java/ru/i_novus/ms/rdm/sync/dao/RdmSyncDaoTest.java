@@ -156,7 +156,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test
     public void testSaveVersionMappingFromXml() {
         String version = "CURRENT";
-        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table","", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(versionMapping.getCode(), actual.getCode());
