@@ -1,26 +1,29 @@
 package ru.i_novus.ms.rdm.sync.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.web.client.RestTemplate;
+import ru.i_novus.ms.rdm.api.rest.VersionRestService;
+import ru.i_novus.ms.rdm.api.service.CompareService;
+import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 
 public class RdmSyncSourceServiceFactory implements SyncSourceServiceFactory {
 
-    private final RestTemplate restTemplate;
+    private final RefBookService refBookService;
 
-    private final ObjectMapper mapper;
+    private final VersionRestService versionService;
 
-    public RdmSyncSourceServiceFactory(RestTemplate restTemplate, ObjectMapper mapper) {
-        this.restTemplate = restTemplate;
-        this.mapper = new ObjectMapper();
+    private final CompareService compareService;
+
+    public RdmSyncSourceServiceFactory(RefBookService refBookService, VersionRestService versionService, CompareService compareService) {
+        this.refBookService = refBookService;
+        this.versionService = versionService;
+        this.compareService = compareService;
     }
 
     @Override
     public SyncSourceService createService(SyncSource source) {
-        //TODO
-        return null;
+        return new RdmSyncSourceService(refBookService, versionService, compareService);
     }
 
     @Override

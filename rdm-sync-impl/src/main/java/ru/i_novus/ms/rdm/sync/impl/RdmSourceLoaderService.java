@@ -20,7 +20,7 @@ public class RdmSourceLoaderService implements SourceLoaderService {
 
     @Override
     public void load() {
-        dao.save(new SyncSource("", "RDM", url, RdmSyncSourceService.class.getSimpleName()));
+        dao.save(new SyncSource("", "RDM", url, RdmSyncSourceServiceFactory.class.getSimpleName()));
     }
 
 }

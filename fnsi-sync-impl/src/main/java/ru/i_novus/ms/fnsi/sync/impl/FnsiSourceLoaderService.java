@@ -32,7 +32,7 @@ public class FnsiSourceLoaderService implements SourceLoaderService {
                             fnsiSourcePropertyValue.getCode(),
                             String.format("{\"userKey\":\"%s\", \"url\":\"%s\"}",
                                     fnsiSourcePropertyValue.getUserKey(), fnsiSourcePropertyValue.getUrl()),
-                            FnsiSyncSourceService.class.getSimpleName()
+                            FnsiSyncSourceServiceFactory.class.getSimpleName()
                     )));
         }
     }

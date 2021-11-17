@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
@@ -25,6 +26,7 @@ public class RedirectingSyncSourceService implements SyncSourceService {
 
     private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
+    @Autowired
     public RedirectingSyncSourceService(SyncSourceDao syncSourceDao, RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet) {
         this.syncSourceDao = syncSourceDao;
         this.syncDao = syncDao;

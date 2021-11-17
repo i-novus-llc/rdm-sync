@@ -16,7 +16,6 @@ public class FnsiConfig {
         return new FnsiSyncSourceServiceFactory(restTemplate);
     }
 
-
     @Bean
     public SourceLoaderService fnsiSourceLoaderService(FnsiSourceProperty property, @Qualifier("syncSourceDaoImpl") SyncSourceDao dao){
         return new FnsiSourceLoaderService(property, dao);
