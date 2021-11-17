@@ -122,4 +122,18 @@
         </sql>
     </changeSet>
 
+    <changeSet id="202111090927_refactor_schema.6.0" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="rdm_sync.refbook" columnName="type"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.refbook ADD COLUMN type varchar;
+            COMMENT ON COLUMN rdm_sync.refbook.type IS 'Тип синхронизации. NOT_VERSIONED - неверсионная синхронизация, VERSIONED - версионная синхронизация';
+            UPDATE rdm_sync.refbook set type = 'NOT_VERSIONED';
+            ALTER TABLE rdm_sync.refbook ALTER COLUMN type SET NOT NULL;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

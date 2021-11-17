@@ -27,9 +27,9 @@ import static ru.i_novus.ms.rdm.sync.api.model.RowDiffStatusEnum.INSERTED;
  * Хранит данные как актуальные и неактуальные, версионность отсутствует
  */
 @Service
-public class ActualDataPersisterService implements PersisterService {
+public class NotVersionedPersisterService implements PersisterService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ActualDataPersisterService.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotVersionedPersisterService.class);
 
     private final RdmSyncDao dao;
 
@@ -37,7 +37,7 @@ public class ActualDataPersisterService implements PersisterService {
 
     private final RdmMappingService mappingService;
 
-    public ActualDataPersisterService(RdmSyncDao dao, @Value("${rdm.sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
+    public NotVersionedPersisterService(RdmSyncDao dao, @Value("${rdm.sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
         this.maxSize = maxSize;
         this.dao = dao;
         this.mappingService = mappingService;

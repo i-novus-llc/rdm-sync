@@ -10,7 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
@@ -40,7 +40,6 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         public RdmMappingService rdmMappingService(){
             return new RdmMappingServiceImpl();
         }
-
     }
 
     @Autowired
@@ -156,38 +155,30 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     @Test
     public void testSaveVersionMappingFromXml() {
+        String version = "CURRENT";
+        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        rdmSyncDao.insertVersionMapping(versionMapping);
+        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        Assert.assertEquals(versionMapping.getCode(), actual.getCode());
+        Assert.assertEquals(version, actual.getVersion());
+        assertEquals(versionMapping, actual);
 
-        XmlMappingRefBook xmlMappingRefBook = new XmlMappingRefBook();
-        xmlMappingRefBook.setCode("test");
-        xmlMappingRefBook.setDeletedField("is_deleted");
-        xmlMappingRefBook.setUniqueSysField("id");
-        xmlMappingRefBook.setSysTable("test_table");
-        xmlMappingRefBook.setMappingVersion(-1);
-        xmlMappingRefBook.setSource("CODE-1");
-
-        rdmSyncDao.insertVersionMapping(xmlMappingRefBook);
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-        Assert.assertEquals(xmlMappingRefBook.getCode(), versionMapping.getCode());
-        Assert.assertEquals("CURRENT", versionMapping.getVersion());
-        assertEquals(xmlMappingRefBook, versionMapping);
-
-        xmlMappingRefBook.setDeletedField("is_deleted2");
-        xmlMappingRefBook.setSysTable("test_table2");
-        xmlMappingRefBook.setMappingVersion(1);
-        xmlMappingRefBook.setSource("CODE-2");
-        rdmSyncDao.updateVersionMapping(xmlMappingRefBook);
-        versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-        Assert.assertEquals("CURRENT", versionMapping.getVersion());
-        assertEquals(xmlMappingRefBook, versionMapping);
+        versionMapping.setDeletedField("is_deleted2");
+        versionMapping.setTable("test_table2");
+        versionMapping.setMappingVersion(1);
+        rdmSyncDao.updateVersionMapping(versionMapping);
+        actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        Assert.assertEquals(version, versionMapping.getVersion());
+        assertEquals(versionMapping, actual);
 
     }
 
-    private void assertEquals(XmlMappingRefBook xmlMappingRefBook, VersionMapping versionMapping) {
-        Assert.assertEquals(xmlMappingRefBook.getMappingVersion(), versionMapping.getMappingVersion());
-        Assert.assertEquals(xmlMappingRefBook.getDeletedField(), versionMapping.getDeletedField());
-        Assert.assertEquals(xmlMappingRefBook.getUniqueSysField(), versionMapping.getPrimaryField());
-        Assert.assertEquals(xmlMappingRefBook.getSysTable(), versionMapping.getTable());
-        Assert.assertEquals(xmlMappingRefBook.getSource(), versionMapping.getSource());
+    private void assertEquals(VersionMapping expected, VersionMapping actual) {
+        Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
+        Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
+        Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
+        Assert.assertEquals(expected.getTable(), actual.getTable());
+        Assert.assertEquals(expected.getType(), actual.getType());
     }
 }
 

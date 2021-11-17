@@ -53,7 +53,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
             return;
         }
         logger.info(LOG_AUTOCREATE_START, refBookCode);
-        XmlMappingRefBook mapping = createMapping(refBookCode, source);
+        VersionMapping mapping = createMapping(refBookCode);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
         if(mapping != null) {
@@ -61,8 +61,8 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         }
     }
 
-    private void createTable(String refBookCode, XmlMappingRefBook mapping) {
-        String[] split = mapping.getSysTable().split("\\.");
+    private void createTable(String refBookCode, VersionMapping mapping) {
+        String[] split = mapping.getTable().split("\\.");
         String schema = split[0];
         String table = split[1];
 
@@ -80,7 +80,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private XmlMappingRefBook createMapping(String refBookCode, String source) {
+    private VersionMapping createMapping(String refBookCode) {
         RefBook lastPublished;
         try {
             lastPublished = rdmSyncService.getLastPublishedVersion(refBookCode);
@@ -97,24 +97,16 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         }
         String uniqueSysField = structure.getPrimaries().get(0);
 
-        XmlMappingRefBook mapping = new XmlMappingRefBook();
-        mapping.setCode(refBookCode);
-        mapping.setSysTable(String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase()));
-        mapping.setDeletedField(isDeletedField);
-        mapping.setUniqueSysField(uniqueSysField);
-        mapping.setMappingVersion(-1);
-        mapping.setSource(source);
-        Integer mappingId = dao.insertVersionMapping(mapping);
-        List<XmlMappingField> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
+        String sysTable = String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase());
+
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        Integer mappingId = dao.insertVersionMapping(versionMapping);
+        List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
-            XmlMappingField field = new XmlMappingField();
-            field.setRdmField(attr.getKey());
-            field.setSysField(attr.getKey());
-            field.setSysDataType(DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0));
-            fields.add(field);
+            fields.add(new FieldMapping(attr.getKey(), DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0), attr.getKey()));
         }
 
         dao.insertFieldMapping(mappingId, fields);
-        return mapping;
+        return versionMapping;
     }
 }

@@ -38,10 +38,10 @@ public class RdmSyncServiceUseCaseTest {
 
     private String baseUrl;
 
-    private static final int MAX_TIMEOUT = 10;
+    private static final int MAX_TIMEOUT = 30;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         baseUrl = "http://localhost:" + port + "/api/rdm";
     }
 
