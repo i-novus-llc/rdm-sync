@@ -414,14 +414,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
                 "    sys_table,\n" +
-                "    unique_sys_field,\n" +
-                "    source_id)\n" +
+                "    unique_sys_field)\n" +
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
                 "    :sys_table,\n" +
-                "    :unique_sys_field," +
-                "    :source_id) RETURNING id";
+                "    :unique_sys_field) RETURNING id";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql,
                 Map.of("deleted_field", versionMapping.getDeletedField(),

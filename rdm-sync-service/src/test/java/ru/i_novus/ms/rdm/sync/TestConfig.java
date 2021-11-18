@@ -7,7 +7,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +23,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.i_novus.ms.fnsi.sync.impl.FnsiSourceProperty;
 import ru.i_novus.ms.rdm.api.model.compare.CompareDataCriteria;
 import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
 import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
@@ -56,14 +56,17 @@ import static org.mockito.Mockito.when;
 @TestConfiguration
 public class TestConfig {
 
-    @Value("${rdm_sync.fnsi.url:empty}")
-    String fnsiUrl;
+    private final FnsiSourceProperty property;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
+
+    public TestConfig(FnsiSourceProperty property) {
+        this.property = property;
+    }
 
     @PostConstruct
     public void  init() {
@@ -185,7 +188,7 @@ public class TestConfig {
 
     private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, ClassPathResource body) throws URISyntaxException {
         ResponseActions responseActions = mockServer.expect(ExpectedCount.manyTimes(),
-                MockRestRequestMatchers.requestTo(Matchers.containsString(fnsiUrl + methodUrl)))
+                MockRestRequestMatchers.requestTo(Matchers.containsString(property.getValues().get(0).getUrl() + methodUrl)))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
                 .andExpect(MockRestRequestMatchers.queryParam("userKey","test"));
         for(Map.Entry<String, String> entry : params.entrySet()){

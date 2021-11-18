@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
@@ -12,12 +14,15 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
@@ -36,13 +41,16 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
     private final RdmSyncDao dao;
 
-    private final RdmSyncService rdmSyncService;
+    private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
+
+    private final SyncSourceDao syncSourceDao;
 
     private final String schema;
 
-    public NotVersionedLocalRefBookCreator(RdmSyncDao dao, RdmSyncService rdmSyncService, @Value("${rdm_sync.auto_create.schema:rdm}") String schema) {
+    public NotVersionedLocalRefBookCreator(RdmSyncDao dao, RdmSyncService rdmSyncService, Set<SyncSourceServiceFactory> syncSourceServiceFactories, SyncSourceDao syncSourceDao, @Value("${rdm_sync.auto_create.schema:rdm}") String schema) {
         this.dao = dao;
-        this.rdmSyncService = rdmSyncService;
+        this.syncSourceServiceFactories = syncSourceServiceFactories;
+        this.syncSourceDao = syncSourceDao;
         this.schema = schema == null ? "rdm" : schema;
     }
 
@@ -81,10 +89,11 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private VersionMapping createMapping(String refBookCode, String source) {
+    private VersionMapping createMapping(String refBookCode, String sourceCode) {
         RefBook lastPublished;
         try {
-            lastPublished = rdmSyncService.getLastPublishedVersion(refBookCode);
+            SyncSource source = syncSourceDao.findByCode(sourceCode);
+            lastPublished = getSyncSourceService(source).getRefBook(refBookCode);
 
         } catch (Exception e) {
             logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
@@ -100,7 +109,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
         String sysTable = String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase());
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, source, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
@@ -109,5 +118,9 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
         dao.insertFieldMapping(mappingId, fields);
         return versionMapping;
+    }
+
+    private SyncSourceService getSyncSourceService(SyncSource source) {
+       return syncSourceServiceFactories.stream().filter(factory -> factory.isSatisfied(source)).findAny().orElse(null).createService(source);
     }
 }
