@@ -14,7 +14,6 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
+public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     private static final String LOG_AUTOCREATE_SKIP =
             "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
@@ -41,17 +40,10 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
     private final RdmSyncDao dao;
 
-    private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
-    private final SyncSourceDao syncSourceDao;
-
-    private final String schema;
-
-    public NotVersionedLocalRefBookCreator(RdmSyncDao dao, RdmSyncService rdmSyncService, Set<SyncSourceServiceFactory> syncSourceServiceFactories, SyncSourceDao syncSourceDao, @Value("${rdm_sync.auto_create.schema:rdm}") String schema) {
+    public NotVersionedLocalRefBookCreator(@Value("${rdm_sync.auto_create.schema:rdm}") String schema, RdmSyncDao dao, SyncSourceDao syncSourceDao, Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+        super(schema, syncSourceDao, syncSourceServiceFactories);
         this.dao = dao;
-        this.syncSourceServiceFactories = syncSourceServiceFactories;
-        this.syncSourceDao = syncSourceDao;
-        this.schema = schema == null ? "rdm" : schema;
     }
 
     @Transactional
@@ -92,8 +84,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
     private VersionMapping createMapping(String refBookCode, String sourceCode) {
         RefBook lastPublished;
         try {
-            SyncSource source = syncSourceDao.findByCode(sourceCode);
-            lastPublished = getSyncSourceService(source).getRefBook(refBookCode);
+            lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
 
         } catch (Exception e) {
             logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
@@ -107,7 +98,7 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
         }
         String uniqueSysField = structure.getPrimaries().get(0);
 
-        String sysTable = String.format("%s.%s", schema, "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase());
+        String sysTable =getTableName(refBookCode);
 
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
@@ -118,9 +109,5 @@ public class NotVersionedLocalRefBookCreator implements LocalRefBookCreator {
 
         dao.insertFieldMapping(mappingId, fields);
         return versionMapping;
-    }
-
-    private SyncSourceService getSyncSourceService(SyncSource source) {
-       return syncSourceServiceFactories.stream().filter(factory -> factory.isSatisfied(source)).findAny().orElse(null).createService(source);
     }
 }

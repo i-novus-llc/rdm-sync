@@ -146,5 +146,5 @@ public interface RdmSyncDao {
 
     void createSchemaIfNotExists(String schema);
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
-    void createVersionedTable(String schema, String table, List<FieldMapping> fieldMappings);
+    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
 }

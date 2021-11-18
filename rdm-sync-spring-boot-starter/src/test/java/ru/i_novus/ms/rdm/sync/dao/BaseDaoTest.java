@@ -8,5 +8,5 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @JdbcTest(properties = {"spring.liquibase.change-log=classpath:/rdm-sync-db/baseChangelog.xml"})
 @AutoConfigureEmbeddedDatabase(type = AutoConfigureEmbeddedDatabase.DatabaseType.POSTGRES, provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.OPENTABLE)
-public class BaseDaoTest {
+public abstract class BaseDaoTest {
 }
