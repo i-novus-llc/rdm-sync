@@ -1,25 +1,25 @@
 package ru.i_novus.ms.rdm.sync;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.init.NotVersionedLocalRefBookCreator;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -33,12 +33,45 @@ public class NotVersionedLocalRefBookCreatorTest {
     private RdmSyncDao rdmSyncDao;
 
     @Mock
+    private RefBook refBook;
+
+    @Mock
+    private RefBookStructure structure;
+
+    @Mock
     private RdmSyncService rdmSyncService;
+
+    @Mock
+    private SyncSourceDao syncSourceDao;
+
+    @Spy
+    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet = new HashSet<>();
+
+    @Mock
+    private SyncSourceServiceFactory syncSourceServiceFactory;
+
+    @Mock
+    private SyncSourceService syncSourceService;
+
+    @Mock
+    private List<String> uniqueSysFieldList;
+
+    @Before
+    public void setUp() throws Exception {
+        when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
+        syncSourceServiceFactorySet.add(syncSourceServiceFactory);
+        when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
+        when(syncSourceService.getRefBook(any())).thenReturn(refBook);
+        when(refBook.getStructure()).thenReturn(structure);
+        when(structure.getPrimaries()).thenReturn(uniqueSysFieldList);
+        when(uniqueSysFieldList.get(anyInt())).thenReturn("id");
+    }
 
     @Test
     public void testCreate() {
         Integer mappingId = 1;
         String code = "test.code";
+        String sourceCode = "TEST_SOURCE_CODE";
         List<FieldMapping> expectedFieldMappingList = List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name"));
         RefBook refBook = new RefBook();
         refBook.setCode(code);
@@ -54,7 +87,12 @@ public class NotVersionedLocalRefBookCreatorTest {
         when(rdmSyncDao.insertVersionMapping(any())).thenReturn(mappingId);
         when(rdmSyncDao.getFieldMappings(eq(code))).thenReturn(expectedFieldMappingList);
 
-        creator.create(code, null);
+        SyncSource source = new SyncSource("name", "code", "{}", "service");
+
+        when(syncSourceDao.findByCode(any())).thenReturn(source);
+
+        creator.create(code, sourceCode);
+
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
         verify(rdmSyncDao, times(1)).insertVersionMapping(mappingCaptor.capture());
@@ -63,6 +101,7 @@ public class NotVersionedLocalRefBookCreatorTest {
         Assert.assertEquals("is_deleted", mappingCaptor.getValue().getDeletedField());
         Assert.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
         Assert.assertEquals("id", mappingCaptor.getValue().getPrimaryField());
+        
 
         verify(rdmSyncDao, times(1)).insertFieldMapping(eq(1), argThat(ignoreOrderEqList(expectedFieldMappingList)));
 
