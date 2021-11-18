@@ -17,7 +17,11 @@ import java.util.Objects;
 @Setter
 public class SyncEntrySourceCriteria extends AbstractCriteria {
 
-    @ApiParam("Код (идентификатор) источника")
+    @ApiParam("Идентификатор источника")
+    @QueryParam("id")
+    private String id;
+
+    @ApiParam("Код источника")
     @QueryParam("code")
     private String code;
 
@@ -36,7 +40,8 @@ public class SyncEntrySourceCriteria extends AbstractCriteria {
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(code) &&
+        return StringUtils.isEmpty(id) &&
+                StringUtils.isEmpty(code) &&
                 StringUtils.isEmpty(name) &&
                 StringUtils.isEmpty(caption);
     }
@@ -47,13 +52,14 @@ public class SyncEntrySourceCriteria extends AbstractCriteria {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncEntrySourceCriteria that = (SyncEntrySourceCriteria) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(caption, that.caption);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, caption);
+        return Objects.hash(id, code, name, caption);
     }
 }
