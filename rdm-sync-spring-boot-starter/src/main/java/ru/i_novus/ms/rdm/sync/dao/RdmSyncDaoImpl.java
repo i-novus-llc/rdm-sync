@@ -138,7 +138,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public int getLastVersion(String refbookCode) {
 
-        final String sql = "SELECT mapping_version FROM rdm_sync.version WHERE code = :code";
+        final String sql = "SELECT lv.version FROM rdm_sync.loaded_version lv WHERE lv.code = :code";
 
         List<Integer> list = namedParameterJdbcTemplate.query(sql,
                 Map.of("code", refbookCode),
