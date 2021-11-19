@@ -734,7 +734,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createVersionedTable(String schema, String table, List<FieldMapping> fieldMappings) {
+    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
         createTable(schema, table, fieldMappings, Map.of("_versions", "text NOT NULL", "_hash", "text NOT NULL"));
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
     }

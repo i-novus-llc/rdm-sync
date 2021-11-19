@@ -95,7 +95,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      * Создание версионной таблицы, добавление записей разных версий
      */
     public void testVersionedTable() {
-        rdmSyncDao.createVersionedTable(
+        rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
                 List.of(
