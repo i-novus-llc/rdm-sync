@@ -26,10 +26,12 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Override
     public void create(String code, String source) {
+        if(rdmSyncDao.getLoadedVersion(code) != null) {
+            return;
+        }
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(code, "CURRENT");
         if(versionMapping == null) {
             RefBookStructure refBookStructure = getRefBookStructure(code, source);
-            //todo создать маппинг и под версию
             versionMapping = new VersionMapping(null, code, "CURRENT",  getTableName(code),"someSource", refBookStructure.getPrimaries().get(0), null, null, -1, null, SyncTypeEnum.VERSIONED);
             rdmSyncDao.insertVersionMapping(versionMapping);
         }

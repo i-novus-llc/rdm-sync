@@ -10,6 +10,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
@@ -102,6 +103,18 @@ public class VersionedLocalRefBookCreatorTest {
                         fieldMappings
                 );
 
+    }
+
+    /**
+     * игнорируем создание маппинга и таблицы если была загруженна хоть одна версия
+     */
+    @Test
+    public void testIgnoreCreateIfExistsLoadedVersion() {
+        when(rdmSyncDao.getLoadedVersion(any())).thenReturn(mock(LoadedVersion.class));
+        creator.create("test", "source");
+        verify(rdmSyncDao, never()).insertVersionMapping(any());
+        verify(rdmSyncDao, never()).createSchemaIfNotExists(any());
+        verify(rdmSyncDao, never()).createTableIfNotExists(any(), any(), any(), any());
     }
 
     private VersionMapping createVersionMapping(String testCode) {
