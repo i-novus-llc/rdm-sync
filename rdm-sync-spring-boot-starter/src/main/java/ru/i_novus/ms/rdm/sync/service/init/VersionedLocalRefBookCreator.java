@@ -1,5 +1,7 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
@@ -15,6 +17,8 @@ import java.util.Set;
 @Component
 public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
+    private final static Logger logger = LoggerFactory.getLogger(VersionedLocalRefBookCreator.class);
+
     private final RdmSyncDao rdmSyncDao;
 
 
@@ -27,8 +31,10 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     @Override
     public void create(String code, String source) {
         if(rdmSyncDao.getLoadedVersion(code) != null) {
+            logger.info("auto create  for code {} was skipped", code);
             return;
         }
+        logger.info("starting auto create for code {}", code);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(code, "CURRENT");
         if(versionMapping == null) {
             RefBookStructure refBookStructure = getRefBookStructure(code, source);
@@ -41,5 +47,6 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String table = split[1];
         rdmSyncDao.createSchemaIfNotExists(schema);
         rdmSyncDao.createVersionedTableIfNotExists(schema, table, rdmSyncDao.getFieldMappings(code));
+        logger.info("auto create for code {} was finished", code);
     }
 }
