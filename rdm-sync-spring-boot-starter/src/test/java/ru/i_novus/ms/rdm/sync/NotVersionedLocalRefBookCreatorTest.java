@@ -13,6 +13,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
@@ -33,12 +34,6 @@ public class NotVersionedLocalRefBookCreatorTest {
     private RdmSyncDao rdmSyncDao;
 
     @Mock
-    private RefBook refBook;
-
-    @Mock
-    private RefBookStructure structure;
-
-    @Mock
     private RdmSyncService rdmSyncService;
 
     @Mock
@@ -53,18 +48,11 @@ public class NotVersionedLocalRefBookCreatorTest {
     @Mock
     private SyncSourceService syncSourceService;
 
-    @Mock
-    private List<String> uniqueSysFieldList;
-
     @Before
     public void setUp() throws Exception {
         when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
         when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
-        when(syncSourceService.getRefBook(any())).thenReturn(refBook);
-        when(refBook.getStructure()).thenReturn(structure);
-        when(structure.getPrimaries()).thenReturn(uniqueSysFieldList);
-        when(uniqueSysFieldList.get(anyInt())).thenReturn("id");
     }
 
     @Test
@@ -83,9 +71,9 @@ public class NotVersionedLocalRefBookCreatorTest {
         );
 
         when(rdmSyncDao.lockRefBookForUpdate(eq(code), eq(true))).thenReturn(true);
-        when(rdmSyncService.getLastPublishedVersion(code)).thenReturn(refBook);
         when(rdmSyncDao.insertVersionMapping(any())).thenReturn(mappingId);
         when(rdmSyncDao.getFieldMappings(eq(code))).thenReturn(expectedFieldMappingList);
+        when(syncSourceService.getRefBook(any())).thenReturn(refBook);
 
         SyncSource source = new SyncSource("name", "code", "{}", "service");
 
@@ -101,7 +89,8 @@ public class NotVersionedLocalRefBookCreatorTest {
         Assert.assertEquals("is_deleted", mappingCaptor.getValue().getDeletedField());
         Assert.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
         Assert.assertEquals("id", mappingCaptor.getValue().getPrimaryField());
-        
+        Assert.assertEquals("TEST_SOURCE_CODE",mappingCaptor.getValue().getSource());
+        Assert.assertEquals(SyncTypeEnum.NOT_VERSIONED,mappingCaptor.getValue().getType());
 
         verify(rdmSyncDao, times(1)).insertFieldMapping(eq(1), argThat(ignoreOrderEqList(expectedFieldMappingList)));
 
