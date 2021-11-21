@@ -107,6 +107,7 @@ public class XmlMappingRefBook {
         result.setUniqueSysField(mapping.getPrimaryField());
         result.setDeletedField(mapping.getDeletedField());
         result.setSysTable(mapping.getTable());
+        result.setSource(mapping.getSource());
 
         return result;
     }
