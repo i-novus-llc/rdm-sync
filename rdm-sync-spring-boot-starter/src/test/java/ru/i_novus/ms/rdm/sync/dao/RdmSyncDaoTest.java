@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
@@ -46,7 +47,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     private RdmSyncDao rdmSyncDao;
 
     @Test
-    public void testBatchInsertAndUpdate() {
+    public void testBatchInsertAndUpdateRows() {
         List<Map<String, Object>> insertRows = new ArrayList<>();
         insertRows.add(Map.of("name", "test name1", "id", 1));
         insertRows.add(Map.of("name", "test name2", "id", 2));
@@ -70,7 +71,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testInsertAndUpdate() {
+    public void testInsertAndUpdateRows() {
 
         Map<String, Object> insertRow = Map.of("name", "test name1", "id", 1);
         String table = "ref_ek002";
@@ -154,19 +155,23 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
 
     @Test
-    public void testSaveVersionMappingFromXml() {
+    public void testSaveVersionMapping() {
         String version = "CURRENT";
-        VersionMapping versionMapping = new VersionMapping(null, "test", version, "test_table","", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        String refBookCode = "test";
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, version, "test_table","CODE-1", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(versionMapping.getCode(), actual.getCode());
         Assert.assertEquals(version, actual.getVersion());
         assertEquals(versionMapping, actual);
 
+        SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
+        Assert.assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, null), syncRefBook);
+
         versionMapping.setDeletedField("is_deleted2");
         versionMapping.setTable("test_table2");
         versionMapping.setMappingVersion(1);
-        rdmSyncDao.updateVersionMapping(versionMapping);
+        rdmSyncDao.updateCurrentMapping(versionMapping);
         actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(version, versionMapping.getVersion());
         assertEquals(versionMapping, actual);

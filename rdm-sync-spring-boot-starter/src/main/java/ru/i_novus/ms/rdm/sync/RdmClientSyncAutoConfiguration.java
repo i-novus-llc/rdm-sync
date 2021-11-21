@@ -5,6 +5,7 @@ import net.n2oapp.platform.jaxrs.LocalDateTimeISOParameterConverter;
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
 import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.*;
@@ -24,12 +25,16 @@ import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.api.util.json.LocalDateTimeMapperPreparer;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
+import ru.i_novus.ms.rdm.sync.service.updater.NotVersionedRefBookUpdater;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -248,5 +253,10 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnMissingBean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater) {
+        return new RefBookUpdaterLocator(Map.of(SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater));
     }
 }

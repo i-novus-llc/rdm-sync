@@ -17,7 +17,7 @@ import java.util.Set;
 @Component
 public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
-    private final static Logger logger = LoggerFactory.getLogger(VersionedLocalRefBookCreator.class);
+    private static final Logger logger = LoggerFactory.getLogger(VersionedLocalRefBookCreator.class);
 
     private final RdmSyncDao rdmSyncDao;
 

@@ -75,7 +75,7 @@ class XmlMappingLoaderService {
                 rdmSyncDao.insertVersionMapping(xmlMappingRefBook.convertToVersionMapping());
                 versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
             } else {
-                rdmSyncDao.updateVersionMapping(xmlMappingRefBook.convertToVersionMapping());
+                rdmSyncDao.updateCurrentMapping(xmlMappingRefBook.convertToVersionMapping());
             }
             rdmSyncDao.insertFieldMapping(versionMapping.getMappingId(), xmlMappingRefBook.getFields().stream().map(XmlMappingField::convertToFieldMapping).collect(Collectors.toList()));
             logger.info("mapping for code {} was loaded", xmlMappingRefBook.getCode());

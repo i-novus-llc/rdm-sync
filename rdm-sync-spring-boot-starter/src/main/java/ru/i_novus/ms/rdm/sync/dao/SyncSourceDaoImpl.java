@@ -17,18 +17,18 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
     @Override
     public void save(SyncSource syncSource) {
         String sql = "INSERT INTO rdm_sync.source\n" +
-                "     (code, name, init_values, service)\n" +
-                "     VALUES(:code, :name, :init_values, :service)\n" +
+                "     (code, name, init_values, service_factory)\n" +
+                "     VALUES(:code, :name, :init_values, :serviceFactory)\n" +
                 "     ON CONFLICT (code) DO UPDATE\n" +
-                "     SET (name, init_values, service) = (:name, :init_values, :service);";
-        namedParameterJdbcTemplate.update(sql, Map.of("code", syncSource.getCode(), "name", syncSource.getName(), "init_values", syncSource.getInitValues(), "service",syncSource.getFactoryName()));
+                "     SET (name, init_values, service_factory) = (:name, :init_values, :serviceFactory);";
+        namedParameterJdbcTemplate.update(sql, Map.of("code", syncSource.getCode(), "name", syncSource.getName(), "init_values", syncSource.getInitValues(), "serviceFactory",syncSource.getFactoryName()));
     }
 
     @Override
     public SyncSource findByCode(String code) {
-        return namedParameterJdbcTemplate.queryForObject("SELECT name, code, init_values, service FROM rdm_sync.source WHERE code = :code",
+        return namedParameterJdbcTemplate.queryForObject("SELECT name, code, init_values, service_factory FROM rdm_sync.source WHERE code = :code",
                 Map.of("code", code),
-                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"),  rs.getString("init_values"), rs.getString("service")));
+                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"),  rs.getString("init_values"), rs.getString("service_factory")));
     }
 
 }

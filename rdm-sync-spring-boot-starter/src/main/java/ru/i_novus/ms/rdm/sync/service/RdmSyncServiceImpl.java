@@ -14,6 +14,8 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -22,6 +24,7 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterServiceLocator;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 import ru.i_novus.ms.rdm.sync.util.RefBookReferenceSort;
 
 import javax.annotation.PostConstruct;
@@ -87,6 +90,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private ExecutorService executorService;
 
+    @Autowired
+    private RefBookUpdaterLocator refBookUpdaterLocator;
+
     @PostConstruct
     public void init() {
         executorService = Executors.newFixedThreadPool(threadsCount);
@@ -137,37 +143,16 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
 
-        if (dao.getVersionMapping(refBookCode, "CURRENT") == null) {
+        SyncRefBook syncRefBook = dao.getSyncRefBook(refBookCode);
+        if (syncRefBook == null) {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
 
-        RefBook newVersion;
-        try {
-            newVersion = getLastPublishedVersion(refBookCode);
+        refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType()).update(refBookCode);
 
-        } catch (Exception e) {
-            logger.error(String.format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, refBookCode), e);
-            return;
-        }
 
-        VersionMapping versionMapping = getVersionMapping(refBookCode);
-        LoadedVersion loadedVersion = dao.getLoadedVersion(refBookCode);
-        try {
-            if (loadedVersion == null || isNewVersionPublished(newVersion, loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
 
-                self.update(newVersion, versionMapping);
-                loggingService.logOk(refBookCode, versionMapping.getVersion(), newVersion.getLastVersion());
-
-            } else {
-                logger.info("Skipping update on '{}'. No changes.", refBookCode);
-            }
-        } catch (Exception e) {
-            logger.error(String.format(LOG_ERROR_WHILE_UPDATING_NEW_VERSION, refBookCode), e);
-
-            loggingService.logError(refBookCode, versionMapping.getVersion(), newVersion.getLastVersion(),
-                    e.getMessage(), ExceptionUtils.getStackTrace(e));
-        }
     }
 
     @Override

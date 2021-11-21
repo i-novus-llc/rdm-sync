@@ -6,6 +6,7 @@ import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
@@ -124,7 +125,7 @@ public interface RdmSyncDao {
 
     Integer insertVersionMapping(VersionMapping versionMapping);
 
-    void updateVersionMapping(VersionMapping versionMapping);
+    void updateCurrentMapping(VersionMapping versionMapping);
 
     void insertFieldMapping(Integer mappingId, List<FieldMapping> fieldMappings);
 
@@ -147,4 +148,6 @@ public interface RdmSyncDao {
     void createSchemaIfNotExists(String schema);
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
+
+    SyncRefBook getSyncRefBook(String code);
 }

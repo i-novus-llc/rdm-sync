@@ -22,6 +22,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
@@ -109,11 +110,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
-        final String sql = "SELECT r.id, code, version, \n" +
+        final String sql = "SELECT m.id, code, version, \n" +
                 "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, type  \n" +
-                "  FROM rdm_sync.refbook r\n" +
-                "  inner join rdm_sync.mapping m on m.id = r.mapping_id " +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type  \n" +
+                "  FROM rdm_sync.version ver\n" +
+                "  inner join rdm_sync.mapping m on m.id = ver.mapping_id " +
+                "  inner join rdm_sync.refbook ref on ref.id = ver.ref_id " +
                 "WHERE code = :code and version = :version ";
 
         List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
@@ -153,7 +155,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT sys_field, sys_data_type, rdm_field \n" +
                 "  FROM rdm_sync.field_mapping \n" +
-                " WHERE mapping_id = (select mapping_id from rdm_sync.refbook where code = :code)";
+                " WHERE mapping_id = (select mapping_id from rdm_sync.version v inner join rdm_sync.refbook r on r.id=v.ref_id  where code = :code)";
 
         return namedParameterJdbcTemplate.query(sql,
             Map.of("code", refbookCode),
@@ -429,17 +431,21 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Integer.class
         );
 
-        final String insRefSql = "insert into rdm_sync.refbook(code, version, mapping_id, source_id, type) values(:code, :version, :mapping_id, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)";
-        namedParameterJdbcTemplate.update(insRefSql,
-                Map.of("code", versionMapping.getCode(), "version", "CURRENT", "mapping_id", mappingId, "source_code",versionMapping.getSource(), "type", versionMapping.getType().name()));
+        final String insRefSql = "insert into rdm_sync.refbook(code, source_id, sync_type) values(:code, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)  RETURNING id";
+        Integer refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
+                Map.of("code", versionMapping.getCode(), "source_code",versionMapping.getSource(), "type", versionMapping.getType().name()),
+                Integer.class);
+
+        namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getVersion() != null ? versionMapping.getVersion() : "CURRENT"));
 
         return mappingId;
     }
 
     @Override
-    public void updateVersionMapping(VersionMapping versionMapping) {
+    public void updateCurrentMapping(VersionMapping versionMapping) {
         final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
-                " where id = (select mapping_id from rdm_sync.refbook where code = :code)";
+                " where id = (select mapping_id from rdm_sync.version where version = 'CURRENT' and ref_id = (select id from rdm_sync.refbook where code = :code))";
         namedParameterJdbcTemplate.update(sql,
                 Map.of("deleted_field", versionMapping.getDeletedField(),
                         "mapping_version", versionMapping.getMappingVersion(),
@@ -737,6 +743,23 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
         createTable(schema, table, fieldMappings, Map.of("_versions", "text NOT NULL", "_hash", "text NOT NULL"));
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
+    }
+
+    @Override
+    public SyncRefBook getSyncRefBook(String code) {
+        List<SyncRefBook> result = namedParameterJdbcTemplate.query("select * from rdm_sync.refbook where code = :code", Map.of("code", code),
+                (rs, rowNum) ->
+                        new SyncRefBook(
+                                rs.getInt("id"),
+                                rs.getString("code"),
+                                SyncTypeEnum.valueOf(rs.getString("sync_type")),
+                                rs.getString("name")
+                        )
+        );
+        if(result.isEmpty())
+            return null;
+
+        return result.get(0);
     }
 
     private void createTable(String schema, String table, List<FieldMapping> fieldMappings, Map<String, String> additionalColumns) {
