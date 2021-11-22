@@ -164,7 +164,7 @@
         </fields>
 
         <toolbar place="bottomRight">
-            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}"
+            <button id="editMapping" label="${sync.entry.page.button.edit.mapping}" color="primary"
                     enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
                 <show-modal page-id="syncMapping" page-name="${sync.entry.page.button.edit.mapping.page}"
                             upload="query"

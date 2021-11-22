@@ -16,7 +16,10 @@ import java.util.Objects;
 @Setter
 public class SyncEntrySource implements Serializable {
 
-    /** Код (идентификатор). */
+    /** Идентификатор. */
+    private String id;
+
+    /** Код. */
     private String code;
 
     /** Наименование (полное). */
@@ -25,11 +28,11 @@ public class SyncEntrySource implements Serializable {
     /** Надпись (краткое наименование). */
     private String caption;
 
-    /** Ссылка на источник. */
-    private String url;
+    /** Наименование сервиса для доступа. */
+    private String service;
 
-    /** Токен аутентификации. */
-    private String token;
+    /** Параметры сервиса для доступа. */
+    private String params;
 
     public SyncEntrySource() {
         // Nothing to do.
@@ -38,12 +41,14 @@ public class SyncEntrySource implements Serializable {
     @JsonIgnore
     public boolean isEmpty() {
 
-        return StringUtils.isEmpty(code) &&
+        return StringUtils.isEmpty(id) &&
+                StringUtils.isEmpty(code) &&
+
                 StringUtils.isEmpty(name) &&
                 StringUtils.isEmpty(caption) &&
 
-                StringUtils.isEmpty(url) &&
-                StringUtils.isEmpty(token);
+                StringUtils.isEmpty(service) &&
+                StringUtils.isEmpty(params);
     }
 
     @Override
@@ -52,17 +57,19 @@ public class SyncEntrySource implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         SyncEntrySource that = (SyncEntrySource) o;
-        return Objects.equals(code, that.code) &&
+        return Objects.equals(id, that.code) &&
+                Objects.equals(code, that.code) &&
+
                 Objects.equals(name, that.name) &&
                 Objects.equals(caption, that.caption) &&
 
-                Objects.equals(url, that.url) &&
-                Objects.equals(token, that.token);
+                Objects.equals(service, that.service) &&
+                Objects.equals(params, that.params);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, caption, url, token);
+        return Objects.hash(id, code, name, caption, service, params);
     }
 
     @Override

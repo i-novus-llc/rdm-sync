@@ -3,7 +3,8 @@
         name="Запись о синхронизации">
 
     <operations>
-        <operation id="delete" submit-label="Удалить" success-text="Запись о справочнике удалена"
+        <operation id="delete" submit-label="${sync.entry.page.delete.name}"
+                   success-text="${sync.entry.page.delete.result.success}"
                    confirm="true" confirm-text="${sync.entry.page.delete.confirm}">
             <invocation>
                 <rest method="DELETE">${sync.admin.backend.path}/sync/admin/entries?id={id}</rest>
