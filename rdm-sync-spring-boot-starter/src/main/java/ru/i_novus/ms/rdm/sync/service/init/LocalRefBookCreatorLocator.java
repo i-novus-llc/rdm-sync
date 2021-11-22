@@ -1,21 +1,19 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
-import org.springframework.stereotype.Component;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
-import java.util.List;
+import java.util.Map;
 
-@Component
 public class LocalRefBookCreatorLocator {
 
-    private final List<LocalRefBookCreator> localRefBookCreators;
+    private final Map<SyncTypeEnum, LocalRefBookCreator> creators;
 
-    public LocalRefBookCreatorLocator(List<LocalRefBookCreator> localRefBookCreators) {
-        this.localRefBookCreators = localRefBookCreators;
+    public LocalRefBookCreatorLocator(Map<SyncTypeEnum, LocalRefBookCreator> creators) {
+        this.creators = creators;
     }
 
-    LocalRefBookCreator getLocalRefBookCreator(String refBookCode) {
-        return localRefBookCreators.get(0);
+    public LocalRefBookCreator getLocalRefBookCreator(SyncTypeEnum type) {
+        return creators.get(type);
     }
-
 
 }
