@@ -33,7 +33,7 @@ public interface RdmSyncService {
     @ApiOperation(value = "Синхронизация отдельного справочника")
     void update(@PathParam("refBookCode") String refBookCode);
 
-    void update(RefBook refBook, VersionMapping versionMapping, SyncSourceService syncSourceService);
+    void update(RefBook refBook, VersionMapping versionMapping);
 
     @GET
     @Path("/log")

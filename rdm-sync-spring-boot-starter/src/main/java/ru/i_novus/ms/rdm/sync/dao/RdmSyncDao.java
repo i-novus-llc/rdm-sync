@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
@@ -27,7 +29,9 @@ public interface RdmSyncDao {
      */
     List<VersionMapping> getVersionMappings();
 
-    VersionMapping getVersionMapping(String refbookCode);
+    LoadedVersion getLoadedVersion(String code);
+
+    VersionMapping getVersionMapping(String refbookCode, String version);
 
     int getLastVersion(String refbookCode);
 
@@ -41,7 +45,9 @@ public interface RdmSyncDao {
 
     List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
-    void updateVersionMapping(Integer id, String version, LocalDateTime publishDate);
+    void insertLoadedVersion(String code, String version, LocalDateTime publishDate);
+
+    void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate);
 
     /**
      * Получить список значений первичных ключей в таблице клиента.
@@ -76,6 +82,10 @@ public interface RdmSyncDao {
      * @param markSynced
      */
     void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced);
+
+    void insertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
+
+    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
 
     /**
      * Изменить строку в справочник клиента.
@@ -113,9 +123,11 @@ public interface RdmSyncDao {
 
     List<Log> getList(LocalDate date, String refbookCode);
 
-    void upsertVersionMapping(XmlMappingRefBook versionMapping);
+    Integer insertVersionMapping(VersionMapping versionMapping);
 
-    void insertFieldMapping(String code, List<XmlMappingField> fieldMappings);
+    void updateCurrentMapping(VersionMapping versionMapping);
+
+    void insertFieldMapping(Integer mappingId, List<FieldMapping> fieldMappings);
 
     boolean lockRefBookForUpdate(String code, boolean blocking);
 
@@ -126,10 +138,16 @@ public interface RdmSyncDao {
     void enableInternalLocalRowStateUpdateTrigger(String table);
 
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
+
+    Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria);
+
     <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
                                      RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
 
     void createSchemaIfNotExists(String schema);
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
+    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
+
+    SyncRefBook getSyncRefBook(String code);
 }

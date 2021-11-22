@@ -7,14 +7,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
+import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Collectors;
 
 @Component
 class XmlMappingLoaderService {
@@ -67,8 +70,14 @@ class XmlMappingLoaderService {
 
         if (xmlMappingRefBook.getMappingVersion() > rdmSyncDao.getLastVersion(xmlMappingRefBook.getCode())) {
             logger.info("load {}", xmlMappingRefBook.getCode());
-            rdmSyncDao.insertFieldMapping(xmlMappingRefBook.getCode(), xmlMappingRefBook.getFields());
-            rdmSyncDao.upsertVersionMapping(xmlMappingRefBook);
+            VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
+            if(versionMapping == null) {
+                rdmSyncDao.insertVersionMapping(xmlMappingRefBook.convertToVersionMapping());
+                versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
+            } else {
+                rdmSyncDao.updateCurrentMapping(xmlMappingRefBook.convertToVersionMapping());
+            }
+            rdmSyncDao.insertFieldMapping(versionMapping.getMappingId(), xmlMappingRefBook.getFields().stream().map(XmlMappingField::convertToFieldMapping).collect(Collectors.toList()));
             logger.info("mapping for code {} was loaded", xmlMappingRefBook.getCode());
 
         } else {
