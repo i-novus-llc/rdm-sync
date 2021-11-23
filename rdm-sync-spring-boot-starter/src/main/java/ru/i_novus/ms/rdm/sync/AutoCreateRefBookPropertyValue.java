@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.model;
+package ru.i_novus.ms.rdm.sync;
 
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 

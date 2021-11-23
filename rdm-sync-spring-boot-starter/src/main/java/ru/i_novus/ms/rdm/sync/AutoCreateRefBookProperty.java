@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.model;
+package ru.i_novus.ms.rdm.sync;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
