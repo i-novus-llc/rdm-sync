@@ -187,6 +187,11 @@
         </sql>
     </changeSet>
 
-
+    <changeSet id="202111090927_refactor_schema.9.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.refbook ADD COLUMN start_version varchar;
+            COMMENT ON COLUMN rdm_sync.refbook.start_version IS 'Версия с которой начинать синхронизацию'
+        </sql>
+    </changeSet>
 
 </databaseChangeLog>

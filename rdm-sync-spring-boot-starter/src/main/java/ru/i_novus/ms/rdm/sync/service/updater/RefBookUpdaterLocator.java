@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
-import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.util.Map;
@@ -15,7 +14,11 @@ public class RefBookUpdaterLocator {
     }
 
     public RefBookUpdater getRefBookUpdater(SyncTypeEnum type) {
-        return updaters.get(type);
+        RefBookUpdater refBookUpdater = updaters.get(type);
+        if(refBookUpdater == null) {
+            throw new IllegalArgumentException("cannot implement type " + type);
+        }
+        return refBookUpdater;
     }
 
 }
