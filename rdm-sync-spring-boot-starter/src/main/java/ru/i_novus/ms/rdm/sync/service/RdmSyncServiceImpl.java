@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.service;
 
-import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -25,7 +23,6 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterServiceLocator;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
-import ru.i_novus.ms.rdm.sync.util.RefBookReferenceSort;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -61,12 +58,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =
             "No version mapping found for reference book with code '{}'.";
-    private static final String LOG_ERROR_WHILE_FETCHING_NEW_VERSION =
-            "Error while fetching new version with code '%s'.";
-    private static final String LOG_ERROR_WHILE_UPDATING_NEW_VERSION =
-            "Error while updating new version with code '%s'.";
-
-    private static final String NO_MAPPING_FOR_PRIMARY_KEY = "No mapping found for primary key '%s'.";
     private static final String REFBOOK_WITH_CODE_NOT_FOUND =
             "Reference book with code '%s' not found.";
     private static final String NO_PRIMARY_KEY_FOUND =
@@ -86,7 +77,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Autowired
     private SyncSourceService syncSourceService;
 
-    private RdmSyncService self;
 
     private ExecutorService executorService;
 
@@ -98,10 +88,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         executorService = Executors.newFixedThreadPool(threadsCount);
     }
 
-    @Autowired
-    public void setSelf(RdmSyncService self) {
-        this.self = self;
-    }
+
 
 
     @PreDestroy
@@ -115,19 +102,10 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     public void update() {
 
         List<VersionMapping> versionMappings = dao.getVersionMappings();
-        List<RefBook> refBooks = getRefBooks(versionMappings);
         List<Callable<Void>> tasks = new ArrayList<>();
-        for (String code : RefBookReferenceSort.getSortedCodes(new ArrayList<>(refBooks))) {
+        for (VersionMapping mapping : versionMappings) {
             tasks.add(() -> {
-                RefBook refBook = refBooks.stream()
-                        .filter(refBookItem -> refBookItem.getCode().equals(code))
-                        .findFirst().orElseThrow();
-                self.update(
-                        refBook,
-                        versionMappings.stream()
-                                .filter(versionMapping -> versionMapping.getCode().equals(code))
-                                .findFirst().orElseThrow()
-                );
+                update(mapping.getCode());
                 return null;
             });
             try {
@@ -150,9 +128,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
 
         refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType()).update(refBookCode);
-
-
-
     }
 
     @Override
@@ -259,33 +234,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             throw new IllegalStateException(String.format(NO_PRIMARY_KEY_FOUND, refBookCode));
         return refBook;
     }
-
-    private VersionMapping getVersionMapping(String refBookCode) {
-
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
-
-        final String primaryField = versionMapping.getPrimaryField();
-        if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
-            throw new IllegalArgumentException(String.format(NO_MAPPING_FOR_PRIMARY_KEY, primaryField));
-
-        return versionMapping;
-    }
-
-    private List<RefBook> getRefBooks(List<VersionMapping> versionMappings) {
-        List<RefBook> refBooks = new ArrayList<>();
-        for (VersionMapping versionMapping : versionMappings) {
-            try {
-                RefBook lastPublishedVersion = getLastPublishedVersion(versionMapping.getCode());
-                refBooks.add(lastPublishedVersion);
-            } catch (RuntimeException ex) {
-                logger.error(String.format(LOG_ERROR_WHILE_FETCHING_NEW_VERSION, versionMapping.getCode()), ex);
-                loggingService.logError(versionMapping.getCode(), null, null, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            }
-        }
-        return refBooks;
-    }
-
 
     private void validateStructureAndMapping(RefBook newVersion, List<FieldMapping> fieldMappings) {
 

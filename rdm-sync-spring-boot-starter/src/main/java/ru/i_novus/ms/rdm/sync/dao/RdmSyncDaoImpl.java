@@ -62,6 +62,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             "  END; \n" +
             "$BODY$ LANGUAGE 'plpgsql' \n";
 
+    private static final String VERSIONS_SYS_COL = "_versions";
+    private static final String HASH_SYS_COL = "_hash";
+
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -100,7 +103,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), rs.getTimestamp("update_dt").toLocalDateTime())
         );
 
-        if(result.isEmpty()) {
+        if(CollectionUtils.isEmpty(result)) {
             return null;
         }
 
@@ -317,8 +320,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             row.entrySet().stream()
                     .filter( entry -> entry.getValue() != null)
                     .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
-            newMap.put("_hash", DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
-            newMap.put("_versions", "{" + version + "}");
+            newMap.put(HASH_SYS_COL, DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
+            newMap.put(VERSIONS_SYS_COL, "{" + version + "}");
             return newMap;
         }).collect(Collectors.toList());
     }
@@ -598,8 +601,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
         Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
         data.getContent().forEach(row -> {
-            row.remove("_versions");
-            row.remove("_hash");
+            row.remove(VERSIONS_SYS_COL);
+            row.remove(HASH_SYS_COL);
         });
         return data;
     }
@@ -728,7 +731,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
-        createTable(schema, table, fieldMappings, Map.of("_versions", "text NOT NULL", "_hash", "text NOT NULL"));
+        createTable(schema, table, fieldMappings, Map.of(VERSIONS_SYS_COL, "text NOT NULL", HASH_SYS_COL, "text NOT NULL"));
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
     }
 
