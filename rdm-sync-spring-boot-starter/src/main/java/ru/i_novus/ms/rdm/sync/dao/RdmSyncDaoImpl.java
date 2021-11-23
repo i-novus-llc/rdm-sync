@@ -687,19 +687,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return new PageImpl<>(result, restCriteria, count);
     }
 
-
-    private int getInternalStateColumnIdx(ResultSetMetaData meta, String table) throws SQLException {
-
-        for (int i = 1; i <= meta.getColumnCount(); i++) {
-
-            if (meta.getColumnName(i).equals(RDM_SYNC_INTERNAL_STATE_COLUMN)) {
-                return i;
-            }
-        }
-
-        throw new RdmException("Internal state \"" + RDM_SYNC_INTERNAL_STATE_COLUMN + "\" column not found in " + table);
-    }
-
     @Override
     public <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues, RdmSyncLocalRowState expectedState, RdmSyncLocalRowState toState) {
 

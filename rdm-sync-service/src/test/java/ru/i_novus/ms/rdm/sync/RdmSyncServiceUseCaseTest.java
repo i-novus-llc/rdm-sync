@@ -83,7 +83,7 @@ public class RdmSyncServiceUseCaseTest {
     }
 
     @Test
-    public void testFnsiSync() throws InterruptedException, JsonProcessingException {
+    public void testFnsiSync() throws InterruptedException {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
