@@ -15,7 +15,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -53,7 +52,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
-    @Value("${rdm.sync.load.size: 1000}")
+    @Value("${rdm-sync.load.size: 1000}")
     private int MAX_SIZE = 1000;
 
     @Value("${rdm.sync.threads.count:3}")

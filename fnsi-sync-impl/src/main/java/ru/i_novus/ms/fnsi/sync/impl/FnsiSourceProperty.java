@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Configuration
-@ConfigurationProperties(prefix = "sync.source.fnsi")
+@ConfigurationProperties(prefix = "rdm-sync.source.fnsi")
 public class FnsiSourceProperty {
 
     private List<FnsiSourcePropertyValue> values;
