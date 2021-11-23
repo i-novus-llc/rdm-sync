@@ -7,7 +7,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +23,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.i_novus.ms.fnsi.sync.impl.FnsiSourceProperty;
 import ru.i_novus.ms.rdm.api.model.compare.CompareDataCriteria;
 import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
 import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
@@ -35,6 +35,7 @@ import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.platform.datastorage.temporal.model.value.RowValue;
@@ -55,14 +56,17 @@ import static org.mockito.Mockito.when;
 @TestConfiguration
 public class TestConfig {
 
-    @Value("${rdm_sync.fnsi.url:empty}")
-    String fnsiUrl;
+    private final FnsiSourceProperty property;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
+
+    public TestConfig(FnsiSourceProperty property) {
+        this.property = property;
+    }
 
     @PostConstruct
     public void  init() {
@@ -79,11 +83,11 @@ public class TestConfig {
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002");
-            if(refBookCriteria.getCode().equals("EK002") && (ek002VersionMapping == null || !"1".equals(ek002VersionMapping.getVersion())) ) {
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK002");
+            if(refBookCriteria.getCode().equals("EK002") && loadedVersion == null  ) {
                 return new RestPage<>(Collections.singletonList(ek002Ver1));
             }
-            if (refBookCriteria.getCode().equals("EK002") && ek002VersionMapping != null || "1".equals(ek002VersionMapping.getVersion()))
+            if (refBookCriteria.getCode().equals("EK002") && loadedVersion != null && "1".equals(loadedVersion.getVersion()))
                 return new RestPage<>(Collections.singletonList(ek002Ver2));
 
             return new RestPage<>(Collections.emptyList());
@@ -104,7 +108,7 @@ public class TestConfig {
                     if (searchDataCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002");
+                    VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002", "CURRENT");
                     if(searchDataCriteria.getPageNumber() == 0 &&
                             (ek002VersionMapping == null || !"1".equals(ek002VersionMapping.getVersion())) ) {
                         return new RestPage<>(Arrays.asList(firstVersionRows));
@@ -184,7 +188,7 @@ public class TestConfig {
 
     private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, ClassPathResource body) throws URISyntaxException {
         ResponseActions responseActions = mockServer.expect(ExpectedCount.manyTimes(),
-                MockRestRequestMatchers.requestTo(Matchers.containsString(fnsiUrl + methodUrl)))
+                MockRestRequestMatchers.requestTo(Matchers.containsString(property.getValues().get(0).getUrl() + methodUrl)))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
                 .andExpect(MockRestRequestMatchers.queryParam("userKey","test"));
         for(Map.Entry<String, String> entry : params.entrySet()){
@@ -236,11 +240,11 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                VersionMapping versionMapping = rdmSyncDao.getVersionMapping(oid);
+                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
                 if(version == null) {
-                    Assert.assertNull(versionMapping.getVersion());
+                    Assert.assertNull(loadedVersion);
                 } else {
-                    Assert.assertEquals(version, versionMapping.getVersion());
+                    Assert.assertEquals(version, loadedVersion.getVersion());
                 }
             }
         };
@@ -255,8 +259,8 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                VersionMapping versionMapping = rdmSyncDao.getVersionMapping(oid);
-                Assert.assertNull(versionMapping);
+                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
+                Assert.assertNull(loadedVersion);
             }
         };
     }

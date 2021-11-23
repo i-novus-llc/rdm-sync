@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -22,6 +23,10 @@ public class XmlMappingRefBook {
     private String deletedField;
 
     private String sysTable;
+
+    private String source;
+
+    private String version;
 
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
@@ -80,6 +85,19 @@ public class XmlMappingRefBook {
         this.sysTable = sysTable;
     }
 
+    @XmlAttribute
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public VersionMapping convertToVersionMapping() {
+        return new VersionMapping(null, code, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, SyncTypeEnum.NOT_VERSIONED);
+    }
+
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
 
         XmlMappingRefBook result = new XmlMappingRefBook();
@@ -89,6 +107,7 @@ public class XmlMappingRefBook {
         result.setUniqueSysField(mapping.getPrimaryField());
         result.setDeletedField(mapping.getDeletedField());
         result.setSysTable(mapping.getTable());
+        result.setSource(mapping.getSource());
 
         return result;
     }

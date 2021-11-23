@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-public class RdmSyncSourceService implements SyncSourceService {
+public class  RdmSyncSourceService implements SyncSourceService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncSourceService.class);
 
@@ -87,7 +87,7 @@ public class RdmSyncSourceService implements SyncSourceService {
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
         return PageMapper.map(
-                versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
+                    versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
                 refBookRowValue -> {
                     Map<String, Object> mapValue = new LinkedHashMap<>();
                     refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
@@ -114,6 +114,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         return VersionsDiff.dataChangedInstance(PageMapper.map(diff.getRows(), this::convert));
     }
+
 
     private RowDiff convert(DiffRowValue diffRowValue) {
         if (diffRowValue == null) {

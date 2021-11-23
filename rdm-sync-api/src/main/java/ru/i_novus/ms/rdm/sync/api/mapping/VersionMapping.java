@@ -1,8 +1,10 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.time.LocalDateTime;
 
@@ -13,19 +15,18 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
+@EqualsAndHashCode
 public class VersionMapping {
 
     private Integer id;
     private String code;
     private String version;
-    private LocalDateTime publicationDate;
     private String table;
+    private String source;
     private String primaryField;
     private String deletedField;
     private LocalDateTime mappingLastUpdated;
-    private LocalDateTime lastSync;
-
-    public boolean changed() {
-        return mappingLastUpdated.isAfter(lastSync);
-    }
+    private int mappingVersion;
+    private Integer mappingId;
+    private SyncTypeEnum type;
 }

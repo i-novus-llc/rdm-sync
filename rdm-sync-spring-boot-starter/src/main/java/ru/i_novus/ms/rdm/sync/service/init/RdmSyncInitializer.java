@@ -3,11 +3,11 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.PostConstruct;
@@ -23,29 +23,26 @@ class RdmSyncInitializer {
     private XmlMappingLoaderService mappingLoaderService;
 
     @Autowired
+    private List<SourceLoaderService> sourceLoaderServiceList;
+
+    @Autowired
     private RdmSyncDao dao;
 
     @Autowired(required = false)
     private RdmSyncConfigurer rdmSyncConfigurer;
 
     @Autowired
-    private LocalTableAutoCreateService localTableAutoCreateService;
+    private LocalRefBookCreatorLocator localRefBookCreatorLocator;
 
     @Autowired
-    private InternalInfrastructureCreator internalInfrastructureCreator;
-
-    @Value("${rdm_sync.auto_create.schema:rdm}")
-    private String autoCreateSchema;
-
-    @Value("${rdm_sync.auto_create.refbook_codes:}")
-    private List<String> autoCreateRefBookCodes;
+    private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
     @PostConstruct
     public void start() {
 
+        sourceLoaderServiceInit();
         mappingLoaderService.load();
         autoCreate();
-        createInternalInfrastructure();
 
         if (rdmSyncConfigurer != null) {
             rdmSyncConfigurer.setupJobs();
@@ -55,20 +52,16 @@ class RdmSyncInitializer {
 
     private void autoCreate() {
 
-        if (autoCreateRefBookCodes == null)
+        if (autoCreateRefBookProperties == null)
             return;
 
-        for (String refBookCode : autoCreateRefBookCodes) {
-            localTableAutoCreateService.autoCreate(refBookCode, autoCreateSchema);
-        }
+        autoCreateRefBookProperties.getRefbooks().forEach(p ->
+            localRefBookCreatorLocator.getLocalRefBookCreator(p.getType()).create(p.getName(), p.getCode())
+        );
+
     }
 
-    private void createInternalInfrastructure() {
-
-        List<VersionMapping> versionMappings = dao.getVersionMappings();
-        for (VersionMapping versionMapping : versionMappings) {
-            internalInfrastructureCreator.createInternalInfrastructure(versionMapping.getTable(), versionMapping.getCode(), versionMapping.getDeletedField(), autoCreateRefBookCodes);
-        }
+    private void sourceLoaderServiceInit() {
+        sourceLoaderServiceList.forEach(SourceLoaderService::load);
     }
-
 }

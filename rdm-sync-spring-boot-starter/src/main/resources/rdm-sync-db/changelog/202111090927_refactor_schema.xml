@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202111090927_refactor_schema.1.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+
+            ALTER TABLE rdm_sync.version RENAME TO loaded_version;
+
+            CREATE TABLE rdm_sync.mapping (
+                id serial,
+                sys_table varchar(100) not null,
+                unique_sys_field varchar(100) not null,
+                deleted_field varchar(100),
+                mapping_version integer,
+                mapping_last_updated timestamp without time zone,
+                constraint mapping_pk PRIMARY KEY(id)
+            );
+            COMMENT ON TABLE rdm_sync.mapping IS 'Информация о маппинге';
+            COMMENT ON COLUMN rdm_sync.mapping.sys_table IS 'Наименование таблицы со справочником. Если справочник находится в схеме отличной от public, необходимо указывать схему';
+            COMMENT ON COLUMN rdm_sync.mapping.unique_sys_field IS 'Наименование колонки таблицы с уникальными кодами (в рамках НСИ)';
+            COMMENT ON COLUMN rdm_sync.mapping.deleted_field IS 'Наименование колонки таблицы с признаком удаления записи';
+            COMMENT ON COLUMN rdm_sync.mapping.mapping_version IS 'Версия маппинга';
+            COMMENT ON COLUMN rdm_sync.mapping.mapping_last_updated IS 'Время последнего изменения маппинга';
+
+
+            CREATE TABLE rdm_sync.refbook (
+                id serial,
+                code varchar(250) not null,
+                version varchar(250) not null,
+                mapping_id integer not null,
+                CONSTRAINT refbook_pk PRIMARY KEY(id),
+                CONSTRAINT  refbook_mapping_id_fk FOREIGN KEY(mapping_id) REFERENCES rdm_sync.mapping(id)
+            );
+            COMMENT ON TABLE rdm_sync.refbook IS 'Синхронизируемые справочники НСИ';
+            COMMENT ON COLUMN rdm_sync.refbook.id IS 'Уникальный идентификатор';
+            COMMENT ON COLUMN rdm_sync.refbook.code IS 'Код справочника';
+            COMMENT ON COLUMN rdm_sync.refbook.version IS 'Версия справочника';
+            COMMENT ON COLUMN rdm_sync.refbook.mapping_id IS 'Ссылка на маппинг';
+
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.2.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.field_mapping ADD COLUMN mapping_id integer;
+            ALTER TABLE rdm_sync.field_mapping ADD CONSTRAINT field_mapping_mapping_id_fk FOREIGN KEY(mapping_id) REFERENCES rdm_sync.mapping(id);
+            COMMENT ON COLUMN rdm_sync.field_mapping.mapping_id IS 'Ссылка на маппинг';
+
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.3.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+
+            INSERT INTO rdm_sync.mapping(sys_table, unique_sys_field, deleted_field, mapping_version, mapping_last_updated) SELECT sys_table, unique_sys_field, deleted_field, mapping_version, mapping_last_updated FROM rdm_sync.loaded_version;
+
+            INSERT INTO rdm_sync.refbook(code, version, mapping_id) SELECT code, 'CURRENT', (SELECT id FROM rdm_sync.mapping WHERE sys_table = rdm_sync.loaded_version.sys_table) FROM rdm_sync.loaded_version;
+
+            ALTER TABLE rdm_sync.field_mapping DISABLE TRIGGER on_mapping_updated;
+            UPDATE rdm_sync.field_mapping SET mapping_id = (SELECT id FROM rdm_sync.mapping WHERE sys_table = (SELECT sys_table FROM rdm_sync.loaded_version WHERE code = rdm_sync.field_mapping.code) );
+            ALTER TABLE rdm_sync.field_mapping ENABLE TRIGGER on_mapping_updated;
+
+
+            CREATE OR REPLACE FUNCTION mapping_changed() RETURNS TRIGGER AS
+            $$
+                BEGIN
+                    UPDATE rdm_sync.mapping SET
+                    mapping_last_updated = (SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+                    WHERE
+                    (TG_OP = 'INSERT' AND NEW.code = code) -- Вставка
+                    OR
+                    (TG_OP = 'DELETE' AND OLD.code = code) -- Удаление
+                    OR
+                    (TG_OP = 'UPDATE' AND NEW.code = code); -- Изменение
+                    RETURN NEW;
+                END;
+            $$
+            LANGUAGE
+            'plpgsql';
+
+            ALTER TABLE rdm_sync.field_mapping DROP COLUMN code;
+            ALTER TABLE rdm_sync.loaded_version DROP COLUMN sys_table;
+            ALTER TABLE rdm_sync.loaded_version DROP COLUMN unique_sys_field;
+            ALTER TABLE rdm_sync.loaded_version DROP COLUMN deleted_field;
+            ALTER TABLE rdm_sync.loaded_version DROP COLUMN mapping_version;
+            ALTER TABLE rdm_sync.loaded_version DROP COLUMN mapping_last_updated;
+
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.4.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+                     CREATE OR REPLACE FUNCTION mapping_changed() RETURNS TRIGGER AS
+                        $$
+                            BEGIN
+                                UPDATE rdm_sync.mapping SET
+                                mapping_last_updated = (SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+                                WHERE
+                                (TG_OP = 'INSERT' AND NEW.mapping_id = id) -- Вставка
+                                OR
+                                (TG_OP = 'DELETE' AND OLD.mapping_id = id) -- Удаление
+                                OR
+                                (TG_OP = 'UPDATE' AND NEW.mapping_id = id); -- Изменение
+                                RETURN NEW;
+                            END;
+                        $$
+                    LANGUAGE
+                    'plpgsql';
+              ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.5.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.field_mapping ALTER COLUMN mapping_id SET NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.6.0" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="refbook" columnName="type" schemaName="rdm_sync"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.refbook ADD COLUMN type varchar;
+            COMMENT ON COLUMN rdm_sync.refbook.type IS 'Тип синхронизации. NOT_VERSIONED - неверсионная синхронизация, VERSIONED - версионная синхронизация';
+            UPDATE rdm_sync.refbook set type = 'NOT_VERSIONED';
+            ALTER TABLE rdm_sync.refbook ALTER COLUMN type SET NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.7.0" author="shgaripov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="source" schemaName="rdm_sync"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false">
+            CREATE TABLE rdm_sync.source(id serial primary key, code varchar(50) not null unique, name text, init_values text, service_factory varchar(50));
+            COMMENT ON TABLE rdm_sync.source IS 'Таблица хранения НСИ-источников';
+            COMMENT ON COLUMN rdm_sync.source.id IS 'Первичный ключ';
+            COMMENT ON COLUMN rdm_sync.source.code IS 'Код НСИ-источника';
+            COMMENT ON COLUMN rdm_sync.source.name IS 'Имя НСИ-источника';
+            COMMENT ON COLUMN rdm_sync.source.init_values IS 'Параметры инициализации источника';
+            COMMENT ON COLUMN rdm_sync.source.service_factory IS 'Имплементация фабрики SyncSourceService';
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.8.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.loaded_version RENAME CONSTRAINT pk_version_id TO loaded_version_pk;
+            ALTER TABLE rdm_sync.refbook RENAME TO version;
+            ALTER TABLE rdm_sync.version RENAME CONSTRAINT refbook_pk TO version_pk;
+            ALTER TABLE rdm_sync.version RENAME CONSTRAINT refbook_mapping_id_fk TO version__mapping_id_fk;
+
+            DELETE FROM rdm_sync.version;
+            DELETE FROM rdm_sync.field_mapping;
+            DELETE FROM rdm_sync.mapping;
+
+            CREATE TABLE rdm_sync.refbook(
+                id serial,
+                code varchar not null,
+                name varchar,
+                source_id integer not null,
+                sync_type varchar not null,
+                CONSTRAINT refbook_pk PRIMARY KEY(id)
+            );
+            COMMENT ON TABLE rdm_sync.refbook IS 'Синхронизируемые справочники';
+            COMMENT ON COLUMN rdm_sync.refbook.id IS 'Идентификатор записи';
+            COMMENT ON COLUMN rdm_sync.refbook.code IS 'Код справочника';
+            COMMENT ON COLUMN rdm_sync.refbook.name IS 'Наименование справочника';
+            COMMENT ON COLUMN rdm_sync.refbook.source_id IS 'Источник НСИ справочника';
+            COMMENT ON COLUMN rdm_sync.refbook.sync_type IS 'Тип синхронизации.  NOT_VERSIONED - неверсионная синхронизация, VERSIONED - версионная синхронизация';
+
+            ALTER TABLE rdm_sync.version ADD COLUMN ref_id integer not null;
+            ALTER TABLE rdm_sync.version ADD CONSTRAINT version_ref_id FOREIGN KEY(ref_id) REFERENCES rdm_sync.refbook(id);
+            ALTER TABLE rdm_sync.version DROP COLUMN code;
+            ALTER TABLE rdm_sync.version DROP COLUMN type;
+            COMMENT ON COLUMN rdm_sync.version.ref_id IS 'Ссылка на справочник';
+        </sql>
+    </changeSet>
+
+    <changeSet id="202111090927_refactor_schema.9.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.refbook ADD COLUMN start_version varchar;
+            COMMENT ON COLUMN rdm_sync.refbook.start_version IS 'Версия с которой начинать синхронизацию'
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
