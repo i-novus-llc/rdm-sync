@@ -37,7 +37,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     private final RdmMappingService mappingService;
 
-    public NotVersionedPersisterService(RdmSyncDao dao, @Value("${rdm.sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
+    public NotVersionedPersisterService(RdmSyncDao dao, @Value("${rdm-sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
         this.maxSize = maxSize;
         this.dao = dao;
         this.mappingService = mappingService;

@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.ms.rdm.sync</groupId>
     <artifactId>rdm-sync</artifactId>
-    <version>1.1.5-SNAPSHOT</version>
+    <version>1.1.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>rdm-sync</name>
@@ -131,6 +131,12 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <version>5.2.12.Final</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.postgresql</groupId>
+              <artifactId>postgresql</artifactId>
+              <version>42.2.18</version>
             </dependency>
 
             <dependency>

@@ -26,28 +26,36 @@
                     <output-text id="actionType" enabled="false" visible="false"/>
                 </row>
 
-                <select id="source" label="${sync.entry.page.source}"
+                <select id="source" label="${sync.mapping.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true" enabled="false"/>
 
                 <row>
-                    <output-text id="refBook.code" label="${sync.entry.page.refbook}"
-                                 label-class="w-50" enabled="false"/>
-                    <output-text id="startVersion" label="${sync.entry.page.refbook.version}"
-                                 label-class="w-50" enabled="false"/>
+                    <col size="9">
+                        <output-text id="refBook.code" label="${sync.mapping.page.refbook.code}"
+                                     label-class="w-50" enabled="false"/>
+                    </col>
+                    <col size="3">
+                        <output-text id="startVersion" label="${sync.mapping.page.refbook.version}"
+                                     label-class="w-50" enabled="false"/>
+                    </col>
                 </row>
-                <input-text id="refBook.name" label="${sync.entry.page.refbook.name}"
+
+                <output-text id="startVersionName" label="${sync.mapping.page.refbook.version.name}"
+                             label-class="w-50" enabled="false"
+                             visible="{startVersionName != null &amp;&amp; startVersionName != refBook.name}"/>
+                <input-text id="refBook.name" label="${sync.mapping.page.refbook.name}"
                             label-class="w-50" required="true"/>
 
                 <row>
                     <!--<checkbox id="autoUpdatable" label="${sync.mapping.page.refbook.auto-updatable}"/>-->
-                    <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" visible="false"/>
+                    <checkbox id="autoUpdatable" label="${sync.mapping.page.refbook.auto-updatable}" visible="false"/>
 
                     <!--<checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}"/>-->
-                    <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" visible="false"/>
+                    <checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}" visible="false"/>
                 </row>
 
-                <!--<input-select id="version" label="${sync.entry.page.refbook.version}"-->
+                <!--<input-select id="version" label="${sync.mapping.page.refbook.version}"-->
                 <!--              query-id="syncMapping" label-field-id="displayName"-->
                 <!--              required="true" label-class="w-50"-->
                 <!--              visible="{actionType != 'create'}">-->
@@ -84,8 +92,8 @@
             <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
                     <col size="1" visible="{actionType != 'create'}">
-                        <output-text id="label.isPresent" no-label="true" no-label-block="true"
-                                     default-value="${sync.mapping.page.field.isPresent}"/>
+                        <button id="label.isPresent" label="${sync.mapping.page.field.isPresent}" enabled="false"
+                                description="${sync.mapping.page.field.hint.isPresent}" tooltip-position="top"/>
                     </col>
 
                     <col size="2">

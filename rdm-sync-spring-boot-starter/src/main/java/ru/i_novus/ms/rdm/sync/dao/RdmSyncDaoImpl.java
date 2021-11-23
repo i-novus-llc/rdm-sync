@@ -74,11 +74,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<VersionMapping> getVersionMappings() {
 
-        final String sql = "SELECT r.id, code, version, \n" +
+        final String sql = "SELECT m.id, code, version, \n" +
                 "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, type  \n" +
-                "  FROM rdm_sync.refbook r\n" +
-                "  inner join rdm_sync.mapping m on m.id = r.mapping_id";
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type  \n" +
+                "  FROM rdm_sync.version ver\n" +
+                "  inner join rdm_sync.mapping m on m.id = ver.mapping_id " +
+                "  inner join rdm_sync.refbook ref on ref.id = ver.ref_id ";
 
         return namedParameterJdbcTemplate.query(sql,
                 (rs, rowNum) -> new VersionMapping(

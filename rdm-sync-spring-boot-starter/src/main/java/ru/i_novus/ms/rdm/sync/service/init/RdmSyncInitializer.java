@@ -3,16 +3,15 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @DependsOn("liquibaseRdm")
@@ -35,8 +34,8 @@ class RdmSyncInitializer {
     @Autowired
     private LocalRefBookCreatorLocator localRefBookCreatorLocator;
 
-    @Value("#{${rdm_sync.auto_create.refbook_codes:}}")
-    private Map<String, String> autoCreateRefBookCodes;
+    @Autowired
+    private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
     @PostConstruct
     public void start() {
@@ -53,12 +52,13 @@ class RdmSyncInitializer {
 
     private void autoCreate() {
 
-        if (autoCreateRefBookCodes == null)
+        if (autoCreateRefBookProperties == null)
             return;
 
-        for (Map.Entry<String, String> entry : autoCreateRefBookCodes.entrySet()) {
-            localRefBookCreatorLocator.getLocalRefBookCreator(entry.getKey()).create(entry.getKey(), entry.getValue());
-        }
+        autoCreateRefBookProperties.getRefbooks().forEach(p ->
+            localRefBookCreatorLocator.getLocalRefBookCreator(p.getType()).create(p.getName(), p.getCode())
+        );
+
     }
 
     private void sourceLoaderServiceInit() {

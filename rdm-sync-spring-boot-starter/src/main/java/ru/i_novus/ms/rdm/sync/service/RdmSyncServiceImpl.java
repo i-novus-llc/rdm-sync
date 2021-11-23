@@ -50,7 +50,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
-    @Value("${rdm.sync.load.size: 1000}")
+    @Value("${rdm-sync.load.size: 1000}")
     private int MAX_SIZE = 1000;
 
     @Value("${rdm.sync.threads.count:3}")

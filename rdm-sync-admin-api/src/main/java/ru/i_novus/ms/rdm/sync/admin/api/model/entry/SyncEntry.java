@@ -51,6 +51,9 @@ public class SyncEntry implements Serializable {
     /** Статус последнего обновления. */
     private String lastStatus;
 
+    /** Отображаемое наименование справочника. */
+    private String displayName;
+
     public SyncEntry() {
         // Nothing to do.
     }
@@ -75,7 +78,9 @@ public class SyncEntry implements Serializable {
 
                 Objects.equals(source, that.source) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
-                Objects.equals(lastStatus, that.lastStatus);
+                Objects.equals(lastStatus, that.lastStatus) &&
+
+                Objects.equals(displayName, that.displayName);
     }
 
     @Override
@@ -83,7 +88,7 @@ public class SyncEntry implements Serializable {
         return Objects.hash(id, code, name,
                 storageCode, removable,
                 versionId, version, versioned, autoUpdatable,
-                source, lastDateTime, lastStatus);
+                source, lastDateTime, lastStatus, displayName);
     }
 
     @Override
