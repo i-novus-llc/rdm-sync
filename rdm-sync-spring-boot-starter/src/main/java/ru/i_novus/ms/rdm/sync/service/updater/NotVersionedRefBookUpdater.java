@@ -138,6 +138,9 @@ public class NotVersionedRefBookUpdater implements RefBookUpdater {
             logger.info("{} sync finished", newVersion.getCode());
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
+
+            loggingService.logError(newVersion.getCode(), versionMapping.getVersion(), newVersion.getLastVersion(),
+                    e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
     }
 
