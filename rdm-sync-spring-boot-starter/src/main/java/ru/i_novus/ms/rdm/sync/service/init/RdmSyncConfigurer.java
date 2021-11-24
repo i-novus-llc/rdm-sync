@@ -9,13 +9,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
@@ -29,6 +29,7 @@ class RdmSyncConfigurer {
     private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
     private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
     private static final String LOG_JOB_CANNOT_SCHEDULE = "Cannot schedule %s job.";
+    private static final String LOG_JOB_CANNOT_DELETE = "Cannot delete %s job.";
     private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
 
     private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
@@ -51,16 +52,16 @@ class RdmSyncConfigurer {
     @Transactional
     public void setupJobs() {
 
-        if (scheduler == null) return;
+        if (scheduler == null) {
+            deleteJobs(RdmSyncImportRecordsFromRdmJob.NAME, RdmSyncExportDirtyRecordsToRdmJob.NAME);
+            return;
+        }
 
         setupImportJob();
         setupExportJob();
     }
 
     private void setupImportJob() {
-
-        if (StringUtils.isEmpty(importFromRdmCron))
-            return;
 
         final String jobName = RdmSyncImportRecordsFromRdmJob.NAME;
         try {
@@ -69,6 +70,10 @@ class RdmSyncConfigurer {
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
+            if (isEmpty(importFromRdmCron)) {
+                deleteJob(jobKey);
+                return;
+            }
 
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
             Trigger oldTrigger = scheduler.getTrigger(triggerKey);
@@ -95,9 +100,6 @@ class RdmSyncConfigurer {
 
         if (!clusterLockService.tryLock()) return;
 
-        if (StringUtils.isEmpty(exportToRdmCron))
-            return;
-
         final String jobName = RdmSyncExportDirtyRecordsToRdmJob.NAME;
         try {
             if (!scheduler.getMetaData().isJobStoreClustered()) {
@@ -105,7 +107,7 @@ class RdmSyncConfigurer {
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
-            if (changeDataMode == null) {
+            if (isEmpty(exportToRdmCron) || isEmpty(changeDataMode)) {
                 deleteJob(jobKey);
                 return;
             }
@@ -132,14 +134,6 @@ class RdmSyncConfigurer {
         }
     }
 
-    private void deleteJob(JobKey jobKey) throws SchedulerException {
-
-        if (scheduler.checkExists(jobKey)) {
-
-            scheduler.deleteJob(jobKey);
-        }
-    }
-
     private void addJob(TriggerKey triggerKey, Trigger oldTrigger,
                         JobDetail newJob, Trigger newTrigger, String cronExpression) throws SchedulerException {
 
@@ -162,6 +156,28 @@ class RdmSyncConfigurer {
 
         } else {
             logger.warn(LOG_TRIGGER_IS_NOT_CRON, triggerKey);
+        }
+    }
+
+    private void deleteJob(JobKey jobKey) throws SchedulerException {
+
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+    }
+
+    private void deleteJobs(String... jobNames) {
+
+        for (String jobName : jobNames) {
+            JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
+            try {
+                deleteJob(jobKey);
+
+            } catch (SchedulerException e) {
+
+                String message = String.format(LOG_JOB_CANNOT_DELETE, jobName);
+                logger.error(message, e);
+            }
         }
     }
 }
