@@ -9,6 +9,7 @@
 ### Описание свойств в файле ```application.properties```
 
 ###### Местонахождение таблиц Quartz в БД:
+
 - `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz (по умолчанию -- `rdm_sync_qz`).
 - `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz (по умолчанию -- `rdm_sync_qrtz_`).
 

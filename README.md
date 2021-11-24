@@ -291,6 +291,31 @@ select 'S019', 'is_required', 'boolean', 'is_required';
 
 Управление отдельными действиями (импортом и экспортом) выполняется соответствующими настройками (см. ниже).
 
+### Настройка Quartz-шедулера
+
+Настройка Quartz-шедулера задаётся параметрами
+- в файле `application.properties`:
+    ```properties
+    rdm.sync.liquibase.param.quartz_schema_name=rdm_sync_qz
+    rdm.sync.liquibase.param.quartz_table_prefix=rdm_sync_qrtz_
+    ```
+    Здесь:
+    - `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz.
+    - `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz.
+
+- в файле `quartz.properties`:
+    ```properties
+    # main
+    org.quartz.scheduler.instanceId=AUTO
+    org.quartz.scheduler.instanceName=RdmSyncScheduler
+
+    # jobStore
+    org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+    org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+    org.quartz.jobStore.tablePrefix=rdm_sync_qz.rdm_sync_qrtz_
+    org.quartz.jobStore.isClustered=true
+    ```
+
 ### Настройка периодического импорта справочников
 
 Для того чтобы гарантировать, что локальные справочники со временем будут идентичны справочникам в НСИ, желательно для них настроить обновление по таймеру.
