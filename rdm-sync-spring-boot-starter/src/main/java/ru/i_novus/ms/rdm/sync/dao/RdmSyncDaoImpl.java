@@ -157,12 +157,16 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<FieldMapping> getFieldMappings(String refbookCode) {
 
-        final String sql = "SELECT sys_field, sys_data_type, rdm_field \n" +
-                "  FROM rdm_sync.field_mapping \n" +
-                " WHERE mapping_id = (select mapping_id from rdm_sync.version v inner join rdm_sync.refbook r on r.id=v.ref_id  where code = :code)";
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field \n" +
+                "  FROM rdm_sync.field_mapping m \n" +
+                " WHERE m.mapping_id = ( \n" +
+                "       SELECT r.mapping_id \n" +
+                "         FROM rdm_sync.refbook r \n" +
+                "        WHERE r.code = :code AND r.version = :version \n" +
+                "       ) \n";
 
         return namedParameterJdbcTemplate.query(sql,
-            Map.of("code", refbookCode),
+            Map.of("code", refbookCode, "version", "CURRENT"),
             (rs, rowNum) -> new FieldMapping(
                 rs.getString(1),
                 rs.getString(2),
