@@ -75,11 +75,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<VersionMapping> getVersionMappings() {
 
         final String sql = "SELECT m.id, code, version, \n" +
-                "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type  \n" +
-                "  FROM rdm_sync.version ver\n" +
-                "  inner join rdm_sync.mapping m on m.id = ver.mapping_id " +
-                "  inner join rdm_sync.refbook ref on ref.id = ver.ref_id ";
+                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
+                "  FROM rdm_sync.version v \n" +
+                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
+                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n";
 
         return namedParameterJdbcTemplate.query(sql,
                 (rs, rowNum) -> new VersionMapping(
@@ -115,12 +115,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT m.id, code, version, \n" +
-                "       sys_table, (SELECT code FROM rdm_sync.source WHERE id = source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type  \n" +
-                "  FROM rdm_sync.version ver\n" +
-                "  inner join rdm_sync.mapping m on m.id = ver.mapping_id " +
-                "  inner join rdm_sync.refbook ref on ref.id = ver.ref_id " +
-                "WHERE code = :code and version = :version ";
+                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
+                "  FROM rdm_sync.version v \n" +
+                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
+                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
+                " WHERE code = :code and version = :version \n";
 
         List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
                 Map.of("code", refbookCode, "version", version),
@@ -160,9 +160,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field \n" +
                 "  FROM rdm_sync.field_mapping m \n" +
                 " WHERE m.mapping_id = ( \n" +
-                "       SELECT r.mapping_id \n" +
-                "         FROM rdm_sync.refbook r \n" +
-                "        WHERE r.code = :code AND r.version = :version \n" +
+                "       SELECT v.mapping_id \n" +
+                "         FROM rdm_sync.version v \n" +
+                "        WHERE v.ref_id = ( \n" +
+                "              SELECT r.id FROM rdm_sync.refbook r WHERE r.code = :code \n" +
+                "              )" +
+                "          AND v.version = :version \n" +
                 "       ) \n";
 
         return namedParameterJdbcTemplate.query(sql,
