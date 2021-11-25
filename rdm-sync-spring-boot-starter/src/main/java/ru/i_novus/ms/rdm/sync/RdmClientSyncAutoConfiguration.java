@@ -74,15 +74,16 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
+    @Primary
     @ConditionalOnProperty(name = "rdm_sync.scheduling", havingValue = "true")
-    public SchedulerFactoryBean schedulerFactoryBean() {
+    public SchedulerFactoryBean rdmSyncScheduler() {
 
-        SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
-        schedulerFactory.setJobFactory(autowiringSpringBeanJobFactory());
-        schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
-        schedulerFactory.setDataSource(dataSource);
+        SchedulerFactoryBean bean = new SchedulerFactoryBean();
+        bean.setJobFactory(autowiringSpringBeanJobFactory());
+        bean.setConfigLocation(new ClassPathResource("quartz.properties"));
+        bean.setDataSource(dataSource);
 
-        return schedulerFactory;
+        return bean;
     }
 
     @Bean
