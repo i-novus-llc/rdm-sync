@@ -4,22 +4,18 @@ import liquibase.integration.spring.SpringLiquibase;
 import net.n2oapp.platform.jaxrs.LocalDateTimeISOParameterConverter;
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
@@ -31,7 +27,6 @@ import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
-import ru.i_novus.ms.rdm.sync.quartz.AutowiringSpringBeanJobFactory;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreator;
@@ -53,38 +48,12 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
+@ConditionalOnProperty(value = "rdm_sync.enabled", matchIfMissing = true)
+@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
-@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
-@ConditionalOnProperty(
-        value = "rdm_sync.enabled",
-        matchIfMissing = true)
 public class RdmClientSyncAutoConfiguration {
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
-    private DataSource dataSource;
-
-    @Bean
-    public AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory() {
-        return new AutowiringSpringBeanJobFactory(applicationContext);
-    }
-
-    @Bean
-    @Primary
-    @ConditionalOnProperty(name = "rdm_sync.scheduling", havingValue = "true")
-    public SchedulerFactoryBean rdmSyncScheduler() {
-
-        SchedulerFactoryBean bean = new SchedulerFactoryBean();
-        bean.setJobFactory(autowiringSpringBeanJobFactory());
-        bean.setConfigLocation(new ClassPathResource("quartz.properties"));
-        bean.setDataSource(dataSource);
-
-        return bean;
-    }
 
     @Bean
     @ConditionalOnMissingBean

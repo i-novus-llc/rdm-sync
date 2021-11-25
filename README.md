@@ -299,35 +299,35 @@ select 'S019', 'is_required', 'boolean', 'is_required';
 
 ### Настройка Quartz-шедулера
 
-Настройка Quartz-шедулера задаётся параметрами
-- в файле `application.properties`:
-    ```properties
-    rdm.sync.liquibase.param.quartz_schema_name=rdm_sync_qz
-    rdm.sync.liquibase.param.quartz_table_prefix=rdm_sync_qrtz_
-    ```
-    Здесь:
-    - `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz.
-    - `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz.
+Настройка Quartz-шедулера задаётся параметрами в файле `application.properties`:
+```properties
+rdm.sync.liquibase.param.quartz_schema_name=rdm_sync_qz
+rdm.sync.liquibase.param.quartz_table_prefix=rdm_sync_qrtz_
 
-- в файле `quartz.properties`:
-    ```properties
-    # main
-    org.quartz.scheduler.instanceId=AUTO
-    org.quartz.scheduler.instanceName=RdmSyncScheduler
+## Spring Quartz
+spring.quartz.job-store-type=jdbc
+spring.quartz.jdbc.initialize-schema=never
 
-    # jobStore
-    org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
-    org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-    org.quartz.jobStore.tablePrefix=rdm_sync_qz.rdm_sync_qrtz_
-    org.quartz.jobStore.isClustered=true
-    ```
+spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
+spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
+
+# jobStore
+spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm.sync.liquibase.param.quartz_schema_name}.${rdm.sync.liquibase.param.quartz_table_prefix}
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
+```
+
+Здесь:
+- `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz.
+- `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz.
 
 ### Настройка периодического импорта справочников
 
 Для того чтобы гарантировать, что локальные справочники со временем будут идентичны справочникам в НСИ, желательно для них настроить обновление по таймеру.
 Желательно сделать это через Quartz-шедулер в кластерном режиме (и пометить Job по обновлению справочников Quartz-аннотацией org.quartz.DisallowConcurrentExecution).
 Также cron-выражения нужно выбрать аккуратно, а не так, что у вас допустим 10 справочников и для каждого одно и то же выражение. Лучше распределить импорт этих 10 справочников, например, по часовому интервалу (то есть 6 минут на каждый).
-Обычная настройка всего этого будет такая:
+Ручная настройка выполняется так:
 1) Автовайрим интерфейс ru.i_novus.ms.rdm.sync.api.service.RdmSyncService через AutowiringSpringBeanJobFactory.
    (по примеру <a href="https://stackoverflow.com/questions/6990767/inject-bean-reference-into-a-quartz-job-in-spring/15211030">отсюда</a>).
 2) И в методе org.quart.Job#execute вызываем его метод ru.i_novus.ms.rdm.sync.api.service.RdmSyncService#update(String refBookCode).
