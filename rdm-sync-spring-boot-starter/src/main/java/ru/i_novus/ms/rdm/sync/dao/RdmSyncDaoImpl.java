@@ -455,6 +455,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         "mapping_version", versionMapping.getMappingVersion(),
                         "sys_table", versionMapping.getTable(), "unique_sys_field",
                         versionMapping.getPrimaryField(), "code", versionMapping.getCode()));
+        final String updateRefbook = "update rdm_sync.refbook set source_id = (select id from rdm_sync.source where code = :code), sync_type = :type" +
+                " where code = :code";
+        namedParameterJdbcTemplate.update(updateRefbook,
+                Map.of("code", versionMapping.getSource(),
+                        "type", versionMapping.getType().toString()));
     }
 
     @Override
