@@ -267,7 +267,7 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public RdmSyncLocalRowStateService rdmSyncLocalRowStateService() {
-        return new RdmSyncLocalRowStateService();
+        return new RdmSyncLocalRowStateService(rdmSyncDao());
     }
 
     @Bean
