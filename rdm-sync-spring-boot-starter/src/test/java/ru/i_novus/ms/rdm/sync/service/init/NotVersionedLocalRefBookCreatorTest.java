@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync;
+package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,15 +10,11 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.service.init.NotVersionedLocalRefBookCreator;
 
 import java.util.*;
 
