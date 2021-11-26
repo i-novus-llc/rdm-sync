@@ -62,6 +62,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             "  END; \n" +
             "$BODY$ LANGUAGE 'plpgsql' \n";
 
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String HASH_SYS_COL = "_hash";
 
@@ -734,12 +735,21 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
-        createTable(schema, table, fieldMappings, Map.of(isDeletedFieldName, "BOOLEAN"));
+        createTable(schema, table, fieldMappings,
+                Map.of(isDeletedFieldName, "BOOLEAN",
+                        RECORD_SYS_COL, "BIGSERIAL")
+        );
     }
 
     @Override
     public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
-        createTable(schema, table, fieldMappings, Map.of(VERSIONS_SYS_COL, "text NOT NULL", HASH_SYS_COL, "text NOT NULL"));
+
+        createTable(schema, table, fieldMappings,
+                Map.of(VERSIONS_SYS_COL, "text NOT NULL",
+                        HASH_SYS_COL, "text NOT NULL",
+                        RECORD_SYS_COL, "BIGSERIAL")
+        );
+
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
     }
 
@@ -791,5 +801,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private String getInternalLocalStateUpdateTriggerName(String schema, String table) {
 
         return schema + "_" + table + "_intrnl_lcl_rw_stt_updt";
+    }
+
+    private String escapeName(String name){
+        if(name.contains(";")) {
+            throw new IllegalArgumentException(name + "illegal value");
+        }
+        if(name.contains(".")) {
+            String firstPart = escapeName(name.split("\\.")[0]);
+            String secondPart = escapeName(name.split("\\.")[1]);
+            return firstPart + "." + secondPart;
+        }
+        return "\"" + name + "\"";
+
     }
 }
