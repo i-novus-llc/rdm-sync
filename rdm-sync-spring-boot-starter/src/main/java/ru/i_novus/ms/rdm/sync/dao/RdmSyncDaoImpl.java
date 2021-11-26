@@ -63,6 +63,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             "$BODY$ LANGUAGE 'plpgsql' \n";
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";
+    private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String HASH_SYS_COL = "_hash";
 
@@ -736,8 +737,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
         createTable(schema, table, fieldMappings,
-                Map.of(isDeletedFieldName, "BOOLEAN",
-                        RECORD_SYS_COL, "BIGSERIAL")
+                Map.of(isDeletedFieldName, "boolean",
+                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
         );
     }
 
@@ -747,7 +748,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         createTable(schema, table, fieldMappings,
                 Map.of(VERSIONS_SYS_COL, "text NOT NULL",
                         HASH_SYS_COL, "text NOT NULL",
-                        RECORD_SYS_COL, "BIGSERIAL")
+                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
