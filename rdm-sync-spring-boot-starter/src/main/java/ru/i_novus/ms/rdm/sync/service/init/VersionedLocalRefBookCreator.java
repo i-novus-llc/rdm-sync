@@ -30,10 +30,12 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Override
     public void create(String code, String source) {
+
         if(rdmSyncDao.getLoadedVersion(code) != null) {
-            logger.info("auto create  for code {} was skipped", code);
+            logger.info("auto create for code {} was skipped", code);
             return;
         }
+
         logger.info("starting auto create for code {}", code);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(code, "CURRENT");
         if(versionMapping == null) {
@@ -45,8 +47,10 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String[] split = versionMapping.getTable().split("\\.");
         String schema = split[0];
         String table = split[1];
+
         rdmSyncDao.createSchemaIfNotExists(schema);
         rdmSyncDao.createVersionedTableIfNotExists(schema, table, rdmSyncDao.getFieldMappings(code));
+
         logger.info("auto create for code {} was finished", code);
     }
 }
