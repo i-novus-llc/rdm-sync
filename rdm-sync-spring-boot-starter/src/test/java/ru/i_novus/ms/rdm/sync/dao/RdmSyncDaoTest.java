@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
+
 
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
@@ -111,7 +113,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         );
         rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
         Page<Map<String, Object>> page = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, null));
-        page.getContent().forEach(row -> row.put("some_dt", ((Date) row.get("some_dt")).toLocalDate()));
+        page.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(rows, page.getContent());
 
         // добавление другой версии(upsert), поиск по версии
@@ -127,13 +129,19 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         Page<Map<String, Object>> firstVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "1.0"));
         Page<Map<String, Object>> secondVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "2.0"));
-        firstVersionData.getContent().forEach(row -> row.put("some_dt", ((Date) row.get("some_dt")).toLocalDate()));
-        secondVersionData.getContent().forEach(row -> row.put("some_dt", ((Date) row.get("some_dt")).toLocalDate()));
+        firstVersionData.getContent().forEach(this::prepareRowToAssert);
+        secondVersionData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(rows, firstVersionData.getContent());
         secondVersionData.getContent().forEach(row -> row.values().removeAll(Collections.singleton(null)));
         Assert.assertEquals(nextVersionRows, secondVersionData.getContent());
 
         //просто проставление версии
+    }
+
+    private void prepareRowToAssert(Map<String, Object> row) {
+
+        row.put("some_dt", ((Date) row.get("some_dt")).toLocalDate());
+        row.remove(RECORD_SYS_COL);
     }
 
     @Test
