@@ -425,6 +425,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     @Transactional
     public Integer insertVersionMapping(VersionMapping versionMapping) {
+
         final String insMappingSql = "insert into rdm_sync.mapping (\n" +
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
@@ -436,13 +437,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    :sys_table,\n" +
                 "    :unique_sys_field) RETURNING id";
 
-        Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql,
-                Map.of("deleted_field", versionMapping.getDeletedField(),
-                        "mapping_version", versionMapping.getMappingVersion(),
-                        "sys_table", versionMapping.getTable(),
-                        "unique_sys_field", versionMapping.getPrimaryField()),
-                Integer.class
-        );
+        Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
 
         final String insRefSql = "insert into rdm_sync.refbook(code, source_id, sync_type) values(:code, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)  RETURNING id";
         Integer refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
@@ -455,15 +450,37 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return mappingId;
     }
 
+    private Map<String, Object> toInsertMappingValues(VersionMapping versionMapping) {
+
+        Map<String, Object> result = new HashMap<>(4);
+        result.put("mapping_version", versionMapping.getMappingVersion());
+        result.put("sys_table", versionMapping.getTable());
+        result.put("unique_sys_field", versionMapping.getPrimaryField());
+        result.put("deleted_field", versionMapping.getDeletedField());
+
+        return result;
+    }
+
     @Override
     public void updateCurrentMapping(VersionMapping versionMapping) {
+
         final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
-                " where id = (select mapping_id from rdm_sync.version where version = 'CURRENT' and ref_id = (select id from rdm_sync.refbook where code = :code))";
-        namedParameterJdbcTemplate.update(sql,
-                Map.of("deleted_field", versionMapping.getDeletedField(),
-                        "mapping_version", versionMapping.getMappingVersion(),
-                        "sys_table", versionMapping.getTable(), "unique_sys_field",
-                        versionMapping.getPrimaryField(), "code", versionMapping.getCode()));
+                " where id = (select mapping_id from rdm_sync.version where version = :version and ref_id = (select id from rdm_sync.refbook where code = :code))";
+
+        namedParameterJdbcTemplate.update(sql, toUpdateMappingValues(versionMapping));
+    }
+
+    private Map<String, Object> toUpdateMappingValues(VersionMapping versionMapping) {
+
+        Map<String, Object> result = new HashMap<>(6);
+        result.put("code", versionMapping.getCode());
+        result.put("version", "CURRENT");
+        result.put("mapping_version", versionMapping.getMappingVersion());
+        result.put("sys_table", versionMapping.getTable());
+        result.put("unique_sys_field", versionMapping.getPrimaryField());
+        result.put("deleted_field", versionMapping.getDeletedField());
+
+        return result;
     }
 
     @Override
