@@ -114,6 +114,9 @@ public class NotVersionedRefBookUpdater implements RefBookUpdater {
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
         validateStructureAndMapping(newVersion, fieldMappings);
         LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
+        if (dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable())){
+            dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+        }
         try {
             PersisterService persisterService = persisterServiceLocator.getPersisterService(versionMapping.getCode());
             if (loadedVersion == null) {
@@ -138,9 +141,10 @@ public class NotVersionedRefBookUpdater implements RefBookUpdater {
             logger.info("{} sync finished", newVersion.getCode());
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
-
-            loggingService.logError(newVersion.getCode(), versionMapping.getVersion(), newVersion.getLastVersion(),
-                    e.getMessage(), ExceptionUtils.getStackTrace(e));
+        } finally {
+            if (dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable())){
+                dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+            }
         }
     }
 

@@ -178,6 +178,26 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     }
 
+    @Test
+    public void testInternalLocalRowStateUpdateTriggerListIsEmpty(){
+        rdmSyncDao.createVersionedTableIfNotExists(
+                "public",
+                "ref_ek001_ver",
+                List.of(
+                        new FieldMapping("ID", "integer", "ID"),
+                        new FieldMapping("name", "varchar", "NAME"),
+                        new FieldMapping("some_dt", "date", "DT"),
+                        new FieldMapping("flag", "boolean", "FLAG")));
+
+        List<Map<String, Object>> rows = List.of(
+                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
+        rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
+        boolean actual = rdmSyncDao.existsInternalLocalRowStateUpdateTrigger("public.ref_ek001_ver");
+        Assert.assertFalse(actual);
+    }
+
     private void assertEquals(VersionMapping expected, VersionMapping actual) {
         Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
         Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());

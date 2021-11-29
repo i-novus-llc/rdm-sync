@@ -89,8 +89,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
 
-
-
     @PreDestroy
     public void destroy() {
         executorService.shutdownNow();
@@ -140,7 +138,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         validateStructureAndMapping(newVersion, fieldMappings);
         LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
 
-        dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+        if (dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable())) {
+            dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+        }
         try {
             PersisterService persisterService = persisterServiceLocator.getPersisterService(versionMapping.getCode());
             if (loadedVersion == null) {
@@ -166,7 +166,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
         } finally {
-            dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+            if (dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable())) {
+                dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+            }
         }
     }
 

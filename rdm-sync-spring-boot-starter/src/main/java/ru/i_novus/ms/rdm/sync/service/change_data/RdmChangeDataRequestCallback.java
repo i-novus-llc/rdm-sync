@@ -63,7 +63,9 @@ public abstract class RdmChangeDataRequestCallback {
         String table = vm.getTable();
         List<Object> pks = RdmSyncDataUtils.extractSnakeCaseKey(pk, addUpdate);
 
-        dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
+        if (dao.existsInternalLocalRowStateUpdateTrigger(vm.getTable())) {
+            dao.disableInternalLocalRowStateUpdateTrigger(vm.getTable());
+        }
         try {
             boolean stateChanged = dao.setLocalRecordsState(table, pk, pks, RdmSyncLocalRowState.PENDING, state);
             if (!stateChanged) {
@@ -71,7 +73,10 @@ public abstract class RdmChangeDataRequestCallback {
                 throw new RdmException();
             }
         } finally {
-            dao.enableInternalLocalRowStateUpdateTrigger(vm.getTable());
+            if (dao.existsInternalLocalRowStateUpdateTrigger(vm.getTable())) {
+                dao.enableInternalLocalRowStateUpdateTrigger(vm.getTable());
+            }
+
         }
     }
 
