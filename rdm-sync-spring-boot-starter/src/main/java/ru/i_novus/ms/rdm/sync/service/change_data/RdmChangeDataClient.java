@@ -81,6 +81,7 @@ public abstract class RdmChangeDataClient {
         }
 
         boolean ensureState = false;
+        boolean haveTrigger = dao.existsInternalLocalRowStateUpdateTrigger(mapping.getTable());
         ListIterator<? extends T> it = addUpdate.listIterator(addUpdate.size());
         if (it.hasPrevious() && it.previous() == INTERNAL_TAG) {
             ensureState = true;
@@ -90,7 +91,7 @@ public abstract class RdmChangeDataClient {
         if (ensureState) {
             List<Object> list = new ArrayList<>(extractSnakeCaseKey(mapping.getPrimaryField(), addUpdate));
             list.addAll(extractSnakeCaseKey(mapping.getPrimaryField(), delete));
-            if (dao.existsInternalLocalRowStateUpdateTrigger(mapping.getTable())){
+            if (haveTrigger){
                 dao.disableInternalLocalRowStateUpdateTrigger(mapping.getTable());
             }
             try {
@@ -101,7 +102,7 @@ public abstract class RdmChangeDataClient {
                     throw new RdmException();
                 }
             } finally {
-                if (dao.existsInternalLocalRowStateUpdateTrigger(mapping.getTable())) {
+                if (haveTrigger) {
                     dao.enableInternalLocalRowStateUpdateTrigger(mapping.getTable());
                 }
             }
