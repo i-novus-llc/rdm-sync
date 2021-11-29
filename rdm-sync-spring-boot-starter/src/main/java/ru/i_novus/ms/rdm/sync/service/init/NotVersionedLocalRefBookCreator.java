@@ -63,14 +63,13 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     private void createTable(String refBookCode, VersionMapping mapping) {
+
         String[] split = mapping.getTable().split("\\.");
         String schema = split[0];
         String table = split[1];
 
-
         dao.createSchemaIfNotExists(schema);
         dao.createTableIfNotExists(schema, table, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
-
 
         logger.info("Preparing table {} in schema {}.", table, schema);
 
