@@ -156,7 +156,6 @@ Liquibase в rdm-sync запускается ПОСЛЕ общего Liquibase, 
 ```properties
 ## Spring Quartz
 spring.quartz.job-store-type=jdbc
-spring.quartz.jdbc.initialize-schema=never
 
 spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
 spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler

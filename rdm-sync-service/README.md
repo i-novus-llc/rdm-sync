@@ -27,18 +27,38 @@ mvn clean package -Pproduction
 - `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz (по умолчанию -- `rdm_sync_qz`).
 - `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz (по умолчанию -- `rdm_sync_qrtz_`).
 
-#### Настройка Quartz
+#### Рекомендуемые настройки Quartz
 
-Настройка Quartz приведена в [стартере](../rdm-sync-spring-boot-starter/README.md#Рекомендуемые настройки Quartz)
-При этом значение `spring.quartz.properties.org.quartz.jobStore.tablePrefix` задаётся так:
 ```properties
+## Spring Quartz
+spring.quartz.job-store-type=jdbc
+spring.quartz.jdbc.initialize-schema=<value>
+
+spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
+spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
+
+# jobStore
+spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
 spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm.sync.liquibase.param.quartz_schema_name}.${rdm.sync.liquibase.param.quartz_table_prefix}
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
 ```
+
+Здесь значение `spring.quartz.jdbc.initialize-schema` определяется клиентским приложением.
+
+Если приложение уже использует Quartz, то значение не нужно менять, т.к. liquibase не будет создавать таблицы для Quartz.
+
+Если приложение не использует Quartz, то значение должно быть `never`, т.к. liquibase только один раз создаст таблицы для Quartz.
+Если необходимо заново создавать таблицы каждый раз при запуске, необходимо создать кастомный скрипт и задать его наименование в настройке `spring.quartz.jdbc.schema`.
 
 ## Настройки
 
-Обязательно должны быть переопределены следующие настройки:
+Обязательно должны быть определены следующие настройки:
 ```properties
+
 rdm.sync.liquibase.param.quartz_schema_name=
 rdm.sync.liquibase.param.quartz_table_prefix=
+
+spring.quartz.jdbc.initialize-schema=
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm.sync.liquibase.param.quartz_schema_name}.${rdm.sync.liquibase.param.quartz_table_prefix}
 ```
