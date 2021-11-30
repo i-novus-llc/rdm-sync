@@ -103,7 +103,7 @@ rdm_sync.fnsi.userKey=4191f0cf-b100-4d80-a392-6cee9432deea
 |rdm_sync.import.from_rdm.cron| 0 * * * * ?| Крон для загрузки данных из НСИ|
 |rdm_sync.export.to_rdm.cron| 0 * * * * ?| Крон для загрузки данных в НСИ (только для RDM)|
 |rdm-sync.load.size| 1000| Кол-во записей на странице при получении данных из нси|
-|rdm.sync.threads.coun| 1| Кол-во потоков в пуле на синхронизацию справочников. 1 поток выделяется на один справочник|
+|rdm.sync.threads.count| 1| Кол-во потоков в пуле на синхронизацию справочников. 1 поток выделяется на один справочник|
 
 
 ## Настройка маппинга
@@ -120,14 +120,14 @@ rdm_sync.fnsi.userKey=4191f0cf-b100-4d80-a392-6cee9432deea
 - code -- код справочника в НСИ,
 - sys_table -- название таблицы в БД клиента,
 - unique_sys_field -- заполняем значением "code",
-- deleted_field -- заполняем значением "is_deleted".
+- deleted_field -- заполняем значением "deleted_ts".
   Добавляем запись на каждое поле справочника (которое нужно скопировать в БД клиента) в rdm_sync.field_mapping.
   Поле справочника, которое является первичным ключом справочника в НСИ, должно маппиться в колонку code.
 
 Пример:
 ```sql
 insert into rdm_sync.version(code, sys_table, unique_sys_field, deleted_field)
-select 'S019', 'rdm.grade_test', 'code', 'is_deleted';
+select 'S019', 'rdm.grade_test', 'code', 'deleted_ts';
 
 insert into rdm_sync.field_mapping(code, sys_field, sys_data_type, rdm_field)
 select 'S019', 'code', 'varchar', 'id';
@@ -153,13 +153,13 @@ select 'S019', 'is_required', 'boolean', 'is_required';
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapping>
 
-    <refbook code="T001" sys-table="rdm.test_rb" unique-sys-field="code" deleted-field="is_deleted" mapping-version="1">
+    <refbook code="T001" sys-table="rdm.test_rb" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
         <field sys-field="doc_number" sys-data-type="integer" rdm-field="doc_num"/>
     </refbook>
 
-    <refbook code="R001" sys-table="rdm.some_table" unique-sys-field="code" deleted-field="is_deleted" mapping-version="1">
+    <refbook code="R001" sys-table="rdm.some_table" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
     </refbook>
@@ -185,10 +185,10 @@ select 'S019', 'is_required', 'boolean', 'is_required';
 Таблицы создавать в схеме rdm.
 
 Таблица должна содержать технические колонки:
-- `bigserial _sync_rec_id` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
+- `_sync_rec_id bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
 - `code` -- колонка с любым типом, совместимым с типом первичного ключа справочника НСИ.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
-- `is_deleted` -- признак удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
+- `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
 
 Таблица версионного справочника должна также содержать технические колонки:
 - `text _versions` -- версии справочника, в которых присутствует текущая запись.

@@ -11,6 +11,7 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -105,10 +106,10 @@ public interface RdmSyncDao {
      * @param primaryField   поле - первичный ключ в таблице клиента
      * @param isDeletedField поле - признак удаления записи в таблице клиента
      * @param primaryValue   значение первичного ключа записи
-     * @param deleted        новое значение для поля isDeletedField
+     * @param deletedTime    дата удаления, если строка не удаленна то null
      */
     void markDeleted(String schemaTable, String primaryField, String isDeletedField,
-                     Object primaryValue, boolean deleted, boolean markSynced);
+                     Object primaryValue, @Nullable LocalDateTime deletedTime, boolean markSynced);
 
     /**
      * Пометить все записи справочника клиента как (не)удалённые.
