@@ -52,10 +52,8 @@ class RdmSyncConfigurer {
     @Transactional
     public void setupJobs() {
 
-        if (scheduler == null) {
-            deleteJobs(RdmSyncImportRecordsFromRdmJob.NAME, RdmSyncExportDirtyRecordsToRdmJob.NAME);
+        if (scheduler == null)
             return;
-        }
 
         setupImportJob();
         setupExportJob();
@@ -163,21 +161,6 @@ class RdmSyncConfigurer {
 
         if (scheduler.checkExists(jobKey)) {
             scheduler.deleteJob(jobKey);
-        }
-    }
-
-    private void deleteJobs(String... jobNames) {
-
-        for (String jobName : jobNames) {
-            JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
-            try {
-                deleteJob(jobKey);
-
-            } catch (SchedulerException e) {
-
-                String message = String.format(LOG_JOB_CANNOT_DELETE, jobName);
-                logger.error(message, e);
-            }
         }
     }
 }
