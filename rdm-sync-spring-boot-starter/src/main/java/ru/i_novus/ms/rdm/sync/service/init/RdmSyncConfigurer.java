@@ -9,13 +9,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
@@ -45,22 +45,20 @@ class RdmSyncConfigurer {
     @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
 
-    @Value("${rdm_sync.change_data.mode:null}")
+    @Value("${rdm_sync.change_data.mode}")
     private String changeDataMode;
 
     @Transactional
     public void setupJobs() {
 
-        if (scheduler == null) return;
+        if (scheduler == null)
+            return;
 
         setupImportJob();
         setupExportJob();
     }
 
     private void setupImportJob() {
-
-        if (StringUtils.isEmpty(importFromRdmCron))
-            return;
 
         final String jobName = RdmSyncImportRecordsFromRdmJob.NAME;
         try {
@@ -69,6 +67,10 @@ class RdmSyncConfigurer {
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
+            if (isEmpty(importFromRdmCron)) {
+                deleteJob(jobKey);
+                return;
+            }
 
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
             Trigger oldTrigger = scheduler.getTrigger(triggerKey);
@@ -95,9 +97,6 @@ class RdmSyncConfigurer {
 
         if (!clusterLockService.tryLock()) return;
 
-        if (StringUtils.isEmpty(exportToRdmCron))
-            return;
-
         final String jobName = RdmSyncExportDirtyRecordsToRdmJob.NAME;
         try {
             if (!scheduler.getMetaData().isJobStoreClustered()) {
@@ -105,7 +104,7 @@ class RdmSyncConfigurer {
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
-            if (changeDataMode == null) {
+            if (isEmpty(exportToRdmCron) || isEmpty(changeDataMode)) {
                 deleteJob(jobKey);
                 return;
             }
@@ -132,14 +131,6 @@ class RdmSyncConfigurer {
         }
     }
 
-    private void deleteJob(JobKey jobKey) throws SchedulerException {
-
-        if (scheduler.checkExists(jobKey)) {
-
-            scheduler.deleteJob(jobKey);
-        }
-    }
-
     private void addJob(TriggerKey triggerKey, Trigger oldTrigger,
                         JobDetail newJob, Trigger newTrigger, String cronExpression) throws SchedulerException {
 
@@ -162,6 +153,13 @@ class RdmSyncConfigurer {
 
         } else {
             logger.warn(LOG_TRIGGER_IS_NOT_CRON, triggerKey);
+        }
+    }
+
+    private void deleteJob(JobKey jobKey) throws SchedulerException {
+
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
         }
     }
 }

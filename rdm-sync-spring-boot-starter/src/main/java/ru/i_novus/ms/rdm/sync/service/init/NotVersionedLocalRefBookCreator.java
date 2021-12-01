@@ -5,23 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
@@ -41,22 +33,30 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private final RdmSyncDao dao;
 
 
-    public NotVersionedLocalRefBookCreator(@Value("${rdm_sync.auto_create.schema:rdm}") String schema, RdmSyncDao dao, SyncSourceDao syncSourceDao, Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+    public NotVersionedLocalRefBookCreator(@Value("${rdm_sync.auto_create.schema:rdm}") String schema,
+                                           RdmSyncDao dao,
+                                           SyncSourceDao syncSourceDao,
+                                           Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
         super(schema, syncSourceDao, syncSourceServiceFactories);
+
         this.dao = dao;
     }
 
     @Transactional
     @Override
     public void create(String refBookCode, String source) {
+
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
             return;
         }
+
         logger.info(LOG_AUTOCREATE_START, refBookCode);
+
         VersionMapping mapping = createMapping(refBookCode, source);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
+
         if(mapping != null) {
             createTable(refBookCode, mapping);
         }
@@ -81,6 +81,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     private VersionMapping createMapping(String refBookCode, String sourceCode) {
+
         RefBook lastPublished;
         try {
             lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
@@ -97,16 +98,17 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         }
         String uniqueSysField = structure.getPrimaries().get(0);
 
-        String sysTable =getTableName(refBookCode);
+        String sysTable = getTableName(refBookCode);
 
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
+
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
             fields.add(new FieldMapping(attr.getKey(), DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0), attr.getKey()));
         }
-
         dao.insertFieldMapping(mappingId, fields);
+
         return versionMapping;
     }
 }

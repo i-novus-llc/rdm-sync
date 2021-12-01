@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync;
+package ru.i_novus.ms.rdm.sync.service.persister;
 
 import org.junit.Before;
 import org.junit.Test;

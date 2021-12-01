@@ -1,14 +1,14 @@
 package ru.i_novus.ms.rdm.sync.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
-@Component
 public class RdmSyncLocalRowStateService {
 
-    @Autowired
-    private RdmSyncDao dao;
+    private final RdmSyncDao dao;
+
+    public RdmSyncLocalRowStateService(RdmSyncDao dao) {
+        this.dao = dao;
+    }
 
     /**
      * @param table Таблица с локальным записями

@@ -7,10 +7,7 @@ import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -50,13 +47,11 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
+@ConditionalOnProperty(value = "rdm_sync.enabled", matchIfMissing = true)
+@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
-@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
-@ConditionalOnProperty(
-        value = "rdm_sync.enabled",
-        matchIfMissing = true)
 public class RdmClientSyncAutoConfiguration {
 
     @Bean
@@ -236,7 +231,7 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public RdmSyncLocalRowStateService rdmSyncLocalRowStateService() {
-        return new RdmSyncLocalRowStateService();
+        return new RdmSyncLocalRowStateService(rdmSyncDao());
     }
 
     @Bean
