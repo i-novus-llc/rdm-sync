@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync;
+package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,20 +12,13 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.service.init.VersionedLocalRefBookCreator;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 

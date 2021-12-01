@@ -15,7 +15,7 @@ public class RdmSourceLoaderService implements SourceLoaderService {
 
     private final SyncSourceDao dao;
 
-        @Autowired
+    @Autowired
     public RdmSourceLoaderService(String url, SyncSourceDao dao) {
         this.url = url;
         this.dao = dao;
@@ -27,5 +27,4 @@ public class RdmSourceLoaderService implements SourceLoaderService {
         dao.save(source);
         logger.info("load source with\n name: {} \n code: {} \n init_values: {} \n service: {}", source.getName(),source.getCode(),source.getInitValues(),source.getFactoryName());
     }
-
 }

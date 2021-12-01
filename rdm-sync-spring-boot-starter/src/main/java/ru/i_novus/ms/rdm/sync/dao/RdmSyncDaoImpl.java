@@ -303,14 +303,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void markDeleted(String schemaTable, String primaryField, String isDeletedField,
-                            Object primaryValue, boolean deleted, boolean markSynced) {
+                            Object primaryValue, LocalDateTime deletedTime, boolean markSynced) {
 
-        Map<String, Object> args = markSynced
-                ? Map.of(primaryField, primaryValue,
-                isDeletedField, deleted,
-                RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name())
-                : Map.of(primaryField, primaryValue,
-                isDeletedField, deleted);
+        Map<String, Object> args = new HashMap<>();
+        args.put(primaryField, primaryValue);
+        args.put(isDeletedField, deletedTime);
+        if (markSynced)
+            args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
 
         executeUpdate(schemaTable, Collections.singletonList(args), primaryField);
     }
@@ -624,9 +623,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         args.put("state", localDataCriteria.getState().name());
         if (localDataCriteria.getDeleted() != null) {
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
-                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " = true";
+                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null";
             } else {
-                sql += " AND coalesce(" + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + ", false) = false";
+                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null ";
             }
         }
 
@@ -721,7 +720,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                         Object val = rs.getObject(i);
                         String key = rs.getMetaData().getColumnName(i);
-                        map.put(key, val);
+                        if(val instanceof Timestamp) {
+                                val = ((Timestamp)val).toLocalDateTime();
+                            }
+                            map.put(key, val);
                     }
 
                     return map;
@@ -772,7 +774,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
 
         createTable(schema, table, fieldMappings,
-                Map.of(isDeletedFieldName, "boolean",
+                Map.of(isDeletedFieldName, "timestamp without time zone",
                         RECORD_SYS_COL, RECORD_SYS_COL_INFO)
         );
     }

@@ -30,7 +30,7 @@ import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
 
-    private static final String IS_DELETED_COLUMN = "is_deleted";
+    private static final String IS_DELETED_COLUMN = "deleted_ts";
 
     @Configuration
     static class Config {
@@ -166,7 +166,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     public void testSaveVersionMapping() {
         String version = "CURRENT";
         String refBookCode = "test";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, version, "test_table","CODE-1", "id", "is_deleted", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, version, "test_table","CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(versionMapping.getCode(), actual.getCode());

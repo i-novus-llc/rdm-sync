@@ -124,13 +124,13 @@ public class NotVersionedPersisterService implements PersisterService {
         boolean idExists = dao.isIdExists(table, primaryField, primaryValue);
 
         if (DELETED.equals(rowDiff.getStatus())) {
-            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, true, true);
+            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, newVersion.getLastPublishDate(), true);
 
         } else if (INSERTED.equals(rowDiff.getStatus()) && !idExists) {
             dao.insertRow(table, mappedRow, true);
 
         } else {
-            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, false, true);
+            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, null, true);
             dao.updateRow(table, primaryField, mappedRow, true);
         }
     }

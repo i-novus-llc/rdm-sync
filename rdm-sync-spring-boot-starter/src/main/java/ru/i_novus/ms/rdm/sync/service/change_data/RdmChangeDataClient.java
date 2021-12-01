@@ -170,7 +170,7 @@ public abstract class RdmChangeDataClient {
                 dao.insertRow(localTable, map, false);
 
             else {
-                dao.markDeleted(localTable, primaryField, isDeletedField, primaryValue, false, false);
+                dao.markDeleted(localTable, primaryField, isDeletedField, primaryValue, null, false);
                 dao.updateRow(localTable, primaryField, map, false);
             }
 

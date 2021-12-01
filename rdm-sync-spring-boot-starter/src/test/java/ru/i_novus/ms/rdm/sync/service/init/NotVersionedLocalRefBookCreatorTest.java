@@ -10,10 +10,7 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
@@ -34,9 +31,6 @@ public class NotVersionedLocalRefBookCreatorTest {
     private RdmSyncDao rdmSyncDao;
 
     @Mock
-    private RdmSyncService rdmSyncService;
-
-    @Mock
     private SyncSourceDao syncSourceDao;
 
     @Spy
@@ -49,7 +43,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     private SyncSourceService syncSourceService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
         when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
@@ -86,7 +80,7 @@ public class NotVersionedLocalRefBookCreatorTest {
         verify(rdmSyncDao, times(1)).insertVersionMapping(mappingCaptor.capture());
         Assert.assertEquals(code, mappingCaptor.getValue().getCode());
         Assert.assertEquals(-1, mappingCaptor.getValue().getMappingVersion());
-        Assert.assertEquals("is_deleted", mappingCaptor.getValue().getDeletedField());
+        Assert.assertEquals("deleted_ts", mappingCaptor.getValue().getDeletedField());
         Assert.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
         Assert.assertEquals("id", mappingCaptor.getValue().getPrimaryField());
         Assert.assertEquals("TEST_SOURCE_CODE",mappingCaptor.getValue().getSource());
@@ -101,7 +95,7 @@ public class NotVersionedLocalRefBookCreatorTest {
                         eq("rdm"),
                         eq("ref_test_code"),
                         argThat(ignoreOrderEqList(expectedFieldMappingList)),
-                        eq("is_deleted"));
+                        eq("deleted_ts"));
 
 
     }
