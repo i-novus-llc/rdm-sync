@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
-import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
@@ -20,8 +18,6 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
-import ru.i_novus.ms.rdm.sync.service.persister.PersisterServiceLocator;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 
 import javax.annotation.PostConstruct;
@@ -33,7 +29,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,17 +57,13 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             "Reference book with code '%s' not found.";
     private static final String NO_PRIMARY_KEY_FOUND =
             "Reference book with code '%s' has not primary key.";
-    private static final String USED_FIELD_IS_DELETED =
-            "Field '%s' was deleted in version with code '%s'. Update your mappings.";
+
 
     @Autowired
     private RdmLoggingService loggingService;
 
     @Autowired
     private RdmSyncDao dao;
-
-    @Autowired
-    private PersisterServiceLocator persisterServiceLocator;
 
     @Autowired
     private SyncSourceService syncSourceService;
@@ -87,8 +78,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     public void init() {
         executorService = Executors.newFixedThreadPool(threadsCount);
     }
-
-
 
 
     @PreDestroy
@@ -131,59 +120,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     @Override
-    @Transactional
-    public void update(RefBook newVersion, VersionMapping versionMapping) {
-
-        logger.info("{} sync started", newVersion.getCode());
-        // Если изменилась структура, проверяем актуальность полей в маппинге
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
-        validateStructureAndMapping(newVersion, fieldMappings);
-        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
-
-        dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
-        try {
-            PersisterService persisterService = persisterServiceLocator.getPersisterService(versionMapping.getCode());
-            if (loadedVersion == null) {
-                //заливаем с нуля
-                persisterService.firstWrite(newVersion, versionMapping, syncSourceService);
-
-            } else if (isNewVersionPublished(newVersion, loadedVersion)) {
-                //если версия и дата публикация не совпадают - нужно обновить справочник
-                persisterService.merge(newVersion, loadedVersion.getVersion(), versionMapping, syncSourceService);
-
-            } else if (isMappingChanged(versionMapping, loadedVersion)) {
-//              Значит в прошлый раз мы синхронизировались по старому маппингу.
-//              Необходимо полностью залить свежую версию.
-                persisterService.repeatVersion(newVersion, versionMapping, syncSourceService);
-            }
-            if (loadedVersion != null) {
-                //обновляем версию в таблице версий клиента
-                dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
-            } else {
-                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
-            }
-            logger.info("{} sync finished", newVersion.getCode());
-        } catch (Exception e) {
-            logger.error("cannot sync " + versionMapping.getCode(), e);
-        } finally {
-            dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
-        }
-    }
-
-    @Override
     public List<Log> getLog(LogCriteria criteria) {
         return loggingService.getList(criteria.getDate(), criteria.getRefbookCode());
-    }
-
-
-    private boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
-
-        return !loadedVersion.getVersion().equals(newVersion.getLastVersion())
-                && !loadedVersion.getPublicationDate().equals(newVersion.getLastPublishDate());
-    }
-
-    private boolean isMappingChanged(VersionMapping versionMapping, LoadedVersion loadedVersion) {
-        return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
     }
 
     @Override
@@ -222,29 +160,5 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             }
         };
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();
-    }
-
-    @Override
-    public RefBook getLastPublishedVersion(String refBookCode) {
-        RefBook refBook = syncSourceService.getRefBook(refBookCode);
-        if (refBook == null)
-            throw new IllegalArgumentException(String.format(REFBOOK_WITH_CODE_NOT_FOUND, refBookCode));
-
-        if (!refBook.getStructure().hasPrimary())
-            throw new IllegalStateException(String.format(NO_PRIMARY_KEY_FOUND, refBookCode));
-        return refBook;
-    }
-
-    private void validateStructureAndMapping(RefBook newVersion, List<FieldMapping> fieldMappings) {
-
-        List<String> clientRdmFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(toList());
-        Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
-        if (!actualFields.containsAll(clientRdmFields)) {
-            // В новой версии удалены поля, которые ведутся в системе
-            clientRdmFields.removeAll(actualFields);
-            throw new IllegalStateException(String.format(USED_FIELD_IS_DELETED,
-                    String.join(",", clientRdmFields), newVersion.getCode()));
-        }
-
     }
 }

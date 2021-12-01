@@ -45,7 +45,7 @@ class RdmSyncConfigurer {
     @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
 
-    @Value("${rdm_sync.change_data.mode}")
+    @Value("${rdm_sync.change_data.mode:#{null}}")
     private String changeDataMode;
 
     @Transactional

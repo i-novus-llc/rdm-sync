@@ -137,17 +137,18 @@ public interface RdmSyncDao {
     void addInternalLocalRowStateColumnIfNotExists(String schema, String table);
     void disableInternalLocalRowStateUpdateTrigger(String table);
     void enableInternalLocalRowStateUpdateTrigger(String table);
+    boolean existsInternalLocalRowStateUpdateTrigger(String table);
 
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
 
     Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria);
-
     <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
                                      RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
-    RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
 
+    RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
     void createSchemaIfNotExists(String schema);
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
+
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
 
     SyncRefBook getSyncRefBook(String code);

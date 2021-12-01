@@ -26,6 +26,8 @@ public class XmlMappingRefBook {
 
     private String source;
 
+    private SyncTypeEnum type;
+
     private String version;
 
     @XmlAttribute(name = "code", required = true)
@@ -94,8 +96,17 @@ public class XmlMappingRefBook {
         this.source = source;
     }
 
+    @XmlAttribute
+    public SyncTypeEnum getType() {
+        return type;
+    }
+
+    public void setType(SyncTypeEnum type) {
+        this.type = type;
+    }
+
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, SyncTypeEnum.NOT_VERSIONED);
+        return new VersionMapping(null, code, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
@@ -108,6 +119,7 @@ public class XmlMappingRefBook {
         result.setDeletedField(mapping.getDeletedField());
         result.setSysTable(mapping.getTable());
         result.setSource(mapping.getSource());
+        result.setType(mapping.getType());
 
         return result;
     }

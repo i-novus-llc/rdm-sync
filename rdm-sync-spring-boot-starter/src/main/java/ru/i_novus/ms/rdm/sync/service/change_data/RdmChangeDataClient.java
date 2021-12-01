@@ -81,6 +81,7 @@ public abstract class RdmChangeDataClient {
         }
 
         boolean ensureState = false;
+        boolean haveTrigger = dao.existsInternalLocalRowStateUpdateTrigger(mapping.getTable());
         ListIterator<? extends T> it = addUpdate.listIterator(addUpdate.size());
         if (it.hasPrevious() && it.previous() == INTERNAL_TAG) {
             ensureState = true;
@@ -90,8 +91,9 @@ public abstract class RdmChangeDataClient {
         if (ensureState) {
             List<Object> list = new ArrayList<>(extractSnakeCaseKey(mapping.getPrimaryField(), addUpdate));
             list.addAll(extractSnakeCaseKey(mapping.getPrimaryField(), delete));
-
-            dao.disableInternalLocalRowStateUpdateTrigger(mapping.getTable());
+            if (haveTrigger){
+                dao.disableInternalLocalRowStateUpdateTrigger(mapping.getTable());
+            }
             try {
                 boolean stateChanged = dao.setLocalRecordsState(mapping.getTable(), mapping.getPrimaryField(),
                         list, RdmSyncLocalRowState.DIRTY, RdmSyncLocalRowState.PENDING);
@@ -100,16 +102,18 @@ public abstract class RdmChangeDataClient {
                     throw new RdmException();
                 }
             } finally {
-                dao.enableInternalLocalRowStateUpdateTrigger(mapping.getTable());
+                if (haveTrigger) {
+                    dao.enableInternalLocalRowStateUpdateTrigger(mapping.getTable());
+                }
             }
         }
 
         changeData0(refBookCode, addUpdate, delete, map);
     }
 
-    abstract <T extends Serializable>  void changeData0(String refBookCode,
-                                                        List<? extends T> addUpdate, List<? extends T> delete,
-                                                        Function<? super T, Map<String, Object>> map);
+    abstract <T extends Serializable> void changeData0(String refBookCode,
+                                                       List<? extends T> addUpdate, List<? extends T> delete,
+                                                       Function<? super T, Map<String, Object>> map);
 
     /**
      * Этот метод сам попытается преобразовать экземпляр класса {@code <T>} в набор {@code Map<String, Object> M}, используя следующие правила:
@@ -142,7 +146,7 @@ public abstract class RdmChangeDataClient {
      *
      * @param addUpdate  Записи, которые нужно вставить/изменить в локальной таблице и, со временем, в RDM.
      * @param localTable Локальная таблица с данными (с явно указанными схемой и названием таблицы)
-     * @param toMap        Функция для преобразования экземпляра класса {@code <T>} в {@code Map<String, Object>},
+     * @param toMap      Функция для преобразования экземпляра класса {@code <T>} в {@code Map<String, Object>},
      *                   ключами которой идут соответствующие колонки и типы данных в локальной таблице клиента.
      * @param <T>        Этот параметр должен реализовывать интерфейс Serializable (для единообразия)
      */
