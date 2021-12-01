@@ -49,7 +49,7 @@ public class NotVersionedPersisterServiceTest {
     public void testFirstTimeUpdate() {
 
         RefBook firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "","id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
         Page<Map<String, Object>> data = createFirstRdmData();
@@ -79,9 +79,8 @@ public class NotVersionedPersisterServiceTest {
 
         RefBook firstVersion = createFirstRdmVersion();
         RefBook secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "","id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", firstVersion.getLastVersion(),  "test_table", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
-        Page<RefBookRowValue> data = createSecondRdmData();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
         VersionsDiff diff = prepareUpdateRefBookDataDiff();
 
@@ -91,7 +90,7 @@ public class NotVersionedPersisterServiceTest {
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
 
         persisterService.merge(secondVersion, firstVersion.getLastVersion(), versionMapping, syncSourceService);
-        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), true, true);
+        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), secondVersion.getLastPublishDate(), true);
         verify(dao).insertRow(versionMapping.getTable(), dataMap.get(1), true);
     }
 
@@ -105,7 +104,7 @@ public class NotVersionedPersisterServiceTest {
 
         RefBook oldVersion = createSecondRdmVersion();
         RefBook newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "","id", "is_deleted", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", oldVersion.getLastVersion(),  "test_table", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
@@ -116,7 +115,7 @@ public class NotVersionedPersisterServiceTest {
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
         when(dao.isIdExists(versionMapping.getTable(), versionMapping.getPrimaryField(), BigInteger.ONE)).thenReturn(true);
         persisterService.merge(newVersion, oldVersion.getLastVersion(), versionMapping, syncSourceService);
-        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), false, true);
+        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), null, true);
         verify(dao).updateRow(versionMapping.getTable(), versionMapping.getPrimaryField(), dataMap.get(2), true);
     }
 
@@ -129,7 +128,7 @@ public class NotVersionedPersisterServiceTest {
         RefBook firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
         when(dao.getFieldMappings(firstRdmVersion.getCode())).thenReturn(fieldMappings);
-        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), firstRdmVersion.getLastVersion(), testTable, "","id", "is_deleted", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), firstRdmVersion.getLastVersion(), testTable, "","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(firstRdmVersion.getCode())))).thenReturn(data);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());

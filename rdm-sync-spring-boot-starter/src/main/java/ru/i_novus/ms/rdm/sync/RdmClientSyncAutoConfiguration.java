@@ -21,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
 import ru.i_novus.ms.rdm.api.provider.*;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
-import ru.i_novus.ms.rdm.api.util.json.LocalDateTimeMapperPreparer;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -142,11 +141,6 @@ public class RdmClientSyncAutoConfiguration {
         return new OffsetDateTimeParamConverter();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LocalDateTimeMapperPreparer localDateTimeMapperPreparer() {
-        return new LocalDateTimeMapperPreparer();
-    }
 
     @Bean
     @ConditionalOnMissingBean

@@ -92,7 +92,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         }
 
         RefBookStructure structure = lastPublished.getStructure();
-        String isDeletedField = "is_deleted";
+        String isDeletedField = "deleted_ts";
         if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
         }
