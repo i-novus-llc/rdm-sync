@@ -29,7 +29,6 @@ class RdmSyncConfigurer {
     private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
     private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
     private static final String LOG_JOB_CANNOT_SCHEDULE = "Cannot schedule %s job.";
-    private static final String LOG_JOB_CANNOT_DELETE = "Cannot delete %s job.";
     private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
 
     private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
@@ -46,7 +45,7 @@ class RdmSyncConfigurer {
     @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
 
-    @Value("${rdm_sync.change_data.mode:null}")
+    @Value("${rdm_sync.change_data.mode}")
     private String changeDataMode;
 
     @Transactional
