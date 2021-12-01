@@ -33,8 +33,6 @@ public interface RdmSyncService {
     @ApiOperation(value = "Синхронизация отдельного справочника")
     void update(@PathParam("refBookCode") String refBookCode);
 
-    void update(RefBook refBook, VersionMapping versionMapping);
-
     @GET
     @Path("/log")
     @ApiOperation(value = "Получение журнала за дату")
@@ -49,5 +47,5 @@ public interface RdmSyncService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     Response downloadXmlFieldMapping(@QueryParam("code") List<String> refBookCodes);
 
-    RefBook getLastPublishedVersion(String refBookCode);
+
 }
