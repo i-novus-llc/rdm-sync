@@ -62,42 +62,77 @@
    `rdm-sync.source.fnsi.values[0].userKey` - ключ API ФНСИ,
    `rdm-sync.source.fnsi.values[0].code` - код источника ФНСИ, произвольная уникальная строка
    `rdm-sync.source.fnsi.values[0].name` - наименование источника ФНСИ, понятное для пользователя наименование/описание, например "ФНСИ продуктивная среда" или "ФНСИ тестовая среда".
-   Настройки фнси допускают множественность, это удобно когда хотят одновременно иметь в качестве источника несколько инстансов ФНСИ, прод, тест.
+   Настройки фнси допускают множественность источника, это удобно когда хотят одновременно иметь в качестве источника несколько инстансов ФНСИ, прод, тест.
    
-4. [Настроить маппинг](#настройка-маппинга) 
+3. [Настроить маппинг](#настройка-маппинга) 
 
-5. Запустить клиентское приложение.
+4. [Настроить расписание](#cинхронизация-по-расписанию) запуска если нужна синхронизация по расписанию
 
-### Настройка синхронизации
+5. Запустить приложение.
+
+### 2. Запуск отдельным микросервисом
+Микросервис использует вышеописанный стартер. Выполнить следующие шаги. 
+1. Собрать модуль rdm-sync-service командой
+```
+mvn package -Pproduction
+```
+2. Сконфигурировать подключение к бд любым доступным для spring-boot приложений способом
+3. Выполнить пункты 2,3 и 4 из [описания стартера](#шаги-подключения)
+5. Запустить `java -jar rdm-sync-service.jar`
+<br/> 
+Микросервис допускает конфигурирование  с помощью Config server'a стандартным для spring-boot приложений способом  
+
+### Пример файла настроек
 
 ```properties
 #  Подключение к БД
 spring.datasource.url=jdbc:postgresql://localhost:5432/rdm_sync
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.username=myuser
+spring.datasource.password=mypass
 
 # Адрес API RDM'a (если не нужна синхронизация с RDM, то указывать не надо)
 rdm.backend.path=http://yandex.stable:9904/rdm/service/rdm/api
 
-# Адрес API ФНСИ (если не нужна синхронизация с ФНСИ, то указывать не надо)
-rdm_sync.fnsi.url=https://fnsi-dev.rt-eu.ru/port
-# Ключ для API ФНСИ (если не нужна синхронизация с ФНСИ, то указывать не надо)
-rdm_sync.fnsi.userKey=4191f0cf-b100-4d80-a392-6cee9432deea
+rdm-sync.source.fnsi.values[0].url=https://fnsi.rt-eu.ru/port
+rdm-sync.source.fnsi.values[0].userKey=d053d531-9ac6-40fc-b345343-xxx0ba0a14
+rdm-sync.source.fnsi.values[0].code=FNSI
+rdm-sync.source.fnsi.values[0].name=Тестовая среда ФНСИ
+
+
+rdm-sync.auto-create.refbooks[1].code=1.2.643.5.1.13.2.1.1.725
+rdm-sync.auto-create.refbooks[1].source=FNSI
+rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
+rdm-sync.auto-create.refbooks[0].code=EK002
+rdm-sync.auto-create.refbooks[0].source=RDM
+rdm-sync.auto-create.refbooks[0].type=NOT_VERSIONED
+rdm-sync.auto-create.refbooks[2].code=1.2.643.5.1.13.13.99.2.115
+rdm-sync.auto-create.refbooks[2].source=FNSI
+rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 ```
 
-#### Полный список настроек
+## Полный список настроек
 
 Настройка|Значение по умолчанию|Описание|
 |---|---|---|
 |rdm.backend.path| -| Адрес API RDM'a |
-|rdm_sync.auto_create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
-|rdm_sync.scheduling| true| Запуск по расписанию, true -- включено|
-|rdm_sync.import.from_rdm.cron| 0 * * * * ?| Крон для загрузки данных из НСИ|
-|rdm_sync.export.to_rdm.cron| 0 * * * * ?| Крон для загрузки данных в НСИ (только для RDM)|
+|rdm-sync.auto_create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
+|rdm-sync.scheduling| true| Запуск по расписанию, true -- включено|
+|rdm-sync.import.from_rdm.cron| 0 * * * * ?| Крон для загрузки данных из НСИ|
+|rdm-sync.export.to_rdm.cron| 0 * * * * ?| Крон для загрузки данных в НСИ (только для RDM)|
 |rdm-sync.load.size| 1000| Кол-во записей на странице при получении данных из НСИ|
-|rdm.sync.threads.count| 1| Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
+|rdm-sync.threads.count| 3| Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -| Код справочника
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source| -| Источник справочника
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type| -| Тип синхронизации, сейчас только один тип NOT_VERSIONED
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name| -| Наименование справочника
+|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url| -| URL ФНСИ
+|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey| -| Ключ АПИ ФНСИ
+|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].code| -| Код среды ФНСИ
+|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].name| -| Наименование среды ФНСИ
+|rdm.sync.liquibase.param.quartz_schema_name| rdm_sync_qz| Наименование схемы, в которой находятся или будут созданы таблицы Quartz, значение по умолчанию есть только для микросервиса, для стартера оно не заполнено
+|rdm.sync.liquibase.param.quartz_table_prefix| rdm_sync_qz| префикс, используемый при наименовании таблиц Quartz, значение по умолчанию есть только для микросервиса, для стартера оно не заполнено
 
-### Описание таблиц
+## Описание таблиц
 
 В базе данных создаётся схема `rdm_sync` с таблицами:
 - `refbook` -- список справочников, которые необходимо синхронизировать;
@@ -169,7 +204,7 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 
 Для облегчения разработки предусмотрена генерация файла `rdm-mapping.xml` по существующим записям в БД.
 
-1. Указываете настройки `rdm_sync.auto_create.refbook_codes` и `rdm_sync.auto_create.schema`.
+1. Указываете настройки `rdm-sync.auto_create.refbook_codes` и `rdm-sync.auto_create.schema`.
 2. Запускаете своё приложение. Стартер скачает справочники из НСИ и создаст таблицы.
 3. Получаете сгенерированный файл `rdm-mapping.xml` по адресу `<адрес вашего приложения>/api/rdm/xml-fm?code=REF_BOOK_CODE1&code=REF_BOOK_CODE2&...`
 4. Полученный файл `rdm-mapping.xml` можно поправить и положить в classpath уже для использования по назначению.
@@ -178,7 +213,7 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 Вы также можете перейти по адресу `localhost:8080/api/rdm/xml-fm?code=all`.
 Так вы получите файл, в котором перечислен маппинг для каждого справочника, ведущегося в вашем приложении.
 
-## Ограничения маппинга
+### Ограничения маппинга
 
 - Справочники без первичных ключей не смогут синхронизироваться.
 - Строковый тип из НСИ можно маппить в "varchar", "text", "character varying", "smallint", "integer", "bigint", "serial", "bigserial", boolean(true/false), "numeric", "decimal",  "date(yyyy-MM-dd)".
@@ -210,23 +245,58 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 Их количество и наименование необязательно должны совпадать. Также наименование этих колонок не должно совпадать с наименованиями технических колонок (за исключением `code`).
 Эти колонки участвуют в маппинге, т.е. прописываются в `rdm_sync.field_mapping`.
 
-### Создание таблиц в автоматическом режиме
-
-Вам необходимо указать две настройки: `rdm_sync.auto_create.schema` и `rdm_sync.auto_create.refbook_codes`.
-Первая указывает на то, в какой схеме будет создана таблица клиента (по умолчанию -- `rdm`). Если схемы нет, она также будет создана.
-Вторая задаётся в формате `code1,code2,...,codeN`. Это коды справочников, для которых автоматом создадутся таблицы. Название таблицы будет кодом справочника, переведённым в нижний регистр, с символами `-` и `.`, заменёнными на `_`.
-Вы также можете настроить создание таблиц с учётом маппинга. Таблицы создадутся уже не по структуре справочника из RDM, а по вашему маппингу.
-Важно отметить, что таблицы только создаются. Она не подхватывает на лету изменения версий `rdm-mapping.xml` и изменения версий справочников в RDM.
-
-## Синхронизация справочников НСИ
-
-Синхронизация справочников НСИ реализована в [стартере](rdm-sync-spring-boot-starter/README.md#Синхронизация-справочников).
 
 ## Синхронизация по расписанию
 
-Периодическая синхронизация справочников НСИ реализована в [стартере](rdm-sync-spring-boot-starter/README.md#Синхронизация-по-расписанию) с помощью библиотеки Quartz.
-При этом Quartz используется в самом стартере опционально.
-В микросервисе библиотека Quartz уже [подключена](rdm-sync-service/README.md#Настройка-Quartz).
+Периодическая синхронизация справочников НСИ реализована с помощью библиотеки Quartz. Если в прикладном модуле уже подключенна и настроена библиотека Quartz, то стартер будет использовать существующую конфигурацию. 
+Если Quartz не подключен, то 
+1.
+Включение/выключение выполнения действий по расписанию задаётся настройкой: `rdm-sync.scheduling` значения true/false (по умолчанию true - включенно).
+Если настройка имеет значение true, то при подключённом Quartz-шедулере выполняется подготовка и запуск заданий для выполнения требуемых действий.
+
+Управление отдельными действиями (импортом и экспортом) выполняется соответствующими настройками (см. ниже).
+
+### Импорт(данных из НСИ) по расписанию
+
+Для того чтобы гарантировать, что локальные справочники со временем будут идентичны справочникам в НСИ, желательно для них настроить обновление по таймеру.
+Желательно сделать это через Quartz-шедулер в кластерном режиме (и пометить Job по обновлению справочников Quartz-аннотацией org.quartz.DisallowConcurrentExecution).
+Также cron-выражения нужно выбрать аккуратно, а не так, что у вас допустим 10 справочников и для каждого одно и то же выражение. Лучше распределить импорт этих 10 справочников, например, по часовому интервалу (то есть 6 минут на каждый).
+Ручная настройка выполняется так:
+1) Автовайрим интерфейс ru.i_novus.ms.rdm.sync.api.service.RdmSyncService через AutowiringSpringBeanJobFactory.
+   (по примеру <a href="https://stackoverflow.com/questions/6990767/inject-bean-reference-into-a-quartz-job-in-spring/15211030">отсюда</a>).
+2) И в методе org.quartz.Job#execute вызываем его метод ru.i_novus.ms.rdm.sync.api.service.RdmSyncService#update(String refBookCode).
+   То есть желательно либо создать по джобу на каждый справочник (со своим cron-ом), либо как-то самим координировать в джобе, чтобы они не запускались разом. Или, если у вас несколько (скажем 3) экземпляров приложения, можно сделать по 3 concurrent джоба одновременно и т.д.
+
+### Экспорт(данных в НСИ) по расписанию(только для RDM)
+
+В classpath должен лежать Quartz-шедулер (в кластерном режиме).
+Управление экспортом выполняется с помощью настроек: `rdm-sync.export.to_rdm.cron` и `rdm-sync.export.to_rdm.batch_size`.
+
+Библиотека создаст Job, который по крону из настройки `rdm-sync.export.to_rdm.cron` (по умолчанию -- раз в 5 секунд),
+будет периодически сканировать все клиентские таблички на предмет записей в состоянии `DIRTY`.
+Из этих записей он будет отбирать `rdm-sync.export.to_rdm.batch_size` записей (по умолчанию -- 100) и экспортировать их в RDM.
+На каждую пачку записей, отправленную в RDM, внутри RDM будет так же происходить публикация. То есть если у вас 500 "грязных записей" и batch_size = 100, то соответствующий справочник опубликуется 5 раз.
+Поэтому batch_size вместе с крон-выражением нужно выбирать аккуратно.
+Ещё раз стоит отметить, что очень желательно вместе с экспортом настроить также и импорт.
+
+### Рекомендуемые настройки Quartz
+
+Настройка Quartz-шедулера задаётся параметрами в файле `application.properties`:
+```properties
+## Spring Quartz
+spring.quartz.job-store-type=jdbc
+
+spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
+spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
+
+# jobStore
+spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=<schema_name>.<table_prefix>
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
+```
+
+Здесь значение `spring.quartz.properties.org.quartz.jobStore.tablePrefix` определяется клиентским приложением.
 
 ### Собственная реализация
 
