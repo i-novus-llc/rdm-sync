@@ -8,21 +8,17 @@
 Модуль реализован в виде в двух вариантах: 
 1. В виде библиотеки стартера для spring-boot приложений. 
 2. В виде отдельного микросервиса.
-Клиент синхронизации в своей БД создаёт таблицы соответствующей структуры, в которые будет выполняться копирование данных НСИ.
 
 Синхронизация включает в себя:
-- [импорт данных](#Импорт-данных-из-НСИ) справочников из НСИ;
-- [экспорт данных](#Экспорт-данных-в-НСИ) справочников в НСИ (только RDM) в синхронном/асинхронном режиме;
-- [обновление данных](#Обновление-данных-из-НСИ) справочников из НСИ.
+- Импорт и обновление данных из НСИ справочников из НСИ;
+- Экспорт данных в НСИ](#Экспорт-данных-в-НСИ) справочников в НСИ (только RDM) в синхронном/асинхронном режиме;
 
-Также добавлена возможность синхронизации [по расписанию](#Синхронизация-по-расписанию).
-
-## Информация для разработчика
+Также добавлена возможность синхронизации [по расписанию](#синхронизация-по-расписанию).
 
 ### Требования
 
 - OpenJDK 14
-- PostgreSQL 11
+- PostgreSQL 11 и выше
 - Artemis или ActiveMQ
 
 ### Стек технологий
@@ -38,8 +34,41 @@
 
 ### Структура проекта
 
-- [rdm-sync-spring-boot-starter](rdm-sync-spring-boot-starter/README.md) - стартер для синхронизации справочников НСИ.
-- [rdm-sync-service](rdm-sync-service/README.md) - микросервис для синхронизации справочников НСИ на основе стартера.
+- rdm-sync-spring-boot-starter - стартер для синхронизации справочников НСИ.
+- rdm-sync-service - микросервис для синхронизации справочников НСИ на основе стартера.
+
+
+## Как использовать, 2 варианта
+
+### 1. Подключение в виде стартера
+#### Требования к модулю где будет использоваться стартер
+1. Модуль должен быть реализован на java 14, spring-boot 2 и платформе n2o-platform версии 4.4.0;
+2. Модуль в качестве СУБД должен использовать Postgresql 11 или выше и настроен DataSource стандартным для spring-boot приложений образом
+3. Модуль должен использовать библиотеку Liquibase для автоматического обновления базы данных;
+4. Модуль должен использовать фреймворк для автоматизации сборки проектов maven3.
+
+#### Шаги подключения
+1. Добавить в pom прикладного модуля зависимость.
+    ```xml
+    <dependency>
+        <groupId>ru.i-novus.ms.rdm.sync</groupId>
+        <artifactId>rdm-sync-spring-boot-starter</artifactId>
+        <version>${rdm.sync.version}</version>
+    </dependency>
+    ```
+2. Указать адрес API НСИ в properties 
+    <br/>Для RDM `rdm.backend.path` - адрес API RDM'a 
+    <br/>Для ФНСИ `rdm-sync.source.fnsi.values[0].url` - адрес API ФНСИ, 
+   `rdm-sync.source.fnsi.values[0].userKey` - ключ API ФНСИ,
+   `rdm-sync.source.fnsi.values[0].code` - код источника ФНСИ, произвольная уникальная строка
+   `rdm-sync.source.fnsi.values[0].name` - наименование источника ФНСИ, понятное для пользователя наименование/описание, например "ФНСИ продуктивная среда" или "ФНСИ тестовая среда".
+   Настройки фнси допускают множественность, это удобно когда хотят одновременно иметь в качестве источника несколько инстансов ФНСИ, прод, тест.
+   
+4. [Настроить маппинг](Настройка маппинга) и создать таблицы для справочников,
+   либо воспользоваться [автосозданием](../README.md#Создание-таблиц-клиента-в-автоматическом-режиме).
+
+
+4. Запустить клиентское приложение.
 
 ### Настройка синхронизации
 
@@ -82,28 +111,51 @@ rdm_sync.fnsi.userKey=4191f0cf-b100-4d80-a392-6cee9432deea
 
 ## Настройка маппинга
 
-**Маппинг** -- это соответствие полей справочника в системе НСИ и колонок таблицы в БД клиента.
-Описание маппинга задаётся в таблице `rdm_sync.field_mapping` (см. комментарии к колонкам).
-Описание, какой справочник копировать в какую таблицу, задаётся в таблице `rdm_sync.version`.
+**Маппинг** - это соответствие полей справочника в системе НСИ и колонок таблицы в БД прикладной системы.
+Маппинг можно задать 3-мя способами.
 
-### XML-конфигурация маппинга
+#### 1.Маппинг через properties файлы
+Этот способ самый простой, при котором не надо создавать таблицы для справочников и маппинг полей. Стандартным для spring-boot приложений способом задать следующие проперти для каждого справочника
+<br/> 
+`rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code` - код, оид справочника
+`rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source` - источник, RDM или значение из  `rdm-sync.source.fnsi.values[*].code` для ФНСИ
+`rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name` - человекочитаемое наименование справочника, по умолчанию будет равно `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code`
+`rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type` - тип синхронизации, сейчас реализованно только `NOT_VERSIONED`
+<br/>
+Тут <порядковый номер справочника> порядковый номер справочник начиная с 0 и далее, т.е если справочника 2 то нумерация до 1.
+<br/>
+Пример:
+ ```properties
+rdm-sync.auto-create.refbooks[0].code=EK002
+rdm-sync.auto-create.refbooks[0].name=Какой-то справочник из RDM
+rdm-sync.auto-create.refbooks[0].source=RDM
+rdm-sync.auto-create.refbooks[0].type=NOT_VERSIONED
+
+rdm-sync.auto-create.refbooks[1].code=1.2.643.5.1.13.2.1.1.725
+rdm-sync.auto-create.refbooks[1].name=Какой-то справочник ФНСИ
+rdm-sync.auto-create.refbooks[1].source=FNSI
+rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
+
+```
+#### 2. XML-конфигурация маппинга
 
 Маппинг можно настроить через XML-конфигурацию.
 В classpath (например, в папку resources) создаём файл с наименованием *rdm-mapping.xml*.
 В случае изменения маппинга меняем в файле соответствующий элемент refbook и увеличиваем mapping-version на 1.
-
+Таблицы для справочников должны быть предварительно созданы. Как создавать таблицы [тут.](#cоздание-таблиц)
+<br/>
 Пример:
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapping>
 
-    <refbook code="T001" sys-table="rdm.test_rb" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1">
+    <refbook code="T001" sys-table="rdm.test_rb" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Какой-то справочник из RDM">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
         <field sys-field="doc_number" sys-data-type="integer" rdm-field="doc_num"/>
     </refbook>
 
-    <refbook code="R001" sys-table="rdm.some_table" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1">
+    <refbook code="R001" sys-table="rdm.some_table" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
     </refbook>
