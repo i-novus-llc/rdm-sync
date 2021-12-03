@@ -140,8 +140,6 @@ public class NotVersionedRefBookUpdater implements RefBookUpdater {
                 dao.insertLoadedVersion(newVersion.getCode(), newVersion.getLastVersion(), newVersion.getLastPublishDate());
             }
             logger.info("{} sync finished", newVersion.getCode());
-        } catch (Exception e) {
-            logger.error("cannot sync " + versionMapping.getCode(), e);
         } finally {
             if (haveTrigger){
                 dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());

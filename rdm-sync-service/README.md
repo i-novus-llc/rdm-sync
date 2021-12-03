@@ -24,8 +24,8 @@ mvn clean package -Pproduction
 
 #### Создание таблиц Quartz в БД
 
-- `rdm.sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz (по умолчанию -- `rdm_sync_qz`).
-- `rdm.sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz (по умолчанию -- `rdm_sync_qrtz_`).
+- `rdm-sync.liquibase.param.quartz_schema_name` -- наименование схемы, в которой находятся или будут созданы таблицы Quartz (по умолчанию -- `rdm_sync_qz`).
+- `rdm-sync.liquibase.param.quartz_table_prefix` -- префикс, используемый при наименовании таблиц Quartz (по умолчанию -- `rdm_sync_qrtz_`).
 
 #### Рекомендуемые настройки Quartz
 
@@ -40,7 +40,7 @@ spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
 # jobStore
 spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
 spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm.sync.liquibase.param.quartz_schema_name}.${rdm.sync.liquibase.param.quartz_table_prefix}
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm-sync.liquibase.param.quartz_schema_name}.${rdm-sync.liquibase.param.quartz_table_prefix}
 spring.quartz.properties.org.quartz.jobStore.isClustered=true
 ```
 
@@ -56,9 +56,9 @@ spring.quartz.properties.org.quartz.jobStore.isClustered=true
 Обязательно должны быть определены следующие настройки:
 ```properties
 
-rdm.sync.liquibase.param.quartz_schema_name=
-rdm.sync.liquibase.param.quartz_table_prefix=
+rdm-sync.liquibase.param.quartz_schema_name=
+rdm-sync.liquibase.param.quartz_table_prefix=
 
 spring.quartz.jdbc.initialize-schema=
-spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm.sync.liquibase.param.quartz_schema_name}.${rdm.sync.liquibase.param.quartz_table_prefix}
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=${rdm-sync.liquibase.param.quartz_schema_name}.${rdm-sync.liquibase.param.quartz_table_prefix}
 ```

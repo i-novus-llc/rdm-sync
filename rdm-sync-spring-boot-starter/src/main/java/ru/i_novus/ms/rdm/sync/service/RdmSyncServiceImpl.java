@@ -48,7 +48,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Value("${rdm-sync.load.size: 1000}")
     private int MAX_SIZE = 1000;
 
-    @Value("${rdm.sync.threads.count:3}")
+    @Value("${rdm-sync.threads.count:3}")
     private int threadsCount = 3;
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =

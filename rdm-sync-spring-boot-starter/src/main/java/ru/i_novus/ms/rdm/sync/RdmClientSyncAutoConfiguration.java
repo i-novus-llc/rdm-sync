@@ -47,7 +47,7 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnClass(RdmSyncServiceImpl.class)
-@ConditionalOnProperty(value = "rdm_sync.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "rdm-sync.enabled", matchIfMissing = true)
 @ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
@@ -88,7 +88,7 @@ public class RdmClientSyncAutoConfiguration {
     @Primary
     @ConditionalOnMissingBean
     @ConditionalOnMissingClass(value = "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory")
-    @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
+    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
     public RdmSyncService lockingRdmSyncRest() {
         return new LockingRdmSyncService();
     }
@@ -155,7 +155,7 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean(name = "publishDictionaryTopicMessageListenerContainerFactory")
-    @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
+    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
     @ConditionalOnClass(name = "org.apache.activemq.ActiveMQConnectionFactory")
     public DefaultJmsListenerContainerFactory unsharedPublishContainerFactory(ConnectionFactory connectionFactory) {
 
@@ -168,7 +168,7 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean(name = "publishDictionaryTopicMessageListenerContainerFactory")
-    @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
+    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
     @ConditionalOnClass(name = "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory")
     public DefaultJmsListenerContainerFactory sharedPublishContainerFactory(ConnectionFactory connectionFactory) {
 
@@ -181,7 +181,7 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "async")
+    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
     public DefaultJmsListenerContainerFactory rdmChangeDataQueueMessageListenerContainerFactory(ConnectionFactory connectionFactory) {
 
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
@@ -192,28 +192,28 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "rdm_sync.publish.listener.enable", havingValue = "true")
+    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
     public PublishListener publishListener(RdmSyncService rdmSyncService) {
         return new PublishListener(rdmSyncService);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "rdm_sync.change_data.mode", havingValue = "async")
+    @ConditionalOnProperty(name = "rdm-sync.change_data.mode", havingValue = "async")
     public RdmChangeDataListener rdmChangeDataListener(RefBookService refBookService,
                                                        RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
         return new RdmChangeDataListener(refBookService, rdmChangeDataRequestCallback);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "sync")
+    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "sync")
     public RdmChangeDataClient syncRdmChangeDataClient(RefBookService refBookService) {
         return new SyncRdmChangeDataClient(refBookService);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "rdm_sync.change_data.mode", havingValue = "async")
+    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
     public RdmChangeDataClient asyncRdmChangeDataClient(JmsTemplate jmsTemplate,
-                                                        @Value("${rdm_sync.change_data.queue:rdmChangeData}")
+                                                        @Value("${rdm-sync.change_data.queue:rdmChangeData}")
                                                                 String rdmChangeDataQueue) {
         return new AsyncRdmChangeDataClient(jmsTemplate, rdmChangeDataQueue);
     }
