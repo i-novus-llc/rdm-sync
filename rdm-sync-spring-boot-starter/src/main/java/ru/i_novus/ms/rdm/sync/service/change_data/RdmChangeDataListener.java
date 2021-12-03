@@ -27,7 +27,7 @@ public class RdmChangeDataListener {
         this.callback = callback;
     }
 
-    @JmsListener(destination = "${rdm_sync.change_data.queue:rdmChangeData}", containerFactory = "rdmChangeDataQueueMessageListenerContainerFactory")
+    @JmsListener(destination = "${rdm-sync.change_data.queue:rdmChangeData}", containerFactory = "rdmChangeDataQueueMessageListenerContainerFactory")
     public <T extends Serializable> void onChangeDataRequest(List<Object> msg) {
 
         List<List<? extends T>> src = (List<List<? extends T>>) msg.get(0);

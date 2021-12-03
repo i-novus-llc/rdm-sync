@@ -14,6 +14,8 @@ public class XmlMappingRefBook {
 
     private String code;
 
+    private String name;
+
     private List<XmlMappingField> fields;
 
     private String uniqueSysField;
@@ -37,6 +39,15 @@ public class XmlMappingRefBook {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    @XmlAttribute(name = "name", required = false)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @XmlElement(name = "field")
@@ -106,7 +117,7 @@ public class XmlMappingRefBook {
     }
 
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
+        return new VersionMapping(null, code, name, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
@@ -114,6 +125,7 @@ public class XmlMappingRefBook {
         XmlMappingRefBook result = new XmlMappingRefBook();
 
         result.setCode(mapping.getCode());
+        result.setName(mapping.getRefBookName());
         result.setMappingVersion(-1);
         result.setUniqueSysField(mapping.getPrimaryField());
         result.setDeletedField(mapping.getDeletedField());

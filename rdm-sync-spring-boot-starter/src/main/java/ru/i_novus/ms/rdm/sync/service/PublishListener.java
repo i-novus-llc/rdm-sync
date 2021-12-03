@@ -15,7 +15,7 @@ public class PublishListener {
         this.rdmSyncService = rdmSyncService;
     }
 
-    @JmsListener(destination = "${rdm_sync.publish.topic:publish_topic}",
+    @JmsListener(destination = "${rdm-sync.publish.topic:publish_topic}",
             containerFactory = "publishDictionaryTopicMessageListenerContainerFactory")
     public void onPublish(String refBookCode) {
 

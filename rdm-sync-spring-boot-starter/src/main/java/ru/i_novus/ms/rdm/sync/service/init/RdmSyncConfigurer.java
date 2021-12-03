@@ -19,7 +19,7 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
-@ConditionalOnProperty(name = "rdm_sync.scheduling", havingValue = "true")
+@ConditionalOnProperty(name = "rdm-sync.scheduling", havingValue = "true")
 class RdmSyncConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
@@ -39,13 +39,13 @@ class RdmSyncConfigurer {
     @Autowired
     private ClusterLockService clusterLockService;
 
-    @Value("${rdm_sync.import.from_rdm.cron:}")
+    @Value("${rdm-sync.import.from_rdm.cron:}")
     private String importFromRdmCron;
 
-    @Value("${rdm_sync.export.to_rdm.cron:0/5 * * * * ?}")
+    @Value("${rdm-sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
 
-    @Value("${rdm_sync.change_data.mode:#{null}}")
+    @Value("${rdm-sync.change_data.mode:#{null}}")
     private String changeDataMode;
 
     @Transactional
