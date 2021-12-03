@@ -7,7 +7,10 @@ import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -246,8 +249,11 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
-    public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater) {
-        return new RefBookUpdaterLocator(Map.of(SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater));
+    public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
+                                                       @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater) {
+        return new RefBookUpdaterLocator(Map.of(
+                SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
+                SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater));
     }
 
     @Bean

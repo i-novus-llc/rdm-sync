@@ -10,6 +10,11 @@ public enum SyncTypeEnum {
     /**
      * Синхронизация с версиями
      */
-    VERSIONED
+    VERSIONED,
+
+    /**
+     * Синхронизация неверсионируемых справочников
+     */
+    RDM_NOT_VERSIONED
 
 }
