@@ -114,11 +114,13 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 
 Настройка|Значение по умолчанию|Описание|
 |---|---|---|
+|rdm-sync.enabled| true| Включение/выключение синхронизации |
 |rdm.backend.path| -| Адрес API RDM'a |
 |rdm-sync.auto_create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
-|rdm-sync.scheduling| true| Запуск по расписанию, true -- включено|
-|rdm-sync.import.from_rdm.cron| 0 * * * * ?| Крон для загрузки данных из НСИ|
-|rdm-sync.export.to_rdm.cron| 0 * * * * ?| Крон для загрузки данных в НСИ (только для RDM)|
+|rdm-sync.scheduling| true| Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса|
+|rdm-sync.import.from_rdm.cron| 0 0/10 * * * ? | Крон для загрузки данных из НСИ. Значение по умолчанию есть только у микросервиса|
+|rdm-sync.change_data.mode| -| Режим экспорта данных в НСИ (только для RDM). Значения sync/async - синхронный и асинхронный
+|rdm-sync.export.to_rdm.cron| 0 0/20 * * * ?| Крон для загрузки данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса|
 |rdm-sync.load.size| 1000| Кол-во записей на странице при получении данных из НСИ|
 |rdm-sync.threads.count| 3| Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -| Код справочника
@@ -253,6 +255,17 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 
 #### Если в прикладном модуле уже есть Quartz
 Если в прикладном модуле уже подключена и настроена библиотека Quartz, то стартер будет использовать существующую конфигурацию.
+Нужно задать время запуска
+```properties
+rdm-sync.scheduling=true
+#изменить как надо. время обновления данных из НСИ
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+#Включает экспорт данных в НСИ
+rdm-sync.change_data.mode=async
+#изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+
+```
 
 #### Если Quartz не подключен
 Если Quartz не подключен, то для его настройки нужно выполнить 
@@ -271,64 +284,39 @@ spring.quartz.job-store-type=jdbc
 spring.quartz.jdbc.initialize-schema=never
 spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
 spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
+#изменить как надо. время обновления данных из НСИ
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+#Включает экспорт данных в НСИ
+rdm-sync.change_data.mode=async
+#изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
 ```
-Включение/выключение выполнения действий по расписанию задаётся настройкой: `rdm-sync.scheduling` значения true/false (по умолчанию true - включенно).
-Если настройка имеет значение true, то при подключённом Quartz-шедулере выполняется подготовка и запуск заданий для выполнения требуемых действий.
+### Настройка расписания при использовании микросервиса
+#### Если микросервис использует БД где уже есть таблицы для Quartz 
+Нужно указать настройки 
+```properties
+rdm-sync.liquibase.param.quartz_schema_name=<указать схему где лежат таблицы Quartz'a>
+rdm-sync.liquibase.param.quartz_table_prefix=<указать префикс таблиц Quartz'a>
+#изменить как надо. время обновления данных из НСИ
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+#Включает экспорт данных в НСИ
+rdm-sync.change_data.mode=async
+#изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+```
 
-Управление отдельными действиями (импортом и экспортом) выполняется соответствующими настройками (см. ниже).
-
-### Импорт(данных из НСИ) по расписанию(не актуализированно)
-
-Для того чтобы гарантировать, что локальные справочники со временем будут идентичны справочникам в НСИ, желательно для них настроить обновление по таймеру.
-Желательно сделать это через Quartz-шедулер в кластерном режиме (и пометить Job по обновлению справочников Quartz-аннотацией org.quartz.DisallowConcurrentExecution).
-Также cron-выражения нужно выбрать аккуратно, а не так, что у вас допустим 10 справочников и для каждого одно и то же выражение. Лучше распределить импорт этих 10 справочников, например, по часовому интервалу (то есть 6 минут на каждый).
-Ручная настройка выполняется так:
-1) Автовайрим интерфейс ru.i_novus.ms.rdm.sync.api.service.RdmSyncService через AutowiringSpringBeanJobFactory.
-   (по примеру <a href="https://stackoverflow.com/questions/6990767/inject-bean-reference-into-a-quartz-job-in-spring/15211030">отсюда</a>).
-2) И в методе org.quartz.Job#execute вызываем его метод ru.i_novus.ms.rdm.sync.api.service.RdmSyncService#update(String refBookCode).
-   То есть желательно либо создать по джобу на каждый справочник (со своим cron-ом), либо как-то самим координировать в джобе, чтобы они не запускались разом. Или, если у вас несколько (скажем 3) экземпляров приложения, можно сделать по 3 concurrent джоба одновременно и т.д.
-
-### Экспорт(данных в НСИ) по расписанию(только для RDM)(не актуализированно)
+## Подробнее об экспорте данных в НСИ
 
 В classpath должен лежать Quartz-шедулер (в кластерном режиме).
 Управление экспортом выполняется с помощью настроек: `rdm-sync.export.to_rdm.cron` и `rdm-sync.export.to_rdm.batch_size`.
 
-Библиотека создаст Job, который по крону из настройки `rdm-sync.export.to_rdm.cron` (по умолчанию -- раз в 5 секунд),
+Библиотека создаст Job, который по крону из настройки `rdm-sync.export.to_rdm.cron`,
 будет периодически сканировать все клиентские таблички на предмет записей в состоянии `DIRTY`.
 Из этих записей он будет отбирать `rdm-sync.export.to_rdm.batch_size` записей (по умолчанию -- 100) и экспортировать их в RDM.
 На каждую пачку записей, отправленную в RDM, внутри RDM будет так же происходить публикация. То есть если у вас 500 "грязных записей" и batch_size = 100, то соответствующий справочник опубликуется 5 раз.
 Поэтому batch_size вместе с крон-выражением нужно выбирать аккуратно.
 Ещё раз стоит отметить, что очень желательно вместе с экспортом настроить также и импорт.
 
-### Рекомендуемые настройки Quartz (не актуализированно)
 
-Настройка Quartz-шедулера задаётся параметрами в файле `application.properties`:
-```properties
-## Spring Quartz
-spring.quartz.job-store-type=jdbc
 
-spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
-spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
 
-# jobStore
-spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
-spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-spring.quartz.properties.org.quartz.jobStore.tablePrefix=<schema_name>.<table_prefix>
-spring.quartz.properties.org.quartz.jobStore.isClustered=true
-```
-
-Здесь значение `spring.quartz.properties.org.quartz.jobStore.tablePrefix` определяется клиентским приложением.
-
-### Собственная реализация (не актуализированно)
-
-Можно реализовать в клиентском приложении собственный вариант синхронизации по расписанию.
-
-Для этого нужно выполнить следующие действия:
-
-1. Подключить к приложению стартер.
-   
-2. Реализовать задания по импорту и экспорту данных. Примеры реализации:
-   - импорт из НСИ: класс `RdmSyncImportRecordsFromRdmJob` в стартере.
-   - экспорт изменённых данных в НСИ: класс `RdmSyncExportDirtyRecordsToRdmJob` в стартере.
-
-3. Организовать периодический вызов заданий в соответствии с собственными требованиями.

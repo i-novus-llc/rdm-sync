@@ -82,13 +82,9 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode) {
 
-        RefBook lastPublished;
-        try {
-            lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
-
-        } catch (Exception e) {
-            logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
-            return null;
+        RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
+        if (lastPublished == null) {
+            throw new IllegalArgumentException(refBookCode + " not found in " + sourceCode);
         }
 
         RefBookStructure structure = lastPublished.getStructure();

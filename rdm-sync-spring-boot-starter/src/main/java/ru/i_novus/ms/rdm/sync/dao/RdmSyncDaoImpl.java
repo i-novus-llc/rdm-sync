@@ -527,6 +527,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public boolean lockRefBookForUpdate(String code, boolean blocking) {
 
+        logger.info("lock {} for update", code);
         String sql = "SELECT 1 FROM rdm_sync.refbook WHERE code = :code FOR UPDATE";
         if (!blocking)
             sql += " NOWAIT";
