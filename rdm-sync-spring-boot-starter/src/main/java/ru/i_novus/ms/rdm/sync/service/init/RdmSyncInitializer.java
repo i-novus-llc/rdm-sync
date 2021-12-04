@@ -52,7 +52,7 @@ class RdmSyncInitializer {
 
     private void autoCreate() {
 
-        if (autoCreateRefBookProperties == null)
+        if (autoCreateRefBookProperties == null || autoCreateRefBookProperties.getRefbooks() == null)
             return;
 
         autoCreateRefBookProperties.getRefbooks().forEach(p ->
