@@ -166,15 +166,17 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     public void testSaveVersionMapping() {
         String version = "CURRENT";
         String refBookCode = "test";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, version, "test_table","CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        String refBookName = "test Name";
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table","CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         Assert.assertEquals(versionMapping.getCode(), actual.getCode());
+        Assert.assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
         Assert.assertEquals(version, actual.getVersion());
         assertEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
-        Assert.assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, null), syncRefBook);
+        Assert.assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName), syncRefBook);
 
         versionMapping.setDeletedField("is_deleted2");
         versionMapping.setTable("test_table2");

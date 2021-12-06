@@ -20,6 +20,7 @@ public class VersionMapping {
 
     private Integer id;
     private String code;
+    private String refBookName;
     private String version;
     private String table;
     private String source;

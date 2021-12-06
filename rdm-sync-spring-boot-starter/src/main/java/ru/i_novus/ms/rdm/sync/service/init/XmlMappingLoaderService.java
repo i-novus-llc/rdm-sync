@@ -24,7 +24,7 @@ class XmlMappingLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlMappingLoaderService.class);
 
-    @Value("${rdm_sync.rdm-mapping.xml.path:/rdm-mapping.xml}")
+    @Value("${rdm-sync.rdm-mapping.xml.path:/rdm-mapping.xml}")
     private String rdmMappingXmlPath;
 
     @Autowired
