@@ -79,7 +79,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<VersionMapping> getVersionMappings() {
 
-        final String sql = "SELECT m.id, code, version, \n" +
+        final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
                 "  FROM rdm_sync.version v \n" +
@@ -95,10 +95,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
-                        rs.getInt(9),
+                        rs.getString(8),
+                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
                         rs.getInt(10),
-                        SyncTypeEnum.valueOf(rs.getString(11))
+                        rs.getInt(11),
+                        SyncTypeEnum.valueOf(rs.getString(12))
                 )
         );
     }
@@ -119,7 +120,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
-        final String sql = "SELECT m.id, code, version, \n" +
+        final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
                 "  FROM rdm_sync.version v \n" +
@@ -137,10 +138,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        toLocalDateTime(rs, 8, LocalDateTime.MIN),
-                        rs.getInt(9),
+                        rs.getString(8),
+                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
                         rs.getInt(10),
-                        SyncTypeEnum.valueOf(rs.getString(11))
+                        rs.getInt(11),
+                        SyncTypeEnum.valueOf(rs.getString(12))
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -440,9 +442,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
 
-        final String insRefSql = "insert into rdm_sync.refbook(code, source_id, sync_type) values(:code, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)  RETURNING id";
+        final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)  RETURNING id";
+        String refBookName = versionMapping.getRefBookName();
         Integer refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
-                Map.of("code", versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()),
+                Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName: versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()),
                 Integer.class);
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
@@ -524,6 +527,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public boolean lockRefBookForUpdate(String code, boolean blocking) {
 
+        logger.info("lock {} for update", code);
         String sql = "SELECT 1 FROM rdm_sync.refbook WHERE code = :code FOR UPDATE";
         if (!blocking)
             sql += " NOWAIT";

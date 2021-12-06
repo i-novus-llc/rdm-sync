@@ -10,7 +10,6 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
@@ -48,7 +47,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Value("${rdm-sync.load.size: 1000}")
     private int MAX_SIZE = 1000;
 
-    @Value("${rdm.sync.threads.count:3}")
+    @Value("${rdm-sync.threads.count:3}")
     private int threadsCount = 3;
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =

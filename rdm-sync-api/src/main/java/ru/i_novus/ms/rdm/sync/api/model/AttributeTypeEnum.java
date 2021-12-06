@@ -16,14 +16,18 @@ public enum AttributeTypeEnum {
                     ZoneId.of("Europe/Moscow"));
 
         }
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        return LocalDate.parse(value, dateTimeFormatter);
+        if (value.contains(".")) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            return LocalDate.parse(value, dateTimeFormatter);
+        } else {
+            return LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
+        }
     }),
     BOOLEAN(Boolean::valueOf),
     REFERENCE(String::toString),
     TREE(String::toString);
 
-    private Function<String, Object> castFunction;
+    private  final Function<String, Object> castFunction;
 
     AttributeTypeEnum(Function<String, Object> castFunction) {
         this.castFunction = castFunction;

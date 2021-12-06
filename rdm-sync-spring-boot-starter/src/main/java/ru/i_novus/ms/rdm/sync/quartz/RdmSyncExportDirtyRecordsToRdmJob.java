@@ -31,7 +31,7 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
     @Autowired(required = false)
     private RdmChangeDataClient rdmChangeDataClient;
 
-    @Value("${rdm_sync.export.to_rdm.batch_size:100}")
+    @Value("${rdm-sync.export.to_rdm.batch_size:100}")
     private int exportToRdmBatchSize;
 
     @Override

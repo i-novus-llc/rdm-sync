@@ -33,7 +33,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private final RdmSyncDao dao;
 
 
-    public NotVersionedLocalRefBookCreator(@Value("${rdm_sync.auto_create.schema:rdm}") String schema,
+    public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto_create.schema:rdm}") String schema,
                                            RdmSyncDao dao,
                                            SyncSourceDao syncSourceDao,
                                            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
@@ -44,7 +44,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String source) {
+    public void create(String refBookCode, String refBookName, String source) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -53,7 +53,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, source);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -80,15 +80,11 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private VersionMapping createMapping(String refBookCode, String sourceCode) {
+    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode) {
 
-        RefBook lastPublished;
-        try {
-            lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
-
-        } catch (Exception e) {
-            logger.error(LOG_AUTOCREATE_ERROR + LOG_LAST_PUBLISHED_NOT_FOUND, refBookCode, e);
-            return null;
+        RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
+        if (lastPublished == null) {
+            throw new IllegalArgumentException(refBookCode + " not found in " + sourceCode);
         }
 
         RefBookStructure structure = lastPublished.getStructure();
@@ -100,7 +96,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         String sysTable = getTableName(refBookCode);
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);

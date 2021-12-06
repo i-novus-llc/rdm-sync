@@ -22,14 +22,14 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private final RdmSyncDao rdmSyncDao;
 
 
-    public VersionedLocalRefBookCreator(@Value("${rdm_sync.auto_create.schema:rdm}") String schema, RdmSyncDao rdmSyncDao, SyncSourceDao syncSourceDao, Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+    public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto_create.schema:rdm}") String schema, RdmSyncDao rdmSyncDao, SyncSourceDao syncSourceDao, Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
         super(schema, syncSourceDao, syncSourceServiceFactories);
         this.rdmSyncDao = rdmSyncDao;
     }
 
 
     @Override
-    public void create(String code, String source) {
+    public void create(String code, String name, String source) {
 
         if(rdmSyncDao.getLoadedVersion(code) != null) {
             logger.info("auto create for code {} was skipped", code);
@@ -40,7 +40,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(code, "CURRENT");
         if(versionMapping == null) {
             RefBookStructure refBookStructure = getRefBookStructure(code, source);
-            versionMapping = new VersionMapping(null, code, "CURRENT",  getTableName(code),"someSource", refBookStructure.getPrimaries().get(0), null, null, -1, null, SyncTypeEnum.VERSIONED);
+            versionMapping = new VersionMapping(null, code, name, "CURRENT",  getTableName(code),"someSource", refBookStructure.getPrimaries().get(0), null, null, -1, null, SyncTypeEnum.VERSIONED);
             rdmSyncDao.insertVersionMapping(versionMapping);
         }
 

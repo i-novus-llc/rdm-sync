@@ -53,6 +53,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     public void testCreate() {
         Integer mappingId = 1;
         String code = "test.code";
+        String refBookName = "test.name";
         String sourceCode = "TEST_SOURCE_CODE";
         List<FieldMapping> expectedFieldMappingList = List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name"));
         RefBook refBook = new RefBook();
@@ -73,12 +74,13 @@ public class NotVersionedLocalRefBookCreatorTest {
 
         when(syncSourceDao.findByCode(any())).thenReturn(source);
 
-        creator.create(code, sourceCode);
+        creator.create(code, refBookName, sourceCode);
 
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
         verify(rdmSyncDao, times(1)).insertVersionMapping(mappingCaptor.capture());
         Assert.assertEquals(code, mappingCaptor.getValue().getCode());
+        Assert.assertEquals(refBookName, mappingCaptor.getValue().getRefBookName());
         Assert.assertEquals(-1, mappingCaptor.getValue().getMappingVersion());
         Assert.assertEquals("deleted_ts", mappingCaptor.getValue().getDeletedField());
         Assert.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
@@ -107,7 +109,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     public void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
         when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
-        creator.create(code, "someSource");
+        creator.create(code, null,"someSource");
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).insertVersionMapping(any());
 
