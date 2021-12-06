@@ -261,6 +261,7 @@ public class RdmClientSyncAutoConfiguration {
                                                                  @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
-                SyncTypeEnum.VERSIONED, versionedLocalRefBookCreator));
+                SyncTypeEnum.VERSIONED, versionedLocalRefBookCreator,
+                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator));
     }
 }

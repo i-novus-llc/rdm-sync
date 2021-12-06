@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync;
+package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,7 +74,7 @@ public class NotVersionedLocalRefBookCreatorTest {
 
         when(syncSourceDao.findByCode(any())).thenReturn(source);
 
-        creator.create(code, refBookName, sourceCode);
+        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED);
 
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
@@ -109,7 +109,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     public void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
         when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
-        creator.create(code, null,"someSource");
+        creator.create(code, null,"someSource", SyncTypeEnum.NOT_VERSIONED);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).insertVersionMapping(any());
 
