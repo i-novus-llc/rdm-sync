@@ -39,7 +39,7 @@ public class RdmNotVersionedRefBookUpdater extends BaseRefBookUpdater {
     }
 
     @Override
-    protected void update(RefBook newVersion, VersionMapping versionMapping) {
+    protected void updateProcessing(RefBook newVersion, VersionMapping versionMapping) {
         LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
             PersisterService persisterService = persisterServiceLocator.getPersisterService(versionMapping.getCode());
             if (loadedVersion == null) {
