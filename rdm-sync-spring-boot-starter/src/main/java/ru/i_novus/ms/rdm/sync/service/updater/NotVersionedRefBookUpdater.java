@@ -4,6 +4,7 @@ import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -40,6 +41,7 @@ public class NotVersionedRefBookUpdater implements RefBookUpdater {
     }
 
     @Override
+    @Transactional
     public void update(String refCode) {
         if (dao.getVersionMapping(refCode, "CURRENT") == null) {
             logger.error("No version mapping found for reference book with code '{}'.", refCode);
