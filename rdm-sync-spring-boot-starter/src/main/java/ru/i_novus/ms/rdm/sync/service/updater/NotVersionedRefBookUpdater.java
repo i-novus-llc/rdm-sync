@@ -43,8 +43,8 @@ public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
             persisterService.merge(newVersion, loadedVersion.getVersion(), versionMapping, syncSourceService);
 
         } else if (isMappingChanged(versionMapping, loadedVersion)) {
-//              Значит в прошлый раз мы синхронизировались по старому маппингу.
-//              Необходимо полностью залить свежую версию.
+            //Значит в прошлый раз мы синхронизировались по старому маппингу.
+            //Необходимо полностью залить свежую версию.
             persisterService.repeatVersion(newVersion, versionMapping, syncSourceService);
         }
         if (loadedVersion != null) {
