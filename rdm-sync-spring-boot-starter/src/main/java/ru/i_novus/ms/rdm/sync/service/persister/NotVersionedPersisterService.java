@@ -165,7 +165,7 @@ public class NotVersionedPersisterService implements PersisterService {
             if (existingDataIds.contains(primaryValue)) {
                 // Если запись существует, то обновляем её:
                 Map<String, Object> updatedRow = new HashMap<>(mappedRow);
-                updatedRow.put(versionMapping.getDeletedField(), false);
+                updatedRow.put(versionMapping.getDeletedField(), null);
                 updateRows.add(updatedRow);
 
             } else {
