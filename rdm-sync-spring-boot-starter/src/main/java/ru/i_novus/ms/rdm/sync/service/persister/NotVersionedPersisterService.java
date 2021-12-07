@@ -75,7 +75,7 @@ public class NotVersionedPersisterService implements PersisterService {
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         if (diff.isStructureChanged()) {
 
-            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
+            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
             firstWrite(newVersion, versionMapping, syncSourceService);
 
             return;
@@ -98,7 +98,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     @Override
     public void repeatVersion(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
+        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
         firstWrite(newVersion, versionMapping, syncSourceService);
     }
 

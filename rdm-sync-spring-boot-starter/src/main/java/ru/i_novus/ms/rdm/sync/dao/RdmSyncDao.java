@@ -116,9 +116,9 @@ public interface RdmSyncDao {
      *
      * @param schemaTable    таблица справочника на стороне клиента
      * @param isDeletedField поле - признак удаления записи в таблице клиента
-     * @param deleted        новое значение для поля isDeletedField
+     * @param deletedTime    дата удаления, если строка не удаленна то null
      */
-    void markDeleted(String schemaTable, String isDeletedField, boolean deleted, boolean markSynced);
+    void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced);
 
     void log(String status, String refbookCode, String oldVersion, String newVersion, String message, String stack);
 

@@ -317,12 +317,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void markDeleted(String schemaTable, String isDeletedField, boolean deleted, boolean markSynced) {
+    public void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced) {
 
-        Map<String, Object> args = markSynced
-                ? Map.of(isDeletedField, deleted,
-                RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name())
-                : Map.of(isDeletedField, deleted);
+        Map<String, Object> args =  new HashMap<>();
+        if(markSynced) {
+            args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
+        }
+        args.put(isDeletedField, deletedTime);
 
         executeUpdate(schemaTable, Collections.singletonList(args), null);
     }
