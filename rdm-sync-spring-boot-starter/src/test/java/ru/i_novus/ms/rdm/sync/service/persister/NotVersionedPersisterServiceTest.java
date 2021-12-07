@@ -37,7 +37,7 @@ public class NotVersionedPersisterServiceTest {
     private RdmSyncDao dao;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl());
     }
 
@@ -65,7 +65,7 @@ public class NotVersionedPersisterServiceTest {
 
         persisterService.firstWrite(firstVersion, versionMapping, syncSourceService);
 
-        dataMap.get(0).put(versionMapping.getDeletedField(), false);
+        dataMap.get(0).put(versionMapping.getDeletedField(), null);
         verify(dao).updateRows(versionMapping.getTable(), versionMapping.getPrimaryField(), singletonList(dataMap.get(0)), true);
         verify(dao).insertRows(versionMapping.getTable(), singletonList(dataMap.get(1)), true);
     }
@@ -136,7 +136,7 @@ public class NotVersionedPersisterServiceTest {
         persisterService.repeatVersion(firstRdmVersion, versionMapping, syncSourceService);
 
         List<Map<String, Object>> verifyData = createFirstVerifyDataMap();
-        verifyData.get(0).put(versionMapping.getDeletedField(), false);
+        verifyData.get(0).put(versionMapping.getDeletedField(), null);
         verify(dao).insertRows(testTable, Arrays.asList(verifyData.get(1)), true);
         verify(dao).updateRows(testTable, "id", Arrays.asList(verifyData.get(0)), true);
 
