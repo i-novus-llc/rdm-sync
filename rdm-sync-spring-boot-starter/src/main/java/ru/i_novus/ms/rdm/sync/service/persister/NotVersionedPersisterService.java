@@ -75,7 +75,7 @@ public class NotVersionedPersisterService implements PersisterService {
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         if (diff.isStructureChanged()) {
 
-            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
+            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
             firstWrite(newVersion, versionMapping, syncSourceService);
 
             return;
@@ -98,7 +98,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     @Override
     public void repeatVersion(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), true, true);
+        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
         firstWrite(newVersion, versionMapping, syncSourceService);
     }
 
@@ -165,7 +165,7 @@ public class NotVersionedPersisterService implements PersisterService {
             if (existingDataIds.contains(primaryValue)) {
                 // Если запись существует, то обновляем её:
                 Map<String, Object> updatedRow = new HashMap<>(mappedRow);
-                updatedRow.put(versionMapping.getDeletedField(), false);
+                updatedRow.put(versionMapping.getDeletedField(), null);
                 updateRows.add(updatedRow);
 
             } else {
