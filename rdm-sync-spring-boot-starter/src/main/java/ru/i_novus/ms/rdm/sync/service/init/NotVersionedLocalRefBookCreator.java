@@ -96,7 +96,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         String sysTable = getTableName(refBookCode);
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, type);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
