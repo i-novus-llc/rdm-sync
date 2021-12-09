@@ -20,6 +20,7 @@ import ru.i_novus.ms.rdm.sync.impl.util.PageMapper;
 import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
 import ru.i_novus.platform.datastorage.temporal.model.value.DiffRowValue;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -63,7 +64,8 @@ public class  RdmSyncSourceService implements SyncSourceService {
         ru.i_novus.ms.rdm.api.model.refbook.RefBook rdmRefBook = pageOfRdmRefBooks.getContent().get(0);
         RefBook refBook = new RefBook();
         refBook.setCode(code);
-        refBook.setLastPublishDate(rdmRefBook.getLastPublishedVersionFromDate());
+        LocalDateTime publishDate = rdmRefBook.getLastPublishedVersionFromDate() != null ? rdmRefBook.getLastPublishedVersionFromDate() : rdmRefBook.getFromDate();
+        refBook.setLastPublishDate(publishDate);
         refBook.setLastVersion(rdmRefBook.getLastPublishedVersion());
         refBook.setLastVersionId(rdmRefBook.getId());
         RefBookStructure structure = new RefBookStructure();
