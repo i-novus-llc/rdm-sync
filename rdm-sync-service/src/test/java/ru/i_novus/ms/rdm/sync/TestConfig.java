@@ -78,8 +78,6 @@ public class TestConfig {
         RefBookService refBookService = mock(RefBookService.class);
         RefBook ek002Ver1 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK002_version1.json"), "UTF-8"), RefBook.class);
         RefBook ek002Ver2 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK002_version2.json"), "UTF-8"), RefBook.class);
-        RefBook ek001Ver1 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK001_version1.json"), "UTF-8"), RefBook.class);
-        RefBook ek001Ver2 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK001_version2.json"), "UTF-8"), RefBook.class);
         when(refBookService.search(any(RefBookCriteria.class))).thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
             RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
             if (refBookCriteria.getPageNumber() >= 1) {
@@ -92,14 +90,6 @@ public class TestConfig {
             if (refBookCriteria.getCode().equals("EK002") && loadedVersion != null && "1".equals(loadedVersion.getVersion()))
                 return new RestPage<>(Collections.singletonList(ek002Ver2));
 
-            LoadedVersion loadedVersion1 = rdmSyncDao.getLoadedVersion("EK001");
-            if(refBookCriteria.getCode().equals("EK001") && loadedVersion1 == null){
-                return new RestPage<>(Collections.singletonList(ek001Ver1));
-            }
-            if (refBookCriteria.getCode().equals("EK001") && loadedVersion1 != null && "-1".equals(loadedVersion1.getVersion())){
-                return new RestPage<>(Collections.singletonList(ek001Ver2));
-            }
-
             return new RestPage<>(Collections.emptyList());
         });
         return refBookService;
@@ -109,8 +99,6 @@ public class TestConfig {
     public VersionRestService versionService() throws IOException {
         RefBookRowValue[] firstVersionRows = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK002-data_version1.json"), "UTF-8"), RefBookRowValue[].class);
         RefBookRowValue[] secondVersionRows = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK002-data_version2.json"), "UTF-8"), RefBookRowValue[].class);
-        RefBookRowValue[] firstVersionRows1 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK001-data_version1.json"), "UTF-8"), RefBookRowValue[].class);
-        RefBookRowValue[] secondVersionRows1 = objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream("/EK001-data_version2.json"), "UTF-8"), RefBookRowValue[].class);
 
         VersionRestService versionService = mock(VersionRestService.class);
 
@@ -127,15 +115,6 @@ public class TestConfig {
                     } else if (searchDataCriteria.getPageNumber() == 0 && ek002VersionMapping != null || "1".equals(ek002VersionMapping.getVersion()))
                         return new RestPage<>(Arrays.asList(secondVersionRows));
 
-                    VersionMapping ek001VersionMapping1 = rdmSyncDao.getVersionMapping("EK001", "CURRENT");
-                    if(searchDataCriteria.getPageNumber() == 0 &&
-                            (ek001VersionMapping1 == null || !"-1".equals(ek001VersionMapping1.getVersion())) ) {
-                        return new RestPage<>(Arrays.asList(firstVersionRows1));
-                    } else if (searchDataCriteria.getPageNumber() == 0 && ek001VersionMapping1 != null || "-1".equals(ek001VersionMapping1.getVersion()))
-                        return new RestPage<>(Arrays.asList(secondVersionRows1));
-
-
-
                     return new RestPage<>(Collections.emptyList());
                 });
 
@@ -143,14 +122,8 @@ public class TestConfig {
         ek002Version1.setId(199);
         RefBookVersion ek002Version2 = new RefBookVersion();
         ek002Version2.setId(286);
-        RefBookVersion ek001Version1 = new RefBookVersion();
-        ek001Version1.setId(199);
-        RefBookVersion ek001Version2 = new RefBookVersion();
-        ek001Version2.setId(286);
         when(versionService.getVersion(eq("1"), eq("EK002"))).thenReturn(ek002Version1);
         when(versionService.getVersion(eq("2"), eq("EK002"))).thenReturn(ek002Version2);
-        when(versionService.getVersion(eq("-1"), eq("EK001"))).thenReturn(ek001Version1);
-        when(versionService.getVersion(eq("-1"), eq("EK001"))).thenReturn(ek001Version2);
 
         return versionService;
     }

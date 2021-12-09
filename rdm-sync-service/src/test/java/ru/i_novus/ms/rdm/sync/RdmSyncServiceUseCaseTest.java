@@ -141,46 +141,6 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertEquals(47, getTotalElements(deletedResult));
     }
 
-    @Test
-    public void testRdmNotVersionedUpdate() throws InterruptedException, JsonProcessingException {
-        String firstVersionActualData = "[{\"name_ru\":\"Красный\",\"code_en\":\"red\",\"id\":1,\"is_cold\":false},{\"ref\":\"tab\",\"name_ru\":\"Голубой_r\",\"code_en\":\"blue_\",\"id\":2,\"is_cold\":true},{\"name_ru\":\"Фиолетовый\",\"id\":3,\"is_cold\":true}]";
-        String secondVersionActualData = "[{\"ref\":\"tab\",\"name_ru\":\"Голубой\",\"code_en\":\"blue\",\"id\":2,\"is_cold\":true},{\"ref\":\"st\",\"name_ru\":\"желтый\",\"code_en\":\"yello\",\"id\":3,\"is_cold\":false},{\"name_ru\":\"зеленый\",\"code_en\":\"green\",\"id\":4,\"is_cold\":false}]";
-        String deletedActualData = "[{\"deleted_ts\":\"2021-02-05T12:38:33\",\"name_ru\":\"Красный\",\"code_en\":\"red\",\"id\":1,\"is_cold\":false}]";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/EK001", new HttpEntity<>("{}", headers), String.class);
-        Assert.assertEquals(204, startResponse.getStatusCodeValue());
-
-        for (int i = 0; i<MAX_TIMEOUT && !"-1".equals(rdmSyncDao.getLoadedVersion("EK001").getVersion()); i++) {
-            Thread.sleep(1000);
-        }
-        Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/EK001?getDeleted=false", Map.class).getBody();
-        Assert.assertEquals(3, getTotalElements(result));
-        List<Map<String, Object>> rows = getResultRows(result);
-        rows.forEach(this::prepareRowToAssert);
-        Assert.assertEquals(firstVersionActualData, new ObjectMapper().writeValueAsString(rows));
-
-        //загрузка след версии
-        startResponse = restTemplate.postForEntity(baseUrl + "/update/EK001", new HttpEntity<>("{}", headers), String.class);
-        Assert.assertEquals(204, startResponse.getStatusCodeValue());
-
-        for (int i = 0; i<MAX_TIMEOUT && !"2".equals(rdmSyncDao.getLoadedVersion("EK001").getVersion()); i++) {
-            Thread.sleep(1000);
-        }
-        result = restTemplate.getForEntity(baseUrl + "/data/EK001?getDeleted=false", Map.class).getBody();
-        Map<String, Object> deletedResult = restTemplate.getForEntity(baseUrl + "/data/EK001?getDeleted=true", Map.class).getBody();
-        Assert.assertEquals(3, getTotalElements(result));
-        rows = getResultRows(result);
-        rows.forEach(this::prepareRowToAssert);
-        Assert.assertEquals(secondVersionActualData, new ObjectMapper().writeValueAsString(rows));
-
-        Assert.assertEquals(1, getTotalElements(deletedResult));
-        rows = getResultRows(deletedResult);
-        rows.forEach(this::prepareRowToAssert);
-        Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(rows));
-    }
-
     private void prepareRowToAssert(Map<String, Object> row) {
 
         row.remove(RECORD_SYS_COL);
