@@ -24,10 +24,16 @@ public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
     private final PersisterServiceLocator persisterServiceLocator;
 
     public NotVersionedRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, PersisterServiceLocator persisterServiceLocator, RdmLoggingService loggingService) {
-        super(dao,syncSourceService, loggingService);
+        super(dao, syncSourceService, loggingService);
         this.dao = dao;
         this.syncSourceService = syncSourceService;
         this.persisterServiceLocator = persisterServiceLocator;
+    }
+    @Override
+    protected boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
+
+        return !loadedVersion.getVersion().equals(newVersion.getLastVersion())
+                && !loadedVersion.getPublicationDate().equals(newVersion.getLastPublishDate());
     }
 
     @Override

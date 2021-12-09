@@ -90,11 +90,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         return versionMapping;
     }
 
-    protected boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
-
-        return !loadedVersion.getVersion().equals(newVersion.getLastVersion())
-                && !loadedVersion.getPublicationDate().equals(newVersion.getLastPublishDate());
-    }
+    protected abstract boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion);
 
     protected boolean isMappingChanged(VersionMapping versionMapping, LoadedVersion loadedVersion) {
         return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
@@ -134,6 +130,6 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     }
 
-    protected void updateProcessing(RefBook newVersion, VersionMapping versionMapping) {
-    }
+    protected abstract void updateProcessing(RefBook newVersion, VersionMapping versionMapping);
+
 }

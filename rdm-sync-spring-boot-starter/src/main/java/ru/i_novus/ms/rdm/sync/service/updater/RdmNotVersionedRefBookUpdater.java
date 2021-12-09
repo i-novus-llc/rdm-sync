@@ -35,7 +35,7 @@ public class RdmNotVersionedRefBookUpdater extends BaseRefBookUpdater {
 
     @Override
     protected boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion) {
-        return !loadedVersion.getPublicationDate().equals(newVersion.getLastPublishDate());
+        return loadedVersion.getPublicationDate().isBefore(newVersion.getLastPublishDate());
     }
 
     @Override
