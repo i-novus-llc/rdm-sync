@@ -231,7 +231,7 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 
 Таблица должна содержать технические колонки:
 - `_sync_rec_id bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
-- `code` -- колонка с любым типом, совместимым с типом первичного ключа справочника НСИ.
+- колонка с любым типом, совместимым с типом первичного ключа справочника НСИ. Например `code`.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
 -  `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
