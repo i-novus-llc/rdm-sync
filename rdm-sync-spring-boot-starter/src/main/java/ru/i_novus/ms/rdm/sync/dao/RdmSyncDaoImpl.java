@@ -377,7 +377,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 .map(field -> addDoubleQuotes(field) + " = :" + field)
                 .collect(joining(", "));
 
-        String sql = String.format(sqlFormat, table, fields, addDoubleQuotes(primaryField), primaryField);
+        String sql = String.format(sqlFormat, escapeName(table), fields, addDoubleQuotes(primaryField), primaryField);
 
         Map<String, Object>[] batchValues = new Map[rows.size()];
         namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
