@@ -54,7 +54,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, String table);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
