@@ -34,7 +34,7 @@ public interface RdmSyncDao {
 
     VersionMapping getVersionMapping(String refbookCode, String version);
 
-    int getLastVersion(String refbookCode);
+    int getLastMappingVersion(String refbookCode);
 
     /**
      * Получить список маппинга полей справочников НСИ на поля клиента.
