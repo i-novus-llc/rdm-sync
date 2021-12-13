@@ -116,7 +116,8 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 |---|---|---|
 |rdm-sync.enabled| true| Включение/выключение синхронизации |
 |rdm.backend.path| -| Адрес API RDM'a |
-|rdm-sync.auto_create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
+|rdm-sync.auto-create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
+|rdm-sync.auto-create.ignore-case| true| Игнорирование регистра букв в названиях таблиц и колонок в режиме автосоздания|
 |rdm-sync.scheduling| true| Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса|
 |rdm-sync.import.from_rdm.cron| 0 0/10 * * * ? | Крон для импорта данных из НСИ. Значение по умолчанию есть только у микросервиса|
 |rdm-sync.import.from_rdm.delay| 0 | Задержка импорта данных из НСИ после запуска. Значение по умолчанию -- 0|
@@ -128,6 +129,7 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -| Код справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source| -| Источник справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type| -| Тип синхронизации, сейчас только один тип NOT_VERSIONED
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table| -| Наименование таблицы справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name| -| Наименование справочника
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url| -| URL ФНСИ
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey| -| Ключ АПИ ФНСИ
