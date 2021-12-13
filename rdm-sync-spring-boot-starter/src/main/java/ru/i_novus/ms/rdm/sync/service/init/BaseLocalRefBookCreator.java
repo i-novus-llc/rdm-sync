@@ -52,12 +52,11 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         } else {
             schemaName = schema;
-            tableName = "ref_" + refBookCode.replaceAll("[-.]", "_");
+            tableName = refBookCode.replaceAll("[-.]", "_");
+            tableName = "ref_" + (caseIgnore ? tableName.toLowerCase() : tableName);
         }
         
-        return String.format("%s.%s",
-                caseIgnore ? schemaName.toLowerCase() : schemaName,
-                caseIgnore ? tableName.toLowerCase() : tableName);
+        return String.format("%s.%s", schemaName, tableName);
     }
 
     protected RefBookStructure getRefBookStructure(String refBookCode, String source) {
