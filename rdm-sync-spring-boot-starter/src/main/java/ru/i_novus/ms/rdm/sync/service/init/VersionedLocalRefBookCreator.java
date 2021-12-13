@@ -22,7 +22,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
 
     public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
-                                        @Value("${rdm-sync.auto-create.ignore-case:false}") Boolean caseIgnore,
+                                        @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                         RdmSyncDao rdmSyncDao,
                                         SyncSourceDao syncSourceDao,
                                         Set<SyncSourceServiceFactory> syncSourceServiceFactories) {

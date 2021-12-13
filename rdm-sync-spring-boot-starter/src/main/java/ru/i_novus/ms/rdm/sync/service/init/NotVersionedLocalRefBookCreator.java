@@ -34,7 +34,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
 
     public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
-                                           @Value("${rdm-sync.auto-create.ignore-case:false}") Boolean caseIgnore,
+                                           @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                            RdmSyncDao dao,
                                            SyncSourceDao syncSourceDao,
                                            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
