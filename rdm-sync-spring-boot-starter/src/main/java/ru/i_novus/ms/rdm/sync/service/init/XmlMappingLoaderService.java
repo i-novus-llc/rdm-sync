@@ -68,7 +68,7 @@ class XmlMappingLoaderService {
 
     private void load(XmlMappingRefBook xmlMappingRefBook) {
 
-        if (xmlMappingRefBook.getMappingVersion() > rdmSyncDao.getLastVersion(xmlMappingRefBook.getCode())) {
+        if (xmlMappingRefBook.getMappingVersion() > rdmSyncDao.getLastMappingVersion(xmlMappingRefBook.getCode())) {
             logger.info("load {}", xmlMappingRefBook.getCode());
             VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
             if(versionMapping == null) {
