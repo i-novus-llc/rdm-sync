@@ -44,7 +44,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source) {
+    public void create(String refBookCode, String refBookName, String source, String table) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -53,11 +53,11 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, table);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
-        if(mapping != null) {
+        if (mapping != null) {
             createTable(refBookCode, mapping);
         }
     }
@@ -65,22 +65,22 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private void createTable(String refBookCode, VersionMapping mapping) {
 
         String[] split = mapping.getTable().split("\\.");
-        String schema = split[0];
-        String table = split[1];
+        String schemaName = split[0];
+        String tableName = split[1];
 
-        dao.createSchemaIfNotExists(schema);
-        dao.createTableIfNotExists(schema, table, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
+        dao.createSchemaIfNotExists(schemaName);
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
 
-        logger.info("Preparing table {} in schema {}.", table, schema);
+        logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
-        dao.addInternalLocalRowStateColumnIfNotExists(schema, table);
+        dao.addInternalLocalRowStateColumnIfNotExists(schema, tableName);
         dao.createOrReplaceLocalRowStateUpdateFunction(); // Мы по сути в цикле перезаписываем каждый раз функцию, это не страшно
-        dao.addInternalLocalRowStateUpdateTrigger(schema, table);
+        dao.addInternalLocalRowStateUpdateTrigger(schema, tableName);
 
-        logger.info("Table {} in schema {} successfully prepared.", table, schema);
+        logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
 
-    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode) {
+    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, String table) {
 
         RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
         if (lastPublished == null) {
@@ -94,9 +94,11 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         }
         String uniqueSysField = structure.getPrimaries().get(0);
 
-        String sysTable = getTableName(refBookCode);
+        String schemaTable = getTableName(refBookCode, table);
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
+                schemaTable, sourceCode, uniqueSysField, isDeletedField,
+                null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);

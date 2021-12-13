@@ -5,5 +5,5 @@ package ru.i_novus.ms.rdm.sync.service.init;
  */
 public interface LocalRefBookCreator {
 
-    void create(String refCode, String refName, String source);
+    void create(String refCode, String refName, String source, String table);
 }

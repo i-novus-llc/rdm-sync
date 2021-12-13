@@ -128,6 +128,7 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -| Код справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source| -| Источник справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type| -| Тип синхронизации, сейчас только один тип NOT_VERSIONED
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table| -| Наименование таблицы справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name| -| Наименование справочника
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url| -| URL ФНСИ
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey| -| Ключ АПИ ФНСИ

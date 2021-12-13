@@ -59,7 +59,7 @@ public class VersionedLocalRefBookCreatorTest {
         List<FieldMapping> fieldMappings = createFieldMappings();
         VersionMapping versionMapping = createVersionMapping(testCode);
         when(rdmSyncDao.getFieldMappings(testCode)).thenReturn(fieldMappings);
-        creator.create(testCode, null, source);
+        creator.create(testCode, null, source, null);
         verify(rdmSyncDao, times(1)).insertVersionMapping(versionMapping);
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
 
@@ -84,7 +84,7 @@ public class VersionedLocalRefBookCreatorTest {
         when(rdmSyncDao.getVersionMapping(testCode, "CURRENT")).thenReturn(createVersionMapping(testCode));
         when(rdmSyncDao.getFieldMappings(testCode)).thenReturn(fieldMappings);
 
-        creator.create(testCode, null, source);
+        creator.create(testCode, null, source, null);
 
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
@@ -104,7 +104,7 @@ public class VersionedLocalRefBookCreatorTest {
     @Test
     public void testIgnoreCreateIfExistsLoadedVersion() {
         when(rdmSyncDao.getLoadedVersion(any())).thenReturn(mock(LoadedVersion.class));
-        creator.create("test", null,"source");
+        creator.create("test", null, "source", null);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).createSchemaIfNotExists(any());
         verify(rdmSyncDao, never()).createTableIfNotExists(any(), any(), any(), any());
