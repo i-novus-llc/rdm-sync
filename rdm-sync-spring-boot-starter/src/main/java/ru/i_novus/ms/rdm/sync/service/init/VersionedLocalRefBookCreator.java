@@ -21,8 +21,13 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private final RdmSyncDao rdmSyncDao;
 
 
-    public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto_create.schema:rdm}") String schema, RdmSyncDao rdmSyncDao, SyncSourceDao syncSourceDao, Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, syncSourceDao, syncSourceServiceFactories);
+    public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
+                                        @Value("${rdm-sync.auto-create.ignore-case:false}") Boolean caseIgnore,
+                                        RdmSyncDao rdmSyncDao,
+                                        SyncSourceDao syncSourceDao,
+                                        Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+        super(schema, caseIgnore, syncSourceDao, syncSourceServiceFactories);
+
         this.rdmSyncDao = rdmSyncDao;
     }
 
@@ -37,7 +42,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info("starting auto create for code {}", code);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(code, "CURRENT");
-        if(versionMapping == null) {
+        if (versionMapping == null) {
             RefBookStructure refBookStructure = getRefBookStructure(code, source);
 
             String schemaTable = getTableName(code, table);

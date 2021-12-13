@@ -21,6 +21,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     private static final String LOG_LAST_PUBLISHED_NOT_FOUND = " Can't get last published version from RDM.";
 
     protected final String schema;
+    protected final boolean caseIgnore;
 
     private final SyncSourceDao syncSourceDao;
 
@@ -28,9 +29,12 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
     public BaseLocalRefBookCreator(String schema,
+                                   Boolean caseIgnore,
                                    SyncSourceDao syncSourceDao,
                                    Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
         this.schema = schema == null ? "rdm" : schema;
+        this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
+
         this.syncSourceDao = syncSourceDao;
         this.syncSourceServiceFactories = syncSourceServiceFactories;
     }
@@ -48,10 +52,12 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         } else {
             schemaName = schema;
-            tableName = "ref_" + refBookCode.replaceAll("[-.]", "_").toLowerCase();
+            tableName = "ref_" + refBookCode.replaceAll("[-.]", "_");
         }
         
-        return String.format("%s.%s", schemaName, tableName);
+        return String.format("%s.%s",
+                caseIgnore ? schemaName.toLowerCase() : schemaName,
+                caseIgnore ? tableName.toLowerCase() : tableName);
     }
 
     protected RefBookStructure getRefBookStructure(String refBookCode, String source) {

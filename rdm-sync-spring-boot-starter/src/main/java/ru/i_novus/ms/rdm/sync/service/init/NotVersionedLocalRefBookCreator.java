@@ -33,11 +33,12 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     private final RdmSyncDao dao;
 
 
-    public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto_create.schema:rdm}") String schema,
+    public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
+                                           @Value("${rdm-sync.auto-create.ignore-case:false}") Boolean caseIgnore,
                                            RdmSyncDao dao,
                                            SyncSourceDao syncSourceDao,
                                            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, syncSourceDao, syncSourceServiceFactories);
+        super(schema, caseIgnore, syncSourceDao, syncSourceServiceFactories);
 
         this.dao = dao;
     }
@@ -103,7 +104,11 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
         for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
-            fields.add(new FieldMapping(attr.getKey(), DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0), attr.getKey()));
+            fields.add(new FieldMapping(
+                    caseIgnore ? attr.getKey().toLowerCase() : attr.getKey(),
+                    DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0),
+                    attr.getKey()
+            ));
         }
         dao.insertFieldMapping(mappingId, fields);
 
