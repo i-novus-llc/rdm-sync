@@ -218,7 +218,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping) {
 
         final String sql = String.format("SELECT %s FROM %s",
-                addDoubleQuotes(primaryFieldMapping.getSysField()), schemaTable);
+                addDoubleQuotes(primaryFieldMapping.getSysField()), escapeName(schemaTable));
 
         DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
         return namedParameterJdbcTemplate.query(sql,
@@ -230,7 +230,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public boolean isIdExists(String schemaTable, String primaryField, Object primaryValue) {
 
         final String sql = String.format("SELECT count(*) > 0 FROM %s WHERE %s = :primary",
-                schemaTable, addDoubleQuotes(primaryField));
+                escapeName(schemaTable), addDoubleQuotes(primaryField));
 
         final Boolean result = namedParameterJdbcTemplate.queryForObject(sql,
                 Map.of("primary", primaryValue),
