@@ -208,6 +208,12 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Assert.assertFalse(actual);
     }
 
+    @Test
+    public void testGetLastMappingVersion() {
+
+        Assert.assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
+    }
+
     private void assertEquals(VersionMapping expected, VersionMapping actual) {
         Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
         Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
