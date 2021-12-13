@@ -44,7 +44,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -53,7 +53,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -80,7 +80,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", table, schema);
     }
 
-    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode) {
+    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type) {
 
         RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
         if (lastPublished == null) {
@@ -96,7 +96,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         String sysTable = getTableName(refBookCode);
 
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null, sysTable, sourceCode, uniqueSysField, isDeletedField, null, -1, null, type);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
         List<FieldMapping> fields = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
