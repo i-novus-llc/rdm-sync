@@ -74,7 +74,7 @@ public class NotVersionedLocalRefBookCreatorTest {
 
         when(syncSourceDao.findByCode(any())).thenReturn(source);
 
-        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED);
+        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED, null);
 
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
@@ -109,7 +109,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     public void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
         when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
-        creator.create(code, null,"someSource", SyncTypeEnum.NOT_VERSIONED);
+        creator.create(code, null, "someSource", SyncTypeEnum.NOT_VERSIONED, null);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).insertVersionMapping(any());
 

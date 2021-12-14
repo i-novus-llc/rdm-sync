@@ -209,6 +209,12 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
+    public void testGetLastMappingVersion() {
+
+        Assert.assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
+    }
+
+    @Test
     public void testMarkDeletedToMultipleRows(){
         LocalDateTime expectedNowDeletedDate = LocalDateTime.of(2021, 9, 26, 12, 30);
         LocalDateTime expectedBeforeDeletedDate = LocalDateTime.of(2021, 9, 25, 12, 30);

@@ -116,16 +116,20 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 |---|---|---|
 |rdm-sync.enabled| true| Включение/выключение синхронизации |
 |rdm.backend.path| -| Адрес API RDM'a |
-|rdm-sync.auto_create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
+|rdm-sync.auto-create.schema| rdm| Схема, в которой будут создаваться таблицы в режиме автосоздания|
+|rdm-sync.auto-create.ignore-case| true| Игнорирование регистра букв в названиях таблиц и колонок в режиме автосоздания|
 |rdm-sync.scheduling| true| Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса|
-|rdm-sync.import.from_rdm.cron| 0 0/10 * * * ? | Крон для загрузки данных из НСИ. Значение по умолчанию есть только у микросервиса|
+|rdm-sync.import.from_rdm.cron| 0 0/10 * * * ? | Крон для импорта данных из НСИ. Значение по умолчанию есть только у микросервиса|
+|rdm-sync.import.from_rdm.delay| 0 | Задержка импорта данных из НСИ после запуска. Значение по умолчанию -- 0|
 |rdm-sync.change_data.mode| -| Режим экспорта данных в НСИ (только для RDM). Значения sync/async - синхронный и асинхронный
-|rdm-sync.export.to_rdm.cron| 0 0/20 * * * ?| Крон для загрузки данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса|
+|rdm-sync.export.to_rdm.cron| 0 0/20 * * * ?| Крон для экспорта данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса|
+|rdm-sync.export.to_rdm.delay| 0 | Задержка экспорта данных в НСИ (только для RDM) после запуска. Значение по умолчанию -- 0|
 |rdm-sync.load.size| 1000| Кол-во записей на странице при получении данных из НСИ|
 |rdm-sync.threads.count| 3| Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -| Код справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source| -| Источник справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type| -| Тип синхронизации, сейчас только один тип NOT_VERSIONED
+|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table| -| Наименование таблицы справочника
 |rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name| -| Наименование справочника
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url| -| URL ФНСИ
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey| -| Ключ АПИ ФНСИ
@@ -204,12 +208,10 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 
 ### Автогенерация XML-конфигурации
 
-Для облегчения разработки предусмотрена генерация файла `rdm-mapping.xml` по существующим записям в БД.
+Для облегчения разработки предусмотрена генерация файла `rdm-mapping.xml` по существующему маппингу. Например, он был сгенерирован через автосоздание.
 
-1. Указываете настройки `rdm-sync.auto_create.refbook_codes` и `rdm-sync.auto_create.schema`.
-2. Запускаете своё приложение. Стартер скачает справочники из НСИ и создаст таблицы.
-3. Получаете сгенерированный файл `rdm-mapping.xml` по адресу `<адрес вашего приложения>/api/rdm/xml-fm?code=REF_BOOK_CODE1&code=REF_BOOK_CODE2&...`
-4. Полученный файл `rdm-mapping.xml` можно поправить и положить в classpath уже для использования по назначению.
+Получить сгенерированный файл `rdm-mapping.xml` можно по адресу `<адрес вашего приложения>/api/rdm/xml-fm?code=REF_BOOK_CODE1&code=REF_BOOK_CODE2&...`
+Полученный файл `rdm-mapping.xml` можно поправить и положить в classpath уже для использования по назначению.
    Например, можно убрать неиспользуемые поля справочника.
 
 Вы также можете перейти по адресу `localhost:8080/api/rdm/xml-fm?code=all`.
@@ -225,18 +227,17 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 
 ## Создание таблиц
 
-**Важно:**
-Синхронизация не создаёт таблиц для копирования данных из НСИ, это должно делать само клиентское приложение.
-
 ### Создание таблиц вручную
 
-Таблицы создавать в схеме rdm.
+Таблицы можно создавать в любой схеме. Важно в маппинге указать название таблицы со схемой
 
 Таблица должна содержать технические колонки:
 - `_sync_rec_id bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
-- `code` -- колонка с любым типом, совместимым с типом первичного ключа справочника НСИ.
+- колонка с любым типом, совместимым с типом первичного ключа справочника НСИ. Например `code`.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
+-  `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
+
 
 Таблица версионного справочника должна также содержать технические колонки:
 - `_versions text` -- версии справочника, в которых присутствует текущая запись.
@@ -244,7 +245,7 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
   Для этой колонки должно быть создано unique-ограничение `unique_hash`.
 
 Таблица должна содержать колонки для значений справочника, т.е. те колонки, в которые будут копироваться данные из полей справочника.
-Их количество и наименование необязательно должны совпадать. Также наименование этих колонок не должно совпадать с наименованиями технических колонок (за исключением `code`).
+Их количество и наименование необязательно должны совпадать. Также наименование этих колонок не должно совпадать с наименованиями технических колонок .
 Эти колонки участвуют в маппинге, т.е. прописываются в `rdm_sync.field_mapping`.
 
 
@@ -274,16 +275,18 @@ rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-            <optional>true</optional>
         </dependency>
 ```
 2. Задать настройки доступным для spring-boot приложений образом
 ```properties
 rdm-sync.scheduling=true
 spring.quartz.job-store-type=jdbc
-spring.quartz.jdbc.initialize-schema=never
+spring.quartz.jdbc.initialize-schema=always
 spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
 spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
+spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
 #изменить как надо. время обновления данных из НСИ
 rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
 #Включает экспорт данных в НСИ
@@ -316,6 +319,17 @@ rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 На каждую пачку записей, отправленную в RDM, внутри RDM будет так же происходить публикация. То есть если у вас 500 "грязных записей" и batch_size = 100, то соответствующий справочник опубликуется 5 раз.
 Поэтому batch_size вместе с крон-выражением нужно выбирать аккуратно.
 Ещё раз стоит отметить, что очень желательно вместе с экспортом настроить также и импорт.
+
+## Получение синхронизированных данных
+После синхронизации данных имеется возможность получить их с помощью Rest API. 
+1. Постраничное получение списка данных с фильтрами GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}, с Query параметрами
+   - getDeleted - значения true/false если true то показывает только удаленные, false - неудаленные, если не указывать то все записи
+   - page - номер страницы начиная с 0
+   - size - кол-во записей на странице
+   - фильтр по колонкам, ключ - название колонки, значение - значение фильтра. Поиск проиходит по точному совпадению.
+    <br/> например, таблице есть колонка name, то можно так по ней фильтровать  GET  <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=текст
+
+2. Получение одной записи по первичному ключу справочника(т.е колонки которая указана в rdm_sync.mapping.unique_sys_field)  <адрес приложения или микросервиса синхронизации>/{refBookCode}/{primaryKey}
 
 
 

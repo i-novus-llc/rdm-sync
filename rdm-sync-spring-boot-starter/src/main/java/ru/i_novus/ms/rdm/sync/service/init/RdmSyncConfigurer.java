@@ -13,6 +13,8 @@ import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
+import java.util.Date;
+
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -42,8 +44,14 @@ class RdmSyncConfigurer {
     @Value("${rdm-sync.import.from_rdm.cron:}")
     private String importFromRdmCron;
 
+    @Value("${rdm-sync.import.from_rdm.delay:0}")
+    private Integer importFromRdmDelay;
+
     @Value("${rdm-sync.export.to_rdm.cron:0/5 * * * * ?}")
     private String exportToRdmCron;
+
+    @Value("${rdm-sync.export.to_rdm.delay:0}")
+    private Integer exportToRdmDelay;
 
     @Value("${rdm-sync.change_data.mode:#{null}}")
     private String changeDataMode;
@@ -75,14 +83,15 @@ class RdmSyncConfigurer {
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
             Trigger oldTrigger = scheduler.getTrigger(triggerKey);
 
-            JobDetail newJob = newJob(RdmSyncImportRecordsFromRdmJob.class).
-                    withIdentity(jobKey).
-                    build();
-            Trigger newTrigger = newTrigger().
-                    withIdentity(triggerKey).
-                    forJob(newJob).
-                    withSchedule(CronScheduleBuilder.cronSchedule(importFromRdmCron)).
-                    build();
+            JobDetail newJob = newJob(RdmSyncImportRecordsFromRdmJob.class)
+                    .withIdentity(jobKey)
+                    .build();
+            Trigger newTrigger = newTrigger()
+                    .withIdentity(triggerKey)
+                    .forJob(newJob)
+                    .withSchedule(CronScheduleBuilder.cronSchedule(importFromRdmCron))
+                    .startAt(nowDelayed(importFromRdmDelay))
+                    .build();
 
             addJob(triggerKey, oldTrigger, newJob, newTrigger, importFromRdmCron);
 
@@ -112,14 +121,15 @@ class RdmSyncConfigurer {
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
             Trigger oldTrigger = scheduler.getTrigger(triggerKey);
 
-            JobDetail newJob = newJob(RdmSyncExportDirtyRecordsToRdmJob.class).
-                    withIdentity(jobKey).
-                    build();
-            Trigger newTrigger = newTrigger().
-                    withIdentity(triggerKey).
-                    forJob(newJob).
-                    withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmCron)).
-                    build();
+            JobDetail newJob = newJob(RdmSyncExportDirtyRecordsToRdmJob.class)
+                    .withIdentity(jobKey)
+                    .build();
+            Trigger newTrigger = newTrigger()
+                    .withIdentity(triggerKey)
+                    .forJob(newJob)
+                    .withSchedule(CronScheduleBuilder.cronSchedule(exportToRdmCron))
+                    .startAt(nowDelayed(exportToRdmDelay))
+                    .build();
 
             addJob(triggerKey, oldTrigger, newJob, newTrigger, exportToRdmCron);
 
@@ -129,6 +139,10 @@ class RdmSyncConfigurer {
                     String.format(LOG_ALL_RECORDS_WILL_REMAIN, RdmSyncLocalRowState.DIRTY);
             logger.error(message, e);
         }
+    }
+
+    private Date nowDelayed(Integer delayMillis) {
+        return new Date(System.currentTimeMillis() + (delayMillis != null ? delayMillis.longValue() : 0));
     }
 
     private void addJob(TriggerKey triggerKey, Trigger oldTrigger,

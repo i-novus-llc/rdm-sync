@@ -148,9 +148,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public int getLastVersion(String refbookCode) {
+    public int getLastMappingVersion(String refbookCode) {
 
-        final String sql = "SELECT lv.version FROM rdm_sync.loaded_version lv WHERE lv.code = :code";
+        final String sql = "select m.mapping_version from rdm_sync.refbook r\n" +
+                "inner join rdm_sync.version v on v.ref_id = r.id and v.version = 'CURRENT'\n" +
+                "inner join rdm_sync.mapping m on m.id = v.mapping_id\n" +
+                "where r.code = :code";
 
         List<Integer> list = namedParameterJdbcTemplate.query(sql,
                 Map.of("code", refbookCode),
@@ -214,7 +217,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping) {
 
         final String sql = String.format("SELECT %s FROM %s",
-                addDoubleQuotes(primaryFieldMapping.getSysField()), schemaTable);
+                addDoubleQuotes(primaryFieldMapping.getSysField()), escapeName(schemaTable));
 
         DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
         return namedParameterJdbcTemplate.query(sql,
@@ -226,7 +229,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public boolean isIdExists(String schemaTable, String primaryField, Object primaryValue) {
 
         final String sql = String.format("SELECT count(*) > 0 FROM %s WHERE %s = :primary",
-                schemaTable, addDoubleQuotes(primaryField));
+                escapeName(schemaTable), addDoubleQuotes(primaryField));
 
         final Boolean result = namedParameterJdbcTemplate.queryForObject(sql,
                 Map.of("primary", primaryValue),
@@ -388,7 +391,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 .map(field -> addDoubleQuotes(field) + " = :" + field)
                 .collect(joining(", "));
 
-        String sql = String.format(sqlFormat, table, fields, addDoubleQuotes(primaryField), primaryField);
+        String sql = String.format(sqlFormat, escapeName(table), fields, addDoubleQuotes(primaryField), primaryField);
 
         Map<String, Object>[] batchValues = new Map[rows.size()];
         namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
@@ -562,8 +565,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void addInternalLocalRowStateUpdateTrigger(String schema, String table) {
 
-        String triggerName = getInternalLocalStateUpdateTriggerName(schema, table);
-        String schemaTable = schema + "." + table;
+        String triggerName = escapeName(getInternalLocalStateUpdateTriggerName(schema, table));
+        String schemaTable = escapeName(schema + "." + table);
 
         final String sqlExists = "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE NOT tgisinternal AND tgname = :tgname)";
         Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlExists, Map.of("tgname", triggerName), Boolean.class);
@@ -591,7 +594,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void addInternalLocalRowStateColumnIfNotExists(String schema, String table) {
 
-        String schemaTable = schema + "." + table;
+        String schemaTable = escapeName(schema + "." + table);
         Boolean exists = namedParameterJdbcTemplate.queryForObject("SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :internal_state_column)", Map.of("schema", schema, "table", table, "internal_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN), Boolean.class);
         if (Boolean.TRUE.equals(exists))
             return;
@@ -611,7 +614,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void disableInternalLocalRowStateUpdateTrigger(String table) {
 
         String[] split = table.split("\\.");
-        String query = String.format("ALTER TABLE %s DISABLE TRIGGER %s", table, getInternalLocalStateUpdateTriggerName(split[0], split[1]));
+        String triggerName = escapeName(getInternalLocalStateUpdateTriggerName(split[0], split[1]));
+        String query = String.format("ALTER TABLE %s DISABLE TRIGGER %s", escapeName(table), triggerName);
 
         getJdbcTemplate().execute(query);
     }
@@ -620,7 +624,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void enableInternalLocalRowStateUpdateTrigger(String table) {
 
         String[] split = table.split("\\.");
-        String query = String.format("ALTER TABLE %s ENABLE TRIGGER %s", table, getInternalLocalStateUpdateTriggerName(split[0], split[1]));
+        String triggerName = escapeName(getInternalLocalStateUpdateTriggerName(split[0], split[1]));
+        String query = String.format("ALTER TABLE %s ENABLE TRIGGER %s", escapeName(table), triggerName);
 
         getJdbcTemplate().execute(query);
     }
@@ -638,7 +643,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Map<String, Object> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
-                localDataCriteria.getSchemaTable(), addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+                escapeName(localDataCriteria.getSchemaTable()),
+                addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
         args.put("state", localDataCriteria.getState().name());
         if (localDataCriteria.getDeleted() != null) {
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
