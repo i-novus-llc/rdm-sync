@@ -21,7 +21,8 @@ import java.util.Date;
 public class RdmMappingServiceImpl implements RdmMappingService {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter ISO_DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter EU_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Override
     public Object map(AttributeTypeEnum attributeType, DataTypeEnum clientType, Object value) {
@@ -65,17 +66,25 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     }
 
     private Object mapVarchar(DataTypeEnum clientType, Object value) {
+        String valueStr = value.toString();
         switch (clientType) {
             case VARCHAR:
                 return value;
             case INTEGER:
-                return new BigInteger(value.toString());
+                return new BigInteger(valueStr);
             case FLOAT:
-                return Float.parseFloat(value.toString());
+                return Float.parseFloat(valueStr);
             case BOOLEAN:
-                return Boolean.parseBoolean(value.toString());
-            case DATE:
-                return LocalDate.parse(value.toString(), DATE_FORMATTER);
+                return Boolean.parseBoolean(valueStr);
+            case DATE: {
+                DateTimeFormatter dateTimeFormatter;
+                if(valueStr.contains(".")) {
+                    dateTimeFormatter = EU_DATE_FORMATTER;
+                } else {
+                    dateTimeFormatter = ISO_DATE_FORMATTER;
+                }
+                return LocalDate.parse(valueStr, dateTimeFormatter);
+            }
             default:
                 throw new ClassCastException(getClassCastError(FieldType.STRING, clientType, value));
         }
@@ -90,13 +99,13 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             } else if (value instanceof Date) {
                 return ((Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             } else {
-                return LocalDate.parse(value.toString(), DATE_FORMATTER);
+                return LocalDate.parse(value.toString(), ISO_DATE_FORMATTER);
             }
         } else if (clientType.equals(DataTypeEnum.VARCHAR)) {
             if (value instanceof Date) {
                 return FastDateFormat.getInstance(DATE_FORMAT).format(value);
             } else if (value instanceof LocalDate || value instanceof LocalDateTime) {
-                return DATE_FORMATTER.format((Temporal) value);
+                return ISO_DATE_FORMATTER.format((Temporal) value);
             } else {
                 throw new ClassCastException(getClassCastError(FieldType.DATE, clientType, value));
             }
@@ -148,7 +157,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             case BOOLEAN:
                 return Boolean.parseBoolean(refValue);
             case DATE:
-                return LocalDate.parse(refValue, DATE_FORMATTER);
+                return LocalDate.parse(refValue, ISO_DATE_FORMATTER);
             case JSONB:
                 return reference == null ? refValue : reference;
             default:
