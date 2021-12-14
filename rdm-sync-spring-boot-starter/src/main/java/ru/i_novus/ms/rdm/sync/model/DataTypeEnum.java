@@ -4,11 +4,10 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.util.TimeUtils;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -42,19 +41,19 @@ public enum DataTypeEnum {
     }
 
     @SuppressWarnings("squid:S1452")
-    public List<?> castFromString(List<String> list) {
+    public List<Serializable> castFromString(List<String> list) {
 
         return switch (this) {
             case BOOLEAN -> list.stream().map(Boolean::valueOf).collect(toList());
             case INTEGER -> list.stream().map(BigInteger::new).collect(toList());
             case FLOAT -> list.stream().map(BigDecimal::new).collect(toList());
             case DATE -> list.stream().map(TimeUtils::parseLocalDate).collect(toList());
-            case VARCHAR -> list;
+            case VARCHAR -> new ArrayList<>(list);
             default -> throw new RdmException("Cast from string to " + this.name() + " not supported.");
         };
     }
 
-    public Object castFromString(String s) {
+    public Serializable castFromString(String s) {
         return castFromString(singletonList(s)).get(0);
     }
 

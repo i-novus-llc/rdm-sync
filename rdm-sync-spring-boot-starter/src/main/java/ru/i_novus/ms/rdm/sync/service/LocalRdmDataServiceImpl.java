@@ -14,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.*;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -34,15 +35,16 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (page == null) page = 0;
         if (size == null) size = 10;
 
-        MultivaluedMap<String, Object> filters = filtersToObjects(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
-        LocalDataCriteria localDataCriteria =
-                new LocalDataCriteria(versionMapping.getTable(),
-                        versionMapping.getPrimaryField(),
-                        size,
-                        page * size,
-                        SYNCED,
-                        filters,
-                        new DeletedCriteria(versionMapping.getDeletedField(), getDeleted));
+        MultivaluedMap<String, Serializable> filters = queryParamsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+        LocalDataCriteria localDataCriteria = new LocalDataCriteria(
+                versionMapping.getTable(),
+                versionMapping.getPrimaryField(),
+                size,
+                page * size,
+                SYNCED,
+                filters,
+                new DeletedCriteria(versionMapping.getDeletedField(), getDeleted)
+        );
         return dao.getData(localDataCriteria);
     }
 
@@ -52,27 +54,28 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
         FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream().filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
         DataTypeEnum dt = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
-        LocalDataCriteria localDataCriteria =
-                new LocalDataCriteria(versionMapping.getTable(),
-                        versionMapping.getPrimaryField(),
-                        1,
-                        0,
-                        SYNCED,
-                        new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))),
-                        null);
+        LocalDataCriteria localDataCriteria = new LocalDataCriteria(
+                versionMapping.getTable(),
+                versionMapping.getPrimaryField(),
+                1,
+                0,
+                SYNCED,
+                new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))),
+                null
+        );
         Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
         return synced.get().findAny().orElseThrow(NotFoundException::new);
     }
 
-    private MultivaluedMap<String, Object> filtersToObjects(List<FieldMapping> fieldMappings,
-                                                            MultivaluedMap<String, String> filters) {
+    private MultivaluedMap<String, Serializable> queryParamsToFilters(List<FieldMapping> fieldMappings,
+                                                                      MultivaluedMap<String, String> filters) {
 
-        MultivaluedMap<String, Object> res = new MultivaluedHashMap<>();
+        MultivaluedMap<String, Serializable> res = new MultivaluedHashMap<>();
         for (MultivaluedMap.Entry<String, List<String>> e : filters.entrySet()) {
             fieldMappings.stream().filter(fm -> fm.getSysField().equals(e.getKey())).findAny().ifPresent(fm -> {
                 DataTypeEnum dt = DataTypeEnum.getByDataType(fm.getSysDataType());
                 if (dt != null) {
-                    res.put(e.getKey(), (List<Object>) dt.castFromString(e.getValue()));
+                    res.put(e.getKey(), dt.castFromString(e.getValue()));
                 }
             });
         }

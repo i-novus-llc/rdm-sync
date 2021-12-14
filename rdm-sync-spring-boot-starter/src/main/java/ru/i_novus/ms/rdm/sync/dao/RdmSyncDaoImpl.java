@@ -30,6 +30,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.core.MultivaluedMap;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -634,9 +635,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         args.put("state", localDataCriteria.getState().name());
         if (localDataCriteria.getDeleted() != null) {
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
-                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null";
+                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null\n";
             } else {
-                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null ";
+                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null\n";
             }
         }
 
@@ -708,7 +709,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria) {
 
-        MultivaluedMap<String, Object> filters = dataCriteria.getFilters();
+        MultivaluedMap<String, Serializable> filters = dataCriteria.getFilters();
         if (filters != null) {
             args.putAll(filters);
 
