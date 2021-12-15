@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao.builder;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 
@@ -35,11 +36,25 @@ public class SqlFilterBuilder extends SqlClauseBuilder {
         if (CollectionUtils.isEmpty(valueFilters))
             return;
 
+        SqlValueFilterBuilder builder = new SqlValueFilterBuilder();
         IntStream.range(0, valueFilters.size()).forEach(index -> {
-
-            SqlValueFilterBuilder builder = new SqlValueFilterBuilder();
-            builder.parse(field, filter.getType(), field + "_" + index, valueFilters.get(index));
-            concat(builder);
+            final String name = field + "_" + index;
+            builder.parse(field, filter.getType(), name, valueFilters.get(index));
         });
+        concat(builder);
+    }
+
+    @Override
+    public void concat(ClauseBuilder builder) {
+
+        if (builder == null)
+            return;
+
+        String clause = builder.build();
+        if (!StringUtils.isEmpty(clause)) {
+            clause = clause.contains("\n") ? "(\n" + clause + "\n)" : clause;
+        }
+
+        concat(clause, builder.getParams());
     }
 }
