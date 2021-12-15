@@ -67,7 +67,7 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
             String bindName = name + "_" + index;
             String bindText = (value instanceof String) ? bindName : bindName + "::text";
 
-            append(fieldName + " LIKE :" + bindText);
+            append(fieldName + " LIKE : '%' || " + bindText + " || '%'");
             bind(bindName, values.get(index));
         });
     }
