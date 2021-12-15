@@ -1,7 +1,8 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.Serializable;
+import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
+
+import java.util.List;
 
 public abstract class BaseDataCriteria {
 
@@ -9,10 +10,10 @@ public abstract class BaseDataCriteria {
     private final String pk;
     private final int limit;
     private final int offset;
-    private final MultivaluedMap<String, Serializable> filters;
+    private final List<FieldFilter> filters;
 
     public BaseDataCriteria(String schemaTable, String pk, int limit, int offset,
-                            MultivaluedMap<String, Serializable> filters) {
+                            List<FieldFilter> filters) {
         this.schemaTable = schemaTable;
         this.pk = pk;
         this.limit = limit;
@@ -36,7 +37,7 @@ public abstract class BaseDataCriteria {
         return offset;
     }
 
-    public MultivaluedMap<String, Serializable> getFilters() {
+    public List<FieldFilter> getFilters() {
         return filters;
     }
 }

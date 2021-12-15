@@ -1,12 +1,9 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.Serializable;
 import java.util.List;
-
-import static java.util.Collections.emptyList;
 
 public class LocalDataCriteria extends BaseDataCriteria {
 
@@ -14,8 +11,8 @@ public class LocalDataCriteria extends BaseDataCriteria {
     private final DeletedCriteria deleted;
 
     public LocalDataCriteria(String schemaTable, String pk, int limit, int offset,
+                             List<FieldFilter> filters,
                              RdmSyncLocalRowState state,
-                             MultivaluedMap<String, Serializable> filters,
                              DeletedCriteria deleted) {
         super(schemaTable, pk, limit, offset, filters);
 
