@@ -49,7 +49,10 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
             List<FieldMapping> fieldMappings = dao.getFieldMappings(vm.getCode());
             String deletedKey = vm.getDeletedField();
             for (;;) {
-                Page<Map<String, Object>> dirtyBatch = dao.getData(new LocalDataCriteria(table, vm.getPrimaryField(), limit, offset, RdmSyncLocalRowState.DIRTY, null, null));
+                LocalDataCriteria criteria = new LocalDataCriteria(table,
+                        vm.getPrimaryField(), limit, offset, null,
+                        RdmSyncLocalRowState.DIRTY, null);
+                Page<Map<String, Object>> dirtyBatch = dao.getData(criteria);
                 if (dirtyBatch.getContent().isEmpty())
                     break;
 
