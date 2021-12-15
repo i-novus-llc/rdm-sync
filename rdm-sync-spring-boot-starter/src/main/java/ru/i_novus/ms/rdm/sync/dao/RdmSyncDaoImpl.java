@@ -728,9 +728,15 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         String pk = dataCriteria.getPk();
         int limit = dataCriteria.getLimit();
-        sql += String.format(" ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, dataCriteria.getOffset());
+        sql += String.format("%n ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, dataCriteria.getOffset());
 
-        List<Map<String, Object>> result = namedParameterJdbcTemplate.query("SELECT * \n" + sql,
+        sql = "SELECT * \n" + sql;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("getData0 sql:\n{}\n binding args:\n{}\n.", sql, args);
+        }
+
+        List<Map<String, Object>> result = namedParameterJdbcTemplate.query(sql,
                 args, (rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
