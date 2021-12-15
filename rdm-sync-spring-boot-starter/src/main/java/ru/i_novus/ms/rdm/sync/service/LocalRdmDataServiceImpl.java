@@ -7,17 +7,27 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
+import ru.i_novus.ms.rdm.sync.dao.*;
 import ru.i_novus.ms.rdm.sync.dao.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.LocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
+import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
+import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
+import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.SYNCED;
 
 @Service
@@ -31,55 +41,76 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
                                              Integer page, Integer size, @Context UriInfo uriInfo) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
-        if (getDeleted == null) getDeleted = false;
         if (page == null) page = 0;
         if (size == null) size = 10;
 
-        MultivaluedMap<String, Serializable> filters = queryParamsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(
                 versionMapping.getTable(),
                 versionMapping.getPrimaryField(),
                 size,
                 page * size,
-                SYNCED,
                 filters,
-                new DeletedCriteria(versionMapping.getDeletedField(), getDeleted)
+                SYNCED,
+                new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted))
         );
         return dao.getData(localDataCriteria);
     }
 
     @Override
-    public Map<String, Object> getSingle(String refBookCode, String pk) {
+    public Map<String, Object> getSingle(String refBookCode, String primaryKey) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
-        FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream().filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
-        DataTypeEnum dt = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
+        FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream()
+                .filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField()))
+                .findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
+        DataTypeEnum fieldType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
+
+        Serializable primaryValue = fieldType.toValue(primaryKey);
+        FieldFilter primaryFilter = new FieldFilter(
+                versionMapping.getPrimaryField(),
+                fieldType,
+                singletonList(new FieldValueFilter(FilterTypeEnum.EQUAL, singletonList(primaryValue)))
+        );
+
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(
                 versionMapping.getTable(),
                 versionMapping.getPrimaryField(),
                 1,
                 0,
+                singletonList(primaryFilter),
                 SYNCED,
-                new MultivaluedHashMap<>(Map.of(versionMapping.getPrimaryField(), dt.castFromString(pk))),
                 null
         );
-        Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
-        return synced.get().findAny().orElseThrow(NotFoundException::new);
+        Page<Map<String, Object>> page = dao.getData(localDataCriteria);
+
+        return page.get().findAny().orElseThrow(NotFoundException::new);
     }
 
-    private MultivaluedMap<String, Serializable> queryParamsToFilters(List<FieldMapping> fieldMappings,
-                                                                      MultivaluedMap<String, String> filters) {
+    /** Преобразование параметров запроса в список фильтров по полям. */
+    private List<FieldFilter> paramsToFilters(List<FieldMapping> fieldMappings,
+                                              MultivaluedMap<String, String> params) {
 
-        MultivaluedMap<String, Serializable> res = new MultivaluedHashMap<>();
-        for (MultivaluedMap.Entry<String, List<String>> e : filters.entrySet()) {
-            fieldMappings.stream().filter(fm -> fm.getSysField().equals(e.getKey())).findAny().ifPresent(fm -> {
-                DataTypeEnum dt = DataTypeEnum.getByDataType(fm.getSysDataType());
-                if (dt != null) {
-                    res.put(e.getKey(), dt.castFromString(e.getValue()));
-                }
-            });
-        }
-        return res;
+        Map<String, DataTypeEnum> fieldTypeMap = fieldMappings.stream()
+                .collect(toMap(FieldMapping::getSysField, fm -> DataTypeEnum.getByDataType(fm.getSysDataType())));
+
+        return params.entrySet().stream()
+                .filter(param -> fieldTypeMap.get(param.getKey()) != null)
+                .map(param -> paramToFilter(param, fieldTypeMap.get(param.getKey())))
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    /** Преобразование параметра запроса в фильтр по полю. */
+    private FieldFilter paramToFilter(Map.Entry<String, List<String>> param, DataTypeEnum fieldType) {
+
+        Map<FilterTypeEnum, List<Serializable>> valueListMap = fieldType.toMap(param.getValue());
+        List<FieldValueFilter> valueFilters = valueListMap.entrySet().stream()
+                .filter(entry -> !isEmpty(entry.getValue()))
+                .map(FieldValueFilter::new)
+                .collect(toList());
+        return !isEmpty(valueFilters) ? new FieldFilter(param.getKey(), fieldType, valueFilters) : null;
     }
 
     private VersionMapping getVersionMappingOrThrowRefBookNotFound(String refBookCode) {

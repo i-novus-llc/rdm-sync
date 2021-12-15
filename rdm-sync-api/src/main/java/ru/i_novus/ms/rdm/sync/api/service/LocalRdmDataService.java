@@ -27,6 +27,6 @@ public interface LocalRdmDataService {
     @Path("/{refBookCode}/{primaryKey}")
     Map<String, Object> getSingle(
             @PathParam("refBookCode") String refBookCode,
-            @PathParam("primaryKey") String pk
+            @PathParam("primaryKey") String primaryKey
     );
 }
