@@ -113,7 +113,6 @@ public class SqlClauseBuilder implements ClauseBuilder {
             return;
         
         String clause = builder.build();
-        append(clause);
-        bind(builder.getParams());
+        concat(clause, builder.getParams());
     }
 }
