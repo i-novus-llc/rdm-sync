@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.dao.criteria;
 
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;

@@ -12,6 +12,8 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
