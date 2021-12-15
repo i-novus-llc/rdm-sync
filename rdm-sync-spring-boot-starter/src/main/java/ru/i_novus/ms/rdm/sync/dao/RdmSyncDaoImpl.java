@@ -630,7 +630,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
 
         Map<String, Serializable> args = new HashMap<>();
-        String sql = String.format("  FROM %s %n WHERE %s = :state %n",
+        String sql = String.format("  FROM %s %n WHERE %s = :state",
                 escapeName(localDataCriteria.getSchemaTable()),
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
@@ -638,9 +638,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         if (localDataCriteria.getDeleted() != null) {
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
-                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null\n";
+                sql += "\n AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null\n";
             } else {
-                sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null\n";
+                sql += "\n AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null\n";
             }
         }
 
