@@ -7,8 +7,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nullable;

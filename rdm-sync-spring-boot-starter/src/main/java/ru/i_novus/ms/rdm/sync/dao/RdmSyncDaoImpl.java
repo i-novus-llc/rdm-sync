@@ -24,18 +24,16 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
+import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -628,11 +626,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
 
-        Map<String, Object> args = new HashMap<>();
+        Map<String, Serializable> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE %s = :state %n",
                 escapeName(localDataCriteria.getSchemaTable()),
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+
         args.put("state", localDataCriteria.getState().name());
+
         if (localDataCriteria.getDeleted() != null) {
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
                 sql += " AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null\n";
@@ -648,18 +648,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
-        Map<String, Object> args = new HashMap<>();
+
+        Map<String, Serializable> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE 1=1 %n",
                 escapeName(localDataCriteria.getSchemaTable()));
+
         if (localDataCriteria.getVersion() != null) {
             sql = sql + " AND _versions like :versions";
             args.put("versions", "%{" + localDataCriteria.getVersion() + "}%");
         }
+
         Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
         data.getContent().forEach(row -> {
             row.remove(VERSIONS_SYS_COL);
             row.remove(HASH_SYS_COL);
         });
+
         return data;
     }
 
@@ -707,15 +711,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     }
 
-    private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria) {
+    private Page<Map<String, Object>> getData0(String sql, Map<String, Serializable> args, BaseDataCriteria dataCriteria) {
 
-        MultivaluedMap<String, Serializable> filters = dataCriteria.getFilters();
-        if (filters != null) {
-            args.putAll(filters);
-
-            sql += filters.keySet().stream()
-                    .map(key -> "   AND " + addDoubleQuotes(key) + " IN (:" + key + ")")
-                    .collect(joining("\n"));
+        SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
+        if (filterBuilder != null) {
+            sql += "\n AND " + filterBuilder.build();
+            args.putAll(filterBuilder.getParams());
         }
 
         Integer count = namedParameterJdbcTemplate.queryForObject("SELECT count(*) \n" + sql, args, Integer.class);
@@ -747,6 +748,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         restCriteria.setOrders(Sort.by(Sort.Order.asc(pk)).get().collect(Collectors.toList()));
 
         return new PageImpl<>(result, restCriteria, count);
+    }
+
+    /** Получение условия для фильтра по полям. */
+    private SqlFilterBuilder getFiltersClause(List<FieldFilter> filters) {
+
+        if (CollectionUtils.isEmpty(filters))
+            return null;
+
+        SqlFilterBuilder builder = new SqlFilterBuilder();
+        filters.forEach(builder::parse);
+
+        return builder;
     }
 
     @Override

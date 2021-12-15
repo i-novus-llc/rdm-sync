@@ -57,7 +57,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         rdmSyncDao.insertRows(table, insertRows, true);
 
-        Page<Map<String, Object>> data = rdmSyncDao.getData(new LocalDataCriteria(table, "id", 10, 0, RdmSyncLocalRowState.SYNCED, null, null));
+        LocalDataCriteria criteria = createSyncedCriteria(table);
+        Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
         data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
         Assert.assertEquals(insertRows, data.getContent());
 
@@ -66,7 +67,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         updateRows.add(Map.of("name", "test name2 updated", "id", 2));
 
         rdmSyncDao.updateRows(table, "id", updateRows, true);
-        data = rdmSyncDao.getData(new LocalDataCriteria(table, "id", 10, 0, RdmSyncLocalRowState.SYNCED, null, null));
+        criteria = createSyncedCriteria(table);
+        data = rdmSyncDao.getData(criteria);
         data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
         Assert.assertEquals(updateRows, data.getContent());
 
@@ -80,23 +82,25 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         rdmSyncDao.insertRow(table, insertRow, true);
 
-        Page<Map<String, Object>> data = rdmSyncDao.getData(new LocalDataCriteria(table, "id", 10, 0, RdmSyncLocalRowState.SYNCED, null, null));
+        LocalDataCriteria criteria = createSyncedCriteria(table);
+        Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
         data.getContent().get(0).remove(IS_DELETED_COLUMN);
         Assert.assertEquals(insertRow, data.getContent().get(0));
 
         Map<String, Object> updateRow = Map.of("name", "test name1 updated", "id", 1);
 
         rdmSyncDao.updateRow(table, "id", updateRow, true);
-        data = rdmSyncDao.getData(new LocalDataCriteria(table, "id", 10, 0, RdmSyncLocalRowState.SYNCED, null, null));
+        criteria = createSyncedCriteria(table);
+        data = rdmSyncDao.getData(criteria);
         data.getContent().get(0).remove(IS_DELETED_COLUMN);
         Assert.assertEquals(updateRow, data.getContent().get(0));
 
     }
 
-    @Test
     /**
      * Создание версионной таблицы, добавление записей разных версий
      */
+    @Test
     public void testVersionedTable() {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
@@ -152,13 +156,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         LoadedVersion expected = rdmSyncDao.getLoadedVersion(code);
         Assert.assertNotNull(expected.getLastSync());
         expected.setLastSync(null);
-        Assert.assertEquals(actual, expected);
+        Assert.assertEquals(expected, actual);
         //редактируем
         actual.setVersion("2");
         rdmSyncDao.updateLoadedVersion(actual.getId(), actual.getVersion(), actual.getPublicationDate());
         expected = rdmSyncDao.getLoadedVersion(code);
         expected.setLastSync(null);
-        Assert.assertEquals(actual, expected);
+        Assert.assertEquals(expected, actual);
     }
 
 
@@ -220,6 +224,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
         Assert.assertEquals(expected.getTable(), actual.getTable());
         Assert.assertEquals(expected.getType(), actual.getType());
+    }
+
+    private LocalDataCriteria createSyncedCriteria(String table) {
+
+        return new LocalDataCriteria(table,
+                "id", 10, 0, null,
+                RdmSyncLocalRowState.SYNCED, null);
     }
 }
 
