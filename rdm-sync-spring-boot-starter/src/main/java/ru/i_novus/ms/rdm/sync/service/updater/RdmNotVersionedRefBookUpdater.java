@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBook;
@@ -13,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterServiceLocator;
 
 @Component
+@Transactional
 public class RdmNotVersionedRefBookUpdater extends BaseRefBookUpdater {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmNotVersionedRefBookUpdater.class);
