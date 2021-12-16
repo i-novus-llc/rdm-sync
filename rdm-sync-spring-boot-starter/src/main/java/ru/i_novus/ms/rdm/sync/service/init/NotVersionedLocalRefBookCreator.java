@@ -93,7 +93,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
         }
-        String uniqueSysField = structure.getPrimaries().get(0);
+        String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String schemaTable = getTableName(refBookCode, table);
 

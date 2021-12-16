@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.ms.rdm.sync</groupId>
     <artifactId>rdm-sync</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>rdm-sync</name>
@@ -270,7 +270,7 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                            <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
+                            <stagingProgressTimeoutMinutes>20</stagingProgressTimeoutMinutes>
                         </configuration>
                     </plugin>
                 </plugins>
