@@ -96,12 +96,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                 update(mapping.getCode());
                 return null;
             });
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                logger.info("Interrupted, sync stopping");
-                executorService.shutdownNow();
-            }
+        }
+        try {
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            logger.info("Interrupted, sync stopping");
+            executorService.shutdownNow();
         }
     }
 
