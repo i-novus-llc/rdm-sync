@@ -339,7 +339,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 .map(field -> addDoubleQuotes(field) + " = :" + field)
                 .collect(joining(", "));
 
-        String sql = String.format(sqlFormat, schemaTable, fields, isDeletedField);
+        String sql = String.format(sqlFormat, schemaTable, fields, escapeName(isDeletedField));
 
         Map<String, Object>[] batchValues = new Map[rows.size()];
         namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
