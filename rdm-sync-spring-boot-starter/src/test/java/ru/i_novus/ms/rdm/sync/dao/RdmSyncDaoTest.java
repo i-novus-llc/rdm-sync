@@ -77,7 +77,10 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         FieldValueFilter eqFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, singletonList("test name1"));
         FieldValueFilter likeFilter = new FieldValueFilter(FilterTypeEnum.LIKE, singletonList("name2"));
-        FieldFilter nameFilter = new FieldFilter("name", DataTypeEnum.VARCHAR, List.of(eqFilter, likeFilter));
+        FieldValueFilter isNullFilter = new FieldValueFilter(FilterTypeEnum.IS_NULL, singletonList(null));
+        FieldValueFilter isNotNullFilter = new FieldValueFilter(FilterTypeEnum.IS_NOT_NULL, singletonList(null));
+        FieldFilter nameFilter = new FieldFilter("name", DataTypeEnum.VARCHAR,
+                List.of(eqFilter, likeFilter, isNullFilter, isNotNullFilter));
 
         LocalDataCriteria filterCriteria = createFiltersCriteria(table, List.of(idFilter, nameFilter));
         data = rdmSyncDao.getData(filterCriteria);

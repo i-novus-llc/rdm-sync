@@ -41,6 +41,8 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
         switch (filter.getType()) {
             case EQUAL -> parseEqual(fieldName, name, filter.getValues());
             case LIKE -> parseLike(fieldName, type, name, filter.getValues());
+            case IS_NULL -> parseIsNull(fieldName);
+            case IS_NOT_NULL -> parseIsNotNull(fieldName);
             default -> throw new RdmException("Unknown type '" + filter.getType() + "' of field value filter");
         };
     }
@@ -70,5 +72,15 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
             append(fieldName + " LIKE '%' || :" + bindText + " || '%'");
             bind(bindName, values.get(index));
         });
+    }
+
+    private void parseIsNull(String field) {
+
+        append(field + " IS NULL");
+    }
+
+    private void parseIsNotNull(String field) {
+
+        append(field + " IS NOT NULL");
     }
 }

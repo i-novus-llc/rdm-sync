@@ -109,16 +109,15 @@ public enum DataTypeEnum {
         if (filterType == null)
             return;
 
-        // NB:
-        // Учесть типы, не требующие обычных аргументов (is_null и т.п.).
-        // В таких случаях добавлять в список специальное значение.
+        Serializable filterValue = null;
+        if (filterType.isValued()) {
+            String value = (index > 0) ? item.substring(index + 1) : item;
+            filterValue = converter.apply(value);
+            if (filterValue == null)
+                return;
+        }
 
-        String value = (index > 0) ? item.substring(index + 1) : item;
-        Serializable filterValue = converter.apply(value);
-        if (filterValue == null)
-            return;
-
-        result.get(filterType).add(converter.apply(value));
+        result.get(filterType).add(filterValue);
     }
 
     public static DataTypeEnum getByDataType(String dataType) {
