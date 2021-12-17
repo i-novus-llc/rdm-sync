@@ -407,7 +407,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "VALUES(?,?,?,?,?,?,?)";
 
         getJdbcTemplate().update(sql,
-                refbookCode, oldVersion, newVersion, status, new Date(), message, stack
+                refbookCode, oldVersion, newVersion, status, new java.util.Date(), message, stack
         );
     }
 
