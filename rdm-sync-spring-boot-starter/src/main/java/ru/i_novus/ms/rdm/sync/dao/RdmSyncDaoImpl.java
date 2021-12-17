@@ -40,7 +40,6 @@ import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -330,7 +329,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
         args.put(isDeletedField, deletedTime);
 
-        executeUpdate(schemaTable, Collections.singletonList(args), null);
+
+        List<Map<String, Object>> rows = Collections.singletonList(args);
+
+        if (CollectionUtils.isEmpty(rows)) {
+            return;
+        }
+
+        String sqlFormat = "UPDATE %s SET %s WHERE %s IS NULL";
+        final String fields = rows.get(0).keySet().stream()
+                .map(field -> addDoubleQuotes(field) + " = :" + field)
+                .collect(joining(", "));
+
+        String sql = String.format(sqlFormat, schemaTable, fields, escapeName(isDeletedField));
+
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
     }
 
     private List<Map<String, Object>> convertToVersionedRows(List<Map<String, Object>> rows, String version) {

@@ -195,7 +195,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         LoadedVersion expected = rdmSyncDao.getLoadedVersion(code);
         Assert.assertNotNull(expected.getLastSync());
         expected.setLastSync(null);
-        assertEquals(expected, actual);
+        assertEquals(actual, expected);
 
         //редактируем
         actual.setVersion("2");
@@ -203,7 +203,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         expected = rdmSyncDao.getLoadedVersion(code);
         expected.setLastSync(null);
-        assertEquals(expected, actual);
+        assertEquals(actual, expected);
     }
 
 
@@ -259,16 +259,27 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test
     public void testGetLastMappingVersion() {
 
-        assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
+        Assert.assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
+    }
+
+    @Test
+    public void testMarkDeletedToMultipleRows(){
+        LocalDateTime expectedNowDeletedDate = LocalDateTime.of(2021, 9, 26, 12, 30);
+        LocalDateTime expectedBeforeDeletedDate = LocalDateTime.of(2021, 9, 25, 12, 30);
+        rdmSyncDao.markDeleted("ref_cars", "deleted_ts", expectedNowDeletedDate, true );
+        List<Map<String, Object>> content = rdmSyncDao.getData(new LocalDataCriteria("ref_cars", "id", 10, 0, RdmSyncLocalRowState.SYNCED, null, null)).getContent();
+        LocalDateTime actualBeforeDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(1)).findAny().get().get("deleted_ts");
+        LocalDateTime actualNowDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(2)).findAny().get().get("deleted_ts");
+        Assert.assertEquals(expectedBeforeDeletedDate,  actualBeforeDeleted);
+        Assert.assertEquals(expectedNowDeletedDate,  actualNowDeleted);
     }
 
     private void assertMappingEquals(VersionMapping expected, VersionMapping actual) {
-
-        assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
-        assertEquals(expected.getDeletedField(), actual.getDeletedField());
-        assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
-        assertEquals(expected.getTable(), actual.getTable());
-        assertEquals(expected.getType(), actual.getType());
+        Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
+        Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
+        Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
+        Assert.assertEquals(expected.getTable(), actual.getTable());
+        Assert.assertEquals(expected.getType(), actual.getType());
     }
 
     private LocalDataCriteria createSyncedCriteria(String table) {
