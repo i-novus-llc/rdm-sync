@@ -20,26 +20,20 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
-
 
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
 
-    private static final String IS_DELETED_COLUMN = "deleted_ts";
+    private static final String DELETED_FIELD_COL = "deleted_ts";
 
     @Configuration
     static class Config {
@@ -67,11 +61,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         List<Map<String, Object>> rows = new ArrayList<>(List.of(firstRow, secondRow));
         rdmSyncDao.insertRows(table, rows, true);
 
+        // Проверка отсутствия фильтрации.
         LocalDataCriteria criteria = createSyncedCriteria(table);
         Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
-        data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
+        data.getContent().forEach(this::removeSystemColumns);
         assertEquals(rows, data.getContent());
 
+        // Проверка наличия фильтрации.
         FieldValueFilter inFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, List.of(1, 2));
         FieldFilter idFilter = new FieldFilter("id", DataTypeEnum.VARCHAR, singletonList(inFilter));
 
@@ -84,8 +80,28 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         LocalDataCriteria filterCriteria = createFiltersCriteria(table, List.of(idFilter, nameFilter));
         data = rdmSyncDao.getData(filterCriteria);
-        data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
+        data.getContent().forEach(this::removeSystemColumns);
         assertEquals(rows, data.getContent());
+
+        // Проверка поиска по systemId.
+        // -- Получение записи с systemId по первичному ключу.
+        FieldValueFilter pkValueFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, List.of(2));
+        FieldFilter pkFilter = new FieldFilter("id", DataTypeEnum.VARCHAR, singletonList(pkValueFilter));
+        filterCriteria = createFiltersCriteria(table, singletonList(pkFilter));
+        data = rdmSyncDao.getData(filterCriteria);
+        assertEquals(1, data.getContent().size());
+
+        Map<String, Object> row = data.getContent().get(0);
+        Long systemId = (Long) row.get(RECORD_SYS_COL);
+        assertNotNull(systemId);
+
+        // -- Получение той же записи по systemId.
+        LocalDataCriteria systemIdCriteria = createSyncedCriteria(table);
+        systemIdCriteria.setSystemId(systemId);
+
+        data = rdmSyncDao.getData(systemIdCriteria);
+        assertEquals(1, data.getContent().size());
+        assertEquals(row, data.getContent().get(0));
     }
 
     @Test
@@ -100,7 +116,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         LocalDataCriteria criteria = createSyncedCriteria(table);
         Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
-        data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
+        data.getContent().forEach(this::removeSystemColumns);
         assertEquals(insertRows, data.getContent());
 
         List<Map<String, Object>> updateRows = new ArrayList<>();
@@ -110,7 +126,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.updateRows(table, "id", updateRows, true);
         criteria = createSyncedCriteria(table);
         data = rdmSyncDao.getData(criteria);
-        data.getContent().forEach(map -> map.remove(IS_DELETED_COLUMN));
+        data.getContent().forEach(this::removeSystemColumns);
         assertEquals(updateRows, data.getContent());
     }
 
@@ -124,16 +140,20 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         LocalDataCriteria criteria = createSyncedCriteria(table);
         Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
-        data.getContent().get(0).remove(IS_DELETED_COLUMN);
-        assertEquals(insertRow, data.getContent().get(0));
+
+        Map<String, Object> row = data.getContent().get(0);
+        removeSystemColumns(row);
+        assertEquals(insertRow, row);
 
         Map<String, Object> updateRow = Map.of("name", "test name1 updated", "id", 1);
 
         rdmSyncDao.updateRow(table, "id", updateRow, true);
         criteria = createSyncedCriteria(table);
         data = rdmSyncDao.getData(criteria);
-        data.getContent().get(0).remove(IS_DELETED_COLUMN);
-        assertEquals(updateRow, data.getContent().get(0));
+
+        row = data.getContent().get(0);
+        removeSystemColumns(row);
+        assertEquals(updateRow, row);
     }
 
     /**
@@ -196,7 +216,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.insertLoadedVersion(actual.getCode(), actual.getVersion(), actual.getPublicationDate());
 
         LoadedVersion expected = rdmSyncDao.getLoadedVersion(code);
-        Assert.assertNotNull(expected.getLastSync());
+        assertNotNull(expected.getLastSync());
         expected.setLastSync(null);
         assertEquals(actual, expected);
 
@@ -272,9 +292,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         LocalDateTime expectedBeforeDeletedDate = LocalDateTime.of(2021, 9, 25, 12, 30);
         rdmSyncDao.markDeleted("ref_cars", "deleted_ts", expectedNowDeletedDate, true );
 
-        LocalDataCriteria criteria = new LocalDataCriteria("ref_cars",
-                "id", 10, 0, null,
-                RdmSyncLocalRowState.SYNCED, null);
+        LocalDataCriteria criteria = createSyncedCriteria("ref_cars");
         List<Map<String, Object>> content = rdmSyncDao.getData(criteria).getContent();
 
         LocalDateTime actualBeforeDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(1)).findAny().get().get("deleted_ts");
@@ -284,6 +302,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     private void assertMappingEquals(VersionMapping expected, VersionMapping actual) {
+
         Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
         Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
         Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
@@ -293,16 +312,18 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
     private LocalDataCriteria createSyncedCriteria(String table) {
 
-        return new LocalDataCriteria(table,
-                "id", 10, 0, null,
-                RdmSyncLocalRowState.SYNCED, null);
+        return new LocalDataCriteria(table, "id", 10, 0, null);
     }
 
     private LocalDataCriteria createFiltersCriteria(String table, List<FieldFilter> filters) {
 
-        return new LocalDataCriteria(table,
-                "id", 10, 0, filters,
-                RdmSyncLocalRowState.SYNCED, null);
+        return new LocalDataCriteria(table, "id", 10, 0, filters);
+    }
+
+    private void removeSystemColumns(Map<String, Object> row) {
+
+        row.remove(RECORD_SYS_COL);
+        row.remove(DELETED_FIELD_COL);
     }
 }
 
