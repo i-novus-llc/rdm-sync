@@ -242,11 +242,6 @@ public class RdmClientSyncAutoConfiguration {
         return new LocalRdmDataServiceImpl();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 
     @Bean
     public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,

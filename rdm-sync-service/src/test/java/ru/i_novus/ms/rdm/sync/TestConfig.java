@@ -24,6 +24,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.i_novus.ms.fnsi.sync.impl.FnsiSourceProperty;
+import ru.i_novus.ms.fnsi.sync.impl.FnsiSyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.api.model.compare.CompareDataCriteria;
 import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
 import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
@@ -37,6 +38,7 @@ import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.platform.datastorage.temporal.model.value.RowValue;
 
@@ -149,7 +151,7 @@ public class TestConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() throws URISyntaxException {
+    public SyncSourceServiceFactory syncSourceServiceFactory() throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
         String oid ="1.2.643.5.1.13.2.1.1.725";
@@ -183,7 +185,7 @@ public class TestConfig {
                 LocalDateTime.of(2018, 8, 28, 15, 48),
                 2,
                 new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_diff_v1.2_v1.8_page2.json"));
-        return restTemplate;
+        return new FnsiSyncSourceServiceFactory(restTemplate);
     }
 
     private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, ClassPathResource body) throws URISyntaxException {

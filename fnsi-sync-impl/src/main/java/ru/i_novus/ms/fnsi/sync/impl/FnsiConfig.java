@@ -12,8 +12,8 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 public class FnsiConfig {
 
     @Bean
-    public SyncSourceServiceFactory fnsiSyncSourceServiceFactory(RestTemplate restTemplate){
-        return new FnsiSyncSourceServiceFactory(restTemplate);
+    public SyncSourceServiceFactory fnsiSyncSourceServiceFactory(){
+        return new FnsiSyncSourceServiceFactory(new RestTemplate());
     }
 
     @Bean
