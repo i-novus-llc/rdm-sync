@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.dao.criteria;
 
 public class DeletedCriteria {
 

@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS ref_filtered(
+    "name" character varying,
+    "id" integer,
+    "deleted_ts" timestamp without time zone,
+    "rdm_sync_internal_local_row_state" character varying NOT NULL DEFAULT 'DIRTY'::character varying
+);
+
 CREATE TABLE IF NOT EXISTS ref_ek001(
     "name" character varying,
     "id" integer,

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.dao.LocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.service.change_data.RdmChangeDataClient;
@@ -49,7 +49,10 @@ public final class RdmSyncExportDirtyRecordsToRdmJob implements Job {
             List<FieldMapping> fieldMappings = dao.getFieldMappings(vm.getCode());
             String deletedKey = vm.getDeletedField();
             for (;;) {
-                Page<Map<String, Object>> dirtyBatch = dao.getData(new LocalDataCriteria(table, vm.getPrimaryField(), limit, offset, RdmSyncLocalRowState.DIRTY, null, null));
+                LocalDataCriteria criteria = new LocalDataCriteria(table,
+                        vm.getPrimaryField(), limit, offset, null,
+                        RdmSyncLocalRowState.DIRTY, null);
+                Page<Map<String, Object>> dirtyBatch = dao.getData(criteria);
                 if (dirtyBatch.getContent().isEmpty())
                     break;
 
