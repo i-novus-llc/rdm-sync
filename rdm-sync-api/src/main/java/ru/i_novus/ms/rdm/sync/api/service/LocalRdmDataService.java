@@ -29,4 +29,11 @@ public interface LocalRdmDataService {
             @PathParam("refBookCode") String refBookCode,
             @PathParam("primaryKey") String primaryKey
     );
+
+    @GET
+    @Path("/{refBookCode}/systemId/{systemId}")
+    Map<String, Object> getBySystemId(
+            @PathParam("refBookCode") String refBookCode,
+            @PathParam("systemId") Long systemId
+    );
 }

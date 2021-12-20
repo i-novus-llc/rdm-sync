@@ -7,7 +7,7 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
-import ru.i_novus.ms.rdm.sync.dao.*;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -28,7 +28,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.SYNCED;
 
 @Service
 public class LocalRdmDataServiceImpl implements LocalRdmDataService {
@@ -46,15 +45,12 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
 
-        LocalDataCriteria localDataCriteria = new LocalDataCriteria(
-                versionMapping.getTable(),
-                versionMapping.getPrimaryField(),
-                size,
-                page * size,
-                filters,
-                SYNCED,
-                new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted))
-        );
+        LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
+                versionMapping.getPrimaryField(), size, page * size, filters);
+
+        DeletedCriteria deleted = new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted));
+        localDataCriteria.setDeleted(deleted);
+
         return dao.getData(localDataCriteria);
     }
 
@@ -74,15 +70,8 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
                 singletonList(new FieldValueFilter(FilterTypeEnum.EQUAL, singletonList(primaryValue)))
         );
 
-        LocalDataCriteria localDataCriteria = new LocalDataCriteria(
-                versionMapping.getTable(),
-                versionMapping.getPrimaryField(),
-                1,
-                0,
-                singletonList(primaryFilter),
-                SYNCED,
-                null
-        );
+        LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
+                versionMapping.getPrimaryField(), 1, 0, singletonList(primaryFilter));
         Page<Map<String, Object>> page = dao.getData(localDataCriteria);
 
         return page.get().findAny().orElseThrow(NotFoundException::new);
@@ -100,6 +89,19 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
                 .map(param -> paramToFilter(param, fieldTypeMap.get(param.getKey())))
                 .filter(Objects::nonNull)
                 .collect(toList());
+    }
+
+    @Override
+    public Map<String, Object> getBySystemId(String refBookCode, Long systemId) {
+
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+
+        LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
+                versionMapping.getPrimaryField(), 1, 0, null);
+        localDataCriteria.setSystemId(systemId);
+        Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
+
+        return synced.get().findAny().orElseThrow(NotFoundException::new);
     }
 
     /** Преобразование параметра запроса в фильтр по полю. */
