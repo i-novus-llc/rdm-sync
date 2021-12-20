@@ -260,11 +260,11 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 ```properties
 rdm-sync.scheduling=true
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 
 ```
 
@@ -288,11 +288,11 @@ spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.
 spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
 spring.quartz.properties.org.quartz.jobStore.isClustered=true
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 ```
 ### Настройка расписания при использовании микросервиса
 #### Если микросервис использует БД где уже есть таблицы для Quartz 
@@ -301,11 +301,11 @@ rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 rdm-sync.liquibase.param.quartz_schema_name=<указать схему где лежат таблицы Quartz'a>
 rdm-sync.liquibase.param.quartz_table_prefix=<указать префикс таблиц Quartz'a>
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 ```
 
 ## Подробнее об экспорте данных в НСИ
