@@ -7,24 +7,36 @@ import java.util.List;
 
 public class LocalDataCriteria extends BaseDataCriteria {
 
-    private final RdmSyncLocalRowState state;
-    private final DeletedCriteria deleted;
+    private Long systemId = null;
+    private RdmSyncLocalRowState state = RdmSyncLocalRowState.SYNCED;
+    private DeletedCriteria deleted = null;
 
-    public LocalDataCriteria(String schemaTable, String pk, int limit, int offset,
-                             List<FieldFilter> filters,
-                             RdmSyncLocalRowState state,
-                             DeletedCriteria deleted) {
+    public LocalDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
+
         super(schemaTable, pk, limit, offset, filters);
+    }
 
-        this.state = state;
-        this.deleted = deleted;
+    public Long getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(Long systemId) {
+        this.systemId = systemId;
     }
 
     public RdmSyncLocalRowState getState() {
         return state;
     }
 
+    public void setState(RdmSyncLocalRowState state) {
+        this.state = state;
+    }
+
     public DeletedCriteria getDeleted() {
         return deleted;
+    }
+
+    public void setDeleted(DeletedCriteria deleted) {
+        this.deleted = deleted;
     }
 }

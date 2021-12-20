@@ -12,8 +12,8 @@ public abstract class BaseDataCriteria {
     private final int offset;
     private final List<FieldFilter> filters;
 
-    public BaseDataCriteria(String schemaTable, String pk, int limit, int offset,
-                            List<FieldFilter> filters) {
+    public BaseDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
+
         this.schemaTable = schemaTable;
         this.pk = pk;
         this.limit = limit;
