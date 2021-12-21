@@ -649,10 +649,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(localDataCriteria.getSchemaTable()),
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
-        if (localDataCriteria.getSystemId() != null) {
+        if (localDataCriteria.getRecordId() != null) {
 
             sql += "\n AND " + RECORD_SYS_COL + " = :" + RECORD_SYS_COL;
-            args.put(RECORD_SYS_COL, localDataCriteria.getSystemId());
+            args.put(RECORD_SYS_COL, localDataCriteria.getRecordId());
         }
 
         args.put("state", localDataCriteria.getState().name());

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class LocalDataCriteria extends BaseDataCriteria {
 
-    private Long systemId = null;
+    private Long recordId = null;
     private RdmSyncLocalRowState state = RdmSyncLocalRowState.SYNCED;
     private DeletedCriteria deleted = null;
 
@@ -16,12 +16,12 @@ public class LocalDataCriteria extends BaseDataCriteria {
         super(schemaTable, pk, limit, offset, filters);
     }
 
-    public Long getSystemId() {
-        return systemId;
+    public Long getRecordId() {
+        return recordId;
     }
 
-    public void setSystemId(Long systemId) {
-        this.systemId = systemId;
+    public void setRecordId(Long recordId) {
+        this.recordId = recordId;
     }
 
     public RdmSyncLocalRowState getState() {

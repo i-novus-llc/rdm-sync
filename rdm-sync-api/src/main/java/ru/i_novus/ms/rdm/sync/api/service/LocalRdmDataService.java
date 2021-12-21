@@ -31,9 +31,9 @@ public interface LocalRdmDataService {
     );
 
     @GET
-    @Path("/{refBookCode}/systemId/{systemId}")
+    @Path("/{refBookCode}/record/{recordId}")
     Map<String, Object> getBySystemId(
             @PathParam("refBookCode") String refBookCode,
-            @PathParam("systemId") Long systemId
+            @PathParam("recordId") Long recordId
     );
 }

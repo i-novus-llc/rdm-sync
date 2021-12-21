@@ -92,13 +92,13 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     }
 
     @Override
-    public Map<String, Object> getBySystemId(String refBookCode, Long systemId) {
+    public Map<String, Object> getBySystemId(String refBookCode, Long recordId) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
 
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), 1, 0, null);
-        localDataCriteria.setSystemId(systemId);
+        localDataCriteria.setRecordId(recordId);
         Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
 
         return synced.get().findAny().orElseThrow(NotFoundException::new);
