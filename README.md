@@ -260,11 +260,11 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 ```properties
 rdm-sync.scheduling=true
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 
 ```
 
@@ -288,11 +288,11 @@ spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.
 spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
 spring.quartz.properties.org.quartz.jobStore.isClustered=true
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 ```
 ### Настройка расписания при использовании микросервиса
 #### Если микросервис использует БД где уже есть таблицы для Quartz 
@@ -301,11 +301,11 @@ rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 rdm-sync.liquibase.param.quartz_schema_name=<указать схему где лежат таблицы Quartz'a>
 rdm-sync.liquibase.param.quartz_table_prefix=<указать префикс таблиц Quartz'a>
 #изменить как надо. время обновления данных из НСИ
-rdm-sync.import.from_rdm.cron=0 0/10 * * * ? 
+rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 #Включает экспорт данных в НСИ
 rdm-sync.change_data.mode=async
 #изменить как надо. время обновления данных в НСИ, можно не указывать если не указано rdm-sync.change_data.mode
-rdm-sync.export.to_rdm.cron=0 0/20 * * * ? 
+rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 ```
 
 ## Подробнее об экспорте данных в НСИ
@@ -322,26 +322,44 @@ rdm-sync.export.to_rdm.cron=0 0/20 * * * ?
 
 ## Получение синхронизированных данных
 После синхронизации данных имеется возможность получить их с помощью Rest API. 
-1. Постраничное получение списка данных с фильтрами GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}, с Query параметрами
-   - getDeleted - значения true/false если true то показывает только удаленные, false - неудаленные, если не указывать то все записи
-   - page - номер страницы начиная с 0
-   - size - кол-во записей на странице
-   - фильтр по колонкам, ключ - название колонки, значение в формате: $маска фильтрации|значение фильтра.
+1. Постраничное получение списка данных с фильтрами:
+   ```
+   GET <адрес>/rdm/data/{refBookCode}
+   ```
+   Здесь `<адрес>` -- адрес приложения или микросервиса синхронизации.
+   
+   Можно указать следующие Query-параметры:
+   - getDeleted - значения true/false:
+     если true, то показывает только удалённые, если false -- неудалённые, если не указывать, то все записи.
+   - page - номер страницы, начиная с 0 (по умолчанию -- 0).
+   - size - кол-во записей на странице (по умолчанию -- 10).
+   - фильтр по колонкам: ключ -- название колонки, значение -- в формате: `$маска фильтрации|значение фильтра`.
 
-     Поиск происходит в соответствии с маской: eq - точное совпадение, like - поиск по вхождению.
+   Поиск происходит в соответствии с маской: eq - точное совпадение, like - поиск по вхождению.
+   Если выполняется точный поиск по значению, не начинающемуся с символа `$`, то маску можно не указывать.  
     
-     Например, таблице есть колонка name, то можно по ней фильтровать так:
+   Например, таблице есть колонка name, то можно по ней фильтровать так:
+   ```
+   GET <адрес>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=текст
+     
+   GET <адрес>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст
 
-     GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст
+   GET <адрес>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст1&name=$eq|текст2
 
-     GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст1&name=$eq|текст2
+   GET <адрес>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$like|подстрока
 
-     GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$like|подстрока
+   GET <адрес>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст&name=$like|подстрока
+   ```
+   > :warning: При выполнении в браузере не забываем об url encode
 
-     GET <адрес приложения или микросервиса синхронизации>/rdm/data/{refBookCode}?getDeleted=false&page=0&size=10&name=$eq|текст&name=$like|подстрока
+2. Получение одной записи по первичному ключу справочника (т.е колонки, которая указана в rdm_sync.mapping.unique_sys_field).
 
-2. Получение одной записи по первичному ключу справочника (т.е колонки, которая указана в rdm_sync.mapping.unique_sys_field)  <адрес приложения или микросервиса синхронизации>/{refBookCode}/{primaryKey}
+   ```
+   GET <адрес>/rdm/data/{refBookCode}/{primaryKey}
+   ```
 
+3. Получение одной записи по системному идентификатору.
 
-
-
+   ```
+   GET <адрес>/rdm/data/{refBookCode}/record/{recordId}
+   ```
