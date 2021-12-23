@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.api.enumeration.RefBookSourceType;
 import ru.i_novus.ms.rdm.api.model.Structure;
@@ -21,10 +22,7 @@ import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
 import ru.i_novus.platform.datastorage.temporal.model.value.DiffRowValue;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -88,14 +86,17 @@ public class  RdmSyncSourceService implements SyncSourceService {
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
-        return PageMapper.map(
-                    versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
+        List<Map<String, Object>> data = new ArrayList<>();
+
+        Page<Map<String, Object>> page = PageMapper.map(
+                versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
                 refBookRowValue -> {
                     Map<String, Object> mapValue = new LinkedHashMap<>();
                     refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
+                    data.add(mapValue);
                     return mapValue;
                 });
-
+        return new PageImpl<>(data, dataCriteria, page.getTotalElements());
     }
 
     @Override
