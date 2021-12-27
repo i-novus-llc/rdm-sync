@@ -85,7 +85,7 @@ public enum DataTypeEnum {
 
     /** Конвертер для значений-строк. */
     private Serializable fromString(String value) {
-        return !StringUtils.isEmpty(value) ? null : value;
+        return StringUtils.isEmpty(value) ? null : value;
     }
 
     /** Преобразование списка строк в значения и добавление этих значений в набор. */

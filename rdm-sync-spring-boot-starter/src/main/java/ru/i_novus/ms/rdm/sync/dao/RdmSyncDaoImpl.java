@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static ru.i_novus.ms.rdm.api.util.StringUtils.addDoubleQuotes;
 import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.*;
 
@@ -282,7 +283,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             Map<String, Object> newMap = new HashMap<>(map);
             newMap.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
             return newMap;
-        }).collect(Collectors.toList());
+        }).collect(toList());
         insertRows(schemaTable, newRows);
     }
 
@@ -357,7 +358,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             newMap.put(HASH_SYS_COL, DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
             newMap.put(VERSIONS_SYS_COL, "{" + version + "}");
             return newMap;
-        }).collect(Collectors.toList());
+        }).collect(toList());
     }
 
     private void insertRows(String schemaTable, List<Map<String, Object>> rows) {
@@ -648,13 +649,20 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(localDataCriteria.getSchemaTable()),
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
+        if (localDataCriteria.getRecordId() != null) {
+
+            sql += "\n AND " + RECORD_SYS_COL + " = :" + RECORD_SYS_COL;
+            args.put(RECORD_SYS_COL, localDataCriteria.getRecordId());
+        }
+
         args.put("state", localDataCriteria.getState().name());
 
         if (localDataCriteria.getDeleted() != null) {
+            String deletedFieldName = addDoubleQuotes(localDataCriteria.getDeleted().getFieldName());
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
-                sql += "\n AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is not null\n";
+                sql += "\n AND " + deletedFieldName + " is not null";
             } else {
-                sql += "\n AND " + addDoubleQuotes(localDataCriteria.getDeleted().getFieldName()) + " is null\n";
+                sql += "\n AND " + deletedFieldName + " is null";
             }
         }
 
@@ -667,12 +675,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
 
         Map<String, Serializable> args = new HashMap<>();
-        String sql = String.format("  FROM %s %n WHERE 1=1 %n",
+        String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
                 escapeName(localDataCriteria.getSchemaTable()));
 
         if (localDataCriteria.getVersion() != null) {
-            sql = sql + " AND _versions like :versions";
-            args.put("versions", "%{" + localDataCriteria.getVersion() + "}%");
+            sql = sql + " AND " + VERSIONS_SYS_COL + " LIKE :" + VERSIONS_SYS_COL;
+            args.put(VERSIONS_SYS_COL, "%{" + localDataCriteria.getVersion() + "}%");
         }
 
         Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
@@ -736,15 +744,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             args.putAll(filterBuilder.getParams());
         }
 
-        Integer count = namedParameterJdbcTemplate.queryForObject("SELECT count(*) \n" + sql, args, Integer.class);
+        Integer count = namedParameterJdbcTemplate.queryForObject("SELECT count(*)" + sql, args, Integer.class);
         if (count == null || count == 0)
             return Page.empty();
 
-        String pk = dataCriteria.getPk();
         int limit = dataCriteria.getLimit();
-        sql += String.format("%n ORDER BY %s %n LIMIT %d OFFSET %d", addDoubleQuotes(pk), limit, dataCriteria.getOffset());
+        if (limit != 1) {
+            sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
+        }
 
-        sql = "SELECT * \n" + sql;
+        sql += String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
+
+        sql = "SELECT *" + sql;
 
         if (logger.isDebugEnabled()) {
             logger.debug("getData0 sql:\n{}\n binding args:\n{}\n.", sql, args);
@@ -768,7 +779,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         RestCriteria restCriteria = new AbstractCriteria();
         restCriteria.setPageNumber(dataCriteria.getOffset() / limit);
         restCriteria.setPageSize(limit);
-        restCriteria.setOrders(Sort.by(Sort.Order.asc(pk)).get().collect(Collectors.toList()));
+        restCriteria.setOrders(Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(toList()));
 
         return new PageImpl<>(result, restCriteria, count);
     }

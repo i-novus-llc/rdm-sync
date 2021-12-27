@@ -8,12 +8,10 @@
     <parent>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
         <artifactId>rdm-sync</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <jaxb.api.version>2.3.1</jaxb.api.version>
-
         <jacoco.skip>false</jacoco.skip>
         <sonar.coverage.exclusions>**/*SyncConfig.java, **/*SyncProperties.java, **/*LiquibaseParameters.java, **/*SyncAutoConfiguration.java, **/*RdmSyncConfigurer.java, **/*Enum.java</sonar.coverage.exclusions>
     </properties>
@@ -81,22 +79,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>${javax-jaxb.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-core</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.3.0</version>
         </dependency>
 
         <dependency>
