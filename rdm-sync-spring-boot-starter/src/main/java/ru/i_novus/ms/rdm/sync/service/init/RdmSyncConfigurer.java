@@ -1,8 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.quartz.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -21,8 +19,6 @@ import static org.springframework.util.StringUtils.isEmpty;
 @ConditionalOnClass(name = "org.quartz.Scheduler")
 @ConditionalOnProperty(name = "rdm-sync.scheduling", havingValue = "true")
 class RdmSyncConfigurer extends BaseRdmSyncConfigurer{
-
-    private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
 
     private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
 

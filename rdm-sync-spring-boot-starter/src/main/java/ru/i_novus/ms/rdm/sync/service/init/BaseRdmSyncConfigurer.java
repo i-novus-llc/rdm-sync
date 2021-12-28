@@ -9,7 +9,7 @@ import java.util.Date;
 
 public abstract class BaseRdmSyncConfigurer {
 
-    Logger logger = LoggerFactory.getLogger(BaseRdmSyncConfigurer.class);
+    protected final Logger logger = LoggerFactory.getLogger(BaseRdmSyncConfigurer.class);
 
     protected static final String LOG_SCHEDULER_NON_CLUSTERED =
             "Scheduler is configured in non clustered mode. There is may be concurrency issues.";

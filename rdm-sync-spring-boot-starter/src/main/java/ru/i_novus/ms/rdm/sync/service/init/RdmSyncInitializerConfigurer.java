@@ -1,8 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.quartz.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +14,6 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
-
-    private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializerConfigurer.class);
 
     @Value("${rdm-sync.init.delay:0}")
     private Integer rdmSyncInitDelay;
