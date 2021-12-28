@@ -15,7 +15,7 @@ import java.util.List;
 
 @Component
 @DependsOn("liquibaseRdm")
-class RdmSyncInitializer {
+public class RdmSyncInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializer.class);
 
