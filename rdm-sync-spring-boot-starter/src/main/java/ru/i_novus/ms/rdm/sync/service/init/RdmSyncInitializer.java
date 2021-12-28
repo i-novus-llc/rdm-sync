@@ -37,7 +37,7 @@ class RdmSyncInitializer {
     @Autowired
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
-    @PostConstruct
+
     public void start() {
 
         sourceLoaderServiceInit();
