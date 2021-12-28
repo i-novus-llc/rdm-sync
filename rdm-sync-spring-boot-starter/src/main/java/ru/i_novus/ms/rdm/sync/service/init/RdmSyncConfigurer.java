@@ -13,8 +13,6 @@ import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import java.util.Date;
-
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -22,21 +20,11 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
 @ConditionalOnProperty(name = "rdm-sync.scheduling", havingValue = "true")
-class RdmSyncConfigurer {
+class RdmSyncConfigurer extends BaseRdmSyncConfigurer{
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
 
-    private static final String LOG_SCHEDULER_NON_CLUSTERED =
-            "Scheduler is configured in non clustered mode. There is may be concurrency issues.";
-    private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
-    private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
-    private static final String LOG_JOB_CANNOT_SCHEDULE = "Cannot schedule %s job.";
     private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
-
-    private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
-
-    @Autowired(required = false)
-    private Scheduler scheduler;
 
     @Autowired
     private ClusterLockService clusterLockService;
@@ -56,6 +44,7 @@ class RdmSyncConfigurer {
     @Value("${rdm-sync.change_data.mode:#{null}}")
     private String changeDataMode;
 
+    @Override
     @Transactional
     public void setupJobs() {
 
@@ -141,39 +130,4 @@ class RdmSyncConfigurer {
         }
     }
 
-    private Date nowDelayed(Integer delayMillis) {
-        return new Date(System.currentTimeMillis() + (delayMillis != null ? delayMillis.longValue() : 0));
-    }
-
-    private void addJob(TriggerKey triggerKey, Trigger oldTrigger,
-                        JobDetail newJob, Trigger newTrigger, String cronExpression) throws SchedulerException {
-
-        if (oldTrigger == null) {
-
-            scheduler.scheduleJob(newJob, newTrigger);
-
-            return;
-        }
-
-        if (oldTrigger instanceof CronTrigger) {
-
-            CronTrigger trigger = (CronTrigger) oldTrigger;
-            if (!trigger.getCronExpression().equals(cronExpression)) {
-
-                scheduler.rescheduleJob(triggerKey, newTrigger);
-
-            } else
-                logger.info(LOG_TRIGGER_NOT_CHANGED, triggerKey);
-
-        } else {
-            logger.warn(LOG_TRIGGER_IS_NOT_CRON, triggerKey);
-        }
-    }
-
-    private void deleteJob(JobKey jobKey) throws SchedulerException {
-
-        if (scheduler.checkExists(jobKey)) {
-            scheduler.deleteJob(jobKey);
-        }
-    }
 }
