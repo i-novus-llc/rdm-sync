@@ -37,7 +37,7 @@ public class RdmSyncInitializer {
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
 
-    public void start() {
+    public void init() {
 
         sourceLoaderServiceInit();
         mappingLoaderService.load();
