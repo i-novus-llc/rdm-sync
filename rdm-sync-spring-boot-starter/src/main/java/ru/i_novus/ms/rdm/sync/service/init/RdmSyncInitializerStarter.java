@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-@ConditionalOnProperty(name = "rdm-sync.init.delay", matchIfMissing = true)
+@ConditionalOnProperty(name = "rdm-sync.init.delay", matchIfMissing = true, havingValue = "none")
 public class RdmSyncInitializerStarter {
 
     @Autowired

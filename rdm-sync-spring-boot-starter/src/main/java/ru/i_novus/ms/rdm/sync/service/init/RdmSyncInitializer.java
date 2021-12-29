@@ -36,17 +36,12 @@ public class RdmSyncInitializer {
     @Autowired
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
-
     public void init() {
 
         sourceLoaderServiceInit();
         mappingLoaderService.load();
         autoCreate();
 
-        if (rdmSyncConfigurer != null) {
-            rdmSyncConfigurer.setupJobs();
-        } else
-            logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
     }
 
     private void autoCreate() {
