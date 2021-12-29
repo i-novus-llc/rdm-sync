@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
-import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
