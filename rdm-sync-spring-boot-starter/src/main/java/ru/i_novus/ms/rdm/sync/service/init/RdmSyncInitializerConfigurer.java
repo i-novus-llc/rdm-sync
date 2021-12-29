@@ -23,7 +23,6 @@ public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
 
     @Override
     @Transactional
-    @PostConstruct
     public void setupJobs() {
 
         if (scheduler == null)
@@ -44,7 +43,7 @@ public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
             if (rdmSyncInitDelay == null){
-                rdmSyncInitializer.start();
+                rdmSyncInitializer.init();
             }
 
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
