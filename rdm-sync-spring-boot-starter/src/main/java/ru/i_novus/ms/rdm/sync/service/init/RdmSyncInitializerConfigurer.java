@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +16,11 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Component
 public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
 
-    @Value("${rdm-sync.init.delay:0}")
+    @Value("${rdm-sync.init.delay:#{null}}")
     private Integer rdmSyncInitDelay;
+
+    @Autowired
+    private RdmSyncInitializer rdmSyncInitializer;
 
     @Override
     @Transactional
@@ -40,9 +44,8 @@ public class RdmSyncInitializerConfigurer extends BaseRdmSyncConfigurer{
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
-            if (isEmpty(rdmSyncInitDelay)) {
-                deleteJob(jobKey);
-                return;
+            if (rdmSyncInitDelay == null){
+                rdmSyncInitializer.start();
             }
 
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
