@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 @ConditionalOnProperty(name="rdm-sync.init.delay", havingValue = "")
 public class RdmSyncInitializerDelayedStarter {
 
-    private final static Logger logger = LoggerFactory.getLogger(RdmSyncInitializerDelayedStarter.class);
+    private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializerDelayedStarter.class);
 
     @Autowired
     private RdmSyncConfigurer configurer;
