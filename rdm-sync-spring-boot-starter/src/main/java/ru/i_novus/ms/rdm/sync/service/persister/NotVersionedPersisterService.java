@@ -184,7 +184,7 @@ public class NotVersionedPersisterService implements PersisterService {
     private void logProgress(String refBookCode, RestCriteria criteria, Page currentPage) {
         int totalPages = currentPage.getContent().isEmpty() ? 1 : (int) Math.ceil((double) currentPage.getTotalElements() / (double) criteria.getPageSize());
         if(criteria.getPageNumber()%5==0) {
-            logger.info("refbook {} {} rows of {} synchronized", refBookCode,  (criteria.getPageNumber() + 1)*criteria.getPageSize(), currentPage.getTotalElements());
+            logger.info("refbook {} {} rows of {} synchronized", refBookCode,  (criteria.getPageNumber())*criteria.getPageSize() + currentPage.getContent().size(), currentPage.getTotalElements());
         } else if (totalPages == criteria.getPageNumber() + 1) {
             logger.info("refbook {} {} rows of {} synchronized", refBookCode,  currentPage.getTotalElements(), currentPage.getTotalElements());
         }
