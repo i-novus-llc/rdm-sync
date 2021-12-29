@@ -118,7 +118,6 @@ public class  RdmSyncSourceService implements SyncSourceService {
         return VersionsDiff.dataChangedInstance(PageMapper.map(diff.getRows(), this::convert));
     }
 
-
     private RowDiff convert(DiffRowValue diffRowValue) {
         if (diffRowValue == null) {
             return null;
