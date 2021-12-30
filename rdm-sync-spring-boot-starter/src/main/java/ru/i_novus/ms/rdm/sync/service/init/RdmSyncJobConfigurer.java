@@ -23,9 +23,9 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
 @ConditionalOnProperty(name = "rdm-sync.scheduling", havingValue = "true")
-class RdmSyncConfigurer {
+class RdmSyncJobConfigurer {
 
-    private final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
+    private final Logger logger = LoggerFactory.getLogger(RdmSyncJobConfigurer.class);
 
     private static final String LOG_SCHEDULER_NON_CLUSTERED =
             "Scheduler is configured in non clustered mode. There is may be concurrency issues.";
@@ -71,11 +71,10 @@ class RdmSyncConfigurer {
             return;
         setupRdmSyncInitJob();
 
-        setupImportJob();
-        setupExportJob();
     }
 
-    private void setupImportJob() {
+    @Transactional
+    public void setupImportJob() {
 
         final String jobName = RdmSyncImportRecordsFromRdmJob.NAME;
         try {
@@ -111,7 +110,8 @@ class RdmSyncConfigurer {
         }
     }
 
-    private void setupExportJob() {
+    @Transactional
+    public void setupExportJob() {
 
         if (!clusterLockService.tryLock()) return;
 

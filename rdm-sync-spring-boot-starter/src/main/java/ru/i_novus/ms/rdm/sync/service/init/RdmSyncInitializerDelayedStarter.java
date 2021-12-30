@@ -7,17 +7,17 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 /**
- * Стартер для инициализации лоадеров сразу после старта приложения
+ * Стартер для инициализации лоадеров с таймером
  */
 @Component
-@ConditionalOnProperty(name = "rdm-sync.init.delay", matchIfMissing = true, havingValue = "none")
-public class RdmSyncInitializerStarter {
+@ConditionalOnProperty(name = "rdm-sync.init.delay")
+public class RdmSyncInitializerDelayedStarter {
 
     @Autowired
-    RdmSyncInitializer initializer;
+    RdmSyncJobConfigurer configurer;
 
     @PostConstruct
     public void start() {
-            initializer.init();
+            configurer.setupJobs();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class RdmSyncInitializer {
     private RdmSyncDao dao;
 
     @Autowired(required = false)
-    private RdmSyncConfigurer rdmSyncConfigurer;
+    private RdmSyncJobConfigurer rdmSyncJobConfigurer;
 
     @Autowired
     private LocalRefBookCreatorLocator localRefBookCreatorLocator;
@@ -41,6 +42,11 @@ public class RdmSyncInitializer {
         mappingLoaderService.load();
         autoCreate();
 
+        if (rdmSyncJobConfigurer != null) {
+            rdmSyncJobConfigurer.setupImportJob();
+            rdmSyncJobConfigurer.setupExportJob();
+        } else
+            logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
     }
 
     private void autoCreate() {
