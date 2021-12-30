@@ -10,7 +10,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import javax.annotation.PostConstruct;
 
 @Component
-@ConditionalOnProperty(name = "rdm-sync.init.delay", matchIfMissing = true, havingValue = "none")
+@ConditionalOnProperty(name = "rdm-sync.init.delay", matchIfMissing = true)
 public class RdmSyncInitializerStarter {
 
     Logger logger = LoggerFactory.getLogger(RdmSyncInitializerStarter.class);
