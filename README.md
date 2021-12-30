@@ -137,6 +137,7 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 |rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].name| -                                    | Наименование среды ФНСИ
 |rdm-sync.liquibase.param.quartz_schema_name| rdm_sync_qz                          | Наименование схемы, в которой находятся или будут созданы таблицы Quartz. Доступно только для микросервиса, для стартера не работает
 |rdm-sync.liquibase.param.quartz_table_prefix| rdm_sync_qrtz_                       | префикс, используемый при наименовании таблиц Quartz. Доступно только для микросервиса, для стартера не работает
+|rdm-sync.init.delay| -                                    |настройка таймера инициализации rdm-sync лоадеров после старта приложения (в миллисекундах), по умолчанию настройка отключена
 
 ## Описание таблиц
 
