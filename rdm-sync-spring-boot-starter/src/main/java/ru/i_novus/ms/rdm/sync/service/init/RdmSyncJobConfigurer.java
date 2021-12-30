@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncExportDirtyRecordsToRdmJob;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
+import ru.i_novus.ms.rdm.sync.quartz.RdmSyncInitJob;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.util.Date;
@@ -22,24 +23,31 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
 @ConditionalOnProperty(name = "rdm-sync.scheduling", havingValue = "true")
-class RdmSyncConfigurer {
+class RdmSyncJobConfigurer {
 
-    private static final Logger logger = LoggerFactory.getLogger(RdmSyncConfigurer.class);
+    private final Logger logger = LoggerFactory.getLogger(RdmSyncJobConfigurer.class);
 
     private static final String LOG_SCHEDULER_NON_CLUSTERED =
             "Scheduler is configured in non clustered mode. There is may be concurrency issues.";
     private static final String LOG_TRIGGER_NOT_CHANGED = "Trigger's {} expression is not changed.";
     private static final String LOG_TRIGGER_IS_NOT_CRON = "Trigger {} is not CronTrigger instance. Leave it as it is.";
     private static final String LOG_JOB_CANNOT_SCHEDULE = "Cannot schedule %s job.";
-    private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
 
     private static final String JOB_GROUP = "RDM_SYNC_INTERNAL";
 
+    private static final String LOG_ALL_RECORDS_WILL_REMAIN = "All records in the %s state will remain the same.";
+
     @Autowired(required = false)
-    private Scheduler scheduler;
+    protected Scheduler scheduler;
 
     @Autowired
     private ClusterLockService clusterLockService;
+
+    @Autowired
+    private RdmSyncInitializer rdmSyncInitializer;
+
+    @Value("${rdm-sync.init.delay:#{null}}")
+    private Integer rdmSyncInitDelay;
 
     @Value("${rdm-sync.import.from_rdm.cron:}")
     private String importFromRdmCron;
@@ -61,12 +69,12 @@ class RdmSyncConfigurer {
 
         if (scheduler == null)
             return;
+        setupRdmSyncInitJob();
 
-        setupImportJob();
-        setupExportJob();
     }
 
-    private void setupImportJob() {
+    @Transactional
+    public void setupImportJob() {
 
         final String jobName = RdmSyncImportRecordsFromRdmJob.NAME;
         try {
@@ -102,7 +110,8 @@ class RdmSyncConfigurer {
         }
     }
 
-    private void setupExportJob() {
+    @Transactional
+    public void setupExportJob() {
 
         if (!clusterLockService.tryLock()) return;
 
@@ -141,6 +150,41 @@ class RdmSyncConfigurer {
         }
     }
 
+    private void setupRdmSyncInitJob() {
+
+        final String jobName = RdmSyncInitJob.NAME;
+
+        try {
+            if (!scheduler.getMetaData().isJobStoreClustered()) {
+                logger.warn(LOG_SCHEDULER_NON_CLUSTERED);
+            }
+
+            JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
+            if (rdmSyncInitDelay == null) {
+                rdmSyncInitializer.init();
+            }
+
+            TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
+            Trigger oldTrigger = scheduler.getTrigger(triggerKey);
+
+            JobDetail newJob = newJob(RdmSyncInitJob.class)
+                    .withIdentity(jobKey)
+                    .build();
+            Trigger newTrigger = newTrigger()
+                    .withIdentity(triggerKey)
+                    .forJob(newJob)
+                    .startAt(nowDelayed(rdmSyncInitDelay))
+                    .build();
+
+            addJob(triggerKey, oldTrigger, newJob, newTrigger, String.valueOf(rdmSyncInitDelay));
+
+        } catch (SchedulerException e) {
+            String message = String.format(LOG_JOB_CANNOT_SCHEDULE, jobName);
+            logger.error(message, e);
+        }
+
+    }
+
     private Date nowDelayed(Integer delayMillis) {
         return new Date(System.currentTimeMillis() + (delayMillis != null ? delayMillis.longValue() : 0));
     }
@@ -176,4 +220,5 @@ class RdmSyncConfigurer {
             scheduler.deleteJob(jobKey);
         }
     }
+
 }

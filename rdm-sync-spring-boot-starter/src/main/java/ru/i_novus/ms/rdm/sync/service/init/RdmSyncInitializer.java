@@ -5,17 +5,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Component
 @DependsOn("liquibaseRdm")
-class RdmSyncInitializer {
+public class RdmSyncInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializer.class);
 
@@ -29,7 +28,7 @@ class RdmSyncInitializer {
     private RdmSyncDao dao;
 
     @Autowired(required = false)
-    private RdmSyncConfigurer rdmSyncConfigurer;
+    private RdmSyncJobConfigurer rdmSyncJobConfigurer;
 
     @Autowired
     private LocalRefBookCreatorLocator localRefBookCreatorLocator;
@@ -37,15 +36,15 @@ class RdmSyncInitializer {
     @Autowired
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
-    @PostConstruct
-    public void start() {
+    public void init() {
 
         sourceLoaderServiceInit();
         mappingLoaderService.load();
         autoCreate();
 
-        if (rdmSyncConfigurer != null) {
-            rdmSyncConfigurer.setupJobs();
+        if (rdmSyncJobConfigurer != null) {
+            rdmSyncJobConfigurer.setupImportJob();
+            rdmSyncJobConfigurer.setupExportJob();
         } else
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
     }
