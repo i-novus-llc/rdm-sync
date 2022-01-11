@@ -36,7 +36,10 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -650,9 +653,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
         if (localDataCriteria.getRecordId() != null) {
-
-            sql += "\n AND " + RECORD_SYS_COL + " = :" + RECORD_SYS_COL;
-            args.put(RECORD_SYS_COL, localDataCriteria.getRecordId());
+            String sysPk = localDataCriteria.getSysPk();
+            sql += "\n AND " + sysPk + " = :" + sysPk;
+            args.put(sysPk, localDataCriteria.getRecordId());
         }
 
         args.put("state", localDataCriteria.getState().name());
@@ -830,21 +833,21 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPk) {
 
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
-                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+                        sysPk, RECORD_SYS_COL_INFO)
         );
     }
 
     @Override
-    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
+    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPk) {
 
         createTable(schema, table, fieldMappings,
                 Map.of(VERSIONS_SYS_COL, "text NOT NULL",
                         HASH_SYS_COL, "text NOT NULL",
-                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+                        sysPk, RECORD_SYS_COL_INFO)
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));

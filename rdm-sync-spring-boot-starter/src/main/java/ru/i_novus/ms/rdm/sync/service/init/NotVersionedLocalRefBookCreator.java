@@ -45,7 +45,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPk) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -59,18 +59,18 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
             return;
 
         if (mapping != null) {
-            createTable(refBookCode, mapping);
+            createTable(refBookCode, mapping, sysPk);
         }
     }
 
-    private void createTable(String refBookCode, VersionMapping mapping) {
+    private void createTable(String refBookCode, VersionMapping mapping, String sysPk) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), sysPk);
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 

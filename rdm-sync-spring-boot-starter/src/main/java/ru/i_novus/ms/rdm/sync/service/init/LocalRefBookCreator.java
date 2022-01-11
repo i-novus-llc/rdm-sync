@@ -7,5 +7,5 @@ import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
  */
 public interface LocalRefBookCreator {
 
-    void create(String refCode, String refName, String source, SyncTypeEnum type, String table);
+    void create(String refCode, String refName, String source, SyncTypeEnum type, String table, String sysPk);
 }

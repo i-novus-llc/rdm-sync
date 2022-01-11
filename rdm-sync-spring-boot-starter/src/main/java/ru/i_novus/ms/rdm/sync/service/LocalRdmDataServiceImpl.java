@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
@@ -35,6 +36,9 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     @Autowired
     private RdmSyncDao dao;
 
+    @Autowired
+    private AutoCreateRefBookProperty autoCreateRefBookProperties;
+
     @Override
     public Page<Map<String, Object>> getData(String refBookCode, Boolean getDeleted,
                                              Integer page, Integer size, @Context UriInfo uriInfo) {
@@ -50,6 +54,9 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         DeletedCriteria deleted = new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted));
         localDataCriteria.setDeleted(deleted);
+
+        String sysPk = getSysPk(refBookCode);
+        localDataCriteria.setSysPk(sysPk);
 
         return dao.getData(localDataCriteria);
     }
@@ -99,9 +106,20 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), 1, 0, null);
         localDataCriteria.setRecordId(recordId);
+
+        String sysPk = getSysPk(refBookCode);
+        localDataCriteria.setSysPk(sysPk);
+
         Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
 
         return synced.get().findAny().orElseThrow(NotFoundException::new);
+    }
+
+    private String getSysPk(String refBookCode){
+       return Objects.requireNonNull(autoCreateRefBookProperties.getRefbooks().stream()
+                .filter(property -> refBookCode.equals(property.getCode()))
+                .findAny()
+                .orElse(null)).getSysPk();
     }
 
     /** Преобразование параметра запроса в фильтр по полю. */
