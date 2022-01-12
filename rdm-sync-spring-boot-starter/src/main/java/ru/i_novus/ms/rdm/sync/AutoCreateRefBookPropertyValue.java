@@ -9,7 +9,7 @@ public class AutoCreateRefBookPropertyValue {
     private String name;
     private SyncTypeEnum type;
     private String table;
-    private String sysPk;
+    private String sysPk = "_sync_rec_id";
 
     public String getCode() {
         return code;
