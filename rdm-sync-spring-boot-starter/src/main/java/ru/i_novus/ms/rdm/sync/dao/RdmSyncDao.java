@@ -147,9 +147,9 @@ public interface RdmSyncDao {
 
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
     void createSchemaIfNotExists(String schema);
-    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String pk);
+    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPk);
 
-    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String pk);
+    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPk);
 
     SyncRefBook getSyncRefBook(String code);
 }
