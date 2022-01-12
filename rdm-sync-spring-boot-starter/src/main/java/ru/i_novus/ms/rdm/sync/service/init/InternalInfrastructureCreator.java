@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 class InternalInfrastructureCreator {
@@ -16,6 +18,9 @@ class InternalInfrastructureCreator {
 
     @Autowired
     private RdmSyncDao dao;
+
+    @Autowired
+    private AutoCreateRefBookProperty autoCreateRefBookProperty;
 
     @Transactional
     public void createInternalInfrastructure(String schemaTable, String code,
@@ -31,8 +36,13 @@ class InternalInfrastructureCreator {
 
         if (autoCreateRefBookCodes.contains(code)) {
 
+            String sysPk = Objects.requireNonNull(autoCreateRefBookProperty.getRefbooks().stream()
+                    .filter(property -> code.equals(property.getCode()))
+                    .findAny()
+                    .orElse(null)).getSysPk();
+
             dao.createSchemaIfNotExists(schema);
-            dao.createTableIfNotExists(schema, table, dao.getFieldMappings(code), isDeletedFieldName);
+            dao.createTableIfNotExists(schema, table, dao.getFieldMappings(code), isDeletedFieldName, sysPk);
         }
 
         logger.info("Preparing table {} in schema {}.", table, schema);
