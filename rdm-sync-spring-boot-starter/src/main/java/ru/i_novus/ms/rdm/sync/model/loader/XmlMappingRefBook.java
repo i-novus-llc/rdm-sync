@@ -26,6 +26,8 @@ public class XmlMappingRefBook {
 
     private String sysTable;
 
+    private String sysPk;
+
     private String source;
 
     private SyncTypeEnum type;
@@ -97,6 +99,16 @@ public class XmlMappingRefBook {
     public void setSysTable(String sysTable) {
         this.sysTable = sysTable;
     }
+
+    @XmlAttribute(name = "sys-pk")
+    public String getSysPk() {
+        return sysPk;
+    }
+
+    public void setSysPk(String sysPk) {
+        this.sysPk = sysPk;
+    }
+
 
     @XmlAttribute
     public String getSource() {
