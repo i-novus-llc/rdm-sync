@@ -28,10 +28,11 @@ import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
-import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
 
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
+
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
 
     private static final String DELETED_FIELD_COL = "deleted_ts";
 
@@ -98,6 +99,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         // -- Получение той же записи по systemId.
         LocalDataCriteria systemIdCriteria = createSyncedCriteria(table);
         systemIdCriteria.setRecordId(systemId);
+        systemIdCriteria.setSysPk("_sync_rec_id");
 
         data = rdmSyncDao.getData(systemIdCriteria);
         assertEquals(1, data.getContent().size());
@@ -169,7 +171,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
                         new FieldMapping("ID", "integer", "ID"),
                         new FieldMapping("name", "varchar", "NAME"),
                         new FieldMapping("some_dt", "date", "DT"),
-                        new FieldMapping("flag", "boolean", "FLAG")));
+                        new FieldMapping("flag", "boolean", "FLAG")),
+                "_sync_rec_id");
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
@@ -268,7 +271,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
                         new FieldMapping("ID", "integer", "ID"),
                         new FieldMapping("name", "varchar", "NAME"),
                         new FieldMapping("some_dt", "date", "DT"),
-                        new FieldMapping("flag", "boolean", "FLAG")));
+                        new FieldMapping("flag", "boolean", "FLAG")),
+                "_sync_rec_id");
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
