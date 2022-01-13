@@ -652,9 +652,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
         if (localDataCriteria.getRecordId() != null) {
-            String sysPk = localDataCriteria.getSysPk();
-            sql += "\n AND " + sysPk + " = :" + sysPk;
-            args.put(sysPk, localDataCriteria.getRecordId());
+            String sysPkColumn = localDataCriteria.getSysPkColumn();
+            sql += "\n AND " + sysPkColumn + " = :" + sysPkColumn;
+            args.put(sysPkColumn, localDataCriteria.getRecordId());
         }
 
         args.put("state", localDataCriteria.getState().name());
@@ -832,21 +832,21 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPk) {
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn) {
 
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
-                        sysPk, RECORD_SYS_COL_INFO)
+                        sysPkColumn, RECORD_SYS_COL_INFO)
         );
     }
 
     @Override
-    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPk) {
+    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn) {
 
         createTable(schema, table, fieldMappings,
                 Map.of(VERSIONS_SYS_COL, "text NOT NULL",
                         HASH_SYS_COL, "text NOT NULL",
-                        sysPk, RECORD_SYS_COL_INFO)
+                        sysPkColumn, RECORD_SYS_COL_INFO)
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));

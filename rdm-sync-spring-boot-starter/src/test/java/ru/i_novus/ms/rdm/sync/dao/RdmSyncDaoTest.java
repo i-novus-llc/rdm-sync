@@ -99,7 +99,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         // -- Получение той же записи по systemId.
         LocalDataCriteria systemIdCriteria = createSyncedCriteria(table);
         systemIdCriteria.setRecordId(systemId);
-        systemIdCriteria.setSysPk("_sync_rec_id");
+        systemIdCriteria.setSysPkColumn("_sync_rec_id");
 
         data = rdmSyncDao.getData(systemIdCriteria);
         assertEquals(1, data.getContent().size());

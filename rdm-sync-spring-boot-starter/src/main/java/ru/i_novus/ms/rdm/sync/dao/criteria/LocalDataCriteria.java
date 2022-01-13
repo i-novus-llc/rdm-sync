@@ -10,7 +10,7 @@ public class LocalDataCriteria extends BaseDataCriteria {
     private Long recordId = null;
     private RdmSyncLocalRowState state = RdmSyncLocalRowState.SYNCED;
     private DeletedCriteria deleted = null;
-    private String sysPk;
+    private String sysPkColumn;
 
     public LocalDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
 
@@ -41,11 +41,11 @@ public class LocalDataCriteria extends BaseDataCriteria {
         this.deleted = deleted;
     }
 
-    public String getSysPk() {
-        return sysPk;
+    public String getSysPkColumn() {
+        return sysPkColumn;
     }
 
-    public void setSysPk(String sysPk) {
-        this.sysPk = sysPk;
+    public void setSysPkColumn(String sysPkColumn) {
+        this.sysPkColumn = sysPkColumn;
     }
 }

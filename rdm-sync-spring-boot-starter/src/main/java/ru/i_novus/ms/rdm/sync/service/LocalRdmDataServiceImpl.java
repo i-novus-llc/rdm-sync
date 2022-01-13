@@ -55,8 +55,8 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         DeletedCriteria deleted = new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted));
         localDataCriteria.setDeleted(deleted);
 
-        String sysPk = getSysPk(refBookCode);
-        localDataCriteria.setSysPk(sysPk);
+        String sysPkColumn = getSysPk(refBookCode);
+        localDataCriteria.setSysPkColumn(sysPkColumn);
 
         return dao.getData(localDataCriteria);
     }
@@ -107,8 +107,8 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
                 versionMapping.getPrimaryField(), 1, 0, null);
         localDataCriteria.setRecordId(recordId);
 
-        String sysPk = getSysPk(refBookCode);
-        localDataCriteria.setSysPk(sysPk);
+        String sysPkColumn = getSysPk(refBookCode);
+        localDataCriteria.setSysPkColumn(sysPkColumn);
 
         Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
 
@@ -119,7 +119,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
        return Objects.requireNonNull(autoCreateRefBookProperties.getRefbooks().stream()
                 .filter(property -> refBookCode.equals(property.getCode()))
                 .findAny()
-                .orElse(null)).getSysPk();
+                .orElse(null)).getSysPkColumn();
     }
 
     /** Преобразование параметра запроса в фильтр по полю. */

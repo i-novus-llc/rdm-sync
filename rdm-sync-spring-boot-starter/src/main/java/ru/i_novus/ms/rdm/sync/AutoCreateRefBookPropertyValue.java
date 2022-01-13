@@ -9,7 +9,7 @@ public class AutoCreateRefBookPropertyValue {
     private String name;
     private SyncTypeEnum type;
     private String table;
-    private String sysPk = "_sync_rec_id";
+    private String sysPkColumn = "_sync_rec_id";
 
     public String getCode() {
         return code;
@@ -51,11 +51,11 @@ public class AutoCreateRefBookPropertyValue {
         this.table = table;
     }
 
-    public String getSysPk() {
-        return sysPk;
+    public String getSysPkColumn() {
+        return sysPkColumn;
     }
 
-    public void setSysPk(String sysPk) {
-        this.sysPk = sysPk;
+    public void setSysPkColumn(String sysPkColumn) {
+        this.sysPkColumn = sysPkColumn;
     }
 }

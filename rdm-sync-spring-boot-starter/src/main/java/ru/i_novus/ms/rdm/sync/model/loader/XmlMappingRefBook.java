@@ -26,7 +26,7 @@ public class XmlMappingRefBook {
 
     private String sysTable;
 
-    private String sysPk;
+    private String sysPkColumn;
 
     private String source;
 
@@ -101,12 +101,12 @@ public class XmlMappingRefBook {
     }
 
     @XmlAttribute(name = "sys-pk-field")
-    public String getSysPk() {
-        return sysPk;
+    public String getSysPkColumn() {
+        return sysPkColumn;
     }
 
-    public void setSysPk(String sysPk) {
-        this.sysPk = sysPk;
+    public void setSysPkColumn(String sysPkColumn) {
+        this.sysPkColumn = sysPkColumn;
     }
 
 
