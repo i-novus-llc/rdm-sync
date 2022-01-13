@@ -54,7 +54,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -81,7 +81,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
 
-    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
+    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, String sysPkColumn) {
 
         RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
         if (lastPublished == null) {
@@ -98,7 +98,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String schemaTable = getTableName(refBookCode, table);
 
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
-                schemaTable, sourceCode, uniqueSysField, isDeletedField,
+                schemaTable, sourceCode, sysPkColumn, uniqueSysField, isDeletedField,
                 null, -1, null, type);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
