@@ -100,7 +100,7 @@ public class XmlMappingRefBook {
         this.sysTable = sysTable;
     }
 
-    @XmlAttribute(name = "sys-pk")
+    @XmlAttribute(name = "sys-pk-field")
     public String getSysPk() {
         return sysPk;
     }
