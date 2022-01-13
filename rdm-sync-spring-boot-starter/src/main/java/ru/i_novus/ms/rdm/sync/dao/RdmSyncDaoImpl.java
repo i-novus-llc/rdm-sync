@@ -84,7 +84,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<VersionMapping> getVersionMappings() {
 
         final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
@@ -100,10 +100,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(6),
                         rs.getString(7),
                         rs.getString(8),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
-                        rs.getInt(10),
+                        rs.getString(9),
+                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
                         rs.getInt(11),
-                        SyncTypeEnum.valueOf(rs.getString(12))
+                        rs.getInt(12),
+                        SyncTypeEnum.valueOf(rs.getString(13))
                 )
         );
     }
@@ -125,7 +126,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
@@ -142,11 +143,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        rs.getString(8),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
-                        rs.getInt(10),
+                        rs.getString(9),
+                        rs.getString(9),
+                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
                         rs.getInt(11),
-                        SyncTypeEnum.valueOf(rs.getString(12))
+                        rs.getInt(12),
+                        SyncTypeEnum.valueOf(rs.getString(13))
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
