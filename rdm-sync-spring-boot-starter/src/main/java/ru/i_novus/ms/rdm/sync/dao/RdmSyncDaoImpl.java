@@ -456,10 +456,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
                 "    sys_table,\n" +
+                "    sys_pk_field,\n" +
                 "    unique_sys_field)\n" +
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
+                "    :sys_pk_field,\n" +
                 "    :sys_table,\n" +
                 "    :unique_sys_field) RETURNING id";
 
@@ -482,6 +484,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         Map<String, Object> result = new HashMap<>(4);
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
+        result.put("sys_pk_field", versionMapping.getSysPkColumn());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
         result.put("deleted_field", versionMapping.getDeletedField());
 
