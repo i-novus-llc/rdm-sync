@@ -59,7 +59,7 @@ public class VersionedLocalRefBookCreatorTest {
         List<FieldMapping> fieldMappings = createFieldMappings();
         VersionMapping versionMapping = createVersionMapping(testCode);
         when(rdmSyncDao.getFieldMappings(testCode)).thenReturn(fieldMappings);
-        creator.create(testCode, null, source, SyncTypeEnum.VERSIONED, null, "_sync_rec_id");
+        creator.create(testCode, null, source, SyncTypeEnum.VERSIONED, null, "test_pk_field");
         verify(rdmSyncDao, times(1)).insertVersionMapping(versionMapping);
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
 
@@ -68,7 +68,7 @@ public class VersionedLocalRefBookCreatorTest {
                         "rdm",
                         "ref_test",
                         fieldMappings
-                , "_sync_rec_id");
+                , "test_pk_field");
     }
 
 
@@ -84,7 +84,7 @@ public class VersionedLocalRefBookCreatorTest {
         when(rdmSyncDao.getVersionMapping(testCode, "CURRENT")).thenReturn(createVersionMapping(testCode));
         when(rdmSyncDao.getFieldMappings(testCode)).thenReturn(fieldMappings);
 
-        creator.create(testCode, null, source, SyncTypeEnum.NOT_VERSIONED, null, "_sync_rec_id");
+        creator.create(testCode, null, source, SyncTypeEnum.NOT_VERSIONED, null, "test_pk_field");
 
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
@@ -94,7 +94,7 @@ public class VersionedLocalRefBookCreatorTest {
                         "rdm",
                         "ref_test",
                         fieldMappings
-                , "_sync_rec_id");
+                , "test_pk_field");
 
     }
 
@@ -111,7 +111,7 @@ public class VersionedLocalRefBookCreatorTest {
     }
 
     private VersionMapping createVersionMapping(String testCode) {
-        return new VersionMapping(null, testCode, null, "CURRENT", "rdm.ref_test", "someSource", "id", null, null, -1, null, SyncTypeEnum.VERSIONED);
+        return new VersionMapping(null, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.VERSIONED);
     }
 
     private RefBook createRefBook(String refBookCode) {

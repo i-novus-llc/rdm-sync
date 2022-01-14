@@ -239,7 +239,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         String version = "CURRENT";
         String refBookCode = "test";
         String refBookName = "test Name";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table","CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        String pkSysColumn = "test_pk_field";
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn,"CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
