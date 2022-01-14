@@ -57,7 +57,4 @@ public class AutoCreateRefBookPropertyValue {
         return Objects.toString(sysPkColumn, "_sync_rec_id");
     }
 
-    public void setSysPkColumn(String sysPkColumn) {
-        this.sysPkColumn = sysPkColumn;
-    }
 }
