@@ -26,7 +26,7 @@ public class XmlMappingRefBook {
 
     private String sysTable;
 
-    private String sysPkColumn;
+    private String sysPkColumn = "_sync_rec_id";
 
     private String source;
 
