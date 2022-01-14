@@ -2,6 +2,8 @@ package ru.i_novus.ms.rdm.sync;
 
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
+import java.util.Objects;
+
 public class AutoCreateRefBookPropertyValue {
 
     private String code;
@@ -52,7 +54,7 @@ public class AutoCreateRefBookPropertyValue {
     }
 
     public String getSysPkColumn() {
-        return sysPkColumn;
+        return Objects.toString(sysPkColumn, "_sync_rec_id");
     }
 
     public void setSysPkColumn(String sysPkColumn) {
