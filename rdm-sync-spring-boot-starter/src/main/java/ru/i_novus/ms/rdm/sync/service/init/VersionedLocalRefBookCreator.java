@@ -52,18 +52,18 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
             rdmSyncDao.insertVersionMapping(versionMapping);
         }
 
-        createTable(code, versionMapping, sysPkColumn);
+        createTable(code, versionMapping);
 
         logger.info("auto create for code {} was finished", code);
     }
 
-    private void createTable(String code, VersionMapping versionMapping, String sysPkColumn) {
+    private void createTable(String code, VersionMapping versionMapping) {
 
         String[] split = versionMapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
         rdmSyncDao.createSchemaIfNotExists(schema);
-        rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName, rdmSyncDao.getFieldMappings(code), sysPkColumn);
+        rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName, rdmSyncDao.getFieldMappings(code), versionMapping.getSysPkColumn());
     }
 }

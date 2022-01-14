@@ -59,18 +59,18 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
             return;
 
         if (mapping != null) {
-            createTable(refBookCode, mapping, sysPkColumn);
+            createTable(refBookCode, mapping);
         }
     }
 
-    private void createTable(String refBookCode, VersionMapping mapping, String sysPkColumn) {
+    private void createTable(String refBookCode, VersionMapping mapping) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), sysPkColumn);
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -98,7 +98,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String schemaTable = getTableName(refBookCode, table);
 
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
-                schemaTable, sourceCode, sysPkColumn, uniqueSysField, isDeletedField,
+                schemaTable, sysPkColumn, sourceCode, uniqueSysField, isDeletedField,
                 null, -1, null, type);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 
