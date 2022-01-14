@@ -112,32 +112,33 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 
 ## Полный список настроек
 
-Настройка| Значение по умолчанию                |Описание|
-|---|--------------------------------------|---|
-|rdm-sync.enabled| true                                 | Включение/выключение синхронизации |
-|rdm.backend.path| -                                    | Адрес API RDM'a |
-|rdm-sync.auto-create.schema| rdm                                  | Схема, в которой будут создаваться таблицы в режиме автосоздания|
-|rdm-sync.auto-create.ignore-case| true                                 | Игнорирование регистра букв в названиях таблиц и колонок в режиме автосоздания|
-|rdm-sync.scheduling| true                                 | Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса|
-|rdm-sync.import.from_rdm.cron| 0 0/10 * * * ?                       | Крон для импорта данных из НСИ. Значение по умолчанию есть только у микросервиса|
-|rdm-sync.import.from_rdm.delay| 0                                    | Задержка импорта данных из НСИ после запуска. Значение по умолчанию -- 0|
-|rdm-sync.change_data.mode| -                                    | Режим экспорта данных в НСИ (только для RDM). Значения sync/async - синхронный и асинхронный
-|rdm-sync.export.to_rdm.cron| 0 0/20 * * * ?                       | Крон для экспорта данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса|
-|rdm-sync.export.to_rdm.delay| 0                                    | Задержка экспорта данных в НСИ (только для RDM) после запуска. Значение по умолчанию -- 0|
-|rdm-sync.load.size| 1000                                 | Кол-во записей на странице при получении данных из НСИ|
-|rdm-sync.threads.count| 3                                    | Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
-|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code| -                                    | Код справочника
-|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source| -                                    | Источник справочника
-|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type| NOT_VERSIONED<br/> RDM_NOT_VERSIONED | Синхронизация неверсионных справочников
-|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table| -                                    | Наименование таблицы справочника
-|rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name| -                                    | Наименование справочника
-|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url| -                                    | URL ФНСИ
-|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey| -                                    | Ключ АПИ ФНСИ
-|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].code| -                                    | Код среды ФНСИ
-|rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].name| -                                    | Наименование среды ФНСИ
-|rdm-sync.liquibase.param.quartz_schema_name| rdm_sync_qz                          | Наименование схемы, в которой находятся или будут созданы таблицы Quartz. Доступно только для микросервиса, для стартера не работает
-|rdm-sync.liquibase.param.quartz_table_prefix| rdm_sync_qrtz_                       | префикс, используемый при наименовании таблиц Quartz. Доступно только для микросервиса, для стартера не работает
-|rdm-sync.init.delay| -                                    |настройка таймера инициализации rdm-sync лоадеров после старта приложения (в миллисекундах), по умолчанию настройка отключена
+ Настройка                                                                 | Значение по умолчанию                |Описание|
+|---------------------------------------------------------------------------|--------------------------------------|---|
+| rdm-sync.enabled                                                          | true                                 | Включение/выключение синхронизации |
+| rdm.backend.path                                                          | -                                    | Адрес API RDM'a |
+| rdm-sync.auto-create.schema                                               | rdm                                  | Схема, в которой будут создаваться таблицы в режиме автосоздания|
+| rdm-sync.auto-create.ignore-case                                          | true                                 | Игнорирование регистра букв в названиях таблиц и колонок в режиме автосоздания|
+| rdm-sync.scheduling                                                       | true                                 | Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса|
+| rdm-sync.import.from_rdm.cron                                             | 0 0/10 * * * ?                       | Крон для импорта данных из НСИ. Значение по умолчанию есть только у микросервиса|
+| rdm-sync.import.from_rdm.delay                                            | 0                                    | Задержка импорта данных из НСИ после запуска. Значение по умолчанию -- 0|
+| rdm-sync.change_data.mode                                                 | -                                    | Режим экспорта данных в НСИ (только для RDM). Значения sync/async - синхронный и асинхронный
+| rdm-sync.export.to_rdm.cron                                               | 0 0/20 * * * ?                       | Крон для экспорта данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса|
+| rdm-sync.export.to_rdm.delay                                              | 0                                    | Задержка экспорта данных в НСИ (только для RDM) после запуска. Значение по умолчанию -- 0|
+| rdm-sync.load.size                                                        | 1000                                 | Кол-во записей на странице при получении данных из НСИ|
+| rdm-sync.threads.count                                                    | 3                                    | Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник|
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code        | -                                    | Код справочника
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source      | -                                    | Источник справочника
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type        | NOT_VERSIONED<br/> RDM_NOT_VERSIONED | Синхронизация неверсионных справочников
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table       | -                                    | Наименование таблицы справочника
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name        | -                                    | Наименование справочника
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].sysPkColumn | -                                    | Наименование колонки первичного ключа в системе
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url            | -                                    | URL ФНСИ
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey        | -                                    | Ключ АПИ ФНСИ
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].code           | -                                    | Код среды ФНСИ
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].name           | -                                    | Наименование среды ФНСИ
+| rdm-sync.liquibase.param.quartz_schema_name                               | rdm_sync_qz                          | Наименование схемы, в которой находятся или будут созданы таблицы Quartz. Доступно только для микросервиса, для стартера не работает
+| rdm-sync.liquibase.param.quartz_table_prefix                              | rdm_sync_qrtz_                       | префикс, используемый при наименовании таблиц Quartz. Доступно только для микросервиса, для стартера не работает
+| rdm-sync.init.delay                                                       | -                                    |настройка таймера инициализации rdm-sync лоадеров после старта приложения (в миллисекундах), по умолчанию настройка отключена
 
 ## Описание таблиц
 
@@ -169,11 +170,13 @@ rdm-sync.auto-create.refbooks[0].code=EK002
 rdm-sync.auto-create.refbooks[0].name=Какой-то справочник из RDM
 rdm-sync.auto-create.refbooks[0].source=RDM
 rdm-sync.auto-create.refbooks[0].type=NOT_VERSIONED
+rdm-sync.auto-create.refbooks[0].sysPkColumn=test_rdm_pk
 
 rdm-sync.auto-create.refbooks[1].code=1.2.643.5.1.13.2.1.1.725
 rdm-sync.auto-create.refbooks[1].name=Какой-то справочник ФНСИ
 rdm-sync.auto-create.refbooks[1].source=FNSI
 rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
+rdm-sync.auto-create.refbooks[1].sysPkColumn=test_fnsi_pk
 
 ```
 #### 2. XML-конфигурация маппинга
@@ -233,7 +236,7 @@ rdm-sync.auto-create.refbooks[1].type=NOT_VERSIONED
 Таблицы можно создавать в любой схеме. Важно в маппинге указать название таблицы со схемой
 
 Таблица должна содержать технические колонки:
-- `_sync_rec_id bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
+- `_sync_rec_id(по умолчанию) bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы, можно задать другое имя через `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].sysPkColumn` в *.properties или через поле `sys-pk-field` в теге `<reefbook>` rdm-mapping.xml.
 - колонка с любым типом, совместимым с типом первичного ключа справочника НСИ. Например `code`.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
