@@ -143,7 +143,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        rs.getString(9),
+                        rs.getString(8),
                         rs.getString(9),
                         toLocalDateTime(rs, 10, LocalDateTime.MIN),
                         rs.getInt(11),
@@ -463,8 +463,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
-                "    :sys_pk_field,\n" +
                 "    :sys_table,\n" +
+                "    :sys_pk_field,\n" +
                 "    :unique_sys_field) RETURNING id";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
@@ -483,7 +483,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private Map<String, Object> toInsertMappingValues(VersionMapping versionMapping) {
 
-        Map<String, Object> result = new HashMap<>(4);
+        Map<String, Object> result = new HashMap<>(5);
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("sys_pk_field", versionMapping.getSysPkColumn());
