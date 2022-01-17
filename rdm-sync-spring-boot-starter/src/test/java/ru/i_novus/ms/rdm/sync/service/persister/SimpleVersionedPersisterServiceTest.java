@@ -59,7 +59,7 @@ public class SimpleVersionedPersisterServiceTest {
         newVersion.setVersion("2");
         RefBookVersion oldVersion = generateRefBookVersion();
         oldVersion.setVersion("1");
-        oldVersion.setTo(LocalDateTime.now());
+        oldVersion.setTo(newVersion.getFrom());
         VersionMapping versionMapping = generateVersionMapping(oldVersion);
         List<Map<String, Object>> data = generateData();
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0 && "2".equals(dataCriteria.getVersion())))).thenReturn(new PageImpl<>(data));
