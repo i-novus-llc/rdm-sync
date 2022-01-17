@@ -22,6 +22,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
@@ -36,7 +37,10 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,6 +74,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
     private static final String VERSIONS_SYS_COL = "_versions";
+    private static final String PASSPORT_REF = "passport_id";
     private static final String HASH_SYS_COL = "_hash";
 
     @Autowired
@@ -293,6 +298,27 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
+    public void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("version", passport.getVersion());
+        params.put("from", passport.getFrom());
+        params.put("to", passport.getTo());
+        Integer passportId = namedParameterJdbcTemplate.queryForObject(
+                "INSERT INTO " + escapeName(schemaTable + "_passport") + "(version, from_dt, to_dt) VALUES(:version, :from, :to) RETURNING id",
+                params,
+                Integer.class
+        );
+        insertRows(schemaTable, convertToSimpleVersionedRows(rows, passportId));
+
+    }
+
+    @Override
+    public void closeVersion(String schemaTable, String version, LocalDateTime closeDate) {
+        namedParameterJdbcTemplate.update("UPDATE " + escapeName(schemaTable + "_passport") + " SET to_dt = :to WHERE version = :version",
+                Map.of("to", closeDate, "version", version));
+    }
+
+    @Override
     public void updateRow(String schemaTable, String primaryField, Map<String, Object> row, boolean markSynced) {
 
         if (markSynced) {
@@ -357,6 +383,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
             newMap.put(HASH_SYS_COL, DigestUtils.md5DigestAsHex(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
             newMap.put(VERSIONS_SYS_COL, "{" + version + "}");
+            return newMap;
+        }).collect(toList());
+    }
+
+    private List<Map<String, Object>> convertToSimpleVersionedRows(List<Map<String, Object>> rows, Integer passportId) {
+        return rows.stream().map(row -> {
+            Map<String, Object> newMap = new HashMap<>(row);
+            StringBuilder stringBuilder = new StringBuilder();
+            row.entrySet().stream()
+                    .filter(entry -> entry.getValue() != null)
+                    .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
+            newMap.put(PASSPORT_REF, passportId);
             return newMap;
         }).collect(toList());
     }
@@ -672,6 +710,25 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
+    public Page<Map<String, Object>> getSimpleVersionedData(VersionedLocalDataCriteria criteria) {
+        Map<String, Serializable> args = new HashMap<>();
+        String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
+                escapeName(criteria.getSchemaTable()));
+
+        if (criteria.getVersion() != null) {
+            sql = sql + " AND " + PASSPORT_REF + ("=(SELECT id from "+ escapeName(criteria.getSchemaTable() + "_passport") +"  WHERE version = :version) ");
+            args.put("version", criteria.getVersion());
+        }
+
+        Page<Map<String, Object>> data = getData0(sql, args, criteria);
+        data.getContent().forEach(row -> {
+            row.remove(PASSPORT_REF);
+        });
+
+        return data;
+    }
+
+    @Override
     public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
 
         Map<String, Serializable> args = new HashMap<>();
@@ -706,6 +763,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 schemaTable, columns.toString(), values.toString(), "unique_hash", schemaTable, version);
 
         namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
+    }
+
+    @Override
+    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport) {
+        //todo
     }
 
     private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
@@ -848,6 +910,27 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
+    }
+
+    @Override
+    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings) {
+        createTable(schema, table, fieldMappings,
+                Map.of(PASSPORT_REF, "integer NOT NULL",
+                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+        );
+
+        String escapedSchemaTable = escapeName(schema) + "." + escapeName(table);
+        String escapedPassportSchemaTable = escapeName(schema) + "." + escapeName(table + "_passport");
+        getJdbcTemplate().execute(
+                String.format("CREATE TABLE %s (id SERIAL NOT NULL, version varchar, from_dt TIMESTAMP, to_dt TIMESTAMP, CONSTRAINT %s PRIMARY KEY(id))",
+                        escapedPassportSchemaTable, escapeName(table+ "_passport_pk")
+                )
+        );
+        getJdbcTemplate().execute(
+                String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(id)",
+                        escapedSchemaTable, escapeName(table + "_" + PASSPORT_REF + "_fk"),  PASSPORT_REF,  escapedPassportSchemaTable
+                )
+        );
     }
 
     @Override

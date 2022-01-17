@@ -24,6 +24,17 @@ public interface LocalRdmDataService {
     );
 
     @GET
+    @Path("/{refBookCode}/version/{version}")
+    @SuppressWarnings("squid:S1452")
+    Page<Map<String, Object>> getVersionedData(
+            @PathParam("refBookCode") String refBookCode,
+            @PathParam("version") String version,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size,
+            @Context UriInfo uriInfo
+    );
+
+    @GET
     @Path("/{refBookCode}/{primaryKey}")
     Map<String, Object> getSingle(
             @PathParam("refBookCode") String refBookCode,

@@ -6,6 +6,7 @@ import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
@@ -86,7 +87,13 @@ public interface RdmSyncDao {
 
     void insertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
 
+    void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport);
+
+    void closeVersion(String schemaTable, String version, LocalDateTime closeDate);
+
     void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
+
+    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport);
 
     /**
      * Изменить строку в справочник клиента.
@@ -141,6 +148,9 @@ public interface RdmSyncDao {
 
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
 
+    Page<Map<String, Object>> getSimpleVersionedData(VersionedLocalDataCriteria criteria);
+
+
     Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria);
     <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
                                      RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
@@ -150,6 +160,8 @@ public interface RdmSyncDao {
     void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
 
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
+
+    void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings);
 
     SyncRefBook getSyncRefBook(String code);
 }

@@ -37,25 +37,25 @@ public class FnsiSyncSourceService implements SyncSourceService {
     }
 
     @Override
-    public RefBook getRefBook(String code) {
+    public RefBookVersion getRefBook(String code, String version) {
         JsonNode response = requestRefBook(code);
         JsonNode listRefBookNodes = response.get("list");
         if(listRefBookNodes.isEmpty()) {
             return null;
         }
         JsonNode refBookNode = listRefBookNodes.get(0);
-        RefBook refBook = new RefBook();
-        refBook.setLastPublishDate(LocalDateTime.parse(refBookNode.get("publishDate").asText(), formatter));
-        refBook.setLastVersion(refBookNode.get("version").asText());
+        RefBookVersion refBook = new RefBookVersion();
+        refBook.setFrom(LocalDateTime.parse(refBookNode.get("publishDate").asText(), formatter));
+        refBook.setVersion(refBookNode.get("version").asText());
         refBook.setCode(code);
-        RefBookStructure refBookStructure = getRefBookStructure(code, refBook.getLastVersion());
+        RefBookStructure refBookStructure = getRefBookStructure(code, refBook.getVersion());
         refBook.setStructure(refBookStructure);
         return refBook;
     }
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
-        RefBook refBook = getRefBook(dataCriteria.getCode());
+        RefBookVersion refBook = getRefBook(dataCriteria.getCode(), dataCriteria.getVersion());
         JsonNode jsonNode = requestData(dataCriteria.getCode(), dataCriteria.getPageNumber() + 1, dataCriteria.getPageSize());
         List<Map<String, Object>> data = new ArrayList<>();
         jsonNode.get("list").elements().forEachRemaining(itemNode -> {
@@ -116,8 +116,6 @@ public class FnsiSyncSourceService implements SyncSourceService {
         });
         return VersionsDiff.dataChangedInstance(new PageImpl<>(rowDiffList));
     }
-
-
 
     private VersionsDiff getErrorDiff(JsonNode jsonNode) {
         if("03x0002".equals(jsonNode.get("resultCode").asText().trim())){

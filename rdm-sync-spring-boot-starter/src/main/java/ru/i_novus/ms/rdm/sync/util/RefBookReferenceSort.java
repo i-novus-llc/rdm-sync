@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.util;
 
 
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 
 import java.util.*;
 
@@ -9,14 +9,14 @@ public class RefBookReferenceSort {
 
     private RefBookReferenceSort() {}
 
-    public static List<String> getSortedCodes(List<RefBook> refBooks) {
+    public static List<String> getSortedCodes(List<RefBookVersion> refBooks) {
 
         Map<String, DictionaryNode> refCodes = new HashMap<>();
-        for (RefBook refbook : refBooks) {
+        for (RefBookVersion refbook : refBooks) {
             refCodes.put(refbook.getCode(), new DictionaryNode());
         }
 
-        for (RefBook version : refBooks) {
+        for (RefBookVersion version : refBooks) {
 
             DictionaryNode node = refCodes.get(version.getCode());
             version.getStructure().getReferences().forEach(referenceCode -> {

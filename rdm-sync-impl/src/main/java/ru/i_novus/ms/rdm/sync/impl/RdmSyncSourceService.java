@@ -47,12 +47,12 @@ public class  RdmSyncSourceService implements SyncSourceService {
     }
 
     @Override
-    public RefBook getRefBook(String code) {
+    public RefBookVersion getRefBook(String code, String version) {
         RefBookCriteria refBookCriteria = new RefBookCriteria();
         refBookCriteria.setCode(code);
         refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
         Page<ru.i_novus.ms.rdm.api.model.refbook.RefBook> pageOfRdmRefBooks = refBookService.search(refBookCriteria);
-        if (pageOfRdmRefBooks.getContent().isEmpty()) {
+        if (pageOfRdmRefBooks.getContent() == null || pageOfRdmRefBooks.getContent().isEmpty()) {
             logger.warn("cannot find refbook by code {}", code);
             return null;
         }
@@ -60,12 +60,12 @@ public class  RdmSyncSourceService implements SyncSourceService {
             throw new IllegalStateException(String.format(SEVERAL_REFBOOKS_WITH_CODE_FOUND, code));
         logger.info("refbook with code {} was found", code);
         ru.i_novus.ms.rdm.api.model.refbook.RefBook rdmRefBook = pageOfRdmRefBooks.getContent().get(0);
-        RefBook refBook = new RefBook();
+        RefBookVersion refBook = new RefBookVersion();
         refBook.setCode(code);
         LocalDateTime publishDate = rdmRefBook.getLastPublishedVersionFromDate() != null ? rdmRefBook.getLastPublishedVersionFromDate() : rdmRefBook.getFromDate();
-        refBook.setLastPublishDate(publishDate);
-        refBook.setLastVersion(rdmRefBook.getLastPublishedVersion());
-        refBook.setLastVersionId(rdmRefBook.getId());
+        refBook.setFrom(publishDate);
+        refBook.setVersion(rdmRefBook.getLastPublishedVersion());
+        refBook.setVersionId(rdmRefBook.getId());
         RefBookStructure structure = new RefBookStructure();
         structure.setAttributesAndTypes(new HashMap<>());
         rdmRefBook.getStructure().getAttributes().forEach(attr -> {
