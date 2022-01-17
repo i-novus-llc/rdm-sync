@@ -20,7 +20,6 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 import ru.i_novus.ms.rdm.api.model.version.AttributeFilter;
 import ru.i_novus.ms.rdm.api.provider.*;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
@@ -253,10 +252,12 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
-                                                                 @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator) {
+                                                                 @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
+                                                                 @Qualifier("notVersionedWithNaturalPrimaryKeyLocalRefBookCreator") LocalRefBookCreator notVersionedWithNaturalPrimaryKeyLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.VERSIONED, versionedLocalRefBookCreator,
-                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator));
+                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
+                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, notVersionedWithNaturalPrimaryKeyLocalRefBookCreator));
     }
 }
