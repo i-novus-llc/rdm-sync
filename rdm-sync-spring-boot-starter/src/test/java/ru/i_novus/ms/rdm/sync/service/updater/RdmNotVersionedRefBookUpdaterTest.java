@@ -154,7 +154,7 @@ public class RdmNotVersionedRefBookUpdaterTest {
     }
 
     private VersionMapping createVersionMapping() {
-        return new VersionMapping(1, "code", "-1", "1", "table", "source", "id", "",LocalDateTime.of(2017, 1, 14, 10, 34), -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        return new VersionMapping(1, "code", "-1", "1", "table","test_pk_field", "source", "id", "",LocalDateTime.of(2017, 1, 14, 10, 34), -1, 1, SyncTypeEnum.NOT_VERSIONED);
     }
 
     private FieldMapping createFieldMapping() {

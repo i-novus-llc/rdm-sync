@@ -45,7 +45,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPkColumn) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -54,7 +54,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -70,7 +70,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -81,7 +81,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
 
-    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
+    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, String sysPkColumn) {
 
         RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
         if (lastPublished == null) {
@@ -98,7 +98,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String schemaTable = getTableName(refBookCode, table);
 
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
-                schemaTable, sourceCode, uniqueSysField, isDeletedField,
+                schemaTable, sysPkColumn, sourceCode, uniqueSysField, isDeletedField,
                 null, -1, null, type);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
 

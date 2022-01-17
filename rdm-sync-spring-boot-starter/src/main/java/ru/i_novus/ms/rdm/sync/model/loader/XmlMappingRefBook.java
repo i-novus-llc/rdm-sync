@@ -26,6 +26,8 @@ public class XmlMappingRefBook {
 
     private String sysTable;
 
+    private String sysPkColumn = "_sync_rec_id";
+
     private String source;
 
     private SyncTypeEnum type;
@@ -98,6 +100,16 @@ public class XmlMappingRefBook {
         this.sysTable = sysTable;
     }
 
+    @XmlAttribute(name = "sys-pk-field")
+    public String getSysPkColumn() {
+        return sysPkColumn;
+    }
+
+    public void setSysPkColumn(String sysPkColumn) {
+        this.sysPkColumn = sysPkColumn;
+    }
+
+
     @XmlAttribute
     public String getSource() {
         return source;
@@ -117,7 +129,7 @@ public class XmlMappingRefBook {
     }
 
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, name, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
+        return new VersionMapping(null, code, name, version, sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
@@ -130,6 +142,7 @@ public class XmlMappingRefBook {
         result.setUniqueSysField(mapping.getPrimaryField());
         result.setDeletedField(mapping.getDeletedField());
         result.setSysTable(mapping.getTable());
+        result.setSysPkColumn(mapping.getSysPkColumn());
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
 
