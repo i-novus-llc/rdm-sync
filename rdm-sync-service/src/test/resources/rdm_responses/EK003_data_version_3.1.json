@@ -1,0 +1,38 @@
+[
+  {
+    "type": "RefBookRowValue",
+    "systemId": 3,
+    "fieldValues": [
+      {
+        "type": "IntegerFieldValue",
+        "field": "id",
+        "value": 3
+      },
+      {
+        "type": "StringFieldValue",
+        "field": "name",
+        "value": "Три"
+      }
+    ],
+    "hash": "9eb3707bb3342f309f8aa3a2fdfe2595",
+    "id": "9eb3707bb3342f309f8aa3a2fdfe2595$293"
+  },
+  {
+    "type": "RefBookRowValue",
+    "systemId": 4,
+    "fieldValues": [
+      {
+        "type": "IntegerFieldValue",
+        "field": "id",
+        "value": 2
+      },
+      {
+        "type": "StringFieldValue",
+        "field": "name",
+        "value": "Два"
+      }
+    ],
+    "hash": "c349d8562e0726d9f69961cd1845fdd7",
+    "id": "c349d8562e0726d9f69961cd1845fdd7$293"
+  }
+]

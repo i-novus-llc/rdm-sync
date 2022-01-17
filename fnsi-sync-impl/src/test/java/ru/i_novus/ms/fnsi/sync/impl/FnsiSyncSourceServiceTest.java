@@ -62,10 +62,10 @@ public class FnsiSyncSourceServiceTest {
                         "DATEBEG", AttributeTypeEnum.DATE));
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
-        RefBook refBook = syncSourceService.getRefBook(oid);
+        RefBookVersion refBook = syncSourceService.getRefBook(oid, null);
         Assert.assertEquals(oid, refBook.getCode());
-        Assert.assertEquals("3.13", refBook.getLastVersion());
-        Assert.assertEquals(LocalDateTime.of(2019, 10, 4, 17, 42), refBook.getLastPublishDate());
+        Assert.assertEquals("3.13", refBook.getVersion());
+        Assert.assertEquals(LocalDateTime.of(2019, 10, 4, 17, 42), refBook.getFrom());
         Assert.assertEquals(expectedStructure, refBook.getStructure());
     }
 
@@ -76,7 +76,7 @@ public class FnsiSyncSourceServiceTest {
     public void testGetNotExistingRefBook() throws URISyntaxException {
         String identifier = "not_exists_id";
         searchRefBookMockServer(identifier, new ClassPathResource("/fnsi_test_responses/not-found-ref.json"));
-        Assert.assertNull(syncSourceService.getRefBook(identifier));
+        Assert.assertNull(syncSourceService.getRefBook(identifier, null));
 
     }
 

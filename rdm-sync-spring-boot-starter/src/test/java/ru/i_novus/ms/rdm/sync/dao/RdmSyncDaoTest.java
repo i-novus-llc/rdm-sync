@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
@@ -165,11 +166,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                List.of(
-                        new FieldMapping("ID", "integer", "ID"),
-                        new FieldMapping("name", "varchar", "NAME"),
-                        new FieldMapping("some_dt", "date", "DT"),
-                        new FieldMapping("flag", "boolean", "FLAG")));
+                generateFieldMappings());
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
@@ -264,19 +261,19 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                List.of(
-                        new FieldMapping("ID", "integer", "ID"),
-                        new FieldMapping("name", "varchar", "NAME"),
-                        new FieldMapping("some_dt", "date", "DT"),
-                        new FieldMapping("flag", "boolean", "FLAG")));
+                generateFieldMappings());
 
-        List<Map<String, Object>> rows = List.of(
-                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
-                Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
-        );
+        List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
         boolean actual = rdmSyncDao.existsInternalLocalRowStateUpdateTrigger("public.ref_ek001_ver");
         assertFalse(actual);
+    }
+
+    private List<Map<String, Object>> generateRows() {
+        return List.of(
+                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
     }
 
     @Test
@@ -301,8 +298,40 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Assert.assertEquals(expectedNowDeletedDate,  actualNowDeleted);
     }
 
-    private void assertMappingEquals(VersionMapping expected, VersionMapping actual) {
+    @Test
+    public void testCRUSimpleVersionedData() {
+        List<FieldMapping> fieldMappings = generateFieldMappings();
+        LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", fieldMappings);
+        List<Map<String, Object>> rows = generateRows();
+        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, new RefBookPassport("1.0", publishDate, null));
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
+        Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
+        simpleVersionedData.getContent().forEach(this::prepareRowToAssert);
+        Assert.assertEquals(rows, simpleVersionedData.getContent());
 
+
+        //грузим след версию
+        LocalDateTime secondVersionPublishDate = LocalDateTime.of(2022, 2, 2, 10, 0);
+        rdmSyncDao.closeVersion("public.simple_ver_table", "1.0", secondVersionPublishDate);
+        List<Map<String, Object>> secondVersionRows = new ArrayList<>(rows);
+        secondVersionRows.add( Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
+        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", secondVersionRows, new RefBookPassport("1.1", secondVersionPublishDate, null));
+        //получаем версию 1.1
+        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
+        secondVersionData.getContent().forEach(this::prepareRowToAssert);
+        Assert.assertEquals(secondVersionRows, secondVersionData.getContent());
+    }
+
+    private List<FieldMapping> generateFieldMappings() {
+        return List.of(
+                new FieldMapping("ID", "integer", "ID"),
+                new FieldMapping("name", "varchar", "NAME"),
+                new FieldMapping("some_dt", "date", "DT"),
+                new FieldMapping("flag", "boolean", "FLAG"));
+    }
+
+    private void assertMappingEquals(VersionMapping expected, VersionMapping actual) {
         Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
         Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
         Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());

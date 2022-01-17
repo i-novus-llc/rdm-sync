@@ -3,10 +3,8 @@ package ru.i_novus.ms.rdm.sync.util;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import ru.i_novus.ms.rdm.api.model.Structure;
-import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 
 import java.util.*;
@@ -42,14 +40,14 @@ public class RefBookReferenceSortTest {
 //      3 -> 1
 //      1 -> 0
 
-        RefBook refBook0 = new RefBook(),
-                refBook1 = new RefBook(),
-                refBook2 = new RefBook(),
-                refBook3 = new RefBook(),
-                refBook4 = new RefBook(),
-                refBook5 = new RefBook(),
-                refBook6 = new RefBook(),
-                refBook7 = new RefBook();
+        RefBookVersion refBook0 = new RefBookVersion(),
+                refBook1 = new RefBookVersion(),
+                refBook2 = new RefBookVersion(),
+                refBook3 = new RefBookVersion(),
+                refBook4 = new RefBookVersion(),
+                refBook5 = new RefBookVersion(),
+                refBook6 = new RefBookVersion(),
+                refBook7 = new RefBookVersion();
 
         refBook0.setCode("0");
         refBook1.setCode("1");
@@ -69,11 +67,11 @@ public class RefBookReferenceSortTest {
         refBook6.setStructure(newStructure(emptyMap(), List.of(refBook3.getCode(), refBook4.getCode())));
         refBook7.setStructure(newStructure(emptyMap(), List.of(refBook5.getCode(), refBook6.getCode())));
 
-        List<RefBook> refBooks = List.of(
+        List<RefBookVersion> refBooks = List.of(
                 refBook0, refBook1, refBook2, refBook3, refBook4, refBook5, refBook6, refBook7
         );
 
-        List<RefBook> sortingRefBooks = new ArrayList<>(refBooks);
+        List<RefBookVersion> sortingRefBooks = new ArrayList<>(refBooks);
         for (int i = 0; i < 1000; i++) {
 
             shuffle(sortingRefBooks); // Перемешиваем, чтобы рандомизировать порядок
@@ -89,17 +87,17 @@ public class RefBookReferenceSortTest {
         return refBookStructure;
     }
 
-    private void testOrder(List<String> inverseOrder, List<RefBook> refBooks) {
+    private void testOrder(List<String> inverseOrder, List<RefBookVersion> refBooks) {
 
         assertFalse(isEmpty(refBooks));
 
         Set<String> visited = new HashSet<>();
-        Map<String, RefBook> refCodeBooks = refBooks.stream()
-                .collect(toMap(RefBook::getCode, identity()));
+        Map<String, RefBookVersion> refCodeBooks = refBooks.stream()
+                .collect(toMap(RefBookVersion::getCode, identity()));
 
         for (String s : inverseOrder) {
 
-            RefBook refBook = refCodeBooks.get(s);
+            RefBookVersion refBook = refCodeBooks.get(s);
             // Если здесь true, то либо неправильная топологическая сортировка,
             // либо справочники содержат циклические ссылки.
             assertFalse(visited.contains(refBook.getCode()));

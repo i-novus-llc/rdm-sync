@@ -11,11 +11,9 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
-import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.service.init.NotVersionedLocalRefBookCreator;
 
 import java.util.*;
 
@@ -56,7 +54,7 @@ public class NotVersionedLocalRefBookCreatorTest {
         String refBookName = "test.name";
         String sourceCode = "TEST_SOURCE_CODE";
         List<FieldMapping> expectedFieldMappingList = List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name"));
-        RefBook refBook = new RefBook();
+        RefBookVersion refBook = new RefBookVersion();
         refBook.setCode(code);
         refBook.setStructure(
                 new RefBookStructure(null,
@@ -68,7 +66,7 @@ public class NotVersionedLocalRefBookCreatorTest {
         when(rdmSyncDao.lockRefBookForUpdate(eq(code), eq(true))).thenReturn(true);
         when(rdmSyncDao.insertVersionMapping(any())).thenReturn(mappingId);
         when(rdmSyncDao.getFieldMappings(eq(code))).thenReturn(expectedFieldMappingList);
-        when(syncSourceService.getRefBook(any())).thenReturn(refBook);
+        when(syncSourceService.getRefBook(any(), any())).thenReturn(refBook);
 
         SyncSource source = new SyncSource("name", "code", "{}", "service");
 

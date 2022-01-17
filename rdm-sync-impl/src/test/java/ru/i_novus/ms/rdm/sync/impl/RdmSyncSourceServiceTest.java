@@ -11,7 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 
 import java.util.Arrays;
@@ -44,7 +44,7 @@ public class RdmSyncSourceServiceTest {
         rdmRefBook.setStructure(structure);
         rdmRefBook.setCode(testCode);
         when(refBookService.search(any(RefBookCriteria.class))).thenReturn(new RestPage<>(Arrays.asList(rdmRefBook)));
-        RefBook refBook = rdmSynсSourceService.getRefBook(testCode);
+        RefBookVersion refBook = rdmSynсSourceService.getRefBook(testCode, null);
         Assert.assertEquals(rdmRefBook.getCode(), refBook.getCode());
     }
 }

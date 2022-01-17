@@ -1,0 +1,47 @@
+{
+  "id": 206,
+  "optLockValue": 7,
+  "refBookId": 176,
+  "code": "EK003",
+  "version": "3.0",
+  "fromDate": "2021-02-04T16:22:00",
+  "status": "PUBLISHED",
+  "archived": false,
+  "passport": {
+    "name": "Цифры"
+  },
+  "structure": {
+    "references": [],
+    "attributes": [
+      {
+        "code": "id",
+        "name": "ид",
+        "type": "INTEGER",
+        "isPrimary": true,
+        "localizable": false
+      },
+      {
+        "code": "name",
+        "name": "Название",
+        "type": "STRING",
+        "isPrimary": false,
+        "localizable": false
+      }
+    ]
+  },
+  "editDate": "2021-02-04T16:22:00",
+  "removable": false,
+  "lastPublishedVersionId": 206,
+  "lastPublishedVersion": "3.0",
+  "lastPublishedVersionFromDate": "2021-02-04T16:22:00",
+  "hasPrimaryAttribute": true,
+  "hasReferrer": false,
+  "hasDataConflict": false,
+  "hasUpdatedConflict": false,
+  "hasAlteredConflict": false,
+  "hasStructureConflict": false,
+  "lastHasConflict": false,
+  "publishing": false,
+  "updating": false,
+  "draft": false
+}

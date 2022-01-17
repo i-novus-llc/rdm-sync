@@ -1,0 +1,127 @@
+{
+  "rows": {
+    "content": [
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 2,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "Два",
+            "status": "INSERTED"
+          }
+        ],
+        "status": "INSERTED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 3,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "Три",
+            "status": "INSERTED"
+          }
+        ],
+        "status": "INSERTED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "oldValue": 1,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "Один",
+            "status": "DELETED"
+          }
+        ],
+        "status": "DELETED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "oldValue": 9,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "Девять",
+            "status": "DELETED"
+          }
+        ],
+        "status": "DELETED"
+      }
+    ],
+    "totalElements": 4,
+    "sort": []
+  },
+  "newAttributes": [],
+  "oldAttributes": [],
+  "updatedAttributes": []
+}

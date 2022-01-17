@@ -9,6 +9,8 @@ import java.util.List;
 public class DataCriteria extends RestCriteria {
 
     private String code;
+    //todo
+    private String version;
 
     @Override
     protected List<Sort.Order> getDefaultOrders() {
@@ -21,5 +23,13 @@ public class DataCriteria extends RestCriteria {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }
