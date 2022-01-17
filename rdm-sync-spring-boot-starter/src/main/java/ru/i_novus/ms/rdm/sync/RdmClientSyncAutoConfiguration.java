@@ -1,9 +1,11 @@
 package ru.i_novus.ms.rdm.sync;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import liquibase.integration.spring.SpringLiquibase;
 import net.n2oapp.platform.jaxrs.LocalDateTimeISOParameterConverter;
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -56,6 +58,10 @@ import java.util.Map;
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
 public class RdmClientSyncAutoConfiguration {
+
+    @Autowired
+    @Qualifier("cxfObjectMapper")
+    private ObjectMapper objectMapper;
 
     @Bean
     @ConditionalOnMissingBean
@@ -135,7 +141,7 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     @Conditional(MissingGenericBean.class)
     public TypedParamConverter<AttributeFilter> attributeFilterConverter() {
-        return new AttributeFilterConverter();
+        return new AttributeFilterConverter(objectMapper);
     }
 
     @Bean
