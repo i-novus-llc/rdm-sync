@@ -63,7 +63,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         }
     }
 
-    private void createTable(String refBookCode, VersionMapping mapping) {
+    protected void createTable(String refBookCode, VersionMapping mapping) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
@@ -81,7 +81,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
 
-    private VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
+    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
 
         RefBook lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode);
         if (lastPublished == null) {
