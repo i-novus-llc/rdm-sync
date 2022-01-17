@@ -17,7 +17,7 @@ public class NotVersionedWithNaturalPrimaryKeyLocalRefBookCreator extends NotVer
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table) {
-        super.create(refBookCode, refBookName, source, type, table);
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPkColumn) {
+        super.create(refBookCode, refBookName, source, type, table, sysPkColumn);
     }
 }
