@@ -62,7 +62,7 @@ public class  RdmSyncSourceService implements SyncSourceService {
         ru.i_novus.ms.rdm.api.model.refbook.RefBook rdmRefBook = pageOfRdmRefBooks.getContent().get(0);
         RefBookVersion refBook = new RefBookVersion();
         refBook.setCode(code);
-        LocalDateTime publishDate = rdmRefBook.getLastPublishedVersionFromDate() != null ? rdmRefBook.getLastPublishedVersionFromDate() : rdmRefBook.getFromDate();
+        LocalDateTime publishDate = rdmRefBook.getLastPublishedDate() != null ? rdmRefBook.getLastPublishedDate() : rdmRefBook.getFromDate();
         refBook.setFrom(publishDate);
         refBook.setVersion(rdmRefBook.getLastPublishedVersion());
         refBook.setVersionId(rdmRefBook.getId());
