@@ -107,7 +107,7 @@ public class VersionedLocalRefBookCreatorTest {
         creator.create("test", null, "source", SyncTypeEnum.NOT_VERSIONED, null, null);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).createSchemaIfNotExists(any());
-        verify(rdmSyncDao, never()).createTableIfNotExists(any(), any(), any(), any(), any());
+        verify(rdmSyncDao, never()).createTableIfNotExists(any(), any(), any(), any(), any(), any());
     }
 
     private VersionMapping createVersionMapping(String testCode) {

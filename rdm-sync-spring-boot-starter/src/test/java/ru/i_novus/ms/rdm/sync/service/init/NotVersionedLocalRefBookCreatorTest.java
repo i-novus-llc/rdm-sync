@@ -98,7 +98,8 @@ public class NotVersionedLocalRefBookCreatorTest {
                         eq("ref_test_code"),
                         argThat(ignoreOrderEqList(expectedFieldMappingList)),
                         eq("deleted_ts"),
-                        eq("_sync_rec_id"));
+                        eq("_sync_rec_id"),
+                        eq(SyncTypeEnum.NOT_VERSIONED));
 
 
     }
