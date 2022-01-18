@@ -6,10 +6,11 @@ import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
+import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
 import java.util.List;
 import java.util.Set;
@@ -20,11 +21,13 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     private static final Logger logger = LoggerFactory.getLogger(BaseRefBookUpdater.class);
 
-    private final RdmSyncDao dao;
+    protected final RdmSyncDao dao;
 
-    private final SyncSourceService syncSourceService;
+    protected final SyncSourceService syncSourceService;
 
     private final RdmLoggingService loggingService;
+
+    protected abstract PersisterService getPersisterService();
 
     public BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
         this.dao = dao;
@@ -34,12 +37,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     @Override
     public void update(String refCode) {
-        if (dao.getVersionMapping(refCode, "CURRENT") == null) {
-            logger.error("No version mapping found for reference book with code '{}'.", refCode);
-            return;
-        }
-
-        RefBook newVersion;
+        RefBookVersion newVersion;
         try {
             newVersion = getLastPublishedVersion(refCode);
 
@@ -47,14 +45,18 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
             logger.error(String.format("Error while fetching new version with code '%s'.", refCode), e);
             return;
         }
+        VersionMapping versionMapping = getVersionMapping(newVersion);
+        if (versionMapping == null) {
+            logger.error("No version mapping found for reference book with code '{}'.", refCode);
+            return;
+        }
 
-        VersionMapping versionMapping = getVersionMapping(refCode);
         LoadedVersion loadedVersion = dao.getLoadedVersion(refCode);
         try {
-            if (loadedVersion == null || isNewVersionPublished(newVersion, loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
+            if (loadedVersion == null || isNewVersion(newVersion, loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
 
                 update(newVersion, versionMapping);
-                loggingService.logOk(refCode, versionMapping.getVersion(), newVersion.getLastVersion());
+                loggingService.logOk(refCode, versionMapping.getVersion(), newVersion.getVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refCode);
@@ -62,14 +64,14 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         } catch (Exception e) {
             logger.error(String.format("Error while updating new version with code '%s'.", refCode), e);
 
-            loggingService.logError(refCode, versionMapping.getVersion(), newVersion.getLastVersion(),
+            loggingService.logError(refCode, versionMapping.getVersion(), newVersion.getVersion(),
                     e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
 
     }
 
-    private RefBook getLastPublishedVersion(String refBookCode) {
-        RefBook refBook = syncSourceService.getRefBook(refBookCode);
+    private RefBookVersion getLastPublishedVersion(String refBookCode) {
+        RefBookVersion refBook = syncSourceService.getRefBook(refBookCode, null);
         if (refBook == null)
             throw new IllegalArgumentException(String.format("Reference book with code '%s' not found.", refBookCode));
 
@@ -78,9 +80,14 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         return refBook;
     }
 
-    private VersionMapping getVersionMapping(String refBookCode) {
-
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
+    private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
+        VersionMapping versionMapping = dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
+        if(versionMapping == null) {
+            versionMapping = dao.getVersionMapping(refBookVersion.getCode(), "CURRENT");
+        }
+        if (versionMapping == null) {
+            return null;
+        }
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
 
         final String primaryField = versionMapping.getPrimaryField();
@@ -90,13 +97,19 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         return versionMapping;
     }
 
-    protected abstract boolean isNewVersionPublished(RefBook newVersion, LoadedVersion loadedVersion);
+    /**
+     * Проверяет новая ли версия грузится
+     * @param newVersion версия которая грузится
+     * @param loadedVersion последняя загруженная версия
+     * @return если true, то новая, иначе версия уже была загруженна
+     */
+    protected abstract boolean isNewVersion(RefBookVersion newVersion, LoadedVersion loadedVersion);
 
     protected boolean isMappingChanged(VersionMapping versionMapping, LoadedVersion loadedVersion) {
         return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
     }
 
-    protected void update(RefBook newVersion, VersionMapping versionMapping) {
+    protected void update(RefBookVersion newVersion, VersionMapping versionMapping) {
         logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
@@ -117,7 +130,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         }
     }
 
-    private void validateStructureAndMapping(RefBook newVersion, List<FieldMapping> fieldMappings) {
+    private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings) {
 
         List<String> clientRdmFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(toList());
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
@@ -130,6 +143,29 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     }
 
-    protected abstract void updateProcessing(RefBook newVersion, VersionMapping versionMapping);
+    protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping) {
+        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
+        PersisterService persisterService = getPersisterService();
+        if (loadedVersion == null) {
+            //заливаем с нуля
+            persisterService.firstWrite(newVersion, versionMapping, syncSourceService);
+
+        } else if (isNewVersion(newVersion, loadedVersion)) {
+            //если версия и дата публикация не совпадают - нужно обновить справочник
+            persisterService.merge(newVersion, loadedVersion.getVersion(), versionMapping, syncSourceService);
+
+        } else if (isMappingChanged(versionMapping, loadedVersion)) {
+            //Значит в прошлый раз мы синхронизировались по старому маппингу.
+            //Необходимо полностью залить свежую версию.
+            persisterService.repeatVersion(newVersion, versionMapping, syncSourceService);
+        }
+        if (loadedVersion != null) {
+            //обновляем версию в таблице версий клиента
+            dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom());
+        } else {
+            dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom());
+        }
+        logger.info("{} sync finished", newVersion.getCode());
+    }
 
 }

@@ -48,7 +48,7 @@ public class VersionedLocalRefBookCreatorTest {
         when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
         when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
-        when(syncSourceService.getRefBook(any())).thenReturn(createRefBook("testCode"));
+        when(syncSourceService.getRefBook(any(), any())).thenReturn(createRefBook("testCode"));
         when(syncSourceDao.findByCode(any())).thenReturn(mock(SyncSource.class));
     }
 
@@ -59,7 +59,7 @@ public class VersionedLocalRefBookCreatorTest {
         List<FieldMapping> fieldMappings = createFieldMappings();
         VersionMapping versionMapping = createVersionMapping(testCode);
         when(rdmSyncDao.getFieldMappings(testCode)).thenReturn(fieldMappings);
-        creator.create(testCode, null, source, SyncTypeEnum.VERSIONED, null, "test_pk_field");
+        creator.create(testCode, null, source, SyncTypeEnum.SIMPLE_VERSIONED, null, "test_pk_field");
         verify(rdmSyncDao, times(1)).insertVersionMapping(versionMapping);
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
 
@@ -111,15 +111,15 @@ public class VersionedLocalRefBookCreatorTest {
     }
 
     private VersionMapping createVersionMapping(String testCode) {
-        return new VersionMapping(null, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.VERSIONED);
+        return new VersionMapping(null, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.SIMPLE_VERSIONED);
     }
 
-    private RefBook createRefBook(String refBookCode) {
-        RefBook refBook = new RefBook();
+    private RefBookVersion createRefBook(String refBookCode) {
+        RefBookVersion refBook = new RefBookVersion();
         refBook.setCode(refBookCode);
-        refBook.setLastVersion("1.0");
-        refBook.setLastVersionId(1);
-        refBook.setLastPublishDate(LocalDateTime.of(2021, 1, 1, 12, 0));
+        refBook.setVersion("1.0");
+        refBook.setVersionId(1);
+        refBook.setFrom(LocalDateTime.of(2021, 1, 1, 12, 0));
         refBook.setStructure(new RefBookStructure(null, List.of("id"), Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING)));
         return refBook;
     }

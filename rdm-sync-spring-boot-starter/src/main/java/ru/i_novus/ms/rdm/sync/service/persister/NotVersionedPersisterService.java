@@ -44,7 +44,7 @@ public class NotVersionedPersisterService implements PersisterService {
     }
 
     @Override
-    public void firstWrite(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
+    public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
 
 
@@ -69,13 +69,13 @@ public class NotVersionedPersisterService implements PersisterService {
     }
 
     @Override
-    public void merge(RefBook newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
+    public void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(versionMapping.getCode(), newVersion.getLastVersion(), synchedVersion);
+        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(versionMapping.getCode(), newVersion.getVersion(), synchedVersion);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         if (diff.isStructureChanged()) {
 
-            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
+            dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getFrom(), true);
             firstWrite(newVersion, versionMapping, syncSourceService);
 
             return;
@@ -97,12 +97,12 @@ public class NotVersionedPersisterService implements PersisterService {
 
 
     @Override
-    public void repeatVersion(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getLastPublishDate(), true);
+    public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
+        dao.markDeleted(versionMapping.getTable(), versionMapping.getDeletedField(), newVersion.getFrom(), true);
         firstWrite(newVersion, versionMapping, syncSourceService);
     }
 
-    private void mergeRow(RefBook newVersion, RowDiff rowDiff,
+    private void mergeRow(RefBookVersion newVersion, RowDiff rowDiff,
                           VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
 
         Map<String, Object> mappedRow = new HashMap<>();
@@ -124,7 +124,7 @@ public class NotVersionedPersisterService implements PersisterService {
         boolean idExists = dao.isIdExists(table, primaryField, primaryValue);
 
         if (DELETED.equals(rowDiff.getStatus())) {
-            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, newVersion.getLastPublishDate(), true);
+            dao.markDeleted(table, primaryField, versionMapping.getDeletedField(), primaryValue, newVersion.getFrom(), true);
 
         } else if (INSERTED.equals(rowDiff.getStatus()) && !idExists) {
             dao.insertRow(table, mappedRow, true);
@@ -136,7 +136,7 @@ public class NotVersionedPersisterService implements PersisterService {
     }
 
     private void insertOrUpdateRows(List<? extends Map<String, ?>> rows, List<Object> existingDataIds,
-                                    VersionMapping versionMapping, List<FieldMapping> fieldMappings, RefBook newVersion) {
+                                    VersionMapping versionMapping, List<FieldMapping> fieldMappings, RefBookVersion newVersion) {
 
         final String primaryField = versionMapping.getPrimaryField();
 
@@ -191,7 +191,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     }
 
-    private Map<String, Object> mapValue(RefBook newVersion, String rdmField, Object value,
+    private Map<String, Object> mapValue(RefBookVersion newVersion, String rdmField, Object value,
                                          List<FieldMapping> fieldMappings) {
 
         FieldMapping fieldMapping = fieldMappings.stream()

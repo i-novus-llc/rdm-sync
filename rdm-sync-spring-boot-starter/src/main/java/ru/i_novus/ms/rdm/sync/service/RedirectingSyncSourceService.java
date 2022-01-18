@@ -6,10 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
-import ru.i_novus.ms.rdm.sync.api.model.VersionsDiff;
-import ru.i_novus.ms.rdm.sync.api.model.VersionsDiffCriteria;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -34,8 +31,8 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     }
 
     @Override
-    public RefBook getRefBook(String code) {
-        return getSyncSourceService(code).getRefBook(code);
+    public RefBookVersion getRefBook(String code, String version) {
+        return getSyncSourceService(code).getRefBook(code, version);
     }
 
     @Override
@@ -47,7 +44,6 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     public VersionsDiff getDiff(VersionsDiffCriteria criteria) {
         return getSyncSourceService(criteria.getRefBookCode()).getDiff(criteria);
     }
-
 
     private SyncSourceService getSyncSourceService(String refBookCode) {
         SyncSource source = getSource(refBookCode);

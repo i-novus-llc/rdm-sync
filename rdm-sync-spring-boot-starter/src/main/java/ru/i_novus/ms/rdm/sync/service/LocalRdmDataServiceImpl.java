@@ -10,6 +10,7 @@ import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
@@ -52,6 +53,20 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         localDataCriteria.setDeleted(deleted);
         localDataCriteria.setSysPkColumn(versionMapping.getSysPkColumn());
         return dao.getData(localDataCriteria);
+    }
+
+    @Override
+    public Page<Map<String, Object>> getVersionedData(String refBookCode, String version, Integer page, Integer size, UriInfo uriInfo) {
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        if (page == null) page = 0;
+        if (size == null) size = 10;
+
+        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(versionMapping.getTable(),
+                versionMapping.getPrimaryField(), size, page * size, filters, version);
+
+        return dao.getSimpleVersionedData(criteria);
     }
 
     @Override

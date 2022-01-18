@@ -54,10 +54,8 @@ public class RdmSyncServiceUseCaseTest {
         String firstVersionActualData = "[{\"name_ru\":\"Красный\",\"code_en\":\"red\",\"id\":1,\"is_cold\":false},{\"ref\":\"tab\",\"name_ru\":\"Голубой_r\",\"code_en\":\"blue_\",\"id\":2,\"is_cold\":true},{\"name_ru\":\"Фиолетовый\",\"id\":3,\"is_cold\":true}]";
         String secondVersionActualData = "[{\"ref\":\"tab\",\"name_ru\":\"Голубой\",\"code_en\":\"blue\",\"id\":2,\"is_cold\":true},{\"ref\":\"st\",\"name_ru\":\"желтый\",\"code_en\":\"yello\",\"id\":3,\"is_cold\":false},{\"name_ru\":\"зеленый\",\"code_en\":\"green\",\"id\":4,\"is_cold\":false}]";
         String deletedActualData = "[{\"deleted_ts\":\"2021-02-05T12:38:33\",\"name_ru\":\"Красный\",\"code_en\":\"red\",\"id\":1,\"is_cold\":false}]";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
+        ResponseEntity<String> startResponse = startSync("EK002");
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
         for (int i = 0; i<MAX_TIMEOUT && !"1".equals(rdmSyncDao.getLoadedVersion("EK002").getVersion()); i++) {
@@ -70,7 +68,7 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertEquals(firstVersionActualData, new ObjectMapper().writeValueAsString(rows));
 
         //загрузка след версии
-        startResponse = restTemplate.postForEntity(baseUrl + "/update/EK002", new HttpEntity<>("{}", headers), String.class);
+        startResponse = startSync("EK002");
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
         for (int i = 0; i<MAX_TIMEOUT && !"2".equals(rdmSyncDao.getLoadedVersion("EK002").getVersion()); i++) {
@@ -89,13 +87,11 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(rows));
     }
 
+
     @Test
     public void testFnsiSync() throws InterruptedException {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<String> startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
+        ResponseEntity<String> startResponse = startSync("1.2.643.5.1.13.2.1.1.725");
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
         for (int i = 0; i<MAX_TIMEOUT && !"1.2".equals(rdmSyncDao.getLoadedVersion("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
@@ -112,7 +108,7 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertEquals(Map.of("ID", 103, "MNN_ID", 24, "DRUG_FORM_ID", 16, "DOSE_ID", 103),resultByPk);
 
         //загрузка след версии
-        startResponse = restTemplate.postForEntity(baseUrl + "/update/1.2.643.5.1.13.2.1.1.725", new HttpEntity<>("{}", headers), String.class);
+        startResponse = startSync("1.2.643.5.1.13.2.1.1.725");
         Assert.assertEquals(204, startResponse.getStatusCodeValue());
 
         for (int i = 0; i<MAX_TIMEOUT && !"1.8".equals(rdmSyncDao.getLoadedVersion("1.2.643.5.1.13.2.1.1.725").getVersion()); i++) {
@@ -141,6 +137,48 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertEquals(47, getTotalElements(deletedResult));
     }
 
+    /**
+     * Загрузка справочника c с версиями
+     */
+    @Test
+    public void testRdmLoadSimpleVersioned() throws InterruptedException {
+
+        String refBookCode = "EK003";
+        ResponseEntity<String> startResponse = startSync(refBookCode);
+        Assert.assertEquals(204, startResponse.getStatusCodeValue());
+
+
+        for (int i = 0; i<MAX_TIMEOUT && !"3.0".equals(rdmSyncDao.getLoadedVersion(refBookCode).getVersion()); i++) {
+            Thread.sleep(1000);
+        }
+        Map<String, Object> result = getVersionedData(refBookCode, "3.0");
+        Assert.assertEquals(2, getTotalElements(result));
+        List<Map<String, Object>> rows = getResultRows(result);
+        rows.forEach(this::prepareRowToAssert);
+        Assert.assertTrue(rows.contains(Map.of("id", 9, "name", "Девять")));
+        Assert.assertTrue(rows.contains(Map.of("id", 1, "name", "Один")));
+
+        //загрузка след версии
+        startResponse = startSync(refBookCode);
+        Assert.assertEquals(204, startResponse.getStatusCodeValue());
+
+        for (int i = 0; i<MAX_TIMEOUT && !"3.1".equals(rdmSyncDao.getLoadedVersion("EK003").getVersion()); i++) {
+            Thread.sleep(1000);
+        }
+        result = getVersionedData(refBookCode, "3.1");
+        //Map<String, Object> deletedResult = getVersionedData(refBookCode, );
+        Assert.assertEquals(2, getTotalElements(result));
+        rows = getResultRows(result);
+        rows.forEach(this::prepareRowToAssert);
+        Assert.assertTrue(rows.contains(Map.of("id", 3, "name", "Три")));
+        Assert.assertTrue(rows.contains(Map.of("id", 2, "name", "Два")));
+
+      /*  Assert.assertEquals(1, getTotalElements(deletedResult));
+        rows = getResultRows(deletedResult);
+        rows.forEach(this::prepareRowToAssert);
+        Assert.assertEquals(deletedActualData, new ObjectMapper().writeValueAsString(rows));*/
+    }
+
     private void prepareRowToAssert(Map<String, Object> row) {
 
         row.remove(RECORD_SYS_COL);
@@ -159,5 +197,15 @@ public class RdmSyncServiceUseCaseTest {
         Assert.assertNotNull(result);
 
         return (List<Map<String, Object>>) result.get("content");
+    }
+
+    private ResponseEntity<String> startSync(String refCode) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return restTemplate.postForEntity(baseUrl + "/update/" + refCode, new HttpEntity<>("{}", headers), String.class);
+    }
+
+    private Map<String, Object> getVersionedData(String refCode, String version) {
+        return restTemplate.getForEntity(baseUrl + "/data/" + refCode +"/version/"+version, Map.class).getBody();
     }
 }

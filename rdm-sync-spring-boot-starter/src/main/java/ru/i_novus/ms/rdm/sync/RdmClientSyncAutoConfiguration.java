@@ -1,9 +1,11 @@
 package ru.i_novus.ms.rdm.sync;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import liquibase.integration.spring.SpringLiquibase;
 import net.n2oapp.platform.jaxrs.LocalDateTimeISOParameterConverter;
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -26,14 +28,15 @@ import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreator;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreatorLocator;
-import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
-import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
+import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
+import ru.i_novus.ms.rdm.sync.service.updater.*;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -55,6 +58,10 @@ import java.util.Map;
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
 public class RdmClientSyncAutoConfiguration {
+
+    @Autowired
+    @Qualifier("cxfObjectMapper")
+    private ObjectMapper objectMapper;
 
     @Bean
     @ConditionalOnMissingBean
@@ -134,7 +141,7 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     @Conditional(MissingGenericBean.class)
     public TypedParamConverter<AttributeFilter> attributeFilterConverter() {
-        return new AttributeFilterConverter();
+        return new AttributeFilterConverter(objectMapper);
     }
 
     @Bean
@@ -243,20 +250,51 @@ public class RdmClientSyncAutoConfiguration {
 
 
     @Bean
+    public RefBookUpdater notVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
+                                                     SyncSourceService syncSourceService,
+                                                     @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+                                                     RdmLoggingService rdmLoggingService
+                                                     ) {
+        return new NotVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+    }
+
+    @Bean
+    public RefBookUpdater rdmNotVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
+                                                        SyncSourceService syncSourceService,
+                                                        @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+                                                        RdmLoggingService rdmLoggingService
+    ) {
+        return new RdmNotVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+    }
+
+    @Bean
+    public RefBookUpdater simpleVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
+                                                        SyncSourceService syncSourceService,
+                                                        @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
+                                                        RdmLoggingService rdmLoggingService
+    ) {
+        return new SimpleVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+    }
+
+
+    @Bean
     public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
-                                                       @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater) {
+                                                       @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
+                                                       @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater) {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
-                SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater));
+                SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
+                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater));
     }
 
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
                                                                  @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
                                                                  @Qualifier("notVersionedWithNaturalPrimaryKeyLocalRefBookCreator") LocalRefBookCreator notVersionedWithNaturalPrimaryKeyLocalRefBookCreator) {
+                                                                 @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
-                SyncTypeEnum.VERSIONED, versionedLocalRefBookCreator,
+                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,
                 SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, notVersionedWithNaturalPrimaryKeyLocalRefBookCreator));
     }

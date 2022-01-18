@@ -1,8 +1,5 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
@@ -12,22 +9,21 @@ import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
 @Transactional
-public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
+public class SimpleVersionedRefBookUpdater extends BaseRefBookUpdater {
 
-    private final PersisterService persisterService;
+    private PersisterService persisterService;
 
-    public NotVersionedRefBookUpdater(RdmSyncDao dao,
-                                      SyncSourceService syncSourceService,
-                                      PersisterService persisterService, RdmLoggingService loggingService) {
+    public SimpleVersionedRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, PersisterService persisterService, RdmLoggingService loggingService) {
         super(dao, syncSourceService, loggingService);
         this.persisterService = persisterService;
     }
+
     @Override
     protected boolean isNewVersion(RefBookVersion newVersion, LoadedVersion loadedVersion) {
-
         return !loadedVersion.getVersion().equals(newVersion.getVersion())
                 && !loadedVersion.getPublicationDate().equals(newVersion.getFrom());
     }
+
 
     @Override
     protected PersisterService getPersisterService() {

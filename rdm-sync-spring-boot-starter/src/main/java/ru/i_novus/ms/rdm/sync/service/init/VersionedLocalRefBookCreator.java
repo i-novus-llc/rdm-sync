@@ -13,6 +13,9 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.Set;
 
+/**
+ * пока не используется, предполагался использоваться в более оптимальном хранении версионности
+ */
 @Component
 public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
@@ -26,7 +29,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
                                         RdmSyncDao rdmSyncDao,
                                         SyncSourceDao syncSourceDao,
                                         Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, syncSourceDao, syncSourceServiceFactories);
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, syncSourceServiceFactories);
 
         this.rdmSyncDao = rdmSyncDao;
     }
@@ -57,7 +60,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         logger.info("auto create for code {} was finished", code);
     }
 
-    private void createTable(String code, VersionMapping versionMapping) {
+    protected void createTable(String code, VersionMapping versionMapping) {
 
         String[] split = versionMapping.getTable().split("\\.");
         String schemaName = split[0];

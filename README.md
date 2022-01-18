@@ -112,6 +112,32 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 
 ## Полный список настроек
 
+| Настройка                                                            | Значение по умолчанию                            | Описание                                                                                                                             |
+|----------------------------------------------------------------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| rdm-sync.enabled                                                     | true                                             | Включение/выключение синхронизации                                                                                                   |
+| rdm.backend.path                                                     | -                                                | Адрес API RDM'a                                                                                                                      |
+| rdm-sync.auto-create.schema                                          | rdm                                              | Схема, в которой будут создаваться таблицы в режиме автосоздания                                                                     |
+| rdm-sync.auto-create.ignore-case                                     | true                                             | Игнорирование регистра букв в названиях таблиц и колонок в режиме автосоздания                                                       |
+| rdm-sync.scheduling                                                  | true                                             | Запуск по расписанию, true -- включено.  Значение по умолчанию есть только у микросервиса                                            |
+| rdm-sync.import.from_rdm.cron                                        | 0 0/10 * * * ?                                   | Крон для импорта данных из НСИ. Значение по умолчанию есть только у микросервиса                                                     |
+| rdm-sync.import.from_rdm.delay                                       | 0                                                | Задержка импорта данных из НСИ после запуска. Значение по умолчанию -- 0                                                             |
+| rdm-sync.change_data.mode                                            | -                                                | Режим экспорта данных в НСИ (только для RDM). Значения sync/async - синхронный и асинхронный                                         |
+| rdm-sync.export.to_rdm.cron                                          | 0 0/20 * * * ?                                   | Крон для экспорта данных в НСИ (только для RDM).  Значение по умолчанию есть только у микросервиса                                   |
+| rdm-sync.export.to_rdm.delay                                         | 0                                                | Задержка экспорта данных в НСИ (только для RDM) после запуска. Значение по умолчанию -- 0                                            |
+| rdm-sync.load.size                                                   | 1000                                             | Кол-во записей на странице при получении данных из НСИ                                                                               |
+| rdm-sync.threads.count                                               | 3                                                | Кол-во потоков в пуле на синхронизацию справочников. Один поток выделяется на один справочник                                        |
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code   | -                                                | Код справочника                                                                                                                      |
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source | -                                                | Источник справочника                                                                                                                 |
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type   |                                                  | Тип синхронизации, подробнее [тут](Типы-синхронизации)                                                                               |
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].table  | -                                                | Наименование таблицы справочника                                                                                                     |
+| rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name   | -                                                | Наименование справочника                                                                                                             |
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].url       | -                                                | URL ФНСИ                                                                                                                             |
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].userKey   | -                                                | Ключ АПИ ФНСИ                                                                                                                        |
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].code      | -                                                | Код среды ФНСИ                                                                                                                       |
+| rdm-sync.source.fnsi.values[<порядковый номер среды ФНСИ>].name      | -                                                | Наименование среды ФНСИ                                                                                                              |
+| rdm-sync.liquibase.param.quartz_schema_name                          | rdm_sync_qz                                      | Наименование схемы, в которой находятся или будут созданы таблицы Quartz. Доступно только для микросервиса, для стартера не работает |
+| rdm-sync.liquibase.param.quartz_table_prefix                         | rdm_sync_qrtz_                                   | префикс, используемый при наименовании таблиц Quartz. Доступно только для микросервиса, для стартера не работает                     |
+|rdm-sync.init.delay| -                                                |настройка таймера инициализации rdm-sync лоадеров после старта приложения (в миллисекундах), по умолчанию настройка отключена  /
  Настройка                                                                 | Значение по умолчанию                |Описание|
 |---------------------------------------------------------------------------|--------------------------------------|---|
 | rdm-sync.enabled                                                          | true                                 | Включение/выключение синхронизации |
@@ -160,7 +186,7 @@ rdm-sync.auto-create.refbooks[2].type=NOT_VERSIONED
 <br/>`rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code` - код, оид справочника
 <br/> `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].source` - источник, RDM или значение из  `rdm-sync.source.fnsi.values[*].code` для ФНСИ
 <br/> `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].name` - человекочитаемое наименование справочника, по умолчанию будет равно `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].code`
-<br/> `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type` - тип синхронизации, сейчас реализованно только `NOT_VERSIONED`
+<br/> `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].type` - тип синхронизации, подробнее [тут](Типы-синхронизации)
 <br/>
 Тут <порядковый номер справочника> порядковый номер справочник начиная с 0 и далее, т.е если справочника 2 то нумерация до 1.
 <br/>
@@ -191,13 +217,13 @@ rdm-sync.auto-create.refbooks[1].sysPkColumn=test_fnsi_pk
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapping>
 
-    <refbook code="T001" sys-table="rdm.test_rb" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Какой-то справочник из RDM">
+    <refbook code="T001" sys-table="rdm.test_rb" type="NOT_VERSIONED" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Какой-то справочник из RDM">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
         <field sys-field="doc_number" sys-data-type="integer" rdm-field="doc_num"/>
     </refbook>
 
-    <refbook code="R001" sys-table="rdm.some_table" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM">
+    <refbook code="R001" sys-table="rdm.some_table" type="NOT_VERSIONED" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
     </refbook>
@@ -228,6 +254,12 @@ rdm-sync.auto-create.refbooks[1].sysPkColumn=test_fnsi_pk
 - Дату из НСИ можно  маппить в "date", "varchar", "text", "character varying".
 - Дробный из НСИ можно маппить в "numeric", "decimal", "varchar", "text", "character varying".
 - Логический тип из НСИ можно маппить в boolean, "varchar", "text", "character varying".
+
+## Типы синхронизации
+При синхронизации данных из НСИ нужно указать один из типов синхронизации
+1. NOT_VERSIONED - синхронизиция данных без версии, т.е данные не привязываются к версии, а характеризуются только как актуальные и удаленные(колонка дата удаления)
+2. RDM_NOT_VERSIONED - синхронизация аналогичная первому пункту только для неверсионных справочников RDM
+3. SIMPLE_VERSIONED - синхронизация данных с версией, т.е. вместе с данными хранится и паспорт(версия и даты действия версии). Паспорт в отдельной таблице.
 
 ## Создание таблиц
 

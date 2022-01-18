@@ -14,7 +14,6 @@ import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
-import ru.i_novus.ms.rdm.sync.service.persister.NotVersionedPersisterService;
 import ru.i_novus.platform.datastorage.temporal.model.value.IntegerFieldValue;
 import ru.i_novus.platform.datastorage.temporal.model.value.StringFieldValue;
 
@@ -29,7 +28,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class NotVersionedPersisterServiceTest {
+public class NotSimpleVersionedPersisterServiceTest {
 
     private NotVersionedPersisterService persisterService;
 
@@ -48,7 +47,7 @@ public class NotVersionedPersisterServiceTest {
     @Test
     public void testFirstTimeUpdate() {
 
-        RefBook firstVersion = createFirstRdmVersion();
+        RefBookVersion firstVersion = createFirstRdmVersion();
         VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
@@ -77,9 +76,9 @@ public class NotVersionedPersisterServiceTest {
     @Test
     public void testUpdate() {
 
-        RefBook firstVersion = createFirstRdmVersion();
-        RefBook secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getLastVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        RefBookVersion firstVersion = createFirstRdmVersion();
+        RefBookVersion secondVersion = createSecondRdmVersion();
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
         VersionsDiff diff = prepareUpdateRefBookDataDiff();
@@ -89,8 +88,8 @@ public class NotVersionedPersisterServiceTest {
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
 
-        persisterService.merge(secondVersion, firstVersion.getLastVersion(), versionMapping, syncSourceService);
-        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), secondVersion.getLastPublishDate(), true);
+        persisterService.merge(secondVersion, firstVersion.getVersion(), versionMapping, syncSourceService);
+        verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), secondVersion.getFrom(), true);
         verify(dao).insertRow(versionMapping.getTable(), dataMap.get(1), true);
     }
 
@@ -102,9 +101,9 @@ public class NotVersionedPersisterServiceTest {
     @Test
     public void testInsert() {
 
-        RefBook oldVersion = createSecondRdmVersion();
-        RefBook newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, oldVersion.getLastVersion(),  "test_table", "test_pk_field","","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        RefBookVersion oldVersion = createSecondRdmVersion();
+        RefBookVersion newVersion = createThirdRdmVersion();
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, oldVersion.getVersion(),  "test_table", "test_pk_field","","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
@@ -114,7 +113,7 @@ public class NotVersionedPersisterServiceTest {
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
         when(dao.isIdExists(versionMapping.getTable(), versionMapping.getPrimaryField(), BigInteger.ONE)).thenReturn(true);
-        persisterService.merge(newVersion, oldVersion.getLastVersion(), versionMapping, syncSourceService);
+        persisterService.merge(newVersion, oldVersion.getVersion(), versionMapping, syncSourceService);
         verify(dao).markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), BigInteger.valueOf(1L), null, true);
         verify(dao).updateRow(versionMapping.getTable(), versionMapping.getPrimaryField(), dataMap.get(2), true);
     }
@@ -125,10 +124,10 @@ public class NotVersionedPersisterServiceTest {
         FieldMapping fieldMapping = new FieldMapping("id", "bigint", "id");
         when(dao.getDataIds(testTable, fieldMapping)).thenReturn(List.of(BigInteger.valueOf(1)));
         Page<Map<String, Object>> data = createFirstRdmData();
-        RefBook firstRdmVersion = createFirstRdmVersion();
+        RefBookVersion firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
         when(dao.getFieldMappings(firstRdmVersion.getCode())).thenReturn(fieldMappings);
-        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), null,  firstRdmVersion.getLastVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(firstRdmVersion.getCode())))).thenReturn(data);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
@@ -145,13 +144,13 @@ public class NotVersionedPersisterServiceTest {
 
 
 
-    private RefBook createFirstRdmVersion() {
+    private RefBookVersion createFirstRdmVersion() {
 
-        RefBook refBook = new RefBook();
-        refBook.setLastVersionId(1);
+        RefBookVersion refBook = new RefBookVersion();
+        refBook.setVersionId(1);
         refBook.setCode("TEST");
-        refBook.setLastVersion("1.0");
-        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.FEBRUARY, 26, 10, 0));
+        refBook.setVersion("1.0");
+        refBook.setFrom(LocalDateTime.of(2019, Month.FEBRUARY, 26, 10, 0));
         RefBookStructure refBookStructure = new RefBookStructure();
         refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
         refBookStructure.setPrimaries(singletonList("id"));
@@ -159,13 +158,13 @@ public class NotVersionedPersisterServiceTest {
         return refBook;
     }
 
-    private RefBook createSecondRdmVersion() {
+    private RefBookVersion createSecondRdmVersion() {
 
-        RefBook refBook = new RefBook();
-        refBook.setLastVersionId(2);
+        RefBookVersion refBook = new RefBookVersion();
+        refBook.setVersionId(2);
         refBook.setCode("TEST");
-        refBook.setLastVersion("1.1");
-        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.FEBRUARY, 27, 10, 0));
+        refBook.setVersion("1.1");
+        refBook.setFrom(LocalDateTime.of(2019, Month.FEBRUARY, 27, 10, 0));
         RefBookStructure refBookStructure = new RefBookStructure();
         refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
         refBookStructure.setPrimaries(singletonList("id"));
@@ -173,13 +172,13 @@ public class NotVersionedPersisterServiceTest {
         return refBook;
     }
 
-    private RefBook createThirdRdmVersion() {
+    private RefBookVersion createThirdRdmVersion() {
 
-        RefBook refBook = new RefBook();
-        refBook.setLastVersionId(3);
+        RefBookVersion refBook = new RefBookVersion();
+        refBook.setVersionId(3);
         refBook.setCode("TEST");
-        refBook.setLastVersion("1.2");
-        refBook.setLastPublishDate(LocalDateTime.of(2019, Month.MARCH, 7, 10, 0));
+        refBook.setVersion("1.2");
+        refBook.setFrom(LocalDateTime.of(2019, Month.MARCH, 7, 10, 0));
         RefBookStructure refBookStructure = new RefBookStructure();
         refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
         refBookStructure.setPrimaries(singletonList("id"));

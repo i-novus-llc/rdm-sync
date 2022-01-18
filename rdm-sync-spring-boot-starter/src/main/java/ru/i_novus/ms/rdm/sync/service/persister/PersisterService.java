@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.service.persister;
 
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 
 /**
@@ -11,10 +11,10 @@ public interface PersisterService {
     /**
      * Первая запись данных справочника
      */
-    void firstWrite(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
+    void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
 
-    void merge(RefBook newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
+    void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
 
-    void repeatVersion(RefBook newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
+    void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService);
 
 }

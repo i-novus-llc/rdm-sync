@@ -8,9 +8,9 @@ public enum SyncTypeEnum {
     NOT_VERSIONED,
 
     /**
-     * Синхронизация с версиями
+     * Синхронизация с паспортом и версией
      */
-    VERSIONED,
+    SIMPLE_VERSIONED,
 
     /**
      * Синхронизация неверсионируемых справочников
