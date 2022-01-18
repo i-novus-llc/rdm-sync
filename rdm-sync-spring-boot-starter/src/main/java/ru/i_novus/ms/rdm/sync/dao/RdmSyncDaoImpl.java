@@ -328,8 +328,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced) {
 
-        Map<String, Object> args =  new HashMap<>();
-        if(markSynced) {
+        Map<String, Object> args = new HashMap<>();
+        if (markSynced) {
             args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
         }
         args.put(isDeletedField, deletedTime);
@@ -472,7 +472,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type)  RETURNING id";
         String refBookName = versionMapping.getRefBookName();
         Integer refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
-                Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName: versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()),
+                Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()),
                 Integer.class);
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
@@ -774,10 +774,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                         Object val = rs.getObject(i);
                         String key = rs.getMetaData().getColumnName(i);
-                        if(val instanceof Timestamp) {
-                                val = ((Timestamp)val).toLocalDateTime();
-                            }
-                            map.put(key, val);
+                        if (val instanceof Timestamp) {
+                            val = ((Timestamp) val).toLocalDateTime();
+                        }
+                        map.put(key, val);
                     }
 
                     return map;
@@ -791,7 +791,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return new PageImpl<>(result, restCriteria, count);
     }
 
-    /** Получение условия для фильтра по полям. */
+    /**
+     * Получение условия для фильтра по полям.
+     */
     private SqlFilterBuilder getFiltersClause(List<FieldFilter> filters) {
 
         if (CollectionUtils.isEmpty(filters))
@@ -837,8 +839,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn) {
-
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, SyncTypeEnum type) {
+        if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) {
+            createTableWithNaturalPrimaryKey(schema, table, fieldMappings, sysPkColumn);
+        }
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
                         sysPkColumn, RECORD_SYS_COL_INFO)
@@ -855,6 +859,19 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
+    }
+
+    private void createTableWithNaturalPrimaryKey(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn) {
+        StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
+        ddl.append(fieldMappings.stream()
+                .map(mapping -> {
+                    if (mapping.getSysField().equals(sysPkColumn)) mapping.setSysDataType(RECORD_SYS_COL_INFO);
+                    return String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType());
+                })
+                .collect(Collectors.joining(", ")));
+        ddl.append(")");
+
+        getJdbcTemplate().execute(ddl.toString());
     }
 
     @Override
