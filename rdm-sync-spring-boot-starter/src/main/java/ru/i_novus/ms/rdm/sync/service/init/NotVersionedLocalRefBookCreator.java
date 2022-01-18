@@ -18,9 +18,9 @@ import java.util.*;
 @Component
 public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
-    private static final String LOG_AUTOCREATE_SKIP =
+    protected static final String LOG_AUTOCREATE_SKIP =
             "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
-    private static final String LOG_AUTOCREATE_START =
+    protected static final String LOG_AUTOCREATE_START =
             "Autocreation mapping data from structure of RefBook with code '{}' is started.";
     private static final String LOG_AUTOCREATE_FINISH =
             "Autocreation mapping data from structure of RefBook with code '{}' is finished.";
@@ -30,7 +30,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     private static final Logger logger = LoggerFactory.getLogger(NotVersionedLocalRefBookCreator.class);
 
-    private final RdmSyncDao dao;
+    protected final RdmSyncDao dao;
 
 
     public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
@@ -59,18 +59,21 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
             return;
 
         if (mapping != null) {
-            createTable(refBookCode, mapping);
+            createTable(refBookCode, mapping, type);
         }
     }
 
-    protected void createTable(String refBookCode, VersionMapping mapping) {
+    protected void createTable(String refBookCode, VersionMapping mapping, SyncTypeEnum type) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
+        if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)){
+            mapping.setSysPkColumn(mapping.getPrimaryField());
+        }
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn(), type);
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -96,7 +99,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String schemaTable = getTableName(refBookCode, table);
-
+        if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
                 schemaTable, sysPkColumn, sourceCode, uniqueSysField, isDeletedField,
                 null, -1, null, type);
