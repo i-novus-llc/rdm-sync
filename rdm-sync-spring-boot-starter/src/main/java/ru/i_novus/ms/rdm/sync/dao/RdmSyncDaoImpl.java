@@ -71,6 +71,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             "  END; \n" +
             "$BODY$ LANGUAGE 'plpgsql' \n";
 
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String PASSPORT_REF = "passport_id";

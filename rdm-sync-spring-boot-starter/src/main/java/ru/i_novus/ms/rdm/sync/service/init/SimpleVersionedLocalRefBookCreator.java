@@ -31,7 +31,7 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     }
 
     @Override
-    protected void createTable(String code, VersionMapping versionMapping) {
+    protected void createTable(String code, VersionMapping versionMapping, SyncTypeEnum type) {
 
         String[] split = versionMapping.getTable().split("\\.");
         String schemaName = split[0];

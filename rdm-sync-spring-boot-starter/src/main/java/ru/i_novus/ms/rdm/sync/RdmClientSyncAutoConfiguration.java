@@ -290,7 +290,7 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
                                                                  @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
-                                                                 @Qualifier("notVersionedWithNaturalPrimaryKeyLocalRefBookCreator") LocalRefBookCreator notVersionedWithNaturalPrimaryKeyLocalRefBookCreator) {
+                                                                 @Qualifier("notVersionedWithNaturalPrimaryKeyLocalRefBookCreator") LocalRefBookCreator notVersionedWithNaturalPrimaryKeyLocalRefBookCreator,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,

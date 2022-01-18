@@ -28,15 +28,15 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         super(schema, caseIgnore, dao, syncSourceDao, syncSourceServiceFactories);
 
     }
-
-    protected void createTable(String refBookCode, VersionMapping mapping) {
+    @Override
+    protected void createTable(String refBookCode, VersionMapping mapping, SyncTypeEnum type) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField());
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn(), type);
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -48,8 +48,8 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     @Override
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure) {
-        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure);
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn) {
+        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn);
         String isDeletedField = "deleted_ts";
         if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;

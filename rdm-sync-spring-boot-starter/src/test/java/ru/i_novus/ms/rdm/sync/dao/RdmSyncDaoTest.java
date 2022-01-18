@@ -168,7 +168,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                generateFieldMappings());
+                generateFieldMappings(),
+                RECORD_SYS_COL);
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
@@ -264,7 +265,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                generateFieldMappings());
+                generateFieldMappings(),
+                "sys_pk");
 
         List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");

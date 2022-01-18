@@ -30,9 +30,9 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
             "Error autocreation mapping data from structure of RefBook with code '{}'.";
     private static final String LOG_LAST_PUBLISHED_NOT_FOUND = " Can't get last published version from RDM.";
 
-    private static final String LOG_AUTOCREATE_SKIP =
+    protected static final String LOG_AUTOCREATE_SKIP =
             "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
-    private static final String LOG_AUTOCREATE_START =
+    protected static final String LOG_AUTOCREATE_START =
             "Autocreation mapping data from structure of RefBook with code '{}' is started.";
 
 
@@ -46,7 +46,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
-    protected abstract void createTable(String refBookCode, VersionMapping mapping);
+    protected abstract void createTable(String refBookCode, VersionMapping mapping, SyncTypeEnum type);
 
     public BaseLocalRefBookCreator(String schema,
                                    Boolean caseIgnore,
@@ -63,7 +63,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPkColumn) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -72,16 +72,16 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
         if (mapping != null) {
-            createTable(refBookCode, mapping);
+            createTable(refBookCode, mapping, type);
         }
     }
 
-    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
+    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, String sysPkColumn) {
 
         RefBookVersion lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode, null);
         if (lastPublished == null) {
@@ -90,7 +90,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         RefBookStructure structure = lastPublished.getStructure();
 
-        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure);
+        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         dao.insertFieldMapping(mappingId, getFieldMappings(structure));
 
@@ -140,13 +140,13 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
                 .createService(source);
     }
 
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure) {
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn) {
         String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String schemaTable = getTableName(refBookCode, table);
 
         return new VersionMapping(null, refBookCode, refBookName, null,
-                schemaTable, sourceCode, uniqueSysField, null,
+                schemaTable, sysPkColumn,sourceCode, uniqueSysField, null,
                 null, -1, null, type);
 
     }

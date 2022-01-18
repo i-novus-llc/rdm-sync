@@ -55,12 +55,12 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
             rdmSyncDao.insertVersionMapping(versionMapping);
         }
 
-        createTable(code, versionMapping);
+        createTable(code, versionMapping, type);
 
         logger.info("auto create for code {} was finished", code);
     }
 
-    protected void createTable(String code, VersionMapping versionMapping) {
+    protected void createTable(String code, VersionMapping versionMapping, SyncTypeEnum typeEnum) {
 
         String[] split = versionMapping.getTable().split("\\.");
         String schemaName = split[0];
