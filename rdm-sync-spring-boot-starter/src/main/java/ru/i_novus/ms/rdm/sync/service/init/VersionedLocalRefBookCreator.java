@@ -38,7 +38,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     @Override
     public void create(String code, String name, String source, SyncTypeEnum type, String table) {
 
-        if(rdmSyncDao.getLoadedVersion(code) != null) {
+        if(rdmSyncDao.existsLoadedVersion(code)) {
             logger.info("auto create for code {} was skipped", code);
             return;
         }

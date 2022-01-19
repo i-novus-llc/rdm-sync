@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -87,28 +90,24 @@ public class TestConfig {
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK002");
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK002", "1");
             if(loadedVersion == null  ) {
                 return new RestPage<>(Collections.singletonList(ek002Ver1));
-            }
-            if ("1".equals(loadedVersion.getVersion()))
+            } else
                 return new RestPage<>(Collections.singletonList(ek002Ver2));
 
-            return new RestPage<>(Collections.emptyList());
         });
         when(refBookService.search(argThat(refBookCriteria -> "EK003".equals(refBookCriteria.getCode())))).thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
             RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003");
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003", "3.0");
             if(loadedVersion == null  ) {
                 return new RestPage<>(Collections.singletonList(ek003Ver3_0));
-            }
-            if (loadedVersion != null && "3.0".equals(loadedVersion.getVersion()))
+            } else
                 return new RestPage<>(Collections.singletonList(ek003Ver3_1));
 
-            return new RestPage<>(Collections.emptyList());
         });
         return refBookService;
     }
@@ -144,7 +143,7 @@ public class TestConfig {
                     if (searchDataCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003");
+                    LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003", "3.0");
                     if (searchDataCriteria.getPageNumber() == 0 && loadedVersion == null) {
                         return new RestPage<>(Arrays.asList(ek003v3_0Rows));
                     } else if (searchDataCriteria.getPageNumber() == 0 && "3.0".equals(loadedVersion.getVersion()))
@@ -204,7 +203,7 @@ public class TestConfig {
         String oid ="1.2.643.5.1.13.2.1.1.725";
         //эмуляция получения справочников в зависимости от того что загружено
         searchRefBookMockServer(mockServer, oid, noVersionLoaded(oid), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.2.json"));
-        searchRefBookMockServer(mockServer, oid, versionLoaded(oid,  null), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.2.json"));
+        //searchRefBookMockServer(mockServer, oid, versionLoaded(oid,  null), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.2.json"));
         searchRefBookMockServer(mockServer, oid, versionLoaded(oid,  "1.2"), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.8.json"));
 
         versionsMockServer(mockServer, oid, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_versions.json"));
@@ -212,13 +211,15 @@ public class TestConfig {
         passportMockServer(mockServer, oid, "1.2", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.2.json"));
         passportMockServer(mockServer, oid, "1.8", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.8.json"));
 
-        dataMockServer(mockServer, versionLoaded(oid, null), oid, 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_page1.json"));
-        dataMockServer(mockServer, versionLoaded(oid, null), oid, 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_page2.json"));
-        dataMockServer(mockServer, versionLoaded(oid, null), oid, 3, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_empty_page.json"));
+
+        dataMockServer(mockServer, noVersionLoaded(oid), oid, 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_page1.json"));
+        dataMockServer(mockServer, noVersionLoaded(oid), oid, 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_page2.json"));
+        dataMockServer(mockServer, noVersionLoaded(oid), oid, 3, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.2_empty_page.json"));
         dataMockServer(mockServer, versionLoaded(oid, "1.2"), oid, 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.8_page1.json"));
         dataMockServer(mockServer, versionLoaded(oid, "1.2"), oid, 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.8_empty_page.json"));
 
-        compareMockServer(
+
+          compareMockServer(
                 mockServer,
                 oid,
                 LocalDateTime.of(2016, 12, 20, 0, 0),
@@ -235,7 +236,7 @@ public class TestConfig {
         return new FnsiSyncSourceServiceFactory(restTemplate);
     }
 
-    private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, ClassPathResource body) throws URISyntaxException {
+    private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, Resource body) throws URISyntaxException {
         ResponseActions responseActions = mockServer.expect(ExpectedCount.manyTimes(),
                 MockRestRequestMatchers.requestTo(Matchers.containsString(property.getValues().get(0).getUrl() + methodUrl)))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
@@ -279,7 +280,7 @@ public class TestConfig {
         fnsiApiMockServer(mockServer, null,"/rest/passport", Map.of("identifier", identifier, "version", version), body);
     }
 
-    private void dataMockServer(MockRestServiceServer mockServer, RequestMatcher requestMatcher, String identifier, int page, int size, ClassPathResource body) throws URISyntaxException {
+    private void dataMockServer(MockRestServiceServer mockServer, RequestMatcher requestMatcher, String identifier, int page, int size, Resource body) throws URISyntaxException {
         fnsiApiMockServer(mockServer, requestMatcher, "/rest/data", Map.of("identifier", identifier, "page", ""+page,"size", ""+size), body);
     }
 
@@ -297,12 +298,9 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
-                if(version == null) {
-                    Assert.assertNull(loadedVersion);
-                } else {
-                    Assert.assertEquals(version, loadedVersion.getVersion());
-                }
+                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid , version);
+                Assert.assertNotNull(loadedVersion);
+
             }
         };
     }
@@ -316,8 +314,7 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid);
-                Assert.assertNull(loadedVersion);
+                Assert.assertTrue(!rdmSyncDao.existsLoadedVersion(oid));
             }
         };
     }

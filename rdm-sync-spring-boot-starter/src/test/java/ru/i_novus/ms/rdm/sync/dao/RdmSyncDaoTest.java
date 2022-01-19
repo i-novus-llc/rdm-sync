@@ -208,22 +208,24 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test
     public void testAddingLoadedVersion() {
 
-        String code = "test";
-        LoadedVersion actual = new LoadedVersion(1, "test", "version",  LocalDateTime.of(2021, 11, 9, 17, 0), null);
-        rdmSyncDao.insertLoadedVersion(actual.getCode(), actual.getVersion(), actual.getPublicationDate());
+        String code = "testAddingLoadedVersion";
+        String version ="version";
+        LoadedVersion expected = new LoadedVersion(null, code, version,  LocalDateTime.of(2021, 11, 9, 17, 0), null, null, true);
+        Integer loadedVerId = rdmSyncDao.insertLoadedVersion(expected.getCode(), expected.getVersion(), expected.getPublicationDate(), expected.getCloseDate(), expected.getActual());
 
-        LoadedVersion expected = rdmSyncDao.getLoadedVersion(code);
-        assertNotNull(expected.getLastSync());
-        expected.setLastSync(null);
-        assertEquals(actual, expected);
+        LoadedVersion actual = rdmSyncDao.getLoadedVersion(code, version);
+        assertNotNull(actual.getLastSync());
+        actual.setLastSync(null);
+        expected.setId(loadedVerId);
+        assertEquals(expected, actual);
 
         //редактируем
-        actual.setVersion("2");
-        rdmSyncDao.updateLoadedVersion(actual.getId(), actual.getVersion(), actual.getPublicationDate());
+        expected.setVersion("2");
+        rdmSyncDao.updateLoadedVersion(expected.getId(), expected.getVersion(), expected.getPublicationDate(), expected.getCloseDate());
 
-        expected = rdmSyncDao.getLoadedVersion(code);
-        expected.setLastSync(null);
-        assertEquals(actual, expected);
+        actual = rdmSyncDao.getLoadedVersion(code, expected.getVersion());
+        actual.setLastSync(null);
+        assertEquals(expected, actual);
     }
 
 
@@ -303,8 +305,9 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         List<FieldMapping> fieldMappings = generateFieldMappings();
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
         rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", fieldMappings);
+        Integer loadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         List<Map<String, Object>> rows = generateRows();
-        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, new RefBookPassport("1.0", publishDate, null));
+        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, loadedVersionId);
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
         Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
         simpleVersionedData.getContent().forEach(this::prepareRowToAssert);
@@ -313,14 +316,16 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         //грузим след версию
         LocalDateTime secondVersionPublishDate = LocalDateTime.of(2022, 2, 2, 10, 0);
-        rdmSyncDao.closeVersion("public.simple_ver_table", "1.0", secondVersionPublishDate);
+        rdmSyncDao.closeLoadedVersion("test", "1.0", secondVersionPublishDate);
+        Integer secondLoadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.1", secondVersionPublishDate, null, true);
         List<Map<String, Object>> secondVersionRows = new ArrayList<>(rows);
         secondVersionRows.add( Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
-        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", secondVersionRows, new RefBookPassport("1.1", secondVersionPublishDate, null));
+        rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId);
         //получаем версию 1.1
         Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(secondVersionRows, secondVersionData.getContent());
+        Assert.assertEquals(secondVersionPublishDate, rdmSyncDao.getLoadedVersion("test", "1.0").getCloseDate());
     }
 
     private List<FieldMapping> generateFieldMappings() {

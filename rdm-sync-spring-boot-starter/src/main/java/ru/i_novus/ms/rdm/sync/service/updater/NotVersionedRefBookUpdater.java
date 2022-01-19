@@ -22,12 +22,6 @@ public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
         super(dao, syncSourceService, loggingService);
         this.persisterService = persisterService;
     }
-    @Override
-    protected boolean isNewVersion(RefBookVersion newVersion, LoadedVersion loadedVersion) {
-
-        return !loadedVersion.getVersion().equals(newVersion.getVersion())
-                && !loadedVersion.getPublicationDate().equals(newVersion.getFrom());
-    }
 
     @Override
     protected PersisterService getPersisterService() {

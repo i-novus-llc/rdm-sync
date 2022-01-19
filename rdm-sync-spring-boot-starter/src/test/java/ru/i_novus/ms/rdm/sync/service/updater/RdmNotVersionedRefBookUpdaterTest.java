@@ -20,6 +20,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -55,10 +56,11 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     public void testFirstWrite() {
         RefBookVersion refBook = createRefbook();
 
-        when(dao.getLoadedVersion(refBook.getCode())).thenReturn(null);
+        when(dao.existsLoadedVersion(refBook.getCode())).thenReturn(false);
         when(syncSourceService.getRefBook(anyString(), any())).thenReturn(refBook);
-        when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED));
-        when(dao.getFieldMappings(refBook.getCode())).thenReturn(Arrays.asList(createFieldMapping()));
+        VersionMapping versionMapping = createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED);
+        when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
         updater.update(refBook.getCode());
 
@@ -67,20 +69,26 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         assertEquals(expectedRefBook.getCode(), refBook.getCode());
     }
 
+    /**
+     * изменились данные справочника
+     */
     @Test
     public void testUpdateWithChangeUpdateDate() {
         RefBookVersion refBook = createRefbook();
 
-        when(dao.getLoadedVersion(refBook.getCode())).thenReturn(createLoadedVersion());
+        LoadedVersion loadedVersion = createLoadedVersion();
+        when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(loadedVersion);
         when(syncSourceService.getRefBook(anyString(), any())).thenReturn(refBook);
-        when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED));
-        when(dao.getFieldMappings(refBook.getCode())).thenReturn(Arrays.asList(createFieldMapping()));
+        VersionMapping versionMapping = createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED);
+        when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
-        refBook.setFrom(LocalDateTime.of(2018, 1, 14, 10, 34));
+        //изменилась дата публикации
+        refBook.setFrom(loadedVersion.getPublicationDate().plus(5, ChronoUnit.DAYS));
         updater.update(refBook.getCode());
-        verify(persisterService).repeatVersion(refBookArgumentCaptor.capture(), versionMappingArgumentCaptor.capture(), syncSourceServiceArgumentCaptor.capture());
-        RefBookVersion expectedRefBook = refBookArgumentCaptor.getValue();
-        assertEquals(expectedRefBook.getCode(), refBook.getCode());
+        verify(persisterService).repeatVersion(eq(refBook), eq(versionMapping), any());
+        verify(dao, times(1)).updateLoadedVersion(loadedVersion.getId(), refBook.getVersion(), refBook.getFrom(), refBook.getTo());
+
     }
 
     @Test
@@ -90,11 +98,11 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         VersionMapping versionMapping = createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED);
         versionMapping.setMappingLastUpdated(LocalDateTime.of(2018, 1, 14, 10, 34));
 
-        when(dao.getLoadedVersion(refBook.getCode())).thenReturn(createLoadedVersion());
+        when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(createLoadedVersion());
         when(syncSourceService.getRefBook(anyString(), any())).thenReturn(refBook);
 
         when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
-        when(dao.getFieldMappings(refBook.getCode())).thenReturn(Arrays.asList(createFieldMapping()));
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
 
         updater.update(refBook.getCode());
@@ -110,11 +118,11 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         LoadedVersion loadedVersion = createLoadedVersion();
         loadedVersion.setPublicationDate(refBook.getFrom());
         VersionMapping versionMapping = createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED);
-        when(dao.getLoadedVersion(refBook.getCode())).thenReturn(loadedVersion);
+        when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(loadedVersion);
         when(syncSourceService.getRefBook(anyString(), any())).thenReturn(refBook);
 
         when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
-        when(dao.getFieldMappings(refBook.getCode())).thenReturn(Arrays.asList(createFieldMapping()));
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
         updater.update(refBook.getCode());
         verifyNoMoreInteractions(persisterService);
