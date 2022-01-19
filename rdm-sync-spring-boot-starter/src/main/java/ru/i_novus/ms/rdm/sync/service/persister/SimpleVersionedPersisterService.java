@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
@@ -52,7 +53,6 @@ public class SimpleVersionedPersisterService implements PersisterService {
        /* if(oldVersion.getTo() == null) {
             throw new IllegalStateException("old version " + synchedVersion + " of refbook " + versionMapping.getCode() + " has empty close date");
         }*/
-        rdmSyncDao.closeVersion(versionMapping.getTable(), synchedVersion, newVersion.getFrom());
         List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getCode());
         DataCriteria searchDataCriteria = new DataCriteria();
         searchDataCriteria.setCode(versionMapping.getCode());
@@ -73,12 +73,12 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     private void insertVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings, DataCriteria searchDataCriteria) {
         processRows(newVersion, syncSourceService, fieldMappings, searchDataCriteria,
-                rows -> rdmSyncDao.insertSimpleVersionedRows(versionMapping.getTable(), rows, new RefBookPassport(newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo())));
+                rows -> rdmSyncDao.insertSimpleVersionedRows(versionMapping.getTable(), rows, rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion()).getId()));
     }
 
     private void updateVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings, DataCriteria searchDataCriteria) {
         processRows(newVersion, syncSourceService, fieldMappings, searchDataCriteria,
-                rows -> rdmSyncDao.upsertVersionedRows(versionMapping.getTable(), rows, new RefBookPassport(newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo())));
+                rows -> rdmSyncDao.upsertVersionedRows(versionMapping.getTable(), rows, rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion()).getId()));
     }
 
     private void processRows(RefBookVersion newVersion, SyncSourceService syncSourceService,
@@ -116,6 +116,7 @@ public class SimpleVersionedPersisterService implements PersisterService {
             }
         });
 
+        LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
         return  mappedRow;
     }
 

@@ -103,7 +103,7 @@ public class VersionedLocalRefBookCreatorTest {
      */
     @Test
     public void testIgnoreCreateIfExistsLoadedVersion() {
-        when(rdmSyncDao.getLoadedVersion(any())).thenReturn(mock(LoadedVersion.class));
+        when(rdmSyncDao.existsLoadedVersion(any())).thenReturn(true);
         creator.create("test", null, "source", SyncTypeEnum.NOT_VERSIONED, null);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).createSchemaIfNotExists(any());

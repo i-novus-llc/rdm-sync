@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202201180023_alter_loaded_version.1.0" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="loaded_version" columnName="close_dt" schemaName="rdm_sync"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.loaded_version ADD COLUMN close_dt TIMESTAMP;
+            ALTER TABLE rdm_sync.loaded_version DROP CONSTRAINT IF EXISTS code_uniq;
+            ALTER TABLE rdm_sync.loaded_version RENAME COLUMN update_dt TO load_dt;
+            COMMENT ON COLUMN rdm_sync.loaded_version.load_dt IS 'Дата загрузки версии';
+
+            ALTER TABLE rdm_sync.loaded_version ADD COLUMN is_actual BOOLEAN;
+            UPDATE rdm_sync.loaded_version SET is_actual = true;
+            COMMENT ON COLUMN rdm_sync.loaded_version.is_actual IS 'Признак актуальности версии';
+
+            CREATE UNIQUE INDEX loaded_version_is_actual_code_ux ON rdm_sync.loaded_version (is_actual, code) WHERE is_actual = true;
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

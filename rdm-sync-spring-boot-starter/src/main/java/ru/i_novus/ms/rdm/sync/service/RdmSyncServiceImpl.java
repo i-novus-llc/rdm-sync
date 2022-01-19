@@ -86,7 +86,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update() {
 
         List<VersionMapping> versionMappings = dao.getVersionMappings();
@@ -106,7 +105,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void update(String refBookCode) {
 
         SyncRefBook syncRefBook = dao.getSyncRefBook(refBookCode);
