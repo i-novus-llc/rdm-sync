@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -36,6 +37,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
     }
 
     @Override
+    @Transactional
     public void update(String refCode) {
         RefBookVersion newVersion;
         try {
@@ -51,9 +53,9 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
             return;
         }
 
-        LoadedVersion loadedVersion = dao.getLoadedVersion(refCode);
+        LoadedVersion loadedVersion = dao.getLoadedVersion(refCode, newVersion.getVersion());
         try {
-            if (loadedVersion == null || isNewVersion(newVersion, loadedVersion) || isMappingChanged(versionMapping, loadedVersion)) {
+            if (!dao.existsLoadedVersion(refCode) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)) {
 
                 update(newVersion, versionMapping);
                 loggingService.logOk(refCode, versionMapping.getVersion(), newVersion.getVersion());
@@ -88,7 +90,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         if (versionMapping == null) {
             return null;
         }
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
 
         final String primaryField = versionMapping.getPrimaryField();
         if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
@@ -96,14 +98,6 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
         return versionMapping;
     }
-
-    /**
-     * Проверяет новая ли версия грузится
-     * @param newVersion версия которая грузится
-     * @param loadedVersion последняя загруженная версия
-     * @return если true, то новая, иначе версия уже была загруженна
-     */
-    protected abstract boolean isNewVersion(RefBookVersion newVersion, LoadedVersion loadedVersion);
 
     protected boolean isMappingChanged(VersionMapping versionMapping, LoadedVersion loadedVersion) {
         return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
@@ -144,28 +138,39 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
     }
 
     protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping) {
-        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
-        PersisterService persisterService = getPersisterService();
-        if (loadedVersion == null) {
-            //заливаем с нуля
-            persisterService.firstWrite(newVersion, versionMapping, syncSourceService);
+        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
+        if (loadedVersion == null && !dao.existsLoadedVersion(newVersion.getCode())) {
+            addFirstVersion(newVersion, versionMapping);
 
-        } else if (isNewVersion(newVersion, loadedVersion)) {
-            //если версия и дата публикация не совпадают - нужно обновить справочник
-            persisterService.merge(newVersion, loadedVersion.getVersion(), versionMapping, syncSourceService);
+        } else if (loadedVersion == null) {
+            addNewVersion(newVersion, versionMapping);
 
-        } else if (isMappingChanged(versionMapping, loadedVersion)) {
+        } else if (isMappingChanged(versionMapping, loadedVersion) || newVersion.getFrom().isAfter(loadedVersion.getPublicationDate())) {
             //Значит в прошлый раз мы синхронизировались по старому маппингу.
             //Необходимо полностью залить свежую версию.
-            persisterService.repeatVersion(newVersion, versionMapping, syncSourceService);
+            editVersion(newVersion, versionMapping, loadedVersion);
         }
-        if (loadedVersion != null) {
-            //обновляем версию в таблице версий клиента
-            dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom());
-        } else {
-            dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom());
-        }
+
         logger.info("{} sync finished", newVersion.getCode());
+    }
+
+    protected void editVersion(RefBookVersion newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion) {
+        getPersisterService().repeatVersion(newVersion, versionMapping, syncSourceService);
+        dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo());
+    }
+
+    protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+        LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(newVersion.getCode());
+        if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
+            dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
+        }
+        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        getPersisterService().merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, syncSourceService);
+    }
+
+    protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        getPersisterService().firstWrite(newVersion, versionMapping, syncSourceService);
     }
 
 }

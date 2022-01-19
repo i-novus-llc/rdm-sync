@@ -74,7 +74,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
     private static final String VERSIONS_SYS_COL = "_versions";
-    private static final String PASSPORT_REF = "passport_id";
+    private static final String LOADED_VERSION_REF = "version_id";
     private static final String HASH_SYS_COL = "_hash";
 
     @Autowired
@@ -113,9 +113,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public LoadedVersion getLoadedVersion(String code) {
-        List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code", Map.of("code", code),
-                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), rs.getTimestamp("update_dt").toLocalDateTime())
+    public LoadedVersion getLoadedVersion(String code, String version) {
+        List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and version = :version", Map.of("code", code, "version", version),
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
         );
 
         if (CollectionUtils.isEmpty(result)) {
@@ -123,7 +123,24 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         return result.get(0);
+    }
 
+    @Override
+    public LoadedVersion getActualLoadedVersion(String code) {
+        List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and is_actual = true", Map.of("code", code),
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
+        );
+        if (CollectionUtils.isEmpty(result)) {
+            return null;
+        }
+        return result.get(0);
+    }
+
+    @Override
+    public boolean existsLoadedVersion(String code) {
+        return namedParameterJdbcTemplate
+                .queryForObject("select exists(select 1 from rdm_sync.loaded_version where code = :code)",
+                        Map.of("code", code), Boolean.class);
     }
 
     @Override
@@ -198,6 +215,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
+    public List<FieldMapping> getFieldMappings(Integer mappingId) {
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field \n" +
+                "  FROM rdm_sync.field_mapping m \n" +
+                " WHERE m.mapping_id = :mappingId";
+
+        return namedParameterJdbcTemplate.query(sql,
+                Map.of("mappingId", mappingId),
+                (rs, rowNum) -> new FieldMapping(
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3)
+                )
+        );
+    }
+
+    @Override
     public List<Pair<String, String>> getLocalColumnTypes(String schemaTable) {
 
         String[] split = schemaTable.split("\\.");
@@ -249,32 +282,50 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void insertLoadedVersion(String code, String version, LocalDateTime publishDate) {
-        final String sql = "INSERT INTO rdm_sync.loaded_version(code, version, publication_dt, update_dt) \n" +
-                "   VALUES(:code, :version, :publishDate, :updateDate) ";
+    public Integer insertLoadedVersion(String code, String version, LocalDateTime publishDate, LocalDateTime closeDate, boolean actual) {
+        final String sql = "INSERT INTO rdm_sync.loaded_version(code, version, publication_dt, close_dt, load_dt, is_actual) \n" +
+                "   VALUES(:code, :version, :publishDate, :closeDate, :updateDate, :actual) RETURNING id";
 
-        namedParameterJdbcTemplate.update(sql,
-                Map.of("version", version,
-                        "publishDate", publishDate,
-                        "updateDate", LocalDateTime.now(Clock.systemUTC()),
-                        "code", code)
-        );
+        Map<String, Object> params = new HashMap<>();
+        params.put("version", version);
+        params.put("publishDate", publishDate);
+        params.put("closeDate", closeDate);
+        params.put("updateDate", LocalDateTime.now(Clock.systemUTC()));
+        params.put("code", code);
+        params.put("actual", actual);
+        return namedParameterJdbcTemplate.queryForObject(sql, params, Integer.class);
     }
 
     @Override
-    public void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate) {
+    public void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate, LocalDateTime closeDate) {
 
         final String sql = "UPDATE rdm_sync.loaded_version \n" +
                 "   SET version = :version, \n" +
                 "       publication_dt = :publication_dt, \n" +
-                "       update_dt = :update_dt \n" +
+                "       close_dt = :close_dt, \n" +
+                "       load_dt = :load_dt \n" +
                 " WHERE id = :id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("version", version);
+        params.put("publication_dt", publishDate);
+        params.put("close_dt", closeDate);
+        params.put("load_dt", LocalDateTime.now(Clock.systemUTC()));
+        params.put("id", id);
+        namedParameterJdbcTemplate.update(sql,params);
+    }
+
+
+    @Override
+    public void closeLoadedVersion(String code, String version, LocalDateTime closeDate) {
+        final String sql = "UPDATE rdm_sync.loaded_version \n" +
+                "   SET close_dt = :closeDate, is_actual=false \n" +
+                " WHERE version = :version and code = :code";
 
         namedParameterJdbcTemplate.update(sql,
                 Map.of("version", version,
-                        "publication_dt", publishDate,
-                        "update_dt", LocalDateTime.now(Clock.systemUTC()),
-                        "id", id)
+                        "closeDate", closeDate,
+                        "code", code)
         );
     }
 
@@ -300,24 +351,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("version", passport.getVersion());
-        params.put("from", passport.getFrom());
-        params.put("to", passport.getTo());
-        Integer passportId = namedParameterJdbcTemplate.queryForObject(
-                "INSERT INTO " + escapeName(schemaTable + "_passport") + "(version, from_dt, to_dt) VALUES(:version, :from, :to) RETURNING id",
-                params,
-                Integer.class
-        );
-        insertRows(schemaTable, convertToSimpleVersionedRows(rows, passportId));
+    public void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId) {
 
-    }
+        insertRows(schemaTable, convertToSimpleVersionedRows(rows, loadedVersionId));
 
-    @Override
-    public void closeVersion(String schemaTable, String version, LocalDateTime closeDate) {
-        namedParameterJdbcTemplate.update("UPDATE " + escapeName(schemaTable + "_passport") + " SET to_dt = :to WHERE version = :version",
-                Map.of("to", closeDate, "version", version));
     }
 
     @Override
@@ -389,14 +426,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }).collect(toList());
     }
 
-    private List<Map<String, Object>> convertToSimpleVersionedRows(List<Map<String, Object>> rows, Integer passportId) {
+    private List<Map<String, Object>> convertToSimpleVersionedRows(List<Map<String, Object>> rows, Integer loadedVersionId) {
         return rows.stream().map(row -> {
             Map<String, Object> newMap = new HashMap<>(row);
             StringBuilder stringBuilder = new StringBuilder();
             row.entrySet().stream()
                     .filter(entry -> entry.getValue() != null)
                     .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
-            newMap.put(PASSPORT_REF, passportId);
+            newMap.put(LOADED_VERSION_REF, loadedVersionId);
             return newMap;
         }).collect(toList());
     }
@@ -721,13 +758,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(criteria.getSchemaTable()));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + PASSPORT_REF + ("=(SELECT id from "+ escapeName(criteria.getSchemaTable() + "_passport") +"  WHERE version = :version) ");
+            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE version = :version) ");
             args.put("version", criteria.getVersion());
         }
 
         Page<Map<String, Object>> data = getData0(sql, args, criteria);
         data.getContent().forEach(row -> {
-            row.remove(PASSPORT_REF);
+            row.remove(LOADED_VERSION_REF);
         });
 
         return data;
@@ -771,7 +808,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport) {
+    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId) {
         //todo
     }
 
@@ -937,20 +974,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings) {
         createTable(schema, table, fieldMappings,
-                Map.of(PASSPORT_REF, "integer NOT NULL",
+                Map.of(LOADED_VERSION_REF, "integer NOT NULL",
                         RECORD_SYS_COL, RECORD_SYS_COL_INFO)
         );
 
         String escapedSchemaTable = escapeName(schema) + "." + escapeName(table);
-        String escapedPassportSchemaTable = escapeName(schema) + "." + escapeName(table + "_passport");
         getJdbcTemplate().execute(
-                String.format("CREATE TABLE %s (id SERIAL NOT NULL, version varchar, from_dt TIMESTAMP, to_dt TIMESTAMP, CONSTRAINT %s PRIMARY KEY(id))",
-                        escapedPassportSchemaTable, escapeName(table+ "_passport_pk")
-                )
-        );
-        getJdbcTemplate().execute(
-                String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(id)",
-                        escapedSchemaTable, escapeName(table + "_" + PASSPORT_REF + "_fk"),  PASSPORT_REF,  escapedPassportSchemaTable
+                String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES rdm_sync.loaded_version(id)",
+                        escapedSchemaTable, escapeName(table + "_" + LOADED_VERSION_REF + "_fk"), LOADED_VERSION_REF
                 )
         );
     }
@@ -1016,5 +1047,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
         return "\"" + name + "\"";
 
+    }
+
+    private LocalDateTime toLocalDateTime(Timestamp timestamp) {
+        if(timestamp == null)
+            return null;
+
+        return timestamp.toLocalDateTime();
     }
 }

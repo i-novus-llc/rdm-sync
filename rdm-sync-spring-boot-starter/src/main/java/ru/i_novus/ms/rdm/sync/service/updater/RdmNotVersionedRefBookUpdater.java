@@ -26,18 +26,13 @@ public class RdmNotVersionedRefBookUpdater extends BaseRefBookUpdater {
     }
 
     @Override
-    protected boolean isNewVersion(RefBookVersion newVersion, LoadedVersion loadedVersion) {
-        return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
-    }
-
-    @Override
     protected PersisterService getPersisterService() {
         return persisterService;
     }
 
-    @Override
+    /*    @Override
     protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping) {
-        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode());
+        LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
             if (loadedVersion == null) {
                 //заливаем с нуля
                 persisterService.firstWrite(newVersion, versionMapping, syncSourceService);
@@ -53,11 +48,11 @@ public class RdmNotVersionedRefBookUpdater extends BaseRefBookUpdater {
             }
             if (loadedVersion != null) {
                 //обновляем версию в таблице версий клиента
-                dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom());
+                dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom(), null);
             } else {
-                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom());
+                dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
             }
             logger.info("{} sync finished", newVersion.getCode());
-    }
+    }*/
 
 }
