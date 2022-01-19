@@ -36,6 +36,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
+        if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK))mapping.setSysPkColumn(mapping.getPrimaryField());
         dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn(), type);
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
