@@ -32,7 +32,6 @@ import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
 @TestPropertySource("classpath:application-test.properties")
 @AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.OPENTABLE)
 @Import(TestConfig.class)
-@Ignore
 public class RdmSyncServiceUseCaseTest {
 
     @LocalServerPort
