@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
@@ -38,20 +37,20 @@ import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
-import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.platform.datastorage.temporal.model.value.RowValue;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -68,6 +67,9 @@ public class TestConfig {
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
+
+    @Autowired
+    private RdmLoggingService loggingService;
 
     public TestConfig(FnsiSourceProperty property) {
         this.property = property;
@@ -90,8 +92,8 @@ public class TestConfig {
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK002", "1");
-            if(loadedVersion == null  ) {
+            boolean ver1IsLoaded = versionIsLoaded("EK002", "1");
+            if(!ver1IsLoaded) {
                 return new RestPage<>(Collections.singletonList(ek002Ver1));
             } else
                 return new RestPage<>(Collections.singletonList(ek002Ver2));
@@ -102,8 +104,8 @@ public class TestConfig {
             if (refBookCriteria.getPageNumber() >= 1) {
                 return new RestPage<>(Collections.emptyList());
             }
-            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003", "3.0");
-            if(loadedVersion == null  ) {
+            boolean ver3_0IsLoaded = versionIsLoaded("EK003", "3.0");
+            if(!ver3_0IsLoaded  ) {
                 return new RestPage<>(Collections.singletonList(ek003Ver3_0));
             } else
                 return new RestPage<>(Collections.singletonList(ek003Ver3_1));
@@ -143,10 +145,10 @@ public class TestConfig {
                     if (searchDataCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion("EK003", "3.0");
-                    if (searchDataCriteria.getPageNumber() == 0 && loadedVersion == null) {
+                    boolean ver3_0IsLoaded = versionIsLoaded("EK003", "3.0");
+                    if (searchDataCriteria.getPageNumber() == 0 && !ver3_0IsLoaded) {
                         return new RestPage<>(Arrays.asList(ek003v3_0Rows));
-                    } else if (searchDataCriteria.getPageNumber() == 0 && "3.0".equals(loadedVersion.getVersion()))
+                    } else if (searchDataCriteria.getPageNumber() == 0 && ver3_0IsLoaded)
                         return new RestPage<>(Arrays.asList(ek003v3_1Rows));
 
                     return new RestPage<>(Collections.emptyList());
@@ -298,9 +300,7 @@ public class TestConfig {
         return new RequestMatcher() {
             @Override
             public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(oid , version);
-                Assert.assertNotNull(loadedVersion);
-
+                Assert.assertTrue(versionIsLoaded(oid, version));
             }
         };
     }
@@ -313,10 +313,14 @@ public class TestConfig {
     private RequestMatcher noVersionLoaded(String oid) {
         return new RequestMatcher() {
             @Override
-            public void match(ClientHttpRequest clientHttpRequest) throws IOException, AssertionError {
-                Assert.assertTrue(!rdmSyncDao.existsLoadedVersion(oid));
+            public void match(ClientHttpRequest clientHttpRequest) throws AssertionError {
+                Assert.assertTrue(loggingService.getList(LocalDate.now(), oid).isEmpty());
             }
         };
+    }
+
+    private boolean versionIsLoaded(String code, String version) {
+        return loggingService.getList(LocalDate.now() , code).stream().anyMatch(log -> log.getNewVersion().equals(version));
     }
 
 
