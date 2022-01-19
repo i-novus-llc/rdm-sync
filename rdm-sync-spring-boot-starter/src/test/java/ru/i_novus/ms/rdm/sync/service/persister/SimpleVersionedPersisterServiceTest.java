@@ -8,6 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
@@ -48,9 +49,11 @@ public class SimpleVersionedPersisterServiceTest {
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0))).thenReturn(new PageImpl<>(data));
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
         when(dao.getFieldMappings(eq(refBook.getCode()))).thenReturn(generateFieldMappings());
+        LoadedVersion loadedVersion = new LoadedVersion(1, refBook.getCode(), refBook.getVersion(), refBook.getFrom(), null, LocalDateTime.now(), true);
+        when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(loadedVersion);
 
         persisterService.firstWrite(refBook, versionMapping, syncSourceService);
-        verify(dao, times(1)).insertSimpleVersionedRows(versionMapping.getTable(), data, new RefBookPassport(refBook.getVersion(), refBook.getFrom(), null));
+        verify(dao, times(1)).insertSimpleVersionedRows(versionMapping.getTable(), data, loadedVersion.getId());
     }
 
     @Test
@@ -66,11 +69,12 @@ public class SimpleVersionedPersisterServiceTest {
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
         when(syncSourceService.getRefBook(oldVersion.getCode(), oldVersion.getVersion())).thenReturn(oldVersion);
         when(dao.getFieldMappings(eq(oldVersion.getCode()))).thenReturn(generateFieldMappings());
+        LoadedVersion loadedVersion = new LoadedVersion(1, newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), null, LocalDateTime.now(), true);
+        when(dao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion())).thenReturn(loadedVersion);
 
         persisterService.merge(newVersion, oldVersion.getVersion(), versionMapping, syncSourceService);
 
-        verify(dao, times(1)).closeVersion(versionMapping.getTable(), oldVersion.getVersion(), oldVersion.getTo());
-        verify(dao, times(1)).insertSimpleVersionedRows(versionMapping.getTable(), data, new RefBookPassport(newVersion.getVersion(), newVersion.getFrom(), null));
+        verify(dao, times(1)).insertSimpleVersionedRows(versionMapping.getTable(), data, loadedVersion.getId());
     }
 
     @Test
@@ -82,10 +86,12 @@ public class SimpleVersionedPersisterServiceTest {
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0 && refBookVersion.getVersion().equals(dataCriteria.getVersion())))).thenReturn(new PageImpl<>(data));
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
         when(dao.getFieldMappings(refBookVersion.getCode())).thenReturn(generateFieldMappings());
+        LoadedVersion loadedVersion = new LoadedVersion(1, refBookVersion.getCode(), refBookVersion.getVersion(), refBookVersion.getFrom(), null, LocalDateTime.now(), true);
+        when(dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(loadedVersion);
 
         persisterService.repeatVersion(refBookVersion, versionMapping, syncSourceService);
 
-        verify(dao, times(1)).upsertVersionedRows(versionMapping.getTable(), data, new RefBookPassport(refBookVersion.getVersion(), refBookVersion.getFrom(), refBookVersion.getTo()));
+        verify(dao, times(1)).upsertVersionedRows(versionMapping.getTable(), data, loadedVersion.getId());
     }
 
     private List<FieldMapping> generateFieldMappings() {

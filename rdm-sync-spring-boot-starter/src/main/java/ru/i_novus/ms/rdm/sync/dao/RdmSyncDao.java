@@ -32,7 +32,11 @@ public interface RdmSyncDao {
      */
     List<VersionMapping> getVersionMappings();
 
-    LoadedVersion getLoadedVersion(String code);
+    LoadedVersion getLoadedVersion(String code, String version);
+
+    LoadedVersion getActualLoadedVersion(String code);
+
+    boolean existsLoadedVersion(String code);
 
     VersionMapping getVersionMapping(String refbookCode, String version);
 
@@ -46,11 +50,15 @@ public interface RdmSyncDao {
      */
     List<FieldMapping> getFieldMappings(String refbookCode);
 
+    List<FieldMapping> getFieldMappings(Integer mappingId);
+
     List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
-    void insertLoadedVersion(String code, String version, LocalDateTime publishDate);
+    Integer insertLoadedVersion(String code, String version, LocalDateTime publishDate, LocalDateTime closeDate, boolean actual);
 
-    void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate);
+    void updateLoadedVersion(Integer id, String version, LocalDateTime publishDate, LocalDateTime closeDate);
+
+    void closeLoadedVersion(String code, String version, LocalDateTime closeDate);
 
     /**
      * Получить список значений первичных ключей в таблице клиента.
@@ -88,13 +96,11 @@ public interface RdmSyncDao {
 
     void insertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
 
-    void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport);
-
-    void closeVersion(String schemaTable, String version, LocalDateTime closeDate);
+    void insertSimpleVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId);
 
     void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
 
-    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, RefBookPassport passport);
+    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId);
 
     /**
      * Изменить строку в справочник клиента.

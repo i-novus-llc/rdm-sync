@@ -43,7 +43,7 @@ public class AbstractRefBookUpdaterTest {
     }
 
     protected LoadedVersion createLoadedVersion() {
-        return new LoadedVersion(1, "code", "-1", LocalDateTime.of(2017, 1, 14, 10, 34), LocalDateTime.of(2017, 1, 14, 10, 34));
+        return new LoadedVersion(1, "code", "-1", LocalDateTime.of(2017, 1, 14, 10, 34), null, LocalDateTime.of(2017, 1, 14, 10, 34), true);
     }
 
 
