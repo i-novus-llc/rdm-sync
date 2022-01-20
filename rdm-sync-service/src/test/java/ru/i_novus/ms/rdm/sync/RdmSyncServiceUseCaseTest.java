@@ -30,7 +30,6 @@ import java.util.Map;
 @TestPropertySource("classpath:application-test.properties")
 @AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.OPENTABLE)
 @Import(TestConfig.class)
-@Ignore
 public class RdmSyncServiceUseCaseTest {
 
     @LocalServerPort
