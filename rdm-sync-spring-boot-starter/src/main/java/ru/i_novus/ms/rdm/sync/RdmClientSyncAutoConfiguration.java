@@ -284,7 +284,8 @@ public class RdmClientSyncAutoConfiguration {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
-                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater));
+                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater,
+                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, notVersionedRefBookUpdater));
     }
 
     @Bean
