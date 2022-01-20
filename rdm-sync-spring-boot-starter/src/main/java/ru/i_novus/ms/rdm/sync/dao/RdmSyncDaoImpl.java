@@ -115,7 +115,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public LoadedVersion getLoadedVersion(String code, String version) {
         List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and version = :version", Map.of("code", code, "version", version),
-                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")), rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
         );
 
         if (CollectionUtils.isEmpty(result)) {
@@ -128,7 +128,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public LoadedVersion getActualLoadedVersion(String code) {
         List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and is_actual = true", Map.of("code", code),
-                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")), rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
         );
         if (CollectionUtils.isEmpty(result)) {
             return null;
@@ -312,7 +312,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         params.put("close_dt", closeDate);
         params.put("load_dt", LocalDateTime.now(Clock.systemUTC()));
         params.put("id", id);
-        namedParameterJdbcTemplate.update(sql,params);
+        namedParameterJdbcTemplate.update(sql, params);
     }
 
 
@@ -938,7 +938,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, SyncTypeEnum type) {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) {
-            createTableWithNaturalPrimaryKey(schema, table, fieldMappings, sysPkColumn);
+            createTableWithNaturalPrimaryKey(schema, table, fieldMappings, sysPkColumn,
+                    Map.of(isDeletedFieldName, "timestamp without time zone"));
         }
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
@@ -958,7 +959,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
     }
 
-    private void createTableWithNaturalPrimaryKey(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn) {
+    private void createTableWithNaturalPrimaryKey(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn, Map<String, String> additionalColumns) {
         StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
         ddl.append(fieldMappings.stream()
                 .map(mapping -> {
@@ -966,6 +967,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     return String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType());
                 })
                 .collect(Collectors.joining(", ")));
+        for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
+            ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
+        }
         ddl.append(")");
 
         getJdbcTemplate().execute(ddl.toString());
@@ -1050,7 +1054,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     private LocalDateTime toLocalDateTime(Timestamp timestamp) {
-        if(timestamp == null)
+        if (timestamp == null)
             return null;
 
         return timestamp.toLocalDateTime();
