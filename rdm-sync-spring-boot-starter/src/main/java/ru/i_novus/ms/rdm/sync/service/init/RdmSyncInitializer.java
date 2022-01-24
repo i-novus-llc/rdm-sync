@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
@@ -36,10 +37,16 @@ public class RdmSyncInitializer {
     @Autowired
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
+    @Value("${rdm-sync.auto_create.loader.enable:false}")
+    private boolean loaderInit;
+
     public void init() {
 
-        sourceLoaderServiceInit();
-        mappingLoaderService.load();
+        if (loaderInit) {
+            sourceLoaderServiceInit();
+            mappingLoaderService.load();
+        }
+
         autoCreate();
 
         if (rdmSyncJobConfigurer != null) {
