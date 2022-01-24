@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
@@ -37,23 +36,27 @@ public class RdmSyncInitializer {
     @Autowired
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
-    @Value("${rdm-sync.auto_create.loader.enable:false}")
-    private boolean loaderInit;
+    private boolean initialized;
 
     public void init() {
 
-        if (loaderInit) {
-            sourceLoaderServiceInit();
-            mappingLoaderService.load();
+        if (initialized) {
+            return;
         }
 
+        sourceLoaderServiceInit();
+        mappingLoaderService.load();
         autoCreate();
 
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
             rdmSyncJobConfigurer.setupExportJob();
-        } else
+        } else {
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
+        }
+
+        initialized = true;
+
     }
 
     private void autoCreate() {
