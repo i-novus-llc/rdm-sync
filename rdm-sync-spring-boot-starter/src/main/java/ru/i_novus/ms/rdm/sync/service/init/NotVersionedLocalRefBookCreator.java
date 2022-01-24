@@ -28,14 +28,14 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     }
     @Override
-    protected void createTable(String refBookCode, VersionMapping mapping, SyncTypeEnum type) {
+    protected void createTable(String refBookCode, VersionMapping mapping) {
 
         String[] split = mapping.getTable().split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn(), type);
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 

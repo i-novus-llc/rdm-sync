@@ -22,7 +22,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
@@ -936,15 +935,29 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, SyncTypeEnum type) {
-        if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) {
-            createTableWithNaturalPrimaryKey(schema, table, fieldMappings, sysPkColumn,
-                    Map.of(isDeletedFieldName, "timestamp without time zone"));
-        }
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn) {
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
                         sysPkColumn, RECORD_SYS_COL_INFO)
         );
+    }
+
+    @Override
+    public void createTableWithNaturalPkIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
+        Map<String, String> additionalColumns = new HashMap<>(Map.of(isDeletedFieldName, "timestamp without time zone"));
+        StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
+        ddl.append(fieldMappings.stream()
+                .map(mapping -> {
+                    if (mapping.getSysField().equals(sysPkColumn)) mapping.setSysDataType(RECORD_SYS_COL_INFO);
+                    return String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType());
+                })
+                .collect(Collectors.joining(", ")));
+        for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
+            ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
+        }
+        ddl.append(")");
+
+        getJdbcTemplate().execute(ddl.toString());
     }
 
     @Override

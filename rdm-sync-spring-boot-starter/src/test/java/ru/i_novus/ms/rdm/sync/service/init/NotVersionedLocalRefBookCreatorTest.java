@@ -96,8 +96,7 @@ public class NotVersionedLocalRefBookCreatorTest {
                         eq("ref_test_code"),
                         argThat(ignoreOrderEqList(expectedFieldMappingList)),
                         eq("deleted_ts"),
-                        eq("_sync_rec_id"),
-                        eq(SyncTypeEnum.NOT_VERSIONED));
+                        eq("_sync_rec_id"));
 
 
     }
@@ -115,6 +114,11 @@ public class NotVersionedLocalRefBookCreatorTest {
 
     }
 
+    @Test
+    public void testNotVersionedWithNaturalPkCreator() {
+
+
+    }
 
 
     private <T> ArgumentMatcher<List<T>> ignoreOrderEqList(List<T> expectedList) {

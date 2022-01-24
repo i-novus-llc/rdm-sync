@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
@@ -31,7 +29,7 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     }
 
     @Override
-    protected void createTable(String code, VersionMapping versionMapping, SyncTypeEnum type) {
+    protected void createTable(String code, VersionMapping versionMapping) {
 
         String[] split = versionMapping.getTable().split("\\.");
         String schemaName = split[0];

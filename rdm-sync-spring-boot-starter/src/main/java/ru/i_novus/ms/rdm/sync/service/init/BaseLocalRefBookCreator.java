@@ -9,8 +9,8 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
@@ -46,7 +46,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
-    protected abstract void createTable(String refBookCode, VersionMapping mapping, SyncTypeEnum type);
+    protected abstract void createTable(String refBookCode, VersionMapping mapping);
 
     public BaseLocalRefBookCreator(String schema,
                                    Boolean caseIgnore,
@@ -77,7 +77,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
             return;
 
         if (mapping != null) {
-            createTable(refBookCode, mapping, type);
+            createTable(refBookCode, mapping);
         }
     }
 
