@@ -114,11 +114,6 @@ public class NotVersionedLocalRefBookCreatorTest {
 
     }
 
-    @Test
-    public void testNotVersionedWithNaturalPkCreator() {
-
-
-    }
 
 
     private <T> ArgumentMatcher<List<T>> ignoreOrderEqList(List<T> expectedList) {
