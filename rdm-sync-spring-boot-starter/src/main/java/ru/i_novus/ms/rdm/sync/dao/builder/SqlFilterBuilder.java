@@ -38,8 +38,8 @@ public class SqlFilterBuilder extends SqlClauseBuilder {
 
         SqlValueFilterBuilder builder = new SqlValueFilterBuilder();
         IntStream.range(0, valueFilters.size()).forEach(index -> {
-            final String name = field + "_" + index;
-            builder.parse(field, filter.getType(), name, valueFilters.get(index));
+            final String bindName = field + "_" + index;
+            builder.parse(field, filter.getType(), bindName, valueFilters.get(index));
         });
         concat(builder);
     }
