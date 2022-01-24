@@ -7,18 +7,13 @@ import liquibase.integration.spring.SpringLiquibase;
 import liquibase.resource.ResourceAccessor;
 import org.apache.cxf.common.util.ReflectionUtil;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.env.PropertyResolver;
 
 public class InitCustomTaskChange implements CustomTaskChange {
 
-    private boolean skip;
     private RdmSyncInitializer initializer;
 
     @Override
     public void execute(final Database database) {
-        if (skip) {
-            return;
-        }
         initializer.init();
     }
 
@@ -41,12 +36,6 @@ public class InitCustomTaskChange implements CustomTaskChange {
             SpringLiquibase.class
         );
         final ApplicationContext context = (ApplicationContext) liquibase.getResourceLoader();
-        final PropertyResolver propertyResolver = context.getBean(PropertyResolver.class);
-        final String loaderInit = propertyResolver.getProperty("rdm-sync.auto_create.loader.enable");
-        if (loaderInit != null && loaderInit.equalsIgnoreCase("true")) {
-            skip = true;
-            return;
-        }
         initializer = context.getBean(RdmSyncInitializer.class);
     }
 
