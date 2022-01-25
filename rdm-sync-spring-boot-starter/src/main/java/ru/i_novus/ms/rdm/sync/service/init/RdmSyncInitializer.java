@@ -45,8 +45,10 @@ public class RdmSyncInitializer {
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
             rdmSyncJobConfigurer.setupExportJob();
-        } else
+        } else {
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
+        }
+
     }
 
     private void autoCreate() {
