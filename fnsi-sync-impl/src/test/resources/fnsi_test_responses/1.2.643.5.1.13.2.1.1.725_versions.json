@@ -1,0 +1,32 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 3,
+  "list": [
+    {
+      "version": "1.9",
+      "createDate": "06.12.2016",
+      "publishDate": "29.08.2018 10:54",
+      "lastUpdate": "29.08.2018 10:53",
+      "releaseNotes": "<p><span style=\"color:#333333\">Справочник носит локальный характер, разработан для подсистемы ЕГИСЗ &laquo;Регистр 7 высокозатратных нозологий&raquo;</span></p>\n",
+      "archive": false
+    },
+    {
+      "version": "1.8",
+      "createDate": "06.12.2016",
+      "publishDate": "03.08.2018 00:00",
+      "lastUpdate": "03.08.2018 10:28",
+      "releaseNotes": "<p><span style=\"color:#333333\">Справочник носит локальный характер, разработан для подсистемы ЕГИСЗ &laquo;Регистр 7 высокозатратных нозологий&raquo;</span></p>\n",
+      "archive": true
+    },
+    {
+      "version": "1.7",
+      "createDate": "06.12.2016",
+      "publishDate": "10.07.2018 00:00",
+      "lastUpdate": "10.07.2018 17:15",
+      "releaseNotes": "<p><span style=\"color:#333333\">Справочник носит локальный характер, разработан для подсистемы ЕГИСЗ &laquo;Регистр 7 высокозатратных нозологий&raquo;</span></p>\n",
+      "archive": true
+    }
+  ]
+}

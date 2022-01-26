@@ -9,6 +9,7 @@ public class AutoCreateRefBookPropertyValue {
     private String name;
     private SyncTypeEnum type;
     private String table;
+    private String range;
 
     public String getCode() {
         return code;
@@ -48,5 +49,13 @@ public class AutoCreateRefBookPropertyValue {
 
     public void setTable(String table) {
         this.table = table;
+    }
+
+    public String getRange() {
+        return range;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
     }
 }

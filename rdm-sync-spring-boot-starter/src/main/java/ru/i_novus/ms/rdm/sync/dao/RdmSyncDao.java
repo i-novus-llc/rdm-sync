@@ -33,6 +33,8 @@ public interface RdmSyncDao {
 
     LoadedVersion getLoadedVersion(String code, String version);
 
+    List<LoadedVersion> getLoadedVersions(String code);
+
     LoadedVersion getActualLoadedVersion(String code);
 
     boolean existsLoadedVersion(String code);

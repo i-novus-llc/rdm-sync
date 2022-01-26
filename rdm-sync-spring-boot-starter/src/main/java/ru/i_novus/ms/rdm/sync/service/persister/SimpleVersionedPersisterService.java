@@ -39,9 +39,10 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     @Override
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getId());
         DataCriteria searchDataCriteria = new DataCriteria();
         searchDataCriteria.setCode(versionMapping.getCode());
+        searchDataCriteria.setVersion(newVersion.getVersion());
         searchDataCriteria.setPageSize(maxSize);
         insertVersion(newVersion, versionMapping, syncSourceService, fieldMappings, searchDataCriteria);
 
@@ -49,11 +50,11 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     @Override
     public void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        RefBookVersion oldVersion = syncSourceService.getRefBook(versionMapping.getCode(), synchedVersion);
+        //RefBookVersion oldVersion = syncSourceService.getRefBook(versionMapping.getCode(), synchedVersion);
        /* if(oldVersion.getTo() == null) {
             throw new IllegalStateException("old version " + synchedVersion + " of refbook " + versionMapping.getCode() + " has empty close date");
         }*/
-        List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getId());
         DataCriteria searchDataCriteria = new DataCriteria();
         searchDataCriteria.setCode(versionMapping.getCode());
         searchDataCriteria.setVersion(newVersion.getVersion());
@@ -68,7 +69,7 @@ public class SimpleVersionedPersisterService implements PersisterService {
         searchDataCriteria.setVersion(refBookVersion.getVersion());
         searchDataCriteria.setVersion(refBookVersion.getVersion());
         searchDataCriteria.setPageSize(maxSize);
-        updateVersion(refBookVersion, versionMapping, syncSourceService, rdmSyncDao.getFieldMappings(versionMapping.getCode()), searchDataCriteria);
+        updateVersion(refBookVersion, versionMapping, syncSourceService, rdmSyncDao.getFieldMappings(versionMapping.getId()), searchDataCriteria);
     }
 
     private void insertVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings, DataCriteria searchDataCriteria) {

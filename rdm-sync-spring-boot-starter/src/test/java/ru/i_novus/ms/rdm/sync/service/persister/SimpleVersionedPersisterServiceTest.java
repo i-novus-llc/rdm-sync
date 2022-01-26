@@ -48,7 +48,7 @@ public class SimpleVersionedPersisterServiceTest {
         List<Map<String, Object>> data = generateData();
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0))).thenReturn(new PageImpl<>(data));
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
-        when(dao.getFieldMappings(eq(refBook.getCode()))).thenReturn(generateFieldMappings());
+        when(dao.getFieldMappings(eq(versionMapping.getId()))).thenReturn(generateFieldMappings());
         LoadedVersion loadedVersion = new LoadedVersion(1, refBook.getCode(), refBook.getVersion(), refBook.getFrom(), null, LocalDateTime.now(), true);
         when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(loadedVersion);
 
@@ -67,8 +67,7 @@ public class SimpleVersionedPersisterServiceTest {
         List<Map<String, Object>> data = generateData();
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0 && "2".equals(dataCriteria.getVersion())))).thenReturn(new PageImpl<>(data));
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
-        when(syncSourceService.getRefBook(oldVersion.getCode(), oldVersion.getVersion())).thenReturn(oldVersion);
-        when(dao.getFieldMappings(eq(oldVersion.getCode()))).thenReturn(generateFieldMappings());
+        when(dao.getFieldMappings(eq(versionMapping.getId()))).thenReturn(generateFieldMappings());
         LoadedVersion loadedVersion = new LoadedVersion(1, newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), null, LocalDateTime.now(), true);
         when(dao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion())).thenReturn(loadedVersion);
 
@@ -85,7 +84,7 @@ public class SimpleVersionedPersisterServiceTest {
         List<Map<String, Object>> data = generateData();
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() == 0 && refBookVersion.getVersion().equals(dataCriteria.getVersion())))).thenReturn(new PageImpl<>(data));
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() != 0))).thenReturn(Page.empty());
-        when(dao.getFieldMappings(refBookVersion.getCode())).thenReturn(generateFieldMappings());
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(generateFieldMappings());
         LoadedVersion loadedVersion = new LoadedVersion(1, refBookVersion.getCode(), refBookVersion.getVersion(), refBookVersion.getFrom(), null, LocalDateTime.now(), true);
         when(dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(loadedVersion);
 
@@ -129,6 +128,7 @@ public class SimpleVersionedPersisterServiceTest {
                 null,
                 -1,
                 null,
-                SyncTypeEnum.SIMPLE_VERSIONED);
+                SyncTypeEnum.SIMPLE_VERSIONED,
+                null);
     }
 }

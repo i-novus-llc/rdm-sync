@@ -12,6 +12,7 @@ import ru.i_novus.ms.rdm.api.model.diff.RefBookDataDiff;
 import ru.i_novus.ms.rdm.api.model.diff.StructureDiff;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.model.refdata.SearchDataCriteria;
+import ru.i_novus.ms.rdm.api.model.version.VersionCriteria;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
@@ -48,48 +49,50 @@ public class  RdmSyncSourceService implements SyncSourceService {
 
     @Override
     public RefBookVersion getRefBook(String code, String version) {
-        RefBookCriteria refBookCriteria = new RefBookCriteria();
-        refBookCriteria.setCode(code);
-        refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
-        Page<ru.i_novus.ms.rdm.api.model.refbook.RefBook> pageOfRdmRefBooks = refBookService.search(refBookCriteria);
-        if (pageOfRdmRefBooks.getContent() == null || pageOfRdmRefBooks.getContent().isEmpty()) {
+        final ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmRefBook;
+        if (version != null) {
+            rdmRefBook = versionService.getVersion(version, code);
+        } else {
+            RefBookCriteria refBookCriteria = new RefBookCriteria();
+            refBookCriteria.setCode(code);
+            refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
+
+            Page<ru.i_novus.ms.rdm.api.model.refbook.RefBook> pageOfRdmRefBooks = refBookService.search(refBookCriteria);
+            if (pageOfRdmRefBooks.getContent().size() > 1)
+                throw new IllegalStateException(String.format(SEVERAL_REFBOOKS_WITH_CODE_FOUND, code));
+            logger.info("refbook with code {} was found", code);
+            if (pageOfRdmRefBooks.getContent().size() == 1) {
+                rdmRefBook = pageOfRdmRefBooks.getContent().get(0);
+            } else
+                rdmRefBook = null;
+        }
+
+        if(rdmRefBook == null) {
             logger.warn("cannot find refbook by code {}", code);
             return null;
         }
-        if (pageOfRdmRefBooks.getContent().size() > 1)
-            throw new IllegalStateException(String.format(SEVERAL_REFBOOKS_WITH_CODE_FOUND, code));
-        logger.info("refbook with code {} was found", code);
-        ru.i_novus.ms.rdm.api.model.refbook.RefBook rdmRefBook = pageOfRdmRefBooks.getContent().get(0);
-        RefBookVersion refBook = new RefBookVersion();
-        refBook.setCode(code);
-        LocalDateTime publishDate = rdmRefBook.getLastPublishedDate() != null ? rdmRefBook.getLastPublishedDate() : rdmRefBook.getFromDate();
-        refBook.setFrom(publishDate);
-        refBook.setVersion(rdmRefBook.getLastPublishedVersion());
-        refBook.setVersionId(rdmRefBook.getId());
-        RefBookStructure structure = new RefBookStructure();
-        structure.setAttributesAndTypes(new HashMap<>());
-        rdmRefBook.getStructure().getAttributes().forEach(attr -> {
-            structure.getAttributesAndTypes().put(attr.getCode(), AttributeTypeMapper.map(attr.getType()));
-            structure.setReferences(rdmRefBook.getStructure().getReferences().stream()
-                    .map(Structure.Reference::getReferenceCode)
-                    .collect(Collectors.toList()));
-            if (Boolean.TRUE.equals(attr.getIsPrimary())) {
-                if (structure.getPrimaries() == null) {
-                    structure.setPrimaries(new ArrayList<>());
-                }
-                structure.getPrimaries().add(attr.getCode());
-            }
-        });
-        refBook.setStructure(structure);
-        return refBook;
+
+        return convertToRefBookVersion(rdmRefBook);
+    }
+
+
+
+    @Override
+    public List<RefBookVersion> getVersions(String code) {
+        VersionCriteria versionCriteria = new VersionCriteria();
+        versionCriteria.setRefBookCode(code);
+        versionCriteria.setPageSize(Integer.MAX_VALUE);
+        return versionService.getVersions(versionCriteria).getContent().stream()
+                .map(this::convertToRefBookVersion).collect(Collectors.toList());
     }
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
         List<Map<String, Object>> data = new ArrayList<>();
 
+        ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmVersion = versionService.getVersion(dataCriteria.getVersion(), dataCriteria.getCode());
         Page<Map<String, Object>> page = PageMapper.map(
-                versionService.search(dataCriteria.getCode(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
+                versionService.search(rdmVersion.getId(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
                 refBookRowValue -> {
                     Map<String, Object> mapValue = new LinkedHashMap<>();
                     refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
@@ -135,5 +138,28 @@ public class  RdmSyncSourceService implements SyncSourceService {
 
     }
 
-
+    private RefBookVersion convertToRefBookVersion(ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmRefBook) {
+        RefBookVersion refBook = new RefBookVersion();
+        refBook.setCode(rdmRefBook.getCode());
+        LocalDateTime publishDate = rdmRefBook.getFromDate();
+        refBook.setFrom(publishDate);
+        refBook.setVersion(rdmRefBook.getVersion());
+        refBook.setVersionId(rdmRefBook.getId());
+        RefBookStructure structure = new RefBookStructure();
+        structure.setAttributesAndTypes(new HashMap<>());
+        rdmRefBook.getStructure().getAttributes().forEach(attr -> {
+            structure.getAttributesAndTypes().put(attr.getCode(), AttributeTypeMapper.map(attr.getType()));
+            structure.setReferences(rdmRefBook.getStructure().getReferences().stream()
+                    .map(Structure.Reference::getReferenceCode)
+                    .collect(Collectors.toList()));
+            if (Boolean.TRUE.equals(attr.getIsPrimary())) {
+                if (structure.getPrimaries() == null) {
+                    structure.setPrimaries(new ArrayList<>());
+                }
+                structure.getPrimaries().add(attr.getCode());
+            }
+        });
+        refBook.setStructure(structure);
+        return refBook;
+    }
 }

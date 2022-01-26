@@ -32,6 +32,8 @@ public class XmlMappingRefBook {
 
     private String version;
 
+    private String range;
+
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
         return code;
@@ -116,8 +118,17 @@ public class XmlMappingRefBook {
         this.type = type;
     }
 
+    @XmlAttribute
+    public String getRange() {
+        return range;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
+
     public VersionMapping convertToVersionMapping() {
-        return new VersionMapping(null, code, name, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type);
+        return new VersionMapping(null, code, name, version, sysTable, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
@@ -132,7 +143,7 @@ public class XmlMappingRefBook {
         result.setSysTable(mapping.getTable());
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
-
+        result.setRange(mapping.getRange());
         return result;
     }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 public class DataCriteria extends RestCriteria {
 
     private String code;
-    //todo
     private String version;
 
     @Override

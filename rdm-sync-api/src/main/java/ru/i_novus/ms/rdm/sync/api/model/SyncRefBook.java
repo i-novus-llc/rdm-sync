@@ -14,4 +14,5 @@ public class SyncRefBook {
     private String code;
     private SyncTypeEnum type;
     private String name;
+    private String range;
 }

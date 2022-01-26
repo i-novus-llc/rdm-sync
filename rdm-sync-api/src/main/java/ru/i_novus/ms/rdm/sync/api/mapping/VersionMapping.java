@@ -30,4 +30,5 @@ public class VersionMapping {
     private int mappingVersion;
     private Integer mappingId;
     private SyncTypeEnum type;
+    private String range;
 }
