@@ -943,7 +943,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableWithNaturalPkIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
+    public void createTableWithNaturalPrimaryKeykIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
         Map<String, String> additionalColumns = new HashMap<>(Map.of(isDeletedFieldName, "timestamp without time zone"));
         StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
         ddl.append(fieldMappings.stream()

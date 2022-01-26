@@ -34,7 +34,7 @@ public class NotVersionedWithNaturalPrimaryKeyLocalRefBookCreator extends BaseLo
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableWithNaturalPkIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableWithNaturalPrimaryKeykIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
