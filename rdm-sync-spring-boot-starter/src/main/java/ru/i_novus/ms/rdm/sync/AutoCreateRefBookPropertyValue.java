@@ -12,6 +12,7 @@ public class AutoCreateRefBookPropertyValue {
     private SyncTypeEnum type;
     private String table;
     private String sysPkColumn = "_sync_rec_id";
+    private String range;
 
     public String getCode() {
         return code;
@@ -57,4 +58,12 @@ public class AutoCreateRefBookPropertyValue {
         return Objects.toString(sysPkColumn, "_sync_rec_id");
     }
 
+
+    public String getRange() {
+        return range;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
 }

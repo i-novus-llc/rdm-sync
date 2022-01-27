@@ -17,7 +17,9 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionIterator;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -51,12 +53,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     private int threadsCount = 3;
 
     private static final String LOG_NO_MAPPING_FOR_REFBOOK =
-            "No version mapping found for reference book with code '{}'.";
-    private static final String REFBOOK_WITH_CODE_NOT_FOUND =
-            "Reference book with code '%s' not found.";
-    private static final String NO_PRIMARY_KEY_FOUND =
-            "Reference book with code '%s' has not primary key.";
-
+            "No mapping found for reference book with code '{}'.";
 
     @Autowired
     private RdmLoggingService loggingService;
@@ -113,7 +110,12 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             return;
         }
 
-        refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType()).update(refBookCode);
+        RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
+        if(syncRefBook.getRange() != null) {
+           new RefBookVersionIterator(syncRefBook, dao, syncSourceService).forEachRemaining(version -> refBookUpdater.update(refBookCode, version));
+        } else {
+            refBookUpdater.update(refBookCode, null);
+        }
     }
 
     @Override
@@ -138,7 +140,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         for (VersionMapping vm : versionMappings) {
             XmlMappingRefBook xmlMappingRefBook = XmlMappingRefBook.createBy(vm);
 
-            List<XmlMappingField> fields = dao.getFieldMappings(vm.getCode()).stream()
+            List<XmlMappingField> fields = dao.getFieldMappings(vm.getId()).stream()
                     .map(XmlMappingField::createBy)
                     .collect(toList());
             xmlMappingRefBook.setFields(fields);

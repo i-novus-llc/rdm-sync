@@ -35,7 +35,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(mapping.getId()), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -47,8 +47,8 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     @Override
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn) {
-        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn);
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn, String range) {
+        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn, range);
         String isDeletedField = "deleted_ts";
         if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;

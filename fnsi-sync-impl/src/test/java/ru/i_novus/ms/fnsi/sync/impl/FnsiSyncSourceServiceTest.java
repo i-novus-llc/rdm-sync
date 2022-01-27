@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum.*;
+
 public class FnsiSyncSourceServiceTest {
 
     private final String url = "https://fnsi.mock.ru/port";
@@ -53,13 +55,13 @@ public class FnsiSyncSourceServiceTest {
                 null,
                 Collections.singletonList("ID"),
                 Map.of(
-                        "ID", AttributeTypeEnum.INTEGER,
-                        "SMOCOD", AttributeTypeEnum.STRING,
-                        "CODPVP", AttributeTypeEnum.STRING,
-                        "ADDRESS", AttributeTypeEnum.STRING,
-                        "PHONE", AttributeTypeEnum.STRING,
-                        "DATEEND", AttributeTypeEnum.DATE,
-                        "DATEBEG", AttributeTypeEnum.DATE));
+                        "ID", INTEGER,
+                        "SMOCOD", STRING,
+                        "CODPVP", STRING,
+                        "ADDRESS", STRING,
+                        "PHONE", STRING,
+                        "DATEEND", DATE,
+                        "DATEBEG", DATE));
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
         RefBookVersion refBook = syncSourceService.getRefBook(oid, null);
@@ -217,6 +219,47 @@ public class FnsiSyncSourceServiceTest {
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         Assert.assertFalse(diff.isStructureChanged());
         Assert.assertTrue(diff.getRows().isEmpty());
+    }
+
+    @Test
+    public void testGetVersions() throws URISyntaxException {
+        String oid = "1.2.643.5.1.13.2.1.1.725";
+        versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_versions.json"));
+        passportMockServer(oid, "1.7", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.7.json"));
+        passportMockServer(oid, "1.8", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.8.json"));
+        passportMockServer(oid, "1.9", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.9.json"));
+        List<RefBookVersion> versions = syncSourceService.getVersions(oid);
+
+        RefBookStructure structure = new RefBookStructure(null, List.of("ID"), Map.of("ID", INTEGER, "MNN_ID", INTEGER, "DRUG_FORM_ID", INTEGER, "DOSE_ID", INTEGER));
+        List<RefBookVersion> expected = List.of(
+                new RefBookVersion(
+                        oid,
+                        "1.7",
+                        LocalDateTime.of(2018, 7, 10, 0, 0),
+                        LocalDateTime.of(2018, 8, 3, 0, 0),
+                        null,
+                        structure
+                ),
+                new RefBookVersion(
+                        oid,
+                        "1.8",
+                        LocalDateTime.of(2018, 8, 3, 0, 0),
+                        LocalDateTime.of(2018, 8, 29, 10, 54),
+                        null,
+                        structure
+                ),
+                new RefBookVersion(
+                        oid,
+                        "1.9",
+                        LocalDateTime.of(2018, 8, 29, 10, 54),
+                        null,
+                        null,
+                        structure
+                )
+        );
+
+        Assert.assertEquals(expected, versions);
+
     }
 
     private void versionsMockServer(String identifier, Resource body) throws URISyntaxException {

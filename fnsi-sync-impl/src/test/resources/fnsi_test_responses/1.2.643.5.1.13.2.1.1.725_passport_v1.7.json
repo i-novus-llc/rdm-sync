@@ -1,0 +1,63 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "identifier": "VZN108",
+  "oid": "1.2.643.5.1.13.2.1.1.725",
+  "version": "1.7",
+  "rowsCount": 118,
+  "createDate": "06.12.2016 00:00",
+  "publishDate": "10.07.2018 00:00",
+  "lastUpdate": "10.07.2018 17:15",
+  "fullName": "ФР7Н. Справочник связи международного непатентованного наименования, лекарственной формы лекарственного препарата, дозировки лекарственного средства в лекарственном препарате",
+  "shortName": "ФР7Н. Справочник связи МНН, ЛФ ЛП, дозировки",
+  "description": "<p><span style=\"color:#333333\">Справочник носит локальный характер, разработан для подсистемы ЕГИСЗ &laquo;Регистр 7 высокозатратных нозологий&raquo;</span></p>\n",
+  "structureNotes": "1)ID, УИ, Уникальный идентификатор, целое число, обязательное;\n2)MNN_ID, Код МНН, Код МНН, целое число, обязательное;\n3)DRUG_FORM_ID, Код ЛФ, Код лекарственной формы, целое число, обязательное;\n4)DOSE_ID, Код дозировки, Код дозировки, целое число, обязательное;",
+  "releaseNotes": "<p><span style=\"color:#333333\">Добавлено записей: 0;</span></p>\n\n<p><span style=\"color:#333333\">Изменено записей: 0;</span></p>\n\n<p><span style=\"color:#333333\">Удалено записей: 3;</span></p>\n",
+  "laws": [],
+  "respOrganizationId": 11,
+  "authOrganizationId": 12,
+  "typeId": 1,
+  "groupId": 14,
+  "approveDate": "31.12.2018",
+  "fields": [
+    {
+      "field": "ID",
+      "dataType": "INTEGER",
+      "alias": "УИ",
+      "description": "Уникальный идентификатор, целое число, обязательное"
+    },
+    {
+      "field": "MNN_ID",
+      "dataType": "INTEGER",
+      "alias": "Код МНН",
+      "description": "Код МНН, целое число, обязательное"
+    },
+    {
+      "field": "DRUG_FORM_ID",
+      "dataType": "INTEGER",
+      "alias": "Код ЛФ",
+      "description": "Код лекарственной формы, целое число, обязательное"
+    },
+    {
+      "field": "DOSE_ID",
+      "dataType": "INTEGER",
+      "alias": "Код дозировки",
+      "description": "Код дозировки, целое число, обязательное"
+    }
+  ],
+  "keys": [
+    {
+      "field": "ID",
+      "type": "PRIMARY"
+    }
+  ],
+  "codes": [
+    {
+      "value": "1.2.643.5.1.13.2.1.1.725",
+      "type": "TYPE_PRIMARY"
+    }
+  ],
+  "archive": null,
+  "hierarchical": false
+}

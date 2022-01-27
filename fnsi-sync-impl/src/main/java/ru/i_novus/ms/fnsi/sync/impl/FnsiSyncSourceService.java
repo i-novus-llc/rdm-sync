@@ -38,25 +38,49 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
     @Override
     public RefBookVersion getRefBook(String code, String version) {
-        JsonNode response = requestRefBook(code);
-        JsonNode listRefBookNodes = response.get("list");
-        if(listRefBookNodes.isEmpty()) {
-            return null;
+        if (version == null) {
+            JsonNode response = requestRefBook(code);
+            JsonNode listRefBookNodes = response.get("list");
+            if (listRefBookNodes.isEmpty()) {
+                return null;
+            }
+            JsonNode refBookNode = listRefBookNodes.get(0);
+            RefBookVersion refBook = new RefBookVersion();
+            refBook.setFrom(LocalDateTime.parse(refBookNode.get("publishDate").asText(), formatter));
+            refBook.setVersion(refBookNode.get("version").asText());
+            refBook.setCode(code);
+            RefBookStructure refBookStructure = getRefBookStructure(code, refBook.getVersion());
+            refBook.setStructure(refBookStructure);
+            return refBook;
+        } else {
+            //получаю все версии чтобы заполнить дату закрытия версии
+            return getVersions(code).stream()
+                    .filter(refBookVersion -> version.equals(refBookVersion.getVersion())).findAny().orElse(null);
         }
-        JsonNode refBookNode = listRefBookNodes.get(0);
-        RefBookVersion refBook = new RefBookVersion();
-        refBook.setFrom(LocalDateTime.parse(refBookNode.get("publishDate").asText(), formatter));
-        refBook.setVersion(refBookNode.get("version").asText());
-        refBook.setCode(code);
-        RefBookStructure refBookStructure = getRefBookStructure(code, refBook.getVersion());
-        refBook.setStructure(refBookStructure);
-        return refBook;
+    }
+
+    @Override
+    public List<RefBookVersion> getVersions(String code) {
+        List<RefBookVersion> result = new ArrayList<>();
+        Iterator<JsonNode> versionNodeIterator = requestVersions(code).get("list").elements();
+        while (versionNodeIterator.hasNext()) {
+            JsonNode versionNode = versionNodeIterator.next();
+            String version = versionNode.get("version").asText();
+            result.add(new RefBookVersion(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null, getRefBookStructure(code, version)));
+        }
+        Collections.sort(result, Comparator.comparing(RefBookVersion::getFrom));
+        for (int i = 0; i < result.size() - 1; i++) {
+            if (result.get(i).getTo() == null) {
+                result.get(i).setTo(result.get(i + 1).getFrom());
+            }
+        }
+        return result;
     }
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
         RefBookVersion refBook = getRefBook(dataCriteria.getCode(), dataCriteria.getVersion());
-        JsonNode jsonNode = requestData(dataCriteria.getCode(), dataCriteria.getPageNumber() + 1, dataCriteria.getPageSize());
+        JsonNode jsonNode = requestData(dataCriteria.getCode(), dataCriteria.getVersion(), dataCriteria.getPageNumber() + 1, dataCriteria.getPageSize());
         List<Map<String, Object>> data = new ArrayList<>();
         jsonNode.get("list").elements().forEachRemaining(itemNode -> {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -85,17 +109,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
         Iterator<JsonNode> versionNodeIterator = requestVersions(criteria.getRefBookCode()).get("list").elements();
         while (versionNodeIterator.hasNext() && (fromDate == null || toDate == null)) {
             JsonNode versionNode = versionNodeIterator.next();
-            if(versionNode.get("version").asText().equals(criteria.getOldVersion())) {
+            if (versionNode.get("version").asText().equals(criteria.getOldVersion())) {
                 fromDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
             } else if (versionNode.get("version").asText().equals(criteria.getNewVersion())) {
                 toDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
             }
         }
         JsonNode jsonNode = requestDiff(criteria.getRefBookCode(), fromDate, toDate, criteria.getPageNumber() + 1);
-        if("ERROR".equals(jsonNode.get("result").asText().trim())) {
+        if ("ERROR".equals(jsonNode.get("result").asText().trim())) {
             return getErrorDiff(jsonNode);
         }
-        if(!"null".equals(jsonNode.get("fields").asText().trim())) {
+        if (!"null".equals(jsonNode.get("fields").asText().trim())) {
             return VersionsDiff.structureChangedInstance();
         }
         JsonNode diffsNode = jsonNode.get("data").get("list");
@@ -106,7 +130,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
             Map<String, Object> row = new HashMap<>();
             for (Map.Entry<String, AttributeTypeEnum> entry : attributesAndTypes.entrySet()) {
                 JsonNode nodeValue = diffNode.get(entry.getKey());
-                if(nodeValue.asText().trim().equals("null")) {
+                if (nodeValue.asText().trim().equals("null")) {
                     continue;
                 }
                 row.put(entry.getKey(), entry.getValue().castValue(nodeValue.asText()));
@@ -118,35 +142,39 @@ public class FnsiSyncSourceService implements SyncSourceService {
     }
 
     private VersionsDiff getErrorDiff(JsonNode jsonNode) {
-        if("03x0002".equals(jsonNode.get("resultCode").asText().trim())){
+        if ("03x0002".equals(jsonNode.get("resultCode").asText().trim())) {
             return VersionsDiff.dataChangedInstance(Page.empty());
         } else {
             throw new FnsiErrorException(jsonNode.get("resultCode").asText("resultText"));
         }
     }
 
-    private RowDiffStatusEnum getRowDiffStatusEnum(String fnsiOperation){
+    private RowDiffStatusEnum getRowDiffStatusEnum(String fnsiOperation) {
         switch (fnsiOperation) {
-            case "UPDATE" : return RowDiffStatusEnum.UPDATED;
-            case "DELETE" : return RowDiffStatusEnum.DELETED;
-            case "INSERT" : return RowDiffStatusEnum.INSERTED;
+            case "UPDATE":
+                return RowDiffStatusEnum.UPDATED;
+            case "DELETE":
+                return RowDiffStatusEnum.DELETED;
+            case "INSERT":
+                return RowDiffStatusEnum.INSERTED;
         }
 
         throw new UnsupportedOperationException("cannot get diff status from" + fnsiOperation + "operation");
 
     }
 
-    private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page){
-        DateTimeFormatter dtf =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return request(Map.of("userKey", userKey,"identifier", oid, "date1", dtf.format(fromDate),  "date2", dtf.format(toDate), "page", page, "size", 200), "/rest/compare");
+    private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return request(Map.of("userKey", userKey, "identifier", oid, "date1", dtf.format(fromDate), "date2", dtf.format(toDate), "page", page, "size", 200), "/rest/compare");
     }
 
     private JsonNode requestVersions(String oid) {
-        return request(Map.of("userKey", userKey,"identifier", oid, "page", 1, "size", 200), "/rest/versions");
+        return request(Map.of("userKey", userKey, "identifier", oid, "page", 1, "size", 200), "/rest/versions");
     }
 
+
     private JsonNode requestRefBook(String oid) {
-        return request(Map.of("userKey", userKey, "identifier", oid, "page", 1, "size", 200),  "/rest/searchDictionary");
+        return request(Map.of("userKey", userKey, "identifier", oid, "page", 1, "size", 200), "/rest/searchDictionary");
     }
 
     private JsonNode requestStructure(String oid, String version) {
@@ -154,8 +182,13 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
     }
 
-    private JsonNode requestData(String oid, int page, int size) {
-        return request(Map.of("userKey", userKey,"identifier", oid,"page", page,"size", size), "/rest/data");
+    private JsonNode requestData(String oid, String version, int page, int size) {
+        Map<String, Object> params = Map.of("userKey", this.userKey, "identifier", oid, "page", page, "size", size);
+        if (version != null) {
+            params = new HashMap<>(params);
+            params.put("version", version);
+        }
+        return request(params, "/rest/data");
     }
 
     private JsonNode request(Map<String, Object> queryParams, String path) {
@@ -175,8 +208,8 @@ public class FnsiSyncSourceService implements SyncSourceService {
                     HttpMethod.GET,
                     entity,
                     JsonNode.class).getBody();
-            if(body == null) {
-                throw new FnsiErrorException("response from "+ url + " is empty");
+            if (body == null) {
+                throw new FnsiErrorException("response from " + url + " is empty");
             }
             return body;
         } catch (URISyntaxException e) {

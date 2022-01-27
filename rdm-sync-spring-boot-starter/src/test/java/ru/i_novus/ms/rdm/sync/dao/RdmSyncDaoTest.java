@@ -57,6 +57,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         final Map<String, Object> firstRow = Map.of("name", "test name1", "id", 1);
         final Map<String, Object> secondRow = Map.of("name", "test name2", "id", 2);
+        final Map<String, Object> thridRow = Map.of("name", "test\" name'3", "id", 3);
 
         String table = "ref_filtered";
         List<Map<String, Object>> rows = new ArrayList<>(List.of(firstRow, secondRow));
@@ -69,15 +70,25 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         assertEquals(rows, data.getContent());
 
         // Проверка наличия фильтрации.
-        FieldValueFilter inFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, List.of(1, 2));
+        FieldValueFilter inFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, List.of(1, 2, 3));
         FieldFilter idFilter = new FieldFilter("id", DataTypeEnum.VARCHAR, singletonList(inFilter));
 
         FieldValueFilter eqFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, singletonList("test name1"));
+
         FieldValueFilter likeFilter = new FieldValueFilter(FilterTypeEnum.LIKE, singletonList("name2"));
+        FieldValueFilter ilikeFilter = new FieldValueFilter(FilterTypeEnum.ILIKE, singletonList("Name2"));
+
+        FieldValueFilter qlikeFilter = new FieldValueFilter(FilterTypeEnum.QLIKE, singletonList("name3"));
+        FieldValueFilter iqlikeFilter = new FieldValueFilter(FilterTypeEnum.IQLIKE, singletonList("Test Name3"));
+
         FieldValueFilter isNullFilter = new FieldValueFilter(FilterTypeEnum.IS_NULL, singletonList(null));
         FieldValueFilter isNotNullFilter = new FieldValueFilter(FilterTypeEnum.IS_NOT_NULL, singletonList(null));
+
         FieldFilter nameFilter = new FieldFilter("name", DataTypeEnum.VARCHAR,
-                List.of(eqFilter, likeFilter, isNullFilter, isNotNullFilter));
+                List.of(eqFilter,
+                        likeFilter, ilikeFilter,
+                        qlikeFilter, iqlikeFilter,
+                        isNullFilter, isNotNullFilter));
 
         LocalDataCriteria filterCriteria = createFiltersCriteria(table, List.of(idFilter, nameFilter));
         data = rdmSyncDao.getData(filterCriteria);
@@ -299,7 +310,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         String refBookCode = "test";
         String refBookName = "test Name";
         String pkSysColumn = "test_pk_field";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn,"CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn,"CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
@@ -309,7 +320,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         assertMappingEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
-        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName), syncRefBook);
+        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, null), syncRefBook);
 
         versionMapping.setDeletedField("is_deleted2");
         versionMapping.setTable("test_table2");

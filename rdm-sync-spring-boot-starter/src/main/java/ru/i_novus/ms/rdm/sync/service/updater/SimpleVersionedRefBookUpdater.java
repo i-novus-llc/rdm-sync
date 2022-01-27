@@ -12,7 +12,6 @@ import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 @Transactional
 public class SimpleVersionedRefBookUpdater extends BaseRefBookUpdater {
 
-    @Qualifier("simpleVersionedPersisterService")
     private final PersisterService persisterService;
 
     public SimpleVersionedRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, PersisterService persisterService, RdmLoggingService loggingService) {

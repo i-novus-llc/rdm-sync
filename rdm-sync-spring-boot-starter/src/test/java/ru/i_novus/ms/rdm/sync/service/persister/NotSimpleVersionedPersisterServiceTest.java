@@ -48,14 +48,14 @@ public class NotSimpleVersionedPersisterServiceTest {
     public void testFirstTimeUpdate() {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
         Page<Map<String, Object>> data = createFirstRdmData();
         List<Map<String, Object>> dataMap = createFirstVerifyDataMap();
 
         final String refBookCode = versionMapping.getCode();
-        when(dao.getFieldMappings(refBookCode)).thenReturn(fieldMappings);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
         when(dao.getDataIds(versionMapping.getTable(), primaryFieldMapping)).thenReturn(singletonList(BigInteger.valueOf(1L)));
 
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
@@ -78,12 +78,12 @@ public class NotSimpleVersionedPersisterServiceTest {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
         RefBookVersion secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         List<Map<String, Object>> dataMap = createSecondVerifyDataMap();
         VersionsDiff diff = prepareUpdateRefBookDataDiff();
 
-        when(dao.getFieldMappings(versionMapping.getCode())).thenReturn(fieldMappings);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
@@ -103,12 +103,12 @@ public class NotSimpleVersionedPersisterServiceTest {
 
         RefBookVersion oldVersion = createSecondRdmVersion();
         RefBookVersion newVersion = createThirdRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, oldVersion.getVersion(),  "test_table", "test_pk_field","","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, oldVersion.getVersion(),  "test_table", "test_pk_field","","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
         List<FieldMapping> fieldMappings = createFieldMappings();
         Page<RefBookRowValue> data = createThirdRdmData();
         List<Map<String, Object>> dataMap = createThirdVerifyDataMap();
         VersionsDiff diff = prepareInsertRefBookDataDiff();
-        when(dao.getFieldMappings(versionMapping.getCode())).thenReturn(fieldMappings);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() == 0))).thenReturn(diff);
         when(syncSourceService.getDiff(argThat(versionsDiffCriteria -> versionsDiffCriteria != null && versionsDiffCriteria.getPageNumber() > 0))).thenReturn(VersionsDiff.dataChangedInstance(Page.empty()));
@@ -126,8 +126,8 @@ public class NotSimpleVersionedPersisterServiceTest {
         Page<Map<String, Object>> data = createFirstRdmData();
         RefBookVersion firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
-        when(dao.getFieldMappings(firstRdmVersion.getCode())).thenReturn(fieldMappings);
-        VersionMapping versionMapping = new VersionMapping(null, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED);
+        VersionMapping versionMapping = new VersionMapping(1, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED, null);
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
         SyncSourceService syncSourceService = mock(SyncSourceService.class);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0 && dataCriteria.getCode().equals(firstRdmVersion.getCode())))).thenReturn(data);
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());

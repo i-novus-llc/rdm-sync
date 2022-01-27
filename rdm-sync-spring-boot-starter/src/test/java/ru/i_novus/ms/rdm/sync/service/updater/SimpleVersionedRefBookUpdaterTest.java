@@ -59,7 +59,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
 
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
 
-        updater.update(code);
+        updater.update(code, null);
 
         verify(dao, times(1)).insertLoadedVersion(code, version, pubDate, null, true);
         verify(persisterService, times(1)).firstWrite(eq(refBookVersion), any(), any());
@@ -80,7 +80,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         RefBookVersion refBookVersion = generateRefBookVersion(code, newVersion, newVersionPubDate, null);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         when(dao.existsLoadedVersion(code)).thenReturn(true);
-        updater.update(code);
+        updater.update(code, null);
 
         verify(dao, times(1)).closeLoadedVersion(code, oldVersion, newVersionPubDate);
         verify(dao, times(1)).insertLoadedVersion(code, newVersion, newVersionPubDate, null, true);
@@ -103,10 +103,10 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.getLoadedVersion(code, version)).thenReturn(loadedVersion);
         when(dao.existsLoadedVersion(code)).thenReturn(true);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
-        VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl" ,"","src", "id", null, mappingUpdDate, -1, null, null);
+        VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl" ,"","src", "id", null, mappingUpdDate, -1, null, null, null);
         when(dao.getVersionMapping(eq(code), eq(version))).thenReturn(versionMapping);
 
-        updater.update(code);
+        updater.update(code, null);
 
         verify(persisterService, times(1)).repeatVersion(eq(refBookVersion), eq(versionMapping), any());
         verify(dao, times(1)).updateLoadedVersion(loadedVersion.getId(), refBookVersion.getVersion(), refBookVersion.getFrom(), refBookVersion.getTo());
@@ -126,10 +126,10 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         RefBookVersion refBookVersion = generateRefBookVersion(code, previousVersion, previousVersionPubDate, null);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         when(dao.existsLoadedVersion(code)).thenReturn(true);
-        updater.update(code);
+        updater.update(code, null);
 
         verify(dao, never()).closeLoadedVersion(code, actualVersion, previousVersionPubDate);
-        verify(dao, times(1)).insertLoadedVersion(code, previousVersion, previousVersionPubDate, null, true);
+        verify(dao, times(1)).insertLoadedVersion(code, previousVersion, previousVersionPubDate, null, false);
         verify(persisterService, times(1)).merge(eq(refBookVersion), eq(actualVersion), any(), any());
 
     }

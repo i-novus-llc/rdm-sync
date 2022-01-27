@@ -1,7 +1,10 @@
 package ru.i_novus.ms.rdm.sync.api.model;
 
+import lombok.EqualsAndHashCode;
+
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode
 public class RefBookVersion {
 
     private String code;

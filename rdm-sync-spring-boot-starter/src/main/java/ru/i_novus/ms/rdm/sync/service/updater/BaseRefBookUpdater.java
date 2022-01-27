@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -37,11 +36,10 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
     }
 
     @Override
-    @Transactional
-    public void update(String refCode) {
+    public void update(String refCode, String version) {
         RefBookVersion newVersion;
         try {
-            newVersion = getLastPublishedVersion(refCode);
+            newVersion = getRefBookVersion(refCode, version);
 
         } catch (Exception e) {
             logger.error(String.format("Error while fetching new version with code '%s'.", refCode), e);
@@ -72,8 +70,8 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     }
 
-    private RefBookVersion getLastPublishedVersion(String refBookCode) {
-        RefBookVersion refBook = syncSourceService.getRefBook(refBookCode, null);
+    private RefBookVersion getRefBookVersion(String refBookCode, String version) {
+        RefBookVersion refBook = syncSourceService.getRefBook(refBookCode, version);
         if (refBook == null)
             throw new IllegalArgumentException(String.format("Reference book with code '%s' not found.", refBookCode));
 
@@ -106,7 +104,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
     protected void update(RefBookVersion newVersion, VersionMapping versionMapping) {
         logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
         validateStructureAndMapping(newVersion, fieldMappings);
         boolean haveTrigger = dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         if (haveTrigger){
@@ -164,7 +162,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
             dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
         }
-        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
         getPersisterService().merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, syncSourceService);
     }
 

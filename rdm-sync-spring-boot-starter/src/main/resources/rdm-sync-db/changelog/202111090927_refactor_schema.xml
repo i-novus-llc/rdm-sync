@@ -194,4 +194,11 @@
         </sql>
     </changeSet>
 
+    <changeSet id="202111090927_refactor_schema.10.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            ALTER TABLE rdm_sync.refbook RENAME COLUMN start_version TO range;
+            COMMENT ON COLUMN rdm_sync.refbook.range IS 'Диапазон версий подлежащий синхронизации'
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
