@@ -944,20 +944,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
-        Map<String, String> additionalColumns = new HashMap<>(Map.of(isDeletedFieldName, "timestamp without time zone"));
-        StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
-        ddl.append(fieldMappings.stream()
-                .map(mapping -> {
-                    if (mapping.getSysField().equals(sysPkColumn)) mapping.setSysDataType(RECORD_SYS_COL_INFO);
-                    return String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType());
-                })
-                .collect(Collectors.joining(", ")));
-        for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
-            ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
-        }
-        ddl.append(")");
+        createTable(schema, table, fieldMappings,  Map.of(isDeletedFieldName, "timestamp without time zone"));
 
-        getJdbcTemplate().execute(ddl.toString());
+        String sql = "ALTER TABLE " + escapeName(schema) + "." + escapeName(table) + " ADD CONSTRAINT "
+                + escapeName(table + "_pk") + " PRIMARY KEY (" + escapeName(sysPkColumn) + ");";
+
+        getJdbcTemplate().execute(sql);
     }
 
     @Override
@@ -970,22 +962,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
-    }
-
-    private void createTableWithNaturalPrimaryKey(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn, Map<String, String> additionalColumns) {
-        StringBuilder ddl = new StringBuilder(String.format("CREATE TABLE IF NOT EXISTS %s.%s (", escapeName(schema), escapeName(table)));
-        ddl.append(fieldMappings.stream()
-                .map(mapping -> {
-                    if (mapping.getSysField().equals(sysPkColumn)) mapping.setSysDataType(RECORD_SYS_COL_INFO);
-                    return String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType());
-                })
-                .collect(Collectors.joining(", ")));
-        for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
-            ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
-        }
-        ddl.append(")");
-
-        getJdbcTemplate().execute(ddl.toString());
     }
 
     @Override
