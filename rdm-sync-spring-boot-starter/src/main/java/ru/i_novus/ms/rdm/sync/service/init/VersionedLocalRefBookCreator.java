@@ -48,7 +48,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         if (versionMapping == null) {
             RefBookStructure refBookStructure = getRefBookStructure(code, source);
 
-            String schemaTable = getTableName(code, table);
+            String schemaTable = getTableNameWithSchema(code, table);
             versionMapping = new VersionMapping(null, code, name, "CURRENT",
                     schemaTable,"someSource", refBookStructure.getPrimaries().get(0), null,
                     null, -1, null, type, range);
@@ -61,12 +61,11 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     protected void createTable(String code, VersionMapping versionMapping) {
-
-        String[] split = versionMapping.getTable().split("\\.");
+        String[] split = getTableNameWithSchema(code, versionMapping.getTable()).split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
-        rdmSyncDao.createSchemaIfNotExists(schema);
+        rdmSyncDao.createSchemaIfNotExists(schemaName);
         rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName, rdmSyncDao.getFieldMappings(versionMapping.getId()));
     }
 }

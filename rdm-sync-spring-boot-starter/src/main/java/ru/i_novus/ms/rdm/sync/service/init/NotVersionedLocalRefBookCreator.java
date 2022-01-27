@@ -5,14 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
-import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.*;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
-import java.util.*;
+import java.util.Set;
 
 @Component
 public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
@@ -31,7 +30,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     protected void createTable(String refBookCode, VersionMapping mapping) {
 
-        String[] split = mapping.getTable().split("\\.");
+        String[] split = getTableNameWithSchema(refBookCode, mapping.getTable()).split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
@@ -40,9 +39,9 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
-        dao.addInternalLocalRowStateColumnIfNotExists(schema, tableName);
+        dao.addInternalLocalRowStateColumnIfNotExists(schemaName, tableName);
         dao.createOrReplaceLocalRowStateUpdateFunction(); // Мы по сути в цикле перезаписываем каждый раз функцию, это не страшно
-        dao.addInternalLocalRowStateUpdateTrigger(schema, tableName);
+        dao.addInternalLocalRowStateUpdateTrigger(schemaName, tableName);
 
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
