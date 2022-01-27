@@ -14,11 +14,11 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import java.util.Set;
 
 @Component
-public class NotVersionedWithNaturalPrimaryKeyLocalRefBookCreator extends BaseLocalRefBookCreator {
+public class NaturalPKLocalRefBookCreator extends BaseLocalRefBookCreator {
 
-    Logger logger = LoggerFactory.getLogger(NotVersionedWithNaturalPrimaryKeyLocalRefBookCreator.class);
+    Logger logger = LoggerFactory.getLogger(NaturalPKLocalRefBookCreator.class);
 
-    public NotVersionedWithNaturalPrimaryKeyLocalRefBookCreator(
+    public NaturalPKLocalRefBookCreator(
             @Value("${rdm-sync.auto-create.schema:rdm}") String schema,
             @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
             RdmSyncDao dao, SyncSourceDao syncSourceDao,
