@@ -11,6 +11,7 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +34,11 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     @Override
     public RefBookVersion getRefBook(String code, String version) {
         return getSyncSourceService(code).getRefBook(code, version);
+    }
+
+    @Override
+    public List<RefBookVersion> getVersions(String code) {
+        return getSyncSourceService(code).getVersions(code);
     }
 
     @Override

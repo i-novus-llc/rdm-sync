@@ -45,7 +45,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     @Override
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
 
 
         final FieldMapping primaryField = fieldMappings.stream()
@@ -55,6 +55,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
         DataCriteria searchDataCriteria = new DataCriteria();
         searchDataCriteria.setCode(versionMapping.getCode());
+        searchDataCriteria.setVersion(newVersion.getVersion());
         searchDataCriteria.setPageSize(maxSize);
 
         PageIterator<Map<String, ?>, DataCriteria> iter = new PageIterator<>(
@@ -70,7 +71,7 @@ public class NotVersionedPersisterService implements PersisterService {
 
     @Override
     public void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping, SyncSourceService syncSourceService) {
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getCode());
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
         VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(versionMapping.getCode(), newVersion.getVersion(), synchedVersion);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         if (diff.isStructureChanged()) {

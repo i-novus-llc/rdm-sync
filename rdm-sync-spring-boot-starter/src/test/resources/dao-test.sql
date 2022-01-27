@@ -38,7 +38,7 @@ INSERT INTO rdm_sync.mapping(
 	sys_table, unique_sys_field, deleted_field, mapping_version, mapping_last_updated)
 	VALUES ('test_table', 'id', 'deleted_ts', -1, now());
 INSERT INTO rdm_sync.refbook(
-	code, name, source_id, sync_type, start_version)
+	code, name, source_id, sync_type, range)
 	VALUES ('testCode', 'testName', (SELECT id FROM rdm_sync.source WHERE code = 'CODE-1'), 'NOT_VERSIONED', null);
 INSERT INTO rdm_sync.version(
 	version, mapping_id, ref_id)

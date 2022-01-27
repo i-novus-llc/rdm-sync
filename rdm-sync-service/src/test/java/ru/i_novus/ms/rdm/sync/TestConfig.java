@@ -123,37 +123,6 @@ public class TestConfig {
 
         VersionRestService versionService = mock(VersionRestService.class);
 
-        when(versionService.search(eq("EK002"), any(SearchDataCriteria.class))).thenAnswer(
-                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-                    if (searchDataCriteria.getPageNumber() >= 1) {
-                        return new RestPage<>(Collections.emptyList());
-                    }
-                    VersionMapping ek002VersionMapping = rdmSyncDao.getVersionMapping("EK002", "CURRENT");
-                    if(searchDataCriteria.getPageNumber() == 0 &&
-                            (ek002VersionMapping == null || !"1".equals(ek002VersionMapping.getVersion())) ) {
-                        return new RestPage<>(Arrays.asList(firstVersionRows));
-                    } else if (searchDataCriteria.getPageNumber() == 0 && ek002VersionMapping != null || "1".equals(ek002VersionMapping.getVersion()))
-                        return new RestPage<>(Arrays.asList(secondVersionRows));
-
-                    return new RestPage<>(Collections.emptyList());
-                });
-
-        when(versionService.search(eq("EK003"), any(SearchDataCriteria.class))).thenAnswer(
-                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-                    if (searchDataCriteria.getPageNumber() >= 1) {
-                        return new RestPage<>(Collections.emptyList());
-                    }
-                    boolean ver3_0IsLoaded = versionIsLoaded("EK003", "3.0");
-                    if (searchDataCriteria.getPageNumber() == 0 && !ver3_0IsLoaded) {
-                        return new RestPage<>(Arrays.asList(ek003v3_0Rows));
-                    } else if (searchDataCriteria.getPageNumber() == 0 && ver3_0IsLoaded)
-                        return new RestPage<>(Arrays.asList(ek003v3_1Rows));
-
-                    return new RestPage<>(Collections.emptyList());
-                });
-
         RefBookVersion ek002Version1 = new RefBookVersion();
         ek002Version1.setId(199);
         RefBookVersion ek002Version2 = new RefBookVersion();
@@ -167,6 +136,57 @@ public class TestConfig {
         ek003Version3_1.setId(293);
         when(versionService.getVersion(eq("3.0"), eq("EK003"))).thenReturn(ek003Version3_0);
         when(versionService.getVersion(eq("3.1"), eq("EK003"))).thenReturn(ek003Version3_1);
+        when(versionService.search(eq(ek002Version1.getId()), any(SearchDataCriteria.class))).thenAnswer(
+                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
+                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
+                    if (searchDataCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                     if (searchDataCriteria.getPageNumber() == 0 )
+                        return new RestPage<>(Arrays.asList(firstVersionRows));
+
+                    return new RestPage<>(Collections.emptyList());
+                });
+
+        when(versionService.search(eq(ek002Version2.getId()), any(SearchDataCriteria.class))).thenAnswer(
+                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
+                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
+                    if (searchDataCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                    if (searchDataCriteria.getPageNumber() == 0)
+                        return new RestPage<>(Arrays.asList(secondVersionRows));
+
+                    return new RestPage<>(Collections.emptyList());
+                });
+
+
+
+        when(versionService.search(eq(ek003Version3_0.getId()), any(SearchDataCriteria.class))).thenAnswer(
+                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
+                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
+                    if (searchDataCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                    if (searchDataCriteria.getPageNumber() == 0)
+                        return new RestPage<>(Arrays.asList(ek003v3_0Rows));
+
+                    return new RestPage<>(Collections.emptyList());
+                });
+
+        when(versionService.search(eq(ek003Version3_1.getId()), any(SearchDataCriteria.class))).thenAnswer(
+                (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
+                    SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
+                    if (searchDataCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                    if (searchDataCriteria.getPageNumber() == 0)
+                        return new RestPage<>(Arrays.asList(ek003v3_1Rows));
+
+                    return new RestPage<>(Collections.emptyList());
+                });
+
+
 
 
         return versionService;
@@ -211,6 +231,7 @@ public class TestConfig {
         versionsMockServer(mockServer, oid, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_versions.json"));
 
         passportMockServer(mockServer, oid, "1.2", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.2.json"));
+        passportMockServer(mockServer, oid, "1.7", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.2.json"));//не важна какая структура
         passportMockServer(mockServer, oid, "1.8", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.8.json"));
 
 

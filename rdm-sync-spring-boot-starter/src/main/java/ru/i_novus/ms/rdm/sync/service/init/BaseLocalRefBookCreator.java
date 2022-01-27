@@ -17,6 +17,7 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, @Nullable String range) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -72,7 +73,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, range);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -81,8 +82,8 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         }
     }
 
-    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table) {
-
+    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, @Nullable String range) {
+                                                                        //todo нужна ли версия
         RefBookVersion lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode, null);
         if (lastPublished == null) {
             throw new IllegalArgumentException(refBookCode + " not found in " + sourceCode);
@@ -90,10 +91,11 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         RefBookStructure structure = lastPublished.getStructure();
 
-        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure);
+        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, range);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         dao.insertFieldMapping(mappingId, getFieldMappings(structure));
 
+        versionMapping.setId(mappingId);
         return versionMapping;
     }
 
@@ -140,14 +142,14 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
                 .createService(source);
     }
 
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure) {
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, @Nullable String range) {
         String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String schemaTable = getTableName(refBookCode, table);
 
         return new VersionMapping(null, refBookCode, refBookName, null,
                 schemaTable, sourceCode, uniqueSysField, null,
-                null, -1, null, type);
+                null, -1, null, type, range);
 
     }
 

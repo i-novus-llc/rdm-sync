@@ -57,7 +57,7 @@ public class RdmSyncInitializer {
             return;
 
         autoCreateRefBookProperties.getRefbooks().forEach(p ->
-            localRefBookCreatorLocator.getLocalRefBookCreator(p.getType()).create(p.getCode(), p.getName(), p.getSource(), p.getType(), p.getTable())
+            localRefBookCreatorLocator.getLocalRefBookCreator(p.getType()).create(p.getCode(), p.getName(), p.getSource(), p.getType(), p.getTable(), p.getRange())
         );
 
     }

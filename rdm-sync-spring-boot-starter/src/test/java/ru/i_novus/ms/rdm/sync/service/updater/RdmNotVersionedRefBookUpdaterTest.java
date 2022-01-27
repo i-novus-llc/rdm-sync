@@ -62,7 +62,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
-        updater.update(refBook.getCode());
+        updater.update(refBook.getCode(), null);
 
         verify(persisterService).firstWrite(refBookArgumentCaptor.capture(), versionMappingArgumentCaptor.capture(), syncSourceServiceArgumentCaptor.capture());
         RefBookVersion expectedRefBook = refBookArgumentCaptor.getValue();
@@ -85,7 +85,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
 
         //изменилась дата публикации
         refBook.setFrom(loadedVersion.getPublicationDate().plus(5, ChronoUnit.DAYS));
-        updater.update(refBook.getCode());
+        updater.update(refBook.getCode(), null);
         verify(persisterService).repeatVersion(eq(refBook), eq(versionMapping), any());
         verify(dao, times(1)).updateLoadedVersion(loadedVersion.getId(), refBook.getVersion(), refBook.getFrom(), refBook.getTo());
 
@@ -105,7 +105,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
 
-        updater.update(refBook.getCode());
+        updater.update(refBook.getCode(), null);
         verify(persisterService).repeatVersion(refBookArgumentCaptor.capture(), versionMappingArgumentCaptor.capture(), syncSourceServiceArgumentCaptor.capture());
         RefBookVersion expectedRefBookVersion = refBookArgumentCaptor.getValue();
         assertEquals(expectedRefBookVersion.getCode(), refBook.getCode());
@@ -124,7 +124,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.getVersionMapping(refBook.getCode(), "CURRENT")).thenReturn(versionMapping);
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(Arrays.asList(createFieldMapping()));
 
-        updater.update(refBook.getCode());
+        updater.update(refBook.getCode(), null);
         verifyNoMoreInteractions(persisterService);
 
     }

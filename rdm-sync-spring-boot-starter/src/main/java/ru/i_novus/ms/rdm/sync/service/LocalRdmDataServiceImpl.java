@@ -44,7 +44,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (page == null) page = 0;
         if (size == null) size = 10;
 
-        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
 
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, filters);
@@ -61,7 +61,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (page == null) page = 0;
         if (size == null) size = 10;
 
-        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(refBookCode), uriInfo.getQueryParameters());
+        List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
 
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, filters, version);
@@ -73,7 +73,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     public Map<String, Object> getSingle(String refBookCode, String primaryKey) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
-        FieldMapping fieldMapping = dao.getFieldMappings(refBookCode).stream()
+        FieldMapping fieldMapping = dao.getFieldMappings(versionMapping.getId()).stream()
                 .filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField()))
                 .findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
         DataTypeEnum fieldType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
