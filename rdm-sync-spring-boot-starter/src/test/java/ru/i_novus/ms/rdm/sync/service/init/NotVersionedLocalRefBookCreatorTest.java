@@ -72,7 +72,7 @@ public class NotVersionedLocalRefBookCreatorTest {
 
         when(syncSourceDao.findByCode(any())).thenReturn(source);
 
-        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED, null, , "_sync_rec_id", null);
+        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED, null,  "_sync_rec_id", null);
 
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);

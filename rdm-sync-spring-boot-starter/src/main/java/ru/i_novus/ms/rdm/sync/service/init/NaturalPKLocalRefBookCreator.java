@@ -46,9 +46,9 @@ public class NaturalPKLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     @Override
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn) {
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn, String range) {
         String sysPkColumnFromUniqueSysField = caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
-        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField);
+        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField, range);
         String isDeletedField = "deleted_ts";
         if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;

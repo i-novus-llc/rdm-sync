@@ -32,7 +32,10 @@ public class VersionMapping {
     private Integer mappingId;
     private SyncTypeEnum type;
     private String range;
-}
+
+    public String getRange() {
+        return range;
+    }
 
     public Integer getId() {
         return id;
