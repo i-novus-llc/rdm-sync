@@ -103,7 +103,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.getLoadedVersion(code, version)).thenReturn(loadedVersion);
         when(dao.existsLoadedVersion(code)).thenReturn(true);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
-        VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl", "src", "id", null, mappingUpdDate, -1, null, null, null);
+        VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl" ,"","src", "id", null, mappingUpdDate, -1, null, null, null);
         when(dao.getVersionMapping(eq(code), eq(version))).thenReturn(versionMapping);
 
         updater.update(code, null);

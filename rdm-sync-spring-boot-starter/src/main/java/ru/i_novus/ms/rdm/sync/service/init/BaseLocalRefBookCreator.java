@@ -9,8 +9,8 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
@@ -31,9 +31,9 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
             "Error autocreation mapping data from structure of RefBook with code '{}'.";
     private static final String LOG_LAST_PUBLISHED_NOT_FOUND = " Can't get last published version from RDM.";
 
-    private static final String LOG_AUTOCREATE_SKIP =
+    protected static final String LOG_AUTOCREATE_SKIP =
             "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
-    private static final String LOG_AUTOCREATE_START =
+    protected static final String LOG_AUTOCREATE_START =
             "Autocreation mapping data from structure of RefBook with code '{}' is started.";
 
 
@@ -64,7 +64,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, @Nullable String range) {
+    public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPkColumn,  @Nullable String range) {
 
         if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
@@ -73,7 +73,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         logger.info(LOG_AUTOCREATE_START, refBookCode);
 
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, range);
+        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn, range);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -82,8 +82,8 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         }
     }
 
-    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, @Nullable String range) {
-                                                                        //todo нужна ли версия
+    protected VersionMapping createMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, String sysPkColumn, @Nullable String range) {
+        //todo нужна ли версия
         RefBookVersion lastPublished = getSyncSourceService(sourceCode).getRefBook(refBookCode, null);
         if (lastPublished == null) {
             throw new IllegalArgumentException(refBookCode + " not found in " + sourceCode);
@@ -91,7 +91,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         RefBookStructure structure = lastPublished.getStructure();
 
-        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, range);
+        VersionMapping versionMapping = getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn, range);
         Integer mappingId = dao.insertVersionMapping(versionMapping);
         dao.insertFieldMapping(mappingId, getFieldMappings(structure));
 
@@ -142,13 +142,13 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
                 .createService(source);
     }
 
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, @Nullable String range) {
+    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn,  @Nullable String range) {
         String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String schemaTable = getTableName(refBookCode, table);
 
         return new VersionMapping(null, refBookCode, refBookName, null,
-                schemaTable, sourceCode, uniqueSysField, null,
+                schemaTable, sysPkColumn,sourceCode, uniqueSysField, null,
                 null, -1, null, type, range);
 
     }

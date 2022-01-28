@@ -122,6 +122,7 @@ public class SimpleVersionedPersisterServiceTest {
                 "test",
                 refBookVersion.getVersion(),
                 schemaTable,
+                "sys_pk",
                 null,
                 null,
                 "deleted_ts",

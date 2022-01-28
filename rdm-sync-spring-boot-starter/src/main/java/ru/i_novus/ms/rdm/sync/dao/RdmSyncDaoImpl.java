@@ -22,7 +22,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
@@ -71,7 +70,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             "  END; \n" +
             "$BODY$ LANGUAGE 'plpgsql' \n";
 
-    public static final String RECORD_SYS_COL = "_sync_rec_id";
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String LOADED_VERSION_REF = "version_id";
@@ -87,7 +86,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public List<VersionMapping> getVersionMappings() {
 
         final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type, range \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
@@ -103,11 +102,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(6),
                         rs.getString(7),
                         rs.getString(8),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
-                        rs.getInt(10),
+                        rs.getString(9),
+                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
                         rs.getInt(11),
-                        SyncTypeEnum.valueOf(rs.getString(12)),
-                        rs.getString(13)
+                        rs.getInt(12),
+                        SyncTypeEnum.valueOf(rs.getString(13)),
+                        rs.getString(14)
                 )
         );
     }
@@ -115,7 +115,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public LoadedVersion getLoadedVersion(String code, String version) {
         List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and version = :version", Map.of("code", code, "version", version),
-                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")), rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
         );
 
         if (CollectionUtils.isEmpty(result)) {
@@ -134,7 +134,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public LoadedVersion getActualLoadedVersion(String code) {
         List<LoadedVersion> result = namedParameterJdbcTemplate.query("select * from rdm_sync.loaded_version where code = :code and is_actual = true", Map.of("code", code),
-                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")),rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
+                (ResultSet rs, int rowNum) -> new LoadedVersion(rs.getInt("id"), rs.getString("code"), rs.getString("version"), rs.getTimestamp("publication_dt").toLocalDateTime(), toLocalDateTime(rs.getTimestamp("close_dt")), rs.getTimestamp("load_dt").toLocalDateTime(), rs.getBoolean("is_actual"))
         );
         if (CollectionUtils.isEmpty(result)) {
             return null;
@@ -152,7 +152,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
                 "       mapping_last_updated, mapping_version, mapping_id, sync_type, range \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
@@ -170,10 +170,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(6),
                         rs.getString(7),
                         rs.getString(8),
-                        toLocalDateTime(rs, 9, LocalDateTime.MIN),
-                        rs.getInt(10),
+                        rs.getString(9),
+                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
                         rs.getInt(11),
-                        SyncTypeEnum.valueOf(rs.getString(12)),
+                        rs.getInt(12),
+                        SyncTypeEnum.valueOf(rs.getString(13)),
                         rs.getString(13)
                 )
         );
@@ -318,7 +319,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         params.put("close_dt", closeDate);
         params.put("load_dt", LocalDateTime.now(Clock.systemUTC()));
         params.put("id", id);
-        namedParameterJdbcTemplate.update(sql,params);
+        namedParameterJdbcTemplate.update(sql, params);
     }
 
 
@@ -395,8 +396,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced) {
 
-        Map<String, Object> args =  new HashMap<>();
-        if(markSynced) {
+        Map<String, Object> args = new HashMap<>();
+        if (markSynced) {
             args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
         }
         args.put(isDeletedField, deletedTime);
@@ -537,11 +538,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    deleted_field,\n" +
                 "    mapping_version,\n" +
                 "    sys_table,\n" +
+                "    sys_pk_field,\n" +
                 "    unique_sys_field)\n" +
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
                 "    :sys_table,\n" +
+                "    :sys_pk_field,\n" +
                 "    :unique_sys_field) RETURNING id";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
@@ -562,9 +565,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private Map<String, Object> toInsertMappingValues(VersionMapping versionMapping) {
 
-        Map<String, Object> result = new HashMap<>(4);
+        Map<String, Object> result = new HashMap<>(5);
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
+        result.put("sys_pk_field", versionMapping.getSysPkColumn());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
         result.put("deleted_field", versionMapping.getDeletedField());
 
@@ -735,9 +739,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
 
         if (localDataCriteria.getRecordId() != null) {
-
-            sql += "\n AND " + RECORD_SYS_COL + " = :" + RECORD_SYS_COL;
-            args.put(RECORD_SYS_COL, localDataCriteria.getRecordId());
+            String sysPkColumn = localDataCriteria.getSysPkColumn();
+            sql += "\n AND " + sysPkColumn + " = :" + sysPkColumn;
+            args.put(sysPkColumn, localDataCriteria.getRecordId());
         }
 
         args.put("state", localDataCriteria.getState().name());
@@ -876,10 +880,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                         Object val = rs.getObject(i);
                         String key = rs.getMetaData().getColumnName(i);
-                        if(val instanceof Timestamp) {
-                                val = ((Timestamp)val).toLocalDateTime();
-                            }
-                            map.put(key, val);
+                        if (val instanceof Timestamp) {
+                            val = ((Timestamp) val).toLocalDateTime();
+                        }
+                        map.put(key, val);
                     }
 
                     return map;
@@ -893,7 +897,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return new PageImpl<>(result, restCriteria, count);
     }
 
-    /** Получение условия для фильтра по полям. */
+    /**
+     * Получение условия для фильтра по полям.
+     */
     private SqlFilterBuilder getFiltersClause(List<FieldFilter> filters) {
 
         if (CollectionUtils.isEmpty(filters))
@@ -939,21 +945,30 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName) {
-
+    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn) {
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
-                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+                        sysPkColumn, RECORD_SYS_COL_INFO)
         );
     }
 
     @Override
-    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings) {
+    public void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
+        createTable(schema, table, fieldMappings,  Map.of(isDeletedFieldName, "timestamp without time zone"));
+
+        String sql = "ALTER TABLE " + escapeName(schema) + "." + escapeName(table) + " ADD CONSTRAINT "
+                + escapeName(table + "_pk") + " PRIMARY KEY (" + escapeName(sysPkColumn) + ");";
+
+        getJdbcTemplate().execute(sql);
+    }
+
+    @Override
+    public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn) {
 
         createTable(schema, table, fieldMappings,
                 Map.of(VERSIONS_SYS_COL, "text NOT NULL",
                         HASH_SYS_COL, "text NOT NULL",
-                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+                        sysPkColumn, RECORD_SYS_COL_INFO)
         );
 
         getJdbcTemplate().execute(String.format("ALTER TABLE %s.%s ADD CONSTRAINT unique_hash UNIQUE (\"_hash\")", escapeName(schema), escapeName(table)));
@@ -1039,7 +1054,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     private LocalDateTime toLocalDateTime(Timestamp timestamp) {
-        if(timestamp == null)
+        if (timestamp == null)
             return null;
 
         return timestamp.toLocalDateTime();

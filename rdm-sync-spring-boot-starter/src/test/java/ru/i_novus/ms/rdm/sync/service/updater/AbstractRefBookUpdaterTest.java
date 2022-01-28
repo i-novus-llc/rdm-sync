@@ -35,7 +35,7 @@ public class AbstractRefBookUpdaterTest {
     }
 
     protected VersionMapping createVersionMapping(SyncTypeEnum syncType) {
-        return new VersionMapping(1, "code", "-1", "1", "table", "source", "id", "",LocalDateTime.of(2017, 1, 14, 10, 34), -1, 1, syncType, null);
+        return new VersionMapping(1, "code", "-1", "1", "table", "","source", "id", "",LocalDateTime.of(2017, 1, 14, 10, 34), -1, 1, syncType, null);
     }
 
     protected FieldMapping createFieldMapping() {

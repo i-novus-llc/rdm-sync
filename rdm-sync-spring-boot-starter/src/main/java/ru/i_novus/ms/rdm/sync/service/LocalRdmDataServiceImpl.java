@@ -51,7 +51,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         DeletedCriteria deleted = new DeletedCriteria(versionMapping.getDeletedField(), Boolean.TRUE.equals(getDeleted));
         localDataCriteria.setDeleted(deleted);
-
+        localDataCriteria.setSysPkColumn(versionMapping.getSysPkColumn());
         return dao.getData(localDataCriteria);
     }
 
@@ -114,10 +114,12 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), 1, 0, null);
         localDataCriteria.setRecordId(recordId);
+        localDataCriteria.setSysPkColumn(versionMapping.getSysPkColumn());
         Page<Map<String, Object>> synced = dao.getData(localDataCriteria);
 
         return synced.get().findAny().orElseThrow(NotFoundException::new);
     }
+
 
     /** Преобразование параметра запроса в фильтр по полю. */
     private FieldFilter paramToFilter(Map.Entry<String, List<String>> param, DataTypeEnum fieldType) {

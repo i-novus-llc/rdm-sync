@@ -284,15 +284,21 @@ public class RdmClientSyncAutoConfiguration {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
-                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater));
+                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater,
+                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, notVersionedRefBookUpdater,
+                SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, rdmNotVersionedRefBookUpdater));
     }
 
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
+                                                                 @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
+                                                                 @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,
-                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator));
+                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
+                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator,
+                SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator));
     }
 }

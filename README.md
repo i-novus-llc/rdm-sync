@@ -184,18 +184,19 @@ rdm-sync.auto-create.refbooks[0].code=EK002
 rdm-sync.auto-create.refbooks[0].name=Какой-то справочник из RDM
 rdm-sync.auto-create.refbooks[0].source=RDM
 rdm-sync.auto-create.refbooks[0].type=NOT_VERSIONED
+rdm-sync.auto-create.refbooks[0].sysPkColumn=test_rdm_pk
 
 rdm-sync.auto-create.refbooks[1].code=1.2.643.5.1.13.2.1.1.725
 rdm-sync.auto-create.refbooks[1].name=Какой-то справочник ФНСИ
 rdm-sync.auto-create.refbooks[1].source=FNSI
 rdm-sync.auto-create.refbooks[1].type=SIMPLE_VERSIONED
+rdm-sync.auto-create.refbooks[1].sysPkColumn=test_fnsi_pk
 rdm-sync.auto-create.refbooks[1].range=*-3.0
 
 rdm-sync.auto-create.refbooks[2].code=EK003
 rdm-sync.auto-create.refbooks[2].name=Какой-то неверсионный справочник из RDM
 rdm-sync.auto-create.refbooks[2].source=RDM
 rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
-
 ```
 #### 2. XML-конфигурация маппинга
 
@@ -257,6 +258,8 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 1. NOT_VERSIONED - синхронизиция данных без версии, т.е данные не привязываются к версии, а характеризуются только как актуальные и удаленные(колонка дата удаления)
 2. RDM_NOT_VERSIONED - синхронизация аналогичная первому пункту только для неверсионных справочников RDM
 3. SIMPLE_VERSIONED - синхронизация данных с версией, т.е. вместе с данными хранится и паспорт(версия и даты действия версии). Паспорт в отдельной таблице.
+4. NOT_VERSIONED_WITH_NATURAL_PK - синхронизация аналогичная пункту 1, с использованием первичного ключа справочника в качестве первичного ключа таблицы
+5. RDM_NOT_VERSIONED_WITH_NATURAL_PK - синхронизация аналогичная пункту 2, с использованием первичного ключа справочника в качестве первичного ключа таблицы
 
 ## Задание диапазона версий справочника
 По умолчанию при синхронизации из НСИ скачивается самая последняя версия. Если надо задать конкретный диапазон версий, то нужно указать атрибут `range` в xml-маппинге или `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].range` если используются проперти.
@@ -277,11 +280,17 @@ todo
 
 #### Таблицы для типов `NOT_VERSIONED` и `RDM_NOT_VERSIONED`
 Таблица должна содержать колонки для атрибутов справочника(те которые указаны в маппинге) и следующие технические колонки:
-- `_sync_rec_id bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы.
+- `_sync_rec_id(по умолчанию) bigserial` -- внутренний первичный ключ таблицы, на него можно ссылаться внутри системы, можно задать другое имя через `rdm-sync.auto-create.refbooks[<порядковый номер справочника>].sysPkColumn` в *.properties или через поле `sys-pk-field` в теге `<reefbook>` rdm-mapping.xml.
 - колонка с любым типом, совместимым с типом первичного ключа справочника НСИ. Например `code`.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
+- `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
+
+#### Таблицы для типов `NOT_VERSIONED_WITH_NATURAL_PK` и `RDM_NOT_VERSIONED_WITH_NATURAL_PK`
+Таблица должна содержать колонки для атрибутов справочника(те которые указаны в маппинге), первичным ключом таблицы должна быть колонка указанная в мапинге в атрибуте unique-sys-field и следующие технические колонки:
+- `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
 -  `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
+;
 
 
 #### Таблицы для типа `SIMPLE_VERSIONED` 

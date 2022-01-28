@@ -14,19 +14,18 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import java.util.Set;
 
 @Component
-public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
+public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreator {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotVersionedLocalRefBookCreator.class);
+    Logger logger = LoggerFactory.getLogger(NaturalPKLocalRefBookCreator.class);
 
-
-    public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
-                                           @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
-                                           RdmSyncDao dao,
-                                           SyncSourceDao syncSourceDao,
-                                           Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+    public NaturalPKLocalRefBookCreator(
+            @Value("${rdm-sync.auto-create.schema:rdm}") String schema,
+            @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
+            RdmSyncDao dao, SyncSourceDao syncSourceDao,
+            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
         super(schema, caseIgnore, dao, syncSourceDao, syncSourceServiceFactories);
-
     }
+
     @Override
     protected void createTable(String refBookCode, VersionMapping mapping) {
 
@@ -35,7 +34,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableIfNotExists(schemaName, tableName, dao.getFieldMappings(mapping.getId()), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableWithNaturalPrimaryKeyIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -48,12 +47,7 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
     @Override
     protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn, String range) {
-        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumn, range);
-        String isDeletedField = "deleted_ts";
-        if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
-            isDeletedField = "rdm_sync_internal_" + isDeletedField;
-        }
-        versionMapping.setDeletedField(isDeletedField);
-        return versionMapping;
+        String sysPkColumnFromUniqueSysField = caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
+        return super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField, range);
     }
 }
