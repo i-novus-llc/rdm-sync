@@ -14,7 +14,7 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import java.util.Set;
 
 @Component
-public class NaturalPKLocalRefBookCreator extends BaseLocalRefBookCreator {
+public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreator {
 
     Logger logger = LoggerFactory.getLogger(NaturalPKLocalRefBookCreator.class);
 
@@ -48,12 +48,6 @@ public class NaturalPKLocalRefBookCreator extends BaseLocalRefBookCreator {
     @Override
     protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn, String range) {
         String sysPkColumnFromUniqueSysField = caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
-        VersionMapping versionMapping = super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField, range);
-        String isDeletedField = "deleted_ts";
-        if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
-            isDeletedField = "rdm_sync_internal_" + isDeletedField;
-        }
-        versionMapping.setDeletedField(isDeletedField);
-        return versionMapping;
+        return super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField, range);
     }
 }
