@@ -29,7 +29,7 @@ public class NaturalPKLocalRefBookCreatorTest {
         structure.setPrimaries(List.of(expectedSysPkColumn));
 
         VersionMapping versionMapping = creator.getVersionMapping("CODE-1", "ref_ek001", "rdm",
-                SyncTypeEnum.NOT_VERSIONED, "public.ref_ek_001",structure, "id", "");
+                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, "public.ref_ek_001",structure, "id", "");
 
         String actualSysPkColumn = versionMapping.getSysPkColumn();
 
