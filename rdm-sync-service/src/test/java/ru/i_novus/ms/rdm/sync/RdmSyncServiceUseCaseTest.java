@@ -23,8 +23,6 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import java.util.List;
 import java.util.Map;
 
-import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("classpath:application-test.properties")
@@ -41,6 +39,8 @@ public class RdmSyncServiceUseCaseTest {
     private String baseUrl;
 
     private static final int MAX_TIMEOUT = 70;
+
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
 
     @Before
     public void setUp() {

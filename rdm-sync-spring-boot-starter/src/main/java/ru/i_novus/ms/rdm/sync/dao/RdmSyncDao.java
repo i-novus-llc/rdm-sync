@@ -6,7 +6,6 @@ import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
@@ -165,9 +164,10 @@ public interface RdmSyncDao {
 
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
     void createSchemaIfNotExists(String schema);
-    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName);
+    void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn);
+    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn);
 
-    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings);
+    void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn);
 
     void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings);
 

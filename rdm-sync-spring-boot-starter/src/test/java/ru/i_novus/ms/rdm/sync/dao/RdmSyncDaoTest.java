@@ -10,7 +10,6 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
@@ -30,10 +29,11 @@ import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
-import static ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl.RECORD_SYS_COL;
 
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
+
+    private static final String RECORD_SYS_COL = "_sync_rec_id";
 
     private static final String DELETED_FIELD_COL = "deleted_ts";
 
@@ -111,6 +111,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         // -- Получение той же записи по systemId.
         LocalDataCriteria systemIdCriteria = createSyncedCriteria(table);
         systemIdCriteria.setRecordId(systemId);
+        systemIdCriteria.setSysPkColumn("_sync_rec_id");
 
         data = rdmSyncDao.getData(systemIdCriteria);
         assertEquals(1, data.getContent().size());
@@ -178,7 +179,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                generateFieldMappings());
+                generateFieldMappings(),
+                RECORD_SYS_COL);
 
         List<Map<String, Object>> rows = List.of(
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
@@ -209,6 +211,67 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         assertEquals(nextVersionRows, secondVersionData.getContent());
 
         //просто проставление версии
+    }
+
+    @Test
+    public void testTableWithNaturalPrimaryKey() {
+        String schema = "public";
+        String table = "ref_001_with_natural_pk";
+        String sysPkColumn = "id";
+
+
+        List<FieldMapping> fields = List.of(
+                new FieldMapping("id", "integer", "id"),
+                new FieldMapping("name", "varchar", "name"),
+                new FieldMapping("age", "integer", "age")
+        );
+
+        rdmSyncDao.createTableWithNaturalPrimaryKeyIfNotExists(
+                schema,
+                table,
+                fields,
+                DELETED_FIELD_COL,
+                sysPkColumn
+        );
+
+        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists(schema, table);
+
+        List<Map<String, Object>> insertRows = List.of(
+                new HashMap<>(Map.of( "id", 1, "name", "name1", "age", 20)),
+                new HashMap<>(Map.of( "id", 2, "name", "name2", "age", 25)),
+                new HashMap<>(Map.of( "id", 3, "name", "name3", "age", 30))
+        );
+
+        rdmSyncDao.insertRows(
+                String.format("%s.%s", schema, table),
+                insertRows,
+                true
+        );
+
+        LocalDataCriteria criteria = new LocalDataCriteria(String.format("%s.%s", schema, table), sysPkColumn, 10, 0, null);
+        Page<Map<String, Object>> data = rdmSyncDao.getData(criteria);
+
+        List<Map<String, Object>> rows = data.getContent();
+        rows.forEach(r -> r.remove(DELETED_FIELD_COL));
+
+        assertEquals(insertRows, data.getContent());
+
+        insertRows.get(0).put("name", "name4");
+        rdmSyncDao.updateRows(
+                String.format("%s.%s", schema, table),
+                sysPkColumn,
+                insertRows,
+                true);
+
+        criteria = new LocalDataCriteria(String.format("%s.%s", schema, table), sysPkColumn, 10, 0, null);
+
+        data = rdmSyncDao.getData(criteria);
+
+        rows = data.getContent();
+        rows.forEach(r -> r.remove(DELETED_FIELD_COL));
+
+        assertEquals(insertRows, rows);
+
     }
 
     private void prepareRowToAssert(Map<String, Object> row) {
@@ -247,7 +310,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         String version = "CURRENT";
         String refBookCode = "test";
         String refBookName = "test Name";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table","CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+        String pkSysColumn = "test_pk_field";
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn,"CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
@@ -275,7 +339,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
                 "ref_ek001_ver",
-                generateFieldMappings());
+                generateFieldMappings(),
+                "sys_pk");
 
         List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
@@ -331,7 +396,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.closeLoadedVersion("test", "1.0", secondVersionPublishDate);
         Integer secondLoadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.1", secondVersionPublishDate, null, true);
         List<Map<String, Object>> secondVersionRows = new ArrayList<>(rows);
-        secondVersionRows.add( Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
+        secondVersionRows.add(Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
         rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId);
         //получаем версию 1.1
         Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));

@@ -74,7 +74,7 @@ public class RdmSyncInitializer {
         autoCreateOnPropValues.stream()
                 .filter(m -> !xmlMappingRefBookCodes.contains(m.getCode()))
                 .forEach(m ->
-                        autoCreate(m.getCode(), m.getName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
+                        autoCreate(m.getCode(), m.getName(), m.getSource(), m.getType(), m.getTable(), m.getSysPkColumn(), m.getRange()));
 
     }
 

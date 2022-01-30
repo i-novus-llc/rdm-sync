@@ -36,7 +36,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
 
     @Override
-    public void create(String code, String name, String source, SyncTypeEnum type, String table, String range) {
+    public void create(String code, String name, String source, SyncTypeEnum type, String table, String sysPkColumn, String range) {
 
         if(rdmSyncDao.existsLoadedVersion(code)) {
             logger.info("auto create for code {} was skipped", code);
@@ -50,7 +50,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
             String schemaTable = getTableNameWithSchema(code, table);
             versionMapping = new VersionMapping(null, code, name, "CURRENT",
-                    schemaTable,"someSource", refBookStructure.getPrimaries().get(0), null,
+                    schemaTable, sysPkColumn,"someSource", refBookStructure.getPrimaries().get(0), null,
                     null, -1, null, type, range);
             rdmSyncDao.insertVersionMapping(versionMapping);
         }

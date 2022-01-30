@@ -9,5 +9,5 @@ import javax.annotation.Nullable;
  */
 public interface LocalRefBookCreator {
 
-    void create(String refCode, String refName, String source, SyncTypeEnum type, String table, @Nullable String range);
+    void create(String refCode, String refName, String source, SyncTypeEnum type, String table, String sysPkColumn, @Nullable String range);
 }
