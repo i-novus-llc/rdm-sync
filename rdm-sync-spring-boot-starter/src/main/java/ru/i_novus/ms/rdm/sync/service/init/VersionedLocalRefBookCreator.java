@@ -66,6 +66,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         String tableName = split[1];
 
         rdmSyncDao.createSchemaIfNotExists(schemaName);
-        rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+        rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName,
+                rdmSyncDao.getFieldMappings(versionMapping.getId()), versionMapping.getSysPkColumn());
     }
 }

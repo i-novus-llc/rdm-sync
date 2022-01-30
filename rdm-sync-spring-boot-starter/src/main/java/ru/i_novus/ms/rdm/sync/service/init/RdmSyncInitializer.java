@@ -60,7 +60,7 @@ public class RdmSyncInitializer {
 
     private void autoCreate(List<VersionMapping> xmlMappings) {
         xmlMappings.forEach(m ->
-                autoCreate(m.getCode(), m.getRefBookName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
+                autoCreate(m.getCode(), m.getRefBookName(), m.getSource(), m.getType(), m.getTable(), m.getSysPkColumn(), m.getRange()));
 
         List<String> xmlMappingRefBookCodes = xmlMappings.stream()
                 .map(VersionMapping::getCode)
@@ -78,8 +78,8 @@ public class RdmSyncInitializer {
 
     }
 
-    private void autoCreate(String refCode, String refName, String source, SyncTypeEnum type, String table, String range) {
-        localRefBookCreatorLocator.getLocalRefBookCreator(type).create(refCode, refName, source, type, table, range);
+    private void autoCreate(String refCode, String refName, String source, SyncTypeEnum type, String table, String sysPkColumn, String range) {
+        localRefBookCreatorLocator.getLocalRefBookCreator(type).create(refCode, refName, source, type, table, sysPkColumn, range);
     }
 
     private void sourceLoaderServiceInit() {

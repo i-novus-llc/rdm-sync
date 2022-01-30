@@ -38,7 +38,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
 
     private final String defaultSchema;
-    private final boolean caseIgnore;
+    protected final boolean caseIgnore;
 
     protected final SyncSourceDao syncSourceDao;
 
