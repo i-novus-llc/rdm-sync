@@ -34,6 +34,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
@@ -768,7 +769,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(criteria.getSchemaTable()));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE version = :version) ");
+            if (criteria.getRefBookCode() == null)
+                throw new BadRequestException("refBookCode required if version not null");
+            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE code = :code AND version = :version)");
+            args.put("code", criteria.getRefBookCode());
             args.put("version", criteria.getVersion());
         }
 

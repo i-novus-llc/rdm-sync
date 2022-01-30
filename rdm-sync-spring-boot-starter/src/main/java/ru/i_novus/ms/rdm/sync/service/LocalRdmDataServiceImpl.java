@@ -63,7 +63,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
 
-        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(versionMapping.getTable(),
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, filters, version);
 
         return dao.getSimpleVersionedData(criteria);
