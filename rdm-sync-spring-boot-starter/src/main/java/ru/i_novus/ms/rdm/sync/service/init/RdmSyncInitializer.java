@@ -6,15 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookPropertyValue;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.apache.cxf.common.util.CollectionUtils.isEmpty;
 
 @Component
 @DependsOn("liquibaseRdm")
@@ -57,19 +59,23 @@ public class RdmSyncInitializer {
     }
 
     private void autoCreate(List<VersionMapping> xmlMappings) {
-        boolean createOnXml = !isEmpty(xmlMappings);
-        boolean createOnProperties = !createOnXml &&
-                autoCreateRefBookProperties != null && !isEmpty(autoCreateRefBookProperties.getRefbooks());
+        xmlMappings.forEach(m ->
+                autoCreate(m.getCode(), m.getRefBookName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
 
-        if (createOnXml) {
-            xmlMappings.forEach(m ->
-                    autoCreate(m.getCode(), m.getRefBookName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
-        }
+        List<String> xmlMappingRefBookCodes = xmlMappings.stream()
+                .map(VersionMapping::getCode)
+                .collect(Collectors.toList());
 
-        if (createOnProperties) {
-            autoCreateRefBookProperties.getRefbooks().forEach(m ->
-                    autoCreate(m.getCode(), m.getName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
-        }
+        List<AutoCreateRefBookPropertyValue> autoCreateOnPropValues =
+                autoCreateRefBookProperties == null
+                        ? new ArrayList<>()
+                        : autoCreateRefBookProperties.getRefbooks();
+
+        autoCreateOnPropValues.stream()
+                .filter(m -> !xmlMappingRefBookCodes.contains(m.getCode()))
+                .forEach(m ->
+                        autoCreate(m.getCode(), m.getName(), m.getSource(), m.getType(), m.getTable(), m.getRange()));
+
     }
 
     private void autoCreate(String refCode, String refName, String source, SyncTypeEnum type, String table, String range) {
