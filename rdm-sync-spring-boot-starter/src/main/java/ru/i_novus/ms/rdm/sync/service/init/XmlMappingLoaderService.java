@@ -33,6 +33,10 @@ class XmlMappingLoaderService {
     @Autowired
     private ClusterLockService lockService;
 
+    public void setRdmMappingXmlPath(String rdmMappingXmlPath) {
+        this.rdmMappingXmlPath = rdmMappingXmlPath;
+    }
+
     @Transactional
     public void load() {
 
@@ -55,7 +59,7 @@ class XmlMappingLoaderService {
     private void load(XmlMapping mapping) {
 
         if (lockService.tryLock()) {
-            try  {
+            try {
                 logger.info("loading ...");
                 mapping.getRefbooks().forEach(this::load);
                 logger.info("xml mapping was loaded");
@@ -67,19 +71,16 @@ class XmlMappingLoaderService {
     }
 
     private void load(XmlMappingRefBook xmlMappingRefBook) {
-
-        if (xmlMappingRefBook.getMappingVersion() > rdmSyncDao.getLastMappingVersion(xmlMappingRefBook.getCode())) {
+        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), xmlMappingRefBook.getRefBookVersion());
+        if (versionMapping == null) {
+            Integer mappingId = rdmSyncDao.insertVersionMapping(xmlMappingRefBook.convertToVersionMapping());
+            rdmSyncDao.insertFieldMapping(mappingId, xmlMappingRefBook.getFields().stream().map(XmlMappingField::convertToFieldMapping).collect(Collectors.toList()));
+            logger.info("mapping for code {} with version {} was added", xmlMappingRefBook.getCode(), xmlMappingRefBook.getRefBookVersion());
+        } else if (xmlMappingRefBook.getMappingVersion() > versionMapping.getMappingVersion()) {
             logger.info("load {}", xmlMappingRefBook.getCode());
-            VersionMapping versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-            if(versionMapping == null) {
-                rdmSyncDao.insertVersionMapping(xmlMappingRefBook.convertToVersionMapping());
-                versionMapping = rdmSyncDao.getVersionMapping(xmlMappingRefBook.getCode(), "CURRENT");
-            } else {
-                rdmSyncDao.updateCurrentMapping(xmlMappingRefBook.convertToVersionMapping());
-            }
+            rdmSyncDao.updateCurrentMapping(xmlMappingRefBook.convertToVersionMapping());
             rdmSyncDao.insertFieldMapping(versionMapping.getMappingId(), xmlMappingRefBook.getFields().stream().map(XmlMappingField::convertToFieldMapping).collect(Collectors.toList()));
-            logger.info("mapping for code {} was loaded", xmlMappingRefBook.getCode());
-
+            logger.info("mapping for code {} with version {} was updated", xmlMappingRefBook.getCode(), xmlMappingRefBook.getRefBookVersion());
         } else {
             logger.info("mapping for {} not changed", xmlMappingRefBook.getCode());
         }
