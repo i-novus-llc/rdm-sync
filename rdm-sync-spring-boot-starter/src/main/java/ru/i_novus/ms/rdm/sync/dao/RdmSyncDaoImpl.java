@@ -558,7 +558,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Integer.class);
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getVersion() != null ? versionMapping.getVersion() : "CURRENT"));
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getVersion()));
 
         return mappingId;
     }
