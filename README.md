@@ -226,6 +226,16 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
         <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>
     </refbook>
 
+   <refbook code="EK001" sys-table="rdm.ref_ek001" type="SIMPLE_VERSIONED" unique-sys-field="code" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM версия CURRENT" refbook-version="CURRENT">
+      <field sys-field="code" sys-data-type="integer" rdm-field="ID"/>
+      <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>
+   </refbook>
+
+   <refbook code="EK001" sys-table="rdm.ref_ek001" type="SIMPLE_VERSIONED" unique-sys-field="code" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM версия 2.5" refbook-version="2.5">
+      <field sys-field="code" sys-data-type="integer" rdm-field="ID"/>
+      <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>
+   </refbook>
+
 </mapping>
 ```
 
