@@ -56,7 +56,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
             if (!dao.existsLoadedVersion(refCode) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)) {
 
                 update(newVersion, versionMapping);
-                loggingService.logOk(refCode, versionMapping.getVersion(), newVersion.getVersion());
+                loggingService.logOk(refCode, versionMapping.getRefBookVersion(), newVersion.getVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refCode);
@@ -64,7 +64,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         } catch (Exception e) {
             logger.error(String.format("Error while updating new version with code '%s'.", refCode), e);
 
-            loggingService.logError(refCode, versionMapping.getVersion(), newVersion.getVersion(),
+            loggingService.logError(refCode, versionMapping.getRefBookVersion(), newVersion.getVersion(),
                     e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
 

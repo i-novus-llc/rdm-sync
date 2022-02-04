@@ -225,7 +225,16 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
         <field sys-field="code" sys-data-type="integer" rdm-field="ID"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>
     </refbook>
+</mapping>
+```
 
+По умолчанию маппинг задается для всех версий справочника. Когда для какой-то версии нужен специфический маппинг, его можно переопределить указав в теге ```<refbook>``` атрибут ```refbook-version``` с необходимой версией. Как в примере ниже:
+```xml
+<mapping>
+   <refbook code="EK001" sys-table="rdm.ref_ek001" refbook-version="2.5" type="SIMPLE_VERSIONED" unique-sys-field="code" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM версия 2.5">
+      <field sys-field="code" sys-data-type="integer" rdm-field="ID"/>
+      <field sys-field="name" sys-data-type="varchar" rdm-field="name"/>
+   </refbook>
 </mapping>
 ```
 

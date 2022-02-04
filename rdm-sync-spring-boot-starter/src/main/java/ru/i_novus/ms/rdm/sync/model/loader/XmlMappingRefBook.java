@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @EqualsAndHashCode
 public class XmlMappingRefBook {
@@ -32,7 +33,7 @@ public class XmlMappingRefBook {
 
     private SyncTypeEnum type;
 
-    private String version;
+    private String refBookVersion;
 
     private String range;
 
@@ -139,9 +140,18 @@ public class XmlMappingRefBook {
         this.range = range;
     }
 
+    @XmlAttribute(name = "refbook-version")
+    public String getRefBookVersion() {
+        return Objects.toString(refBookVersion, "CURRENT");
+    }
+
+    public void setRefBookVersion(String refBookVersion) {
+        this.refBookVersion = refBookVersion;
+    }
+
     public VersionMapping convertToVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
-        return new VersionMapping(null, code, name, version, sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
+        return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
@@ -158,6 +168,7 @@ public class XmlMappingRefBook {
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
         result.setRange(mapping.getRange());
+        result.setRefBookVersion(mapping.getRefBookVersion());
         return result;
     }
 }
