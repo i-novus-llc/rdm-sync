@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
-    <refbook code="EK002" deleted-field="deleted_ts" mapping-version="1" name="RDM" source="RDM" sys-pk-field="_sync_rec_id" sys-table="rdm.ref_ek002" type="NOT_VERSIONED" unique-sys-field="id" refbook-version="CURRENT">
+    <refbook code="EK002" deleted-field="deleted_ts" mapping-version="1" name="RDM" source="RDM" sys-pk-field="_sync_rec_id" sys-table="rdm.ref_ek002" type="NOT_VERSIONED" unique-sys-field="id">
         <field rdm-field="ref" sys-data-type="varchar" sys-field="ref"/>
         <field rdm-field="name_ru" sys-data-type="varchar" sys-field="name_ru"/>
         <field rdm-field="code_en" sys-data-type="varchar" sys-field="code_en"/>
