@@ -123,7 +123,7 @@ public class XmlMappingLoaderServiceTest {
 
 private void assertVersionMapping(VersionMapping expectedVersionMapping, VersionMapping actualVersionMapping){
     assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getCode());
-    assertEquals(expectedVersionMapping.getVersion(), actualVersionMapping.getVersion());
+    assertEquals(expectedVersionMapping.getRefBookVersion(), actualVersionMapping.getRefBookVersion());
 }
 
 }

@@ -57,7 +57,10 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Override
     public Page<Map<String, Object>> getVersionedData(String refBookCode, String version, Integer page, Integer size, UriInfo uriInfo) {
-        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, version);
+        if (versionMapping == null) {
+            versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        }
         if (page == null) page = 0;
         if (size == null) size = 10;
 

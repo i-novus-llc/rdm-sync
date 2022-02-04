@@ -316,7 +316,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(versionMapping.getCode(), actual.getCode());
         assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
-        assertEquals(version, actual.getVersion());
+        assertEquals(version, actual.getRefBookVersion());
         assertMappingEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
@@ -328,7 +328,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.updateCurrentMapping(versionMapping);
 
         actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
-        assertEquals(version, versionMapping.getVersion());
+        assertEquals(version, versionMapping.getRefBookVersion());
         assertMappingEquals(versionMapping, actual);
     }
 

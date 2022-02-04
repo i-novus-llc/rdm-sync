@@ -168,7 +168,7 @@ public class XmlMappingRefBook {
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
         result.setRange(mapping.getRange());
-        result.setRefBookVersion(mapping.getVersion());
+        result.setRefBookVersion(mapping.getRefBookVersion());
         return result;
     }
 }
