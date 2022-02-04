@@ -596,7 +596,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Map<String, Object> result = new HashMap<>(6);
         result.put("code", versionMapping.getCode());
-        result.put("version", "CURRENT");
+        result.put("version", versionMapping.getVersion() != null ? versionMapping.getVersion() : "CURRENT");
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
