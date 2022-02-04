@@ -33,12 +33,12 @@ public class XmlMappingLoaderServiceTest {
      * добавится маппинг справочника с версией CURRENT
      */
     @Test
-    public void testFirstLoadXmlMappingWithoutRefBookVersion(){
+    public void testFirstLoadXmlMappingWithoutRefBookVersion() {
         xmlMappingLoaderService.setRdmMappingXmlPath("/rdm-mapping-EK002-CURRENT.xml");
-        VersionMapping expectedVersionMapping = new VersionMapping(
-                1,"EK002", "RDM", "CURRENT", "rdm.ref_ek002", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,-1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
+        VersionMapping expectedVersionMapping = generateVersionMapping();
+        expectedVersionMapping.setCode("EK002");
+        expectedVersionMapping.setRefBookVersion("CURRENT");
+        expectedVersionMapping.setMappingVersion(-1);
 
         when(lockService.tryLock()).thenReturn(true);
         xmlMappingLoaderService.load();
@@ -56,14 +56,16 @@ public class XmlMappingLoaderServiceTest {
     @Test
     public void testUpdateXmlMappingWithoutRefBookVersion() {
         xmlMappingLoaderService.setRdmMappingXmlPath("/rdm-mapping-EK002-CURRENT.xml");
-        VersionMapping expectedFromDataBaseVersionMapping = new VersionMapping(
-                1,"EK002", "RDM", "CURRENT", "rdm.ref_ek002", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,-1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
-        VersionMapping expectedVersionMapping = new VersionMapping(
-                1,"EK002", "RDM", "CURRENT", "rdm.ref_ek002", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
+
+        VersionMapping expectedFromDataBaseVersionMapping = generateVersionMapping();
+        expectedFromDataBaseVersionMapping.setCode("EK002");
+        expectedFromDataBaseVersionMapping.setRefBookVersion("CURRENT");
+        expectedFromDataBaseVersionMapping.setMappingVersion(-1);
+
+        VersionMapping expectedVersionMapping = generateVersionMapping();
+        expectedVersionMapping.setCode("EK002");
+        expectedVersionMapping.setRefBookVersion("CURRENT");
+        expectedVersionMapping.setMappingVersion(1);
 
         when(dao.getVersionMapping("EK002", "CURRENT")).thenReturn(expectedFromDataBaseVersionMapping);
         when(lockService.tryLock()).thenReturn(true);
@@ -82,10 +84,10 @@ public class XmlMappingLoaderServiceTest {
     @Test
     public void testFirstLoadXmlMappingWithRefBookVersion() {
         xmlMappingLoaderService.setRdmMappingXmlPath("/rdm-mapping-EK003-1.0.xml");
-        VersionMapping expectedVersionMapping = new VersionMapping(
-                1,"EK003", "RDM", "1.0", "rdm.ref_ek003", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,-1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
+        VersionMapping expectedVersionMapping = generateVersionMapping();
+        expectedVersionMapping.setCode("EK003");
+        expectedVersionMapping.setRefBookVersion("1.0");
+        expectedVersionMapping.setMappingVersion(-1);
 
         when(lockService.tryLock()).thenReturn(true);
         xmlMappingLoaderService.load();
@@ -103,14 +105,15 @@ public class XmlMappingLoaderServiceTest {
     @Test
     public void testUpdateXmlMappingWithRefBookVersion() {
         xmlMappingLoaderService.setRdmMappingXmlPath("/rdm-mapping-EK003-1.0.xml");
-        VersionMapping expectedFromDataBaseVersionMapping = new VersionMapping(
-                1,"EK003", "RDM", "1.0", "rdm.ref_ek003", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,-1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
-        VersionMapping expectedVersionMapping = new VersionMapping(
-                1,"EK003", "RDM", "1.0", "rdm.ref_ek003", "id",
-                "RDM", "_sync_rec_id", "deleted_ts", null,1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
+        VersionMapping expectedFromDataBaseVersionMapping = generateVersionMapping();
+        expectedFromDataBaseVersionMapping.setCode("EK003");
+        expectedFromDataBaseVersionMapping.setRefBookVersion("1.0");
+        expectedFromDataBaseVersionMapping.setMappingVersion(-1);
+
+        VersionMapping expectedVersionMapping = generateVersionMapping();
+        expectedVersionMapping.setCode("EK003");
+        expectedVersionMapping.setRefBookVersion("1.0");
+        expectedVersionMapping.setMappingVersion(1);
 
         when(dao.getVersionMapping("EK003", "1.0")).thenReturn(expectedFromDataBaseVersionMapping);
         when(lockService.tryLock()).thenReturn(true);
@@ -121,9 +124,16 @@ public class XmlMappingLoaderServiceTest {
         assertVersionMapping(expectedVersionMapping, actualVersionMapping);
     }
 
-private void assertVersionMapping(VersionMapping expectedVersionMapping, VersionMapping actualVersionMapping){
-    assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getCode());
-    assertEquals(expectedVersionMapping.getRefBookVersion(), actualVersionMapping.getRefBookVersion());
-}
+    private void assertVersionMapping(VersionMapping expectedVersionMapping, VersionMapping actualVersionMapping) {
+        assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getCode());
+        assertEquals(expectedVersionMapping.getRefBookVersion(), actualVersionMapping.getRefBookVersion());
+    }
+
+    private VersionMapping generateVersionMapping() {
+        return new VersionMapping(
+                1, null, "RDM", null, "rdm.ref_ek003", "id",
+                "RDM", "_sync_rec_id", "deleted_ts", null, 1,
+                1, SyncTypeEnum.NOT_VERSIONED, "");
+    }
 
 }
