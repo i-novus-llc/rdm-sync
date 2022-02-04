@@ -151,7 +151,7 @@ public class XmlMappingRefBook {
 
     public VersionMapping convertToVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
-        return new VersionMapping(null, code, name, refBookVersion, sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
+        return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
