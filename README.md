@@ -228,7 +228,7 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 </mapping>
 ```
 
-Для маппинга справочника с указанной версией в теге ```<refbook>``` нужно указать атрибут ```refbook-version```. Как в примере ниже:
+По умолчанию маппинг задается для всех версий справочника. Когда для какой-то версии нужен специфический маппинг, его можно переопределить указав в теге ```<refbook>``` атрибут ```refbook-version``` с необходимой версией. Как в примере ниже:
 ```xml
 <mapping>
    <refbook code="EK001" sys-table="rdm.ref_ek001" refbook-version="2.5" type="SIMPLE_VERSIONED" unique-sys-field="code" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM версия 2.5">
