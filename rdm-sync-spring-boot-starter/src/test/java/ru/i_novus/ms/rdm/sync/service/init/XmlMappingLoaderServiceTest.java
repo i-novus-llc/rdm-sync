@@ -129,7 +129,7 @@ public class XmlMappingLoaderServiceTest {
         assertEquals(expectedVersionMapping.getRefBookVersion(), actualVersionMapping.getRefBookVersion());
     }
 
-    private VersionMapping generateVersionMapping() {
+    public static VersionMapping generateVersionMapping() {
         return new VersionMapping(
                 1, null, "RDM", null, "rdm.ref_ek003", "id",
                 "RDM", "_sync_rec_id", "deleted_ts", null, 1,
