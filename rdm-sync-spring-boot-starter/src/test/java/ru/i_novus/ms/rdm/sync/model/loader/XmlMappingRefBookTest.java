@@ -11,7 +11,7 @@ public class XmlMappingRefBookTest {
     public void testGetVersion() {
         XmlMappingRefBook mappingRefBook = new XmlMappingRefBook();
 
-        Assert.assertEquals("CURRENT", mappingRefBook.getRefBookVersion());
+        Assert.assertEquals("CURRENT", mappingRefBook.getRefBookVersionIfNullReturnCurrent());
 
         mappingRefBook.setRefBookVersion("1");
         Assert.assertEquals("1", mappingRefBook.getRefBookVersion());
