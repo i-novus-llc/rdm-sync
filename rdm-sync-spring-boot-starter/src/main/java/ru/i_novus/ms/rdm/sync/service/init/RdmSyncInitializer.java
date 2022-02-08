@@ -67,7 +67,7 @@ public class RdmSyncInitializer {
                 .collect(Collectors.toList());
 
         List<AutoCreateRefBookPropertyValue> autoCreateOnPropValues =
-                autoCreateRefBookProperties == null
+                autoCreateRefBookProperties == null || autoCreateRefBookProperties.getRefbooks() == null
                         ? new ArrayList<>()
                         : autoCreateRefBookProperties.getRefbooks();
 
