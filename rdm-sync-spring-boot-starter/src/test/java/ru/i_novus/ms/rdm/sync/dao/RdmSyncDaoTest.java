@@ -213,47 +213,6 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testSimpleVersionedTable() {
-
-        rdmSyncDao.createVersionedTableIfNotExists(
-                "public",
-                "ref_ek002_simple_ver",
-                generateFieldMappings(),
-                RECORD_SYS_COL);
-
-        List<Map<String, Object>> rows = List.of(
-                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
-                Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
-        );
-        rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
-        Page<Map<String, Object>> page = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, null));
-        page.getContent().forEach(this::prepareRowToAssert);
-        assertEquals(rows, page.getContent());
-
-        // добавление другой версии(upsert), поиск по версии
-        List<Map<String, Object>> nextVersionRows = List.of(
-                //строка не изменилась
-                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
-                //изменилась
-                Map.of("ID", 2, "name", "name2 edited", "some_dt", LocalDate.of(2021, 1, 2), "flag", false),
-                //новая
-                Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3))
-        );
-        rdmSyncDao.upsertVersionedRows("public.ref_ek001_ver", nextVersionRows, "2.0");
-
-        Page<Map<String, Object>> firstVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "1.0"));
-        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "2.0"));
-        firstVersionData.getContent().forEach(this::prepareRowToAssert);
-        secondVersionData.getContent().forEach(this::prepareRowToAssert);
-        assertEquals(rows, firstVersionData.getContent());
-        secondVersionData.getContent().forEach(row -> row.values().removeAll(Collections.singleton(null)));
-        assertEquals(nextVersionRows, secondVersionData.getContent());
-
-        //просто проставление версии
-    }
-
-
-    @Test
     public void testTableWithNaturalPrimaryKey() {
         String schema = "public";
         String table = "ref_001_with_natural_pk";
