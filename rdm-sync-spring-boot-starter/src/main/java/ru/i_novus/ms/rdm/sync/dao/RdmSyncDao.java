@@ -169,7 +169,7 @@ public interface RdmSyncDao {
 
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn);
 
-    void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings);
+    void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField);
 
     SyncRefBook getSyncRefBook(String code);
 }

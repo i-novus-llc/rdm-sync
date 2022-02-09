@@ -75,6 +75,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String LOADED_VERSION_REF = "version_id";
     private static final String HASH_SYS_COL = "_hash";
+    private static final String UNIQUE_CONSTRAINT = "unique_constraint";
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -818,7 +819,17 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId) {
-        //todo
+        if (CollectionUtils.isEmpty(rows)){
+            return;
+        }
+        StringJoiner columns = new StringJoiner(",");
+        StringJoiner values = new StringJoiner(",");
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        concatColumnsAndValues(columns, values, batchValues, rows);
+        columns.add(escapeName(LOADED_VERSION_REF));
+        values.add(String.valueOf(loadedVersionId));
+        namedParameterJdbcTemplate.batchUpdate(String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO UPDATE SET (%s) = (%s);",
+                schemaTable, columns.toString(), values.toString(), UNIQUE_CONSTRAINT, columns, values), batchValues);
     }
 
     private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
@@ -975,7 +986,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings) {
+    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
         createTable(schema, table, fieldMappings,
                 Map.of(LOADED_VERSION_REF, "integer NOT NULL",
                         RECORD_SYS_COL, RECORD_SYS_COL_INFO)
@@ -987,6 +998,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         escapedSchemaTable, escapeName(table + "_" + LOADED_VERSION_REF + "_fk"), LOADED_VERSION_REF
                 )
         );
+        getJdbcTemplate().execute(
+                String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
+                escapedSchemaTable, UNIQUE_CONSTRAINT, escapeName(primaryField), LOADED_VERSION_REF));
     }
 
     @Override
