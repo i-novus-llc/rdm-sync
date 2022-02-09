@@ -44,7 +44,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         }
 
         @Bean
-        public RdmMappingService rdmMappingService(){
+        public RdmMappingService rdmMappingService() {
             return new RdmMappingServiceImpl();
         }
     }
@@ -213,6 +213,47 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
+    public void testSimpleVersionedTable() {
+
+        rdmSyncDao.createVersionedTableIfNotExists(
+                "public",
+                "ref_ek002_simple_ver",
+                generateFieldMappings(),
+                RECORD_SYS_COL);
+
+        List<Map<String, Object>> rows = List.of(
+                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
+        rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
+        Page<Map<String, Object>> page = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, null));
+        page.getContent().forEach(this::prepareRowToAssert);
+        assertEquals(rows, page.getContent());
+
+        // добавление другой версии(upsert), поиск по версии
+        List<Map<String, Object>> nextVersionRows = List.of(
+                //строка не изменилась
+                Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                //изменилась
+                Map.of("ID", 2, "name", "name2 edited", "some_dt", LocalDate.of(2021, 1, 2), "flag", false),
+                //новая
+                Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3))
+        );
+        rdmSyncDao.upsertVersionedRows("public.ref_ek001_ver", nextVersionRows, "2.0");
+
+        Page<Map<String, Object>> firstVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "1.0"));
+        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "2.0"));
+        firstVersionData.getContent().forEach(this::prepareRowToAssert);
+        secondVersionData.getContent().forEach(this::prepareRowToAssert);
+        assertEquals(rows, firstVersionData.getContent());
+        secondVersionData.getContent().forEach(row -> row.values().removeAll(Collections.singleton(null)));
+        assertEquals(nextVersionRows, secondVersionData.getContent());
+
+        //просто проставление версии
+    }
+
+
+    @Test
     public void testTableWithNaturalPrimaryKey() {
         String schema = "public";
         String table = "ref_001_with_natural_pk";
@@ -236,9 +277,9 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.addInternalLocalRowStateColumnIfNotExists(schema, table);
 
         List<Map<String, Object>> insertRows = List.of(
-                new HashMap<>(Map.of( "id", 1, "name", "name1", "age", 20)),
-                new HashMap<>(Map.of( "id", 2, "name", "name2", "age", 25)),
-                new HashMap<>(Map.of( "id", 3, "name", "name3", "age", 30))
+                new HashMap<>(Map.of("id", 1, "name", "name1", "age", 20)),
+                new HashMap<>(Map.of("id", 2, "name", "name2", "age", 25)),
+                new HashMap<>(Map.of("id", 3, "name", "name3", "age", 30))
         );
 
         rdmSyncDao.insertRows(
@@ -283,8 +324,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     public void testAddingLoadedVersion() {
 
         String code = "testAddingLoadedVersion";
-        String version ="version";
-        LoadedVersion expected = new LoadedVersion(null, code, version,  LocalDateTime.of(2021, 11, 9, 17, 0), null, null, true);
+        String version = "version";
+        LoadedVersion expected = new LoadedVersion(null, code, version, LocalDateTime.of(2021, 11, 9, 17, 0), null, null, true);
         Integer loadedVerId = rdmSyncDao.insertLoadedVersion(expected.getCode(), expected.getVersion(), expected.getPublicationDate(), expected.getCloseDate(), expected.getActual());
 
         LoadedVersion actual = rdmSyncDao.getLoadedVersion(code, version);
@@ -310,7 +351,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         String refBookCode = "test";
         String refBookName = "test Name";
         String pkSysColumn = "test_pk_field";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn,"CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
@@ -333,7 +374,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testInternalLocalRowStateUpdateTriggerListIsEmpty(){
+    public void testInternalLocalRowStateUpdateTriggerListIsEmpty() {
 
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
@@ -361,26 +402,26 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testMarkDeletedToMultipleRows(){
+    public void testMarkDeletedToMultipleRows() {
 
         LocalDateTime expectedNowDeletedDate = LocalDateTime.of(2021, 9, 26, 12, 30);
         LocalDateTime expectedBeforeDeletedDate = LocalDateTime.of(2021, 9, 25, 12, 30);
-        rdmSyncDao.markDeleted("ref_cars", "deleted_ts", expectedNowDeletedDate, true );
+        rdmSyncDao.markDeleted("ref_cars", "deleted_ts", expectedNowDeletedDate, true);
 
         LocalDataCriteria criteria = createSyncedCriteria("ref_cars");
         List<Map<String, Object>> content = rdmSyncDao.getData(criteria).getContent();
 
         LocalDateTime actualBeforeDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(1)).findAny().get().get("deleted_ts");
         LocalDateTime actualNowDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(2)).findAny().get().get("deleted_ts");
-        Assert.assertEquals(expectedBeforeDeletedDate,  actualBeforeDeleted);
-        Assert.assertEquals(expectedNowDeletedDate,  actualNowDeleted);
+        Assert.assertEquals(expectedBeforeDeletedDate, actualBeforeDeleted);
+        Assert.assertEquals(expectedNowDeletedDate, actualNowDeleted);
     }
 
     @Test
     public void testCRUSimpleVersionedData() {
         List<FieldMapping> fieldMappings = generateFieldMappings();
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", fieldMappings);
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", fieldMappings, "ID");
         Integer loadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, loadedVersionId);
@@ -402,6 +443,15 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         secondVersionData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(secondVersionRows, secondVersionData.getContent());
         Assert.assertEquals(secondVersionPublishDate, rdmSyncDao.getLoadedVersion("test", "1.0").getCloseDate());
+
+        //upsert версии 1.1
+        secondVersionRows.remove(2);
+        secondVersionRows.add(Map.of("ID", 3, "name", "name3-edited", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
+        rdmSyncDao.upsertVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId);
+        //получаем версию 1.1 после upsert
+        Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
+        secondVersionEditedData.getContent().forEach(this::prepareRowToAssert);
+        Assert.assertEquals(secondVersionRows, secondVersionEditedData.getContent());
     }
 
     private List<FieldMapping> generateFieldMappings() {
@@ -434,6 +484,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
         row.remove(RECORD_SYS_COL);
         row.remove(DELETED_FIELD_COL);
+    }
+
+    private VersionMapping generateVersionMapping() {
+        return new VersionMapping(
+                1, null, "RDM", null, "rdm.ref_ek003", "id",
+                "RDM", "_sync_rec_id", "deleted_ts", null, 1,
+                1, SyncTypeEnum.NOT_VERSIONED, "");
     }
 }
 
