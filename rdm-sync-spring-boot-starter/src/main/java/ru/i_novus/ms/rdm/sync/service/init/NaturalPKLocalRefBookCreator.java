@@ -29,7 +29,7 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
     @Override
     protected void createTable(String refBookCode, VersionMapping mapping) {
 
-        String[] split = mapping.getTable().split("\\.");
+        String[] split = getTableNameWithSchema(refBookCode, mapping.getTable()).split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
@@ -38,9 +38,9 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
-        dao.addInternalLocalRowStateColumnIfNotExists(schema, tableName);
+        dao.addInternalLocalRowStateColumnIfNotExists(schemaName, tableName);
         dao.createOrReplaceLocalRowStateUpdateFunction(); // Мы по сути в цикле перезаписываем каждый раз функцию, это не страшно
-        dao.addInternalLocalRowStateUpdateTrigger(schema, tableName);
+        dao.addInternalLocalRowStateUpdateTrigger(schemaName, tableName);
 
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }

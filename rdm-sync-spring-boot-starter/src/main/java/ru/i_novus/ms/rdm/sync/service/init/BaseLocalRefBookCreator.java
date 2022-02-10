@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -38,7 +37,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
 
 
-    protected final String schema;
+    private final String defaultSchema;
     protected final boolean caseIgnore;
 
     protected final SyncSourceDao syncSourceDao;
@@ -49,12 +48,12 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected abstract void createTable(String refBookCode, VersionMapping mapping);
 
-    public BaseLocalRefBookCreator(String schema,
+    public BaseLocalRefBookCreator(String defaultSchema,
                                    Boolean caseIgnore,
                                    RdmSyncDao dao,
                                    SyncSourceDao syncSourceDao,
                                    Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        this.schema = schema == null ? "rdm" : schema;
+        this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
 
         this.syncSourceDao = syncSourceDao;
@@ -66,19 +65,18 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     @Override
     public void create(String refBookCode, String refBookName, String source, SyncTypeEnum type, String table, String sysPkColumn,  @Nullable String range) {
 
-        if (dao.getVersionMapping(refBookCode, "CURRENT") != null) {
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
+        if (versionMapping != null) {
             logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
-            return;
+        } else {
+            logger.info(LOG_AUTOCREATE_START, refBookCode);
+            versionMapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn, range);
         }
-
-        logger.info(LOG_AUTOCREATE_START, refBookCode);
-
-        VersionMapping mapping = createMapping(refBookCode, refBookName, source, type, table, sysPkColumn, range);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
-        if (mapping != null) {
-            createTable(refBookCode, mapping);
+        if (versionMapping != null) {
+            createTable(refBookCode, versionMapping);
         }
     }
 
@@ -99,24 +97,8 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         return versionMapping;
     }
 
-    protected String getTableName(String refBookCode, String refBookTable) {
-
-        String schemaName;
-        String tableName;
-
-        if (!StringUtils.isEmpty(refBookTable)) {
-
-            String[] split = refBookTable.split("\\.");
-            schemaName = (split.length > 1) ? split[0] : schema;
-            tableName = (split.length > 1) ? split[1] : refBookTable;
-
-        } else {
-            schemaName = schema;
-            tableName = refBookCode.replaceAll("[-.]", "_");
-            tableName = "ref_" + (caseIgnore ? tableName.toLowerCase() : tableName);
-        }
-        
-        return String.format("%s.%s", schemaName, tableName);
+    public String getTableNameWithSchema(String refBookCode, String refBookTable) {
+        return RdmSyncInitUtils.buildTableNameWithSchema(refBookCode, refBookTable, defaultSchema, caseIgnore);
     }
 
     protected RefBookStructure getRefBookStructure(String refBookCode, String source) {
@@ -145,7 +127,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn,  @Nullable String range) {
         String uniqueSysField =   caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
-        String schemaTable = getTableName(refBookCode, table);
+        String schemaTable = getTableNameWithSchema(refBookCode, table);
 
         return new VersionMapping(null, refBookCode, refBookName, null,
                 schemaTable, sysPkColumn,sourceCode, uniqueSysField, null,

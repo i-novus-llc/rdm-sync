@@ -34,6 +34,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
@@ -43,7 +44,13 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -767,7 +774,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(criteria.getSchemaTable()));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE version = :version) ");
+            if (criteria.getRefBookCode() == null)
+                throw new BadRequestException("refBookCode required if version not null");
+            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE code = :code AND version = :version)");
+            args.put("code", criteria.getRefBookCode());
             args.put("version", criteria.getVersion());
         }
 

@@ -17,7 +17,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.lang.Boolean.TRUE;
+import static ru.i_novus.ms.rdm.sync.service.init.RdmSyncInitUtils.buildTableNameWithSchema;
 
 @Component
 class XmlMappingLoaderService {
@@ -26,6 +31,12 @@ class XmlMappingLoaderService {
 
     @Value("${rdm-sync.rdm-mapping.xml.path:/rdm-mapping.xml}")
     private String rdmMappingXmlPath;
+
+    @Value("${rdm-sync.auto-create.schema:rdm}")
+    private String defaultSchema;
+
+    @Value("${rdm-sync.auto-create.ignore-case:true}")
+    private Boolean caseIgnore;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
@@ -38,22 +49,37 @@ class XmlMappingLoaderService {
     }
 
     @Transactional
-    public void load() {
+    public List<VersionMapping> load() {
 
         try (InputStream io = RdmSyncInitializer.class.getResourceAsStream(rdmMappingXmlPath)) {
             if (io == null) {
                 logger.info("rdm-mapping.xml not found, xml mapping loader skipped");
-                return;
+                return Collections.emptyList();
             }
 
             Unmarshaller jaxbUnmarshaller = XmlMapping.JAXB_CONTEXT.createUnmarshaller();
             XmlMapping mapping = (XmlMapping) jaxbUnmarshaller.unmarshal(io);
+            normalizeSysTable(mapping);
             load(mapping);
+            return toVersionMappingList(mapping.getRefbooks());
 
         } catch (IOException | JAXBException e) {
             logger.error("xml mapping load error ", e);
             throw new RdmException(e);
         }
+    }
+
+    private List<VersionMapping> toVersionMappingList(List<XmlMappingRefBook> refBooks) {
+        return refBooks.stream()
+                .map(XmlMappingRefBook::convertToVersionMapping)
+                .collect(Collectors.toList());
+    }
+
+    private void normalizeSysTable(XmlMapping mapping) {
+        mapping.getRefbooks().forEach(v -> {
+            String tableName = buildTableNameWithSchema(v.getCode(), v.getSysTable(), defaultSchema, TRUE.equals(caseIgnore));
+            v.setSysTable(tableName);
+        });
     }
 
     private void load(XmlMapping mapping) {

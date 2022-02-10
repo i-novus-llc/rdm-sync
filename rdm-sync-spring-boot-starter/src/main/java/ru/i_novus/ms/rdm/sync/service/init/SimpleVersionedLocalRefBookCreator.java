@@ -31,11 +31,11 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     @Override
     protected void createTable(String code, VersionMapping versionMapping) {
 
-        String[] split = versionMapping.getTable().split("\\.");
+        String[] split = getTableNameWithSchema(code, versionMapping.getTable()).split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
-        dao.createSchemaIfNotExists(schema);
+        dao.createSchemaIfNotExists(schemaName);
         dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()));
     }
 }

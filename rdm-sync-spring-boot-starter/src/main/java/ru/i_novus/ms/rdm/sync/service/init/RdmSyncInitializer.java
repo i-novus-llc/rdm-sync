@@ -6,11 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.AutoCreateRefBookProperty;
+import ru.i_novus.ms.rdm.sync.AutoCreateRefBookPropertyValue;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Component
 @DependsOn("liquibaseRdm")
@@ -19,7 +25,7 @@ public class RdmSyncInitializer {
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializer.class);
 
     @Autowired
-    private XmlMappingLoaderService mappingLoaderService;
+    private XmlMappingLoaderService xmlMappingLoaderService;
 
     @Autowired
     private List<SourceLoaderService> sourceLoaderServiceList;
@@ -39,27 +45,41 @@ public class RdmSyncInitializer {
     public void init() {
 
         sourceLoaderServiceInit();
-        mappingLoaderService.load();
-        autoCreate();
+        List<VersionMapping> versionMappings = xmlMappingLoaderService.load();
+        autoCreate(versionMappings);
 
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
             rdmSyncJobConfigurer.setupExportJob();
         } else {
-            logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
+            logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. " +
+                    "Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
         }
 
     }
 
-    private void autoCreate() {
+    private void autoCreate(List<VersionMapping> xmlMappings) {
+        xmlMappings.forEach(m ->
+                autoCreate(m.getCode(), m.getRefBookName(), m.getSource(), m.getType(), m.getTable(), m.getSysPkColumn(), m.getRange()));
 
-        if (autoCreateRefBookProperties == null || autoCreateRefBookProperties.getRefbooks() == null)
-            return;
+        List<String> xmlMappingRefBookCodes = xmlMappings.stream()
+                .map(VersionMapping::getCode)
+                .collect(Collectors.toList());
 
-        autoCreateRefBookProperties.getRefbooks().forEach(p ->
-            localRefBookCreatorLocator.getLocalRefBookCreator(p.getType()).create(p.getCode(), p.getName(), p.getSource(), p.getType(), p.getTable(), p.getSysPkColumn(), p.getRange())
-        );
+        List<AutoCreateRefBookPropertyValue> autoCreateOnPropValues =
+                autoCreateRefBookProperties == null || autoCreateRefBookProperties.getRefbooks() == null
+                        ? new ArrayList<>()
+                        : autoCreateRefBookProperties.getRefbooks();
 
+        autoCreateOnPropValues.stream()
+                .filter(m -> !xmlMappingRefBookCodes.contains(m.getCode()))
+                .forEach(m ->
+                        autoCreate(m.getCode(), m.getName(), m.getSource(), m.getType(), m.getTable(), m.getSysPkColumn(), m.getRange()));
+
+    }
+
+    private void autoCreate(String refCode, String refName, String source, SyncTypeEnum type, String table, String sysPkColumn, String range) {
+        localRefBookCreatorLocator.getLocalRefBookCreator(type).create(refCode, refName, source, type, table, sysPkColumn, range);
     }
 
     private void sourceLoaderServiceInit() {
