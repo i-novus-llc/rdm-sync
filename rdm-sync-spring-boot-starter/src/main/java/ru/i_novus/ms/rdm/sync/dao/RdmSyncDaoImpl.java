@@ -182,7 +182,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(13)
+                        rs.getString(14)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -600,8 +600,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         "sync_type", versionMapping.getType().toString(),
                         "name", versionMapping.getRefBookName(),
                         "range", (versionMapping.getRange() == null) ? "null" : versionMapping.getRange()));
-
-
     }
 
     private Map<String, Object> toUpdateMappingValues(VersionMapping versionMapping) {
