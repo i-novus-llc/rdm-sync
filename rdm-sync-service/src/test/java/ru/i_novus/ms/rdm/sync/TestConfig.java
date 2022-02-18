@@ -130,29 +130,33 @@ public class TestConfig {
 
     @Bean
     public VersionRestService versionService() throws IOException {
-        RefBookRowValue[] firstVersionRows = getVersionRows("/EK002-data_version1.json");
-        RefBookRowValue[] secondVersionRows = getVersionRows("/EK002-data_version2.json");
+        RefBookRowValue[] ek002v1Rows = getVersionRows("/EK002-data_version1.json");
+        RefBookRowValue[] ek002v2Rows = getVersionRows("/EK002-data_version2.json");
         RefBookRowValue[] ek003v3_0Rows = getVersionRows("/rdm_responses/EK003_data_version_3.0.json");
         RefBookRowValue[] ek003v3_1Rows = getVersionRows("/rdm_responses/EK003_data_version_3.1.json");
 
         VersionRestService versionService = mock(VersionRestService.class);
 
-        RefBookVersion ek002Version1 = new RefBookVersion();
-        ek002Version1.setId(199);
-        RefBookVersion ek002Version2 = new RefBookVersion();
-        ek002Version2.setId(286);
+        RefBookVersion ek002Version1 = getRefBookVersion("/EK002_version1.json");
+        RefBookVersion ek002Version2 = getRefBookVersion("/EK002_version2.json");
+        RefBookVersion xmlEk002Version2 = getRefBookVersion("/EK002_version2.json");
+        xmlEk002Version2.setCode(XML_EK002);
+        RefBookVersion xmlEk002Version1 = getRefBookVersion("/EK002_version1.json");
+        xmlEk002Version1.setCode(XML_EK002);
         when(versionService.getVersion(eq("1"), eq(EK002))).thenReturn(ek002Version1);
         when(versionService.getVersion(eq("2"), eq(EK002))).thenReturn(ek002Version2);
-        when(versionService.getVersion(eq("1"), eq(XML_EK002))).thenReturn(ek002Version1);
-        when(versionService.getVersion(eq("2"), eq(XML_EK002))).thenReturn(ek002Version2);
-        RefBookVersion ek003Version3_0 = new RefBookVersion();
-        ek003Version3_0.setId(206);
-        RefBookVersion ek003Version3_1 = new RefBookVersion();
-        ek003Version3_1.setId(293);
+        when(versionService.getVersion(eq("1"), eq(XML_EK002))).thenReturn(xmlEk002Version1);
+        when(versionService.getVersion(eq("2"), eq(XML_EK002))).thenReturn(xmlEk002Version2);
+        RefBookVersion ek003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
+        RefBookVersion ek003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
+        RefBookVersion xmlEk003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
+        xmlEk003Version3_0.setCode(XML_EK003);
+        RefBookVersion xmlEk003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
+        xmlEk003Version3_1.setCode(XML_EK003);
         when(versionService.getVersion(eq("3.0"), eq(EK003))).thenReturn(ek003Version3_0);
         when(versionService.getVersion(eq("3.1"), eq(EK003))).thenReturn(ek003Version3_1);
-        when(versionService.getVersion(eq("3.0"), eq(XML_EK003))).thenReturn(ek003Version3_0);
-        when(versionService.getVersion(eq("3.1"), eq(XML_EK003))).thenReturn(ek003Version3_1);
+        when(versionService.getVersion(eq("3.0"), eq(XML_EK003))).thenReturn(xmlEk003Version3_0);
+        when(versionService.getVersion(eq("3.1"), eq(XML_EK003))).thenReturn(xmlEk003Version3_1);
         when(versionService.search(eq(ek002Version1.getId()), any(SearchDataCriteria.class))).thenAnswer(
                 (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
                     SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
@@ -160,7 +164,7 @@ public class TestConfig {
                         return new RestPage<>(Collections.emptyList());
                     }
                      if (searchDataCriteria.getPageNumber() == 0 )
-                        return new RestPage<>(Arrays.asList(firstVersionRows));
+                        return new RestPage<>(Arrays.asList(ek002v1Rows));
 
                     return new RestPage<>(Collections.emptyList());
                 });
@@ -172,7 +176,7 @@ public class TestConfig {
                         return new RestPage<>(Collections.emptyList());
                     }
                     if (searchDataCriteria.getPageNumber() == 0)
-                        return new RestPage<>(Arrays.asList(secondVersionRows));
+                        return new RestPage<>(Arrays.asList(ek002v2Rows));
 
                     return new RestPage<>(Collections.emptyList());
                 });
@@ -299,6 +303,10 @@ public class TestConfig {
 
     private RefBook getRefBook(String path) throws IOException {
         return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBook.class);
+    }
+
+    private RefBookVersion getRefBookVersion(String path) throws IOException {
+        return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBookVersion.class);
     }
 
     private RefBook getRefBook(String path, String replacedCode, String code) throws IOException {
