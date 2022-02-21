@@ -334,6 +334,29 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
+    public void testUpdateVersionMappingAndChangeRefbookTable(){
+        String refBookCode = "EK001";
+        String refBookName = "Справочник 1";
+        String refBookVersion = "CURRENT";
+        VersionMapping versionMapping = new
+                VersionMapping(null, refBookCode, refBookName, refBookVersion, "test_table", "id","CODE-1", "id",
+                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+        rdmSyncDao.insertVersionMapping(versionMapping);
+
+        //Проверка update'а таблицы rdm_sync.refbook
+        versionMapping.setType(SyncTypeEnum.RDM_NOT_VERSIONED);
+        versionMapping.setRange("*");
+        versionMapping.setRefBookName("Справочник 1-2");
+
+        rdmSyncDao.updateCurrentMapping(versionMapping);
+        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), refBookVersion);
+
+        assertEquals(SyncTypeEnum.RDM_NOT_VERSIONED, actual.getType());
+        assertEquals("*", actual.getRange());
+        assertEquals("Справочник 1-2", actual.getRefBookName());
+    }
+
+    @Test
     public void testInternalLocalRowStateUpdateTriggerListIsEmpty(){
 
         rdmSyncDao.createVersionedTableIfNotExists(
