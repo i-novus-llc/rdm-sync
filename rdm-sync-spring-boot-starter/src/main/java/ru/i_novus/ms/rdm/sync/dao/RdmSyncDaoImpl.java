@@ -829,7 +829,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         columns.add(escapeName(LOADED_VERSION_REF));
         values.add(String.valueOf(loadedVersionId));
         namedParameterJdbcTemplate.batchUpdate(String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO UPDATE SET (%s) = (%s);",
-                escapeName(schemaTable), columns, values, UNIQUE_CONSTRAINT, columns, values), batchValues);
+                escapeName(schemaTable), columns, values, escapeName(getUniqueConstraint(schemaTable)), columns, values), batchValues);
+    }
+
+    private String getUniqueConstraint(String schemaTable){
+        String table = (schemaTable.split("\\.").length == 2) ? schemaTable.split("\\.")[1] : schemaTable;
+        return table + "_uq";
     }
 
     private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
@@ -1000,7 +1005,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
         getJdbcTemplate().execute(
                 String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
-                escapedSchemaTable, UNIQUE_CONSTRAINT, escapeName(primaryField), LOADED_VERSION_REF));
+                escapedSchemaTable, escapeName(getUniqueConstraint(table)), escapeName(primaryField), LOADED_VERSION_REF));
     }
 
     @Override
