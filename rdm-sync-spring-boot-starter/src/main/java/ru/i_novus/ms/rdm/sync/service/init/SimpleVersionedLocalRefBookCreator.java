@@ -27,7 +27,6 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
         super(schema, caseIgnore, rdmSyncDao, syncSourceDao, syncSourceServiceFactories);
 
     }
-
     @Override
     protected void createTable(String code, VersionMapping versionMapping) {
 
@@ -37,5 +36,10 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
 
         dao.createSchemaIfNotExists(schemaName);
         dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()));
+    }
+
+    @Override
+    protected VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm) {
+        return vm;
     }
 }
