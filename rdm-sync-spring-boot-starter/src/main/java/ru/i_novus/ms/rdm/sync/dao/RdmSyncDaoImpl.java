@@ -75,7 +75,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String LOADED_VERSION_REF = "version_id";
     private static final String HASH_SYS_COL = "_hash";
-    private static final String UNIQUE_CONSTRAINT = "unique_constraint";
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
