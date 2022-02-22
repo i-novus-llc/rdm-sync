@@ -18,7 +18,7 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
-import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionIterator;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -110,11 +110,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
 
         RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
-        if(syncRefBook.getRange() != null) {
-           new RefBookVersionIterator(syncRefBook, dao, syncSourceService).forEachRemaining(version -> refBookUpdater.update(refBookCode, version));
-        } else {
-            refBookUpdater.update(refBookCode, null);
-        }
+        new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService).getVersions().forEach(version -> refBookUpdater.update(refBookCode, version));
+
     }
 
     @Override

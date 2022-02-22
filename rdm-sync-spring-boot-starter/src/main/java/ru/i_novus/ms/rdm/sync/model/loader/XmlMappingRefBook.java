@@ -145,7 +145,11 @@ public class XmlMappingRefBook {
 
     @XmlAttribute(name = "refbook-version")
     public String getRefBookVersion() {
-        return Objects.toString(refBookVersion, "CURRENT");
+        return refBookVersion;
+    }
+
+    public String getRefBookVersionIfNullReturnCurrent() {
+        return Objects.toString(getRefBookVersion(), "CURRENT");
     }
 
     public void setRefBookVersion(String refBookVersion) {
@@ -180,7 +184,9 @@ public class XmlMappingRefBook {
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
         result.setRange(mapping.getRange());
-        result.setRefBookVersion(mapping.getRefBookVersion());
+        if (!mapping.getRefBookVersion().equals("CURRENT")) {
+            result.setRefBookVersion(mapping.getRefBookVersion());
+        }
         return result;
     }
 }

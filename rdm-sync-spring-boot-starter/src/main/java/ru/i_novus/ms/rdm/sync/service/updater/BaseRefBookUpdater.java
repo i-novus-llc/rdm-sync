@@ -149,7 +149,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
             editVersion(newVersion, versionMapping, loadedVersion);
         }
 
-        logger.info("{} sync finished", newVersion.getCode());
+        logger.info("{}, version {} sync finished", newVersion.getCode(), newVersion.getVersion());
     }
 
     protected void editVersion(RefBookVersion newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion) {
