@@ -1,6 +1,8 @@
 package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
@@ -9,6 +11,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 public class XmlMappingRefBook {
@@ -57,7 +60,7 @@ public class XmlMappingRefBook {
 
     @XmlElement(name = "field")
     public List<XmlMappingField> getFields() {
-        if(fields == null) {
+        if (fields == null) {
             fields = new ArrayList<>();
         }
         return fields;
@@ -149,9 +152,18 @@ public class XmlMappingRefBook {
         this.refBookVersion = refBookVersion;
     }
 
-    public VersionMapping convertToVersionMapping() {
+    public VersionAndFieldMapping convertToVersionAndFieldMapping() {
+        return new VersionAndFieldMapping(mappingVersion ,generateVersionMapping(), generateFieldMappings());
+    }
+
+    private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
-        return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source, uniqueSysField, deletedField, null, mappingVersion, null, type, range);
+        return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source,
+                uniqueSysField, deletedField, null, mappingVersion, null, type, range);
+    }
+
+    private List<FieldMapping> generateFieldMappings() {
+        return getFields().stream().map(XmlMappingField::convertToFieldMapping).collect(Collectors.toList());
     }
 
     public static XmlMappingRefBook createBy(VersionMapping mapping) {
