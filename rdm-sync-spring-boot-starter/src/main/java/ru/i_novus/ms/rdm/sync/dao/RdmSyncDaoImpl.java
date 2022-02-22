@@ -829,7 +829,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         columns.add(escapeName(LOADED_VERSION_REF));
         values.add(String.valueOf(loadedVersionId));
         namedParameterJdbcTemplate.batchUpdate(String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ON CONSTRAINT %s DO UPDATE SET (%s) = (%s);",
-                schemaTable, columns.toString(), values.toString(), UNIQUE_CONSTRAINT, columns, values), batchValues);
+                escapeName(schemaTable), columns, values, UNIQUE_CONSTRAINT, columns, values), batchValues);
     }
 
     private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
