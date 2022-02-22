@@ -7,6 +7,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.service.mapping.utils.VersionMappingCreator;
 
 import java.util.List;
 import java.util.Map;
@@ -21,17 +22,16 @@ public class NaturalPKLocalRefBookCreatorTest {
     private NaturalPKLocalRefBookCreator creator;
 
     @Test
-    public void testGetVersionMapping() {
+    public void testModifyVersionMappingForNaturalPkLocalRefBookCreator() {
 
         String expectedSysPkColumn = "id";
 
         RefBookStructure structure = new RefBookStructure(null, List.of("id"), Map.of("id", INTEGER));
         structure.setPrimaries(List.of(expectedSysPkColumn));
+        VersionMapping versionMapping = VersionMappingCreator.create();
+        VersionMapping modifyVersionMapping = creator.modifyVersionMappingForDifferentCreator(versionMapping);
 
-        VersionMapping versionMapping = creator.getVersionMapping("CODE-1", "ref_ek001", "rdm",
-                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, "public.ref_ek_001",structure, "id", "");
-
-        String actualSysPkColumn = versionMapping.getSysPkColumn();
+        String actualSysPkColumn = modifyVersionMapping.getSysPkColumn();
 
         assertEquals(expectedSysPkColumn, actualSysPkColumn);
 
