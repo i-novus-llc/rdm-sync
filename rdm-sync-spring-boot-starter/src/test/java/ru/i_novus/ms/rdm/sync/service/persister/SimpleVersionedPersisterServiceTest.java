@@ -90,7 +90,7 @@ public class SimpleVersionedPersisterServiceTest {
 
         persisterService.repeatVersion(refBookVersion, versionMapping, syncSourceService);
 
-        verify(dao, times(1)).upsertVersionedRows(versionMapping.getTable(), data, loadedVersion.getId());
+        verify(dao, times(1)).upsertVersionedRows(versionMapping.getTable(), data, loadedVersion.getId(), "id");
     }
 
     private List<FieldMapping> generateFieldMappings() {
@@ -124,7 +124,7 @@ public class SimpleVersionedPersisterServiceTest {
                 schemaTable,
                 "sys_pk",
                 null,
-                null,
+                "id",
                 "deleted_ts",
                 null,
                 -1,

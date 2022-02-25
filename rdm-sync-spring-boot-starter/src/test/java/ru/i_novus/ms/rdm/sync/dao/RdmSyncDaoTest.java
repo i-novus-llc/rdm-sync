@@ -406,7 +406,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         //upsert версии 1.1
         secondVersionRows.remove(2);
         secondVersionRows.add(Map.of("ID", 3, "name", "name3-edited", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
-        rdmSyncDao.upsertVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId);
+        rdmSyncDao.upsertVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId, "ID");
         //получаем версию 1.1 после upsert
         Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionEditedData.getContent().forEach(this::prepareRowToAssert);
