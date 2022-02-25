@@ -100,7 +100,7 @@ public interface RdmSyncDao {
 
     void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, String version);
 
-    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId);
+    void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId, String primaryKey);
 
     /**
      * Изменить строку в справочник клиента.
