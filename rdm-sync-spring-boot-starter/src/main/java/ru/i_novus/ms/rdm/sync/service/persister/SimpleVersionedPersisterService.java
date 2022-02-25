@@ -79,7 +79,7 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     private void updateVersion(RefBookVersion newVersion, VersionMapping versionMapping, SyncSourceService syncSourceService, List<FieldMapping> fieldMappings, DataCriteria searchDataCriteria) {
         processRows(newVersion, syncSourceService, fieldMappings, searchDataCriteria,
-                rows -> rdmSyncDao.upsertVersionedRows(versionMapping.getTable(), rows, rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion()).getId()));
+                rows -> rdmSyncDao.upsertVersionedRows(versionMapping.getTable(), rows, rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion()).getId(), versionMapping.getPrimaryField()));
     }
 
     private void processRows(RefBookVersion newVersion, SyncSourceService syncSourceService,
