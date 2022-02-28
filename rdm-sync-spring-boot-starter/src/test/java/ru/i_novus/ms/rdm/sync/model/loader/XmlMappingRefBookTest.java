@@ -3,7 +3,7 @@ package ru.i_novus.ms.rdm.sync.model.loader;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.service.init.XmlMappingLoaderServiceTest;
+import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 
 public class XmlMappingRefBookTest {
 
@@ -19,7 +19,7 @@ public class XmlMappingRefBookTest {
 
     @Test
     public void testCreateByForRefBookVersion() {
-        VersionMapping versionMapping = XmlMappingLoaderServiceTest.generateVersionMapping();
+        VersionMapping versionMapping = MappingCreator.createVersionMapping();
 
         //Ничего не запишет
         versionMapping.setRefBookVersion("CURRENT");

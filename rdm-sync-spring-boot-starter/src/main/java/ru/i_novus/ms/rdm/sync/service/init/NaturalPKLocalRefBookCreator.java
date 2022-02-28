@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
@@ -21,9 +20,8 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
     public NaturalPKLocalRefBookCreator(
             @Value("${rdm-sync.auto-create.schema:rdm}") String schema,
             @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
-            RdmSyncDao dao, SyncSourceDao syncSourceDao,
-            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, dao, syncSourceDao, syncSourceServiceFactories);
+            RdmSyncDao dao, SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, dao, syncSourceDao);
     }
 
     @Override
@@ -34,7 +32,7 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableWithNaturalPrimaryKeyIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableWithNaturalPrimaryKeyIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getPrimaryField());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -43,11 +41,5 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
         dao.addInternalLocalRowStateUpdateTrigger(schemaName, tableName);
 
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
-    }
-
-    @Override
-    protected VersionMapping getVersionMapping(String refBookCode, String refBookName, String sourceCode, SyncTypeEnum type, String table, RefBookStructure structure, String sysPkColumn, String range) {
-        String sysPkColumnFromUniqueSysField = caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
-        return super.getVersionMapping(refBookCode, refBookName, sourceCode, type, table, structure, sysPkColumnFromUniqueSysField, range);
     }
 }
