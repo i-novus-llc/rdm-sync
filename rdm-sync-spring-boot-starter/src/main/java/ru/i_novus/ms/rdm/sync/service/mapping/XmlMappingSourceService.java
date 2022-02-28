@@ -2,14 +2,12 @@ package ru.i_novus.ms.rdm.sync.service.mapping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
-import ru.i_novus.ms.rdm.sync.service.init.ClusterLockService;
 import ru.i_novus.ms.rdm.sync.service.init.RdmSyncInitializer;
 
 import javax.xml.bind.JAXBException;
@@ -36,9 +34,6 @@ public class XmlMappingSourceService implements MappingSourceService {
 
     @Value("${rdm-sync.auto-create.ignore-case:true}")
     private Boolean caseIgnore;
-
-    @Autowired
-    private ClusterLockService lockService;
 
     public void setRdmMappingXmlPath(String rdmMappingXmlPath) {
         this.rdmMappingXmlPath = rdmMappingXmlPath;

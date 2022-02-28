@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 
 @Component
-public class ClusterLockService {
+class ClusterLockService {
 
     private static final Logger logger = LoggerFactory.getLogger(ClusterLockService.class);
 
