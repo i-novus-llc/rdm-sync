@@ -115,6 +115,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
             updateProcessing(newVersion, versionMapping);
         } catch (Exception e) {
             logger.error("cannot sync " + versionMapping.getCode(), e);
+            throw new IllegalArgumentException(e);
         } finally {
             if (haveTrigger){
                 dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
