@@ -78,7 +78,6 @@ public class PropMappingSourceService implements MappingSourceService {
             throw new IllegalArgumentException(refbook.getCode() + " not found in " + refbook.getCode());
         }
         return new VersionAndFieldMapping(
-                DEFAULT_VERSION_FOR_PROPERTY_MAPPING,
                 generateVersionMapping(refbook,  lastPublished.getStructure()),
                 generateFieldMappings(lastPublished.getStructure())
         );

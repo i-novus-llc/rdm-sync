@@ -22,9 +22,8 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     public SimpleVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                               @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                               RdmSyncDao rdmSyncDao,
-                                              SyncSourceDao syncSourceDao,
-                                              Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, syncSourceServiceFactories);
+                                              SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao);
 
     }
     @Override
@@ -36,10 +35,5 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
 
         dao.createSchemaIfNotExists(schemaName);
         dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()));
-    }
-
-    @Override
-    protected VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm) {
-        return vm;
     }
 }

@@ -594,12 +594,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "(name, source_id, sync_type, range) = " +
                 "(:name, (select id from rdm_sync.source where code = :source_code), :sync_type, :range) " +
                 " where code = :code";
-        namedParameterJdbcTemplate.update(updateRefbook,
+        Map<String, Object> updateParams = new HashMap<>(
                 Map.of("code", versionMapping.getCode(),
-                        "source_code", versionMapping.getSource(),
-                        "sync_type", versionMapping.getType().toString(),
-                        "name", versionMapping.getRefBookName(),
-                        "range", (versionMapping.getRange() == null) ? "null" : versionMapping.getRange()));
+                "source_code", versionMapping.getSource(),
+                "sync_type", versionMapping.getType().toString(),
+                "name", versionMapping.getRefBookName()));
+        updateParams.put("range", versionMapping.getRange());
+        namedParameterJdbcTemplate.update(updateRefbook, updateParams);
     }
 
     private Map<String, Object> toUpdateMappingValues(VersionMapping versionMapping) {

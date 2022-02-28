@@ -8,18 +8,12 @@ import java.util.List;
 @AllArgsConstructor
 public class VersionAndFieldMapping {
 
-    private int mappingVersion;
-
     private VersionMapping versionMapping;
 
     private List<FieldMapping> fieldMapping;
 
     public int getMappingVersion() {
-        return mappingVersion;
-    }
-
-    public void setMappingVersion(int mappingVersion) {
-        this.mappingVersion = mappingVersion;
+        return versionMapping.getMappingVersion();
     }
 
     public VersionMapping getVersionMapping() {

@@ -9,7 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.service.mapping.utils.VersionMappingCreator;
+import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +33,7 @@ public class XmlMappingSourceServiceTest {
      */
     @Test
     public void testGetVersionMappingListFromXmlFromXml() {
-        VersionMapping expectedVersionMapping = VersionMappingCreator.create();
+        VersionMapping expectedVersionMapping = MappingCreator.createVersionMapping();
         VersionAndFieldMapping actualVersionMapping = xmlMappingSourceService.getVersionAndFieldMappingList().get(0);
 
         Assert.assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getVersionMapping().getCode());

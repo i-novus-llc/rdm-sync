@@ -28,9 +28,8 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                         @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                         RdmSyncDao rdmSyncDao,
-                                        SyncSourceDao syncSourceDao,
-                                        Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, syncSourceServiceFactories);
+                                        SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao);
 
         this.rdmSyncDao = rdmSyncDao;
     }
@@ -75,10 +74,5 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         rdmSyncDao.createSchemaIfNotExists(schemaName);
         rdmSyncDao.createVersionedTableIfNotExists(schemaName, tableName,
                 rdmSyncDao.getFieldMappings(versionMapping.getId()), versionMapping.getSysPkColumn());
-    }
-
-    @Override
-    protected VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm) {
-        return vm;
     }
 }

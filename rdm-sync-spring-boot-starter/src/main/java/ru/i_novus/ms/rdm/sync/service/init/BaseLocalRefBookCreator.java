@@ -7,21 +7,14 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
-import java.util.Set;
 
 public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseLocalRefBookCreator.class);
 
-    protected static final String LOG_AUTOCREATE_SKIP =
-            "Skip autocreation of mapping data from structure of RefBook with code '{}'.";
-    protected static final String LOG_AUTOCREATE_START =
-            "Autocreation mapping data from structure of RefBook with code '{}' is started.";
 
     private final String defaultSchema;
 
@@ -31,21 +24,17 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final RdmSyncDao dao;
 
-    private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
     protected abstract void createTable(String refBookCode, VersionMapping mapping);
 
     public BaseLocalRefBookCreator(String defaultSchema,
                                    Boolean caseIgnore,
                                    RdmSyncDao dao,
-                                   SyncSourceDao syncSourceDao,
-                                   Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
+                                   SyncSourceDao syncSourceDao) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
-
         this.syncSourceDao = syncSourceDao;
         this.dao = dao;
-        this.syncSourceServiceFactories = syncSourceServiceFactories;
     }
 
     @Transactional
@@ -53,46 +42,37 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     public void create(VersionAndFieldMapping versionAndFieldMapping) {
         String refBookCode = versionAndFieldMapping.getVersionMapping().getCode();
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
-        if (versionMapping != null) {
-            logger.info(LOG_AUTOCREATE_SKIP, refBookCode);
-        } else {
-            logger.info(LOG_AUTOCREATE_START, refBookCode);
-            versionMapping = saveMapping(versionAndFieldMapping.getVersionMapping(), versionAndFieldMapping.getFieldMapping());
-        }
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, versionAndFieldMapping.getVersionMapping().getRefBookVersion());
+        saveMapping(versionAndFieldMapping.getVersionMapping(), versionAndFieldMapping.getFieldMapping(), versionMapping);
+
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
-        if (versionMapping != null) {
-            createTable(refBookCode, versionMapping);
+        if (versionMapping == null) {
+            createTable(refBookCode, versionAndFieldMapping.getVersionMapping());
         }
     }
 
-    protected VersionMapping saveMapping(VersionMapping vm, List<FieldMapping> fm) {
-        String refBookCode = vm.getCode();
-        String refBookVersion = vm.getRefBookVersion();
-        VersionMapping modifiedVersionMapping = modifyVersionMappingForDifferentCreator(vm);
-        VersionMapping currentVersionMapping = dao.getVersionMapping(refBookCode, refBookVersion);
-        if (currentVersionMapping == null) {
-            Integer mappingId = dao.insertVersionMapping(modifiedVersionMapping);
+    protected void saveMapping(VersionMapping newVersionMapping, List<FieldMapping> fm, VersionMapping oldVersionMapping) {
+        String refBookCode = newVersionMapping.getCode();
+        String refBookVersion = newVersionMapping.getRefBookVersion();
+
+        if (oldVersionMapping == null) {
+            Integer mappingId = dao.insertVersionMapping(newVersionMapping);
             dao.insertFieldMapping(mappingId, fm);
             logger.info("mapping for code {} with version {} was added", refBookCode, refBookVersion);
-            modifiedVersionMapping.setId(mappingId);
-        } else if (modifiedVersionMapping.getMappingVersion() > currentVersionMapping.getMappingVersion()) {
+            newVersionMapping.setId(mappingId);
+        } else if (newVersionMapping.getMappingVersion() > oldVersionMapping.getMappingVersion()) {
             logger.info("load {}", refBookCode);
-            dao.updateCurrentMapping(modifiedVersionMapping);
-            dao.insertFieldMapping(currentVersionMapping.getMappingId(), fm);
-            logger.info("mapping for code {} with version {} was updated", refBookCode, modifiedVersionMapping.getMappingVersion());
+            dao.updateCurrentMapping(newVersionMapping);
+            dao.insertFieldMapping(oldVersionMapping.getMappingId(), fm);
+            logger.info("mapping for code {} with version {} was updated", refBookCode, newVersionMapping.getMappingVersion());
         } else {
             logger.info("mapping for {} not changed", refBookCode);
         }
-        return modifiedVersionMapping;
     }
 
     public String getTableNameWithSchema(String refBookCode, String refBookTable) {
         return RdmSyncInitUtils.buildTableNameWithSchema(refBookCode, refBookTable, defaultSchema, caseIgnore);
     }
-
-    protected abstract VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm);
-
 }

@@ -1,9 +1,6 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * @author lgalimova
@@ -13,6 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class FieldMapping {
 
     private String sysField;

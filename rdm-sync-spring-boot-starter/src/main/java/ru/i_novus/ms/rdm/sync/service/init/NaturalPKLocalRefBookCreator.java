@@ -20,9 +20,8 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
     public NaturalPKLocalRefBookCreator(
             @Value("${rdm-sync.auto-create.schema:rdm}") String schema,
             @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
-            RdmSyncDao dao, SyncSourceDao syncSourceDao,
-            Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, dao, syncSourceDao, syncSourceServiceFactories);
+            RdmSyncDao dao, SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, dao, syncSourceDao);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createTableWithNaturalPrimaryKeyIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getSysPkColumn());
+        dao.createTableWithNaturalPrimaryKeyIfNotExists(schemaName, tableName, dao.getFieldMappings(refBookCode), mapping.getDeletedField(), mapping.getPrimaryField());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
@@ -42,11 +41,5 @@ public class NaturalPKLocalRefBookCreator extends NotVersionedLocalRefBookCreato
         dao.addInternalLocalRowStateUpdateTrigger(schemaName, tableName);
 
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
-    }
-
-    @Override
-    protected VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm) {
-        vm.setSysPkColumn(vm.getPrimaryField());
-        return vm;
     }
 }

@@ -157,7 +157,7 @@ public class XmlMappingRefBook {
     }
 
     public VersionAndFieldMapping convertToVersionAndFieldMapping() {
-        return new VersionAndFieldMapping(mappingVersion ,generateVersionMapping(), generateFieldMappings());
+        return new VersionAndFieldMapping(generateVersionMapping(), generateFieldMappings());
     }
 
     private VersionMapping generateVersionMapping() {

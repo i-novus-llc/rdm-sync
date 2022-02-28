@@ -123,7 +123,7 @@ public class VersionedLocalRefBookCreatorTest {
     }
 
     private VersionAndFieldMapping createVersionAndFieldMappingByRefBookCode(String refBookCode){
-        return new VersionAndFieldMapping(any() ,createVersionMapping(refBookCode), createFieldMappings());
+        return new VersionAndFieldMapping(createVersionMapping(refBookCode), createFieldMappings());
     }
 
     private VersionMapping createVersionMapping(String testCode) {

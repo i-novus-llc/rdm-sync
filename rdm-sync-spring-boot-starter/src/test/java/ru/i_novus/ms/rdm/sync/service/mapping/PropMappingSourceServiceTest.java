@@ -24,7 +24,7 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.service.mapping.utils.VersionMappingCreator;
+import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 
 import java.util.*;
 
@@ -92,7 +92,7 @@ public class PropMappingSourceServiceTest {
 
         when(syncSourceService.getRefBook(any(), any())).thenReturn(refBookVersion);
 
-        VersionMapping expectedVersionMapping = VersionMappingCreator.create();
+        VersionMapping expectedVersionMapping = MappingCreator.createVersionMapping();
         VersionAndFieldMapping actualVersionMapping = propMappingSourceService.getVersionAndFieldMappingList().get(0);
 
         Assert.assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getVersionMapping().getCode());

@@ -21,9 +21,8 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     public NotVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                            @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                            RdmSyncDao dao,
-                                           SyncSourceDao syncSourceDao,
-                                           Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, dao, syncSourceDao, syncSourceServiceFactories);
+                                           SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, dao, syncSourceDao);
 
     }
 
@@ -45,10 +44,4 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
         logger.info("Table {} in schema {} successfully prepared.", tableName, schemaName);
     }
-
-    @Override
-    protected VersionMapping modifyVersionMappingForDifferentCreator(VersionMapping vm) {
-        return vm;
-    }
-
 }
