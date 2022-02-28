@@ -29,7 +29,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     protected abstract PersisterService getPersisterService();
 
-    public BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
+    protected BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
         this.dao = dao;
         this.syncSourceService = syncSourceService;
         this.loggingService = loggingService;
