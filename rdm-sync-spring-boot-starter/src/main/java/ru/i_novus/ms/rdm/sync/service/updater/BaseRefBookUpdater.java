@@ -124,7 +124,6 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
     }
 
     private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings) {
-
         List<String> clientRdmFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(toList());
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
         if (!actualFields.containsAll(clientRdmFields)) {
