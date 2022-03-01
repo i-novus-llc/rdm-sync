@@ -970,10 +970,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
         createTable(schema, table, fieldMappings,  Map.of(isDeletedFieldName, "timestamp without time zone"));
 
-        String sql = "ALTER TABLE " + escapeName(schema) + "." + escapeName(table) + " ADD CONSTRAINT "
-                + escapeName(table + "_pk") + " PRIMARY KEY (" + escapeName(sysPkColumn) + ");";
+        Boolean pkIsExists = getJdbcTemplate().queryForObject("SELECT EXISTS (SELECT * FROM pg_constraint " +
+                "                   WHERE conrelid = ?::regclass and contype = 'p')", Boolean.class, schema+"."+table);
+        if (!pkIsExists) {
+            String sql = "ALTER TABLE " + escapeName(schema) + "." + escapeName(table) + " ADD CONSTRAINT "
+                    + escapeName(table + "_pk") + " PRIMARY KEY (" + escapeName(sysPkColumn) + ");";
 
-        getJdbcTemplate().execute(sql);
+            getJdbcTemplate().execute(sql);
+        }
     }
 
     @Override
