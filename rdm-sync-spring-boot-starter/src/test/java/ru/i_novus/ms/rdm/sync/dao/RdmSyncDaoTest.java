@@ -432,7 +432,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         secondVersionRows.add(Map.of("ID", 3, "name", "name3-edited", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
         rdmSyncDao.upsertVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId, "ID");
         //получаем версию 1.1 после upsert
-        Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
+        Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("test","public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionEditedData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(secondVersionRows, secondVersionEditedData.getContent());
     }
@@ -440,7 +440,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test(expected = BadRequestException.class)
     public void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings());
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
         rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         rdmSyncDao.insertLoadedVersion("another_test_refbook_with_same_loaded_version", "1.0", publishDate, null, true);
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
