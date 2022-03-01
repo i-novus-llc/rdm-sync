@@ -243,8 +243,10 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 return AttributeTypeEnum.STRING;
             case "DATETIME":
                 return AttributeTypeEnum.DATE;
+            case "BOOLEAN":
+                return AttributeTypeEnum.BOOLEAN;
             default:
-                return null;
+                throw new IllegalArgumentException("unknown fnsi type " + fnsiDataType);
         }
     }
 }

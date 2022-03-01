@@ -6,16 +6,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.*;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -42,9 +44,7 @@ public class NotVersionedLocalRefBookCreatorTest {
 
     @Before
     public void setUp() {
-        when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
-        when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
     }
 
     @Test
@@ -52,27 +52,14 @@ public class NotVersionedLocalRefBookCreatorTest {
         Integer mappingId = 1;
         String code = "test.code";
         String refBookName = "test.name";
-        String sourceCode = "TEST_SOURCE_CODE";
         List<FieldMapping> expectedFieldMappingList = List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name"));
-        RefBookVersion refBook = new RefBookVersion();
-        refBook.setCode(code);
-        refBook.setStructure(
-                new RefBookStructure(null,
-                        Collections.singletonList("id"),
-                        Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING)
-                )
-        );
 
-        when(rdmSyncDao.lockRefBookForUpdate(eq(code), eq(true))).thenReturn(true);
+
+        when(rdmSyncDao.lockRefBookForUpdate(code, true)).thenReturn(true);
         when(rdmSyncDao.insertVersionMapping(any())).thenReturn(mappingId);
-        when(rdmSyncDao.getFieldMappings(eq(mappingId))).thenReturn(expectedFieldMappingList);
-        when(syncSourceService.getRefBook(any(), any())).thenReturn(refBook);
+        when(rdmSyncDao.getFieldMappings(mappingId)).thenReturn(expectedFieldMappingList);
 
-        SyncSource source = new SyncSource("name", "code", "{}", "service");
-
-        when(syncSourceDao.findByCode(any())).thenReturn(source);
-
-        creator.create(code, refBookName, sourceCode, SyncTypeEnum.NOT_VERSIONED, null,  "_sync_rec_id", null);
+        creator.create(createVersionMapping(code));
 
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
@@ -98,7 +85,6 @@ public class NotVersionedLocalRefBookCreatorTest {
                         eq("deleted_ts"),
                         eq("_sync_rec_id"));
 
-
     }
 
     /**
@@ -108,7 +94,8 @@ public class NotVersionedLocalRefBookCreatorTest {
     public void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
         when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
-        creator.create(code, null, "someSource", SyncTypeEnum.NOT_VERSIONED, null, null, null);
+        VersionAndFieldMapping versionAndFieldMapping = createVersionMapping(code);
+        creator.create(versionAndFieldMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).insertVersionMapping(any());
 
@@ -120,5 +107,12 @@ public class NotVersionedLocalRefBookCreatorTest {
         return list -> list.size()==expectedList.size() && list.containsAll(expectedList) && expectedList.containsAll(list);
     }
 
+    private VersionAndFieldMapping createVersionMapping(String testCode) {
+        VersionMapping versionMapping = new VersionMapping(1, testCode, "test.name",
+                "CURRENT", "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
+                "id", "deleted_ts", null, -1, null,
+                SyncTypeEnum.NOT_VERSIONED, null);
+        return new VersionAndFieldMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
+    }
 
 }

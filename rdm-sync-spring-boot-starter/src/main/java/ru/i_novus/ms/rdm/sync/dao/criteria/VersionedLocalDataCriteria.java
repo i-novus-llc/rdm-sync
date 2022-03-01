@@ -6,15 +6,27 @@ import java.util.List;
 
 public class VersionedLocalDataCriteria extends BaseDataCriteria {
 
+    private String refBookCode;
+
     private String version;
 
     private Boolean actual;
 
-    public VersionedLocalDataCriteria(String schemaTable, String pk, int limit, int offset,
+    public VersionedLocalDataCriteria(String refBookCode,
+                                      String schemaTable, String pk, int limit, int offset,
                                       List<FieldFilter> filters,
                                       String version) {
         super(schemaTable, pk, limit, offset, filters);
         this.version = version;
+        this.refBookCode = refBookCode;
+    }
+
+    public String getRefBookCode() {
+        return refBookCode;
+    }
+
+    public void setRefBookCode(String refBookCode) {
+        this.refBookCode = refBookCode;
     }
 
     public String getVersion() {

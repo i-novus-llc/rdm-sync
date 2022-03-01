@@ -21,6 +21,7 @@ import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 
+import javax.ws.rs.BadRequestException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -186,7 +187,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
                 Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
         );
         rdmSyncDao.insertVersionedRows("public.ref_ek001_ver", rows, "1.0");
-        Page<Map<String, Object>> page = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, null));
+        Page<Map<String, Object>> page = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("ek001", "public.ref_ek001_ver", "ID", 30, 0, null, null));
         page.getContent().forEach(this::prepareRowToAssert);
         assertEquals(rows, page.getContent());
 
@@ -201,8 +202,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         );
         rdmSyncDao.upsertVersionedRows("public.ref_ek001_ver", nextVersionRows, "2.0");
 
-        Page<Map<String, Object>> firstVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "1.0"));
-        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("public.ref_ek001_ver", "ID", 30, 0, null, "2.0"));
+        Page<Map<String, Object>> firstVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("ek001", "public.ref_ek001_ver", "ID", 30, 0, null, "1.0"));
+        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getVersionedData(new VersionedLocalDataCriteria("ek001", "public.ref_ek001_ver", "ID", 30, 0, null, "2.0"));
         firstVersionData.getContent().forEach(this::prepareRowToAssert);
         secondVersionData.getContent().forEach(this::prepareRowToAssert);
         assertEquals(rows, firstVersionData.getContent());
@@ -316,7 +317,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(versionMapping.getCode(), actual.getCode());
         assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
-        assertEquals(version, actual.getVersion());
+        assertEquals(version, actual.getRefBookVersion());
         assertMappingEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
@@ -328,8 +329,31 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.updateCurrentMapping(versionMapping);
 
         actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
-        assertEquals(version, versionMapping.getVersion());
+        assertEquals(version, versionMapping.getRefBookVersion());
         assertMappingEquals(versionMapping, actual);
+    }
+
+    @Test
+    public void testUpdateVersionMappingAndChangeRefbookTable(){
+        String refBookCode = "EK001";
+        String refBookName = "Справочник 1";
+        String refBookVersion = "CURRENT";
+        VersionMapping versionMapping = new
+                VersionMapping(null, refBookCode, refBookName, refBookVersion, "test_table", "id","CODE-1", "id",
+                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+        rdmSyncDao.insertVersionMapping(versionMapping);
+
+        //Проверка update'а таблицы rdm_sync.refbook
+        versionMapping.setType(SyncTypeEnum.RDM_NOT_VERSIONED);
+        versionMapping.setRange("*");
+        versionMapping.setRefBookName("Справочник 1-2");
+
+        rdmSyncDao.updateCurrentMapping(versionMapping);
+        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), refBookVersion);
+
+        assertEquals(SyncTypeEnum.RDM_NOT_VERSIONED, actual.getType());
+        assertEquals("*", actual.getRange());
+        assertEquals("Справочник 1-2", actual.getRefBookName());
     }
 
     @Test
@@ -384,7 +408,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Integer loadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, loadedVersionId);
-        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
         Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
         simpleVersionedData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(rows, simpleVersionedData.getContent());
@@ -398,7 +422,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         secondVersionRows.add(Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 3), "flag", false));
         rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", secondVersionRows, secondLoadedVersionId);
         //получаем версию 1.1
-        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
+        Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(secondVersionRows, secondVersionData.getContent());
         Assert.assertEquals(secondVersionPublishDate, rdmSyncDao.getLoadedVersion("test", "1.0").getCloseDate());
@@ -411,6 +435,20 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionEditedData.getContent().forEach(this::prepareRowToAssert);
         Assert.assertEquals(secondVersionRows, secondVersionEditedData.getContent());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
+        LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings());
+        rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
+        rdmSyncDao.insertLoadedVersion("another_test_refbook_with_same_loaded_version", "1.0", publishDate, null, true);
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
+        Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
+        Assert.assertEquals(0, simpleVersionedData.getTotalElements());
+
+        criteria.setRefBookCode(null);
+        rdmSyncDao.getSimpleVersionedData(criteria);
     }
 
     private List<FieldMapping> generateFieldMappings() {

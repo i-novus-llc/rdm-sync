@@ -34,6 +34,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
@@ -43,7 +44,13 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -175,7 +182,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(13)
+                        rs.getString(14)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -558,7 +565,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Integer.class);
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getVersion() != null ? versionMapping.getVersion() : "CURRENT"));
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRefBookVersion() != null ? versionMapping.getRefBookVersion() : "CURRENT"));
 
         return mappingId;
     }
@@ -583,20 +590,24 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         namedParameterJdbcTemplate.update(sql, toUpdateMappingValues(versionMapping));
 
-        final String updateRefbook = "update rdm_sync.refbook set source_id = (select id from rdm_sync.source where code = :code), sync_type = :type" +
+        final String updateRefbook = "update rdm_sync.refbook set " +
+                "(name, source_id, sync_type, range) = " +
+                "(:name, (select id from rdm_sync.source where code = :source_code), :sync_type, :range) " +
                 " where code = :code";
-        namedParameterJdbcTemplate.update(updateRefbook,
-                Map.of("code", versionMapping.getSource(),
-                        "type", versionMapping.getType().toString()));
-
-
+        Map<String, Object> updateParams = new HashMap<>(
+                Map.of("code", versionMapping.getCode(),
+                "source_code", versionMapping.getSource(),
+                "sync_type", versionMapping.getType().toString(),
+                "name", versionMapping.getRefBookName()));
+        updateParams.put("range", versionMapping.getRange());
+        namedParameterJdbcTemplate.update(updateRefbook, updateParams);
     }
 
     private Map<String, Object> toUpdateMappingValues(VersionMapping versionMapping) {
 
         Map<String, Object> result = new HashMap<>(6);
         result.put("code", versionMapping.getCode());
-        result.put("version", "CURRENT");
+        result.put("version", versionMapping.getRefBookVersion() != null ? versionMapping.getRefBookVersion() : "CURRENT");
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
@@ -767,7 +778,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 escapeName(criteria.getSchemaTable()));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE version = :version) ");
+            if (criteria.getRefBookCode() == null)
+                throw new BadRequestException("refBookCode required if version not null");
+            sql = sql + " AND " + LOADED_VERSION_REF + ("=(SELECT id from rdm_sync.loaded_version WHERE code = :code AND version = :version)");
+            args.put("code", criteria.getRefBookCode());
             args.put("version", criteria.getVersion());
         }
 

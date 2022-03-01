@@ -57,13 +57,16 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Override
     public Page<Map<String, Object>> getVersionedData(String refBookCode, String version, Integer page, Integer size, UriInfo uriInfo) {
-        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, version);
+        if (versionMapping == null) {
+            versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        }
         if (page == null) page = 0;
         if (size == null) size = 10;
 
         List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
 
-        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(versionMapping.getTable(),
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, filters, version);
 
         return dao.getSimpleVersionedData(criteria);

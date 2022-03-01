@@ -22,20 +22,18 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     public SimpleVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                               @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                               RdmSyncDao rdmSyncDao,
-                                              SyncSourceDao syncSourceDao,
-                                              Set<SyncSourceServiceFactory> syncSourceServiceFactories) {
-        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, syncSourceServiceFactories);
+                                              SyncSourceDao syncSourceDao) {
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao);
 
     }
-
     @Override
     protected void createTable(String code, VersionMapping versionMapping) {
 
-        String[] split = versionMapping.getTable().split("\\.");
+        String[] split = getTableNameWithSchema(code, versionMapping.getTable()).split("\\.");
         String schemaName = split[0];
         String tableName = split[1];
 
-        dao.createSchemaIfNotExists(schema);
+        dao.createSchemaIfNotExists(schemaName);
         dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()), versionMapping.getPrimaryField());
     }
 }

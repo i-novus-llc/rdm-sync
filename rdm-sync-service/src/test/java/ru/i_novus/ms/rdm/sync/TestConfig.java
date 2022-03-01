@@ -37,7 +37,6 @@ import ru.i_novus.ms.rdm.api.model.version.RefBookVersion;
 import ru.i_novus.ms.rdm.api.rest.VersionRestService;
 import ru.i_novus.ms.rdm.api.service.CompareService;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
@@ -52,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -59,6 +59,13 @@ import static org.mockito.Mockito.when;
 
 @TestConfiguration
 public class TestConfig {
+
+    public static final String EK002 = "EK002";
+    public static final String XML_EK002 = "XMLEK002";
+    public static final String EK003 = "EK003";
+    public static final String XML_EK003 = "XMLEK003";
+    public static final String OID ="1.2.643.5.1.13.2.1.1.725";
+    public static final String XML_OID ="1.2.643.5.1.13.2.1.1.726";
 
     private final FnsiSourceProperty property;
 
@@ -85,57 +92,71 @@ public class TestConfig {
         RefBookService refBookService = mock(RefBookService.class);
         RefBook ek002Ver1 = getRefBook("/EK002_version1.json");
         RefBook ek002Ver2 = getRefBook("/EK002_version2.json");
+        RefBook xmlek002Ver1 = getRefBook("/EK002_version1.json", EK002, XML_EK002);
+        RefBook xmlek002Ver2 = getRefBook("/EK002_version2.json", EK002, XML_EK002);
+
         RefBook ek003Ver3_0 = getRefBook("/rdm_responses/EK003_version_3.0.json");
         RefBook ek003Ver3_1 = getRefBook("/rdm_responses/EK003_version_3.1.json");
-        when(refBookService.search(argThat(refBookCriteria -> refBookCriteria!=null && "EK002".equals(refBookCriteria.getCode())))).thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
-            RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
-            if (refBookCriteria.getPageNumber() >= 1) {
-                return new RestPage<>(Collections.emptyList());
-            }
-            boolean ver1IsLoaded = versionIsLoaded("EK002", "1");
-            if(!ver1IsLoaded) {
-                return new RestPage<>(Collections.singletonList(ek002Ver1));
-            } else
-                return new RestPage<>(Collections.singletonList(ek002Ver2));
+        RefBook xmlek003Ver3_0 = getRefBook("/rdm_responses/EK003_version_3.0.json", EK003, XML_EK003);
+        RefBook xmlek003Ver3_1 = getRefBook("/rdm_responses/EK003_version_3.1.json", EK003, XML_EK003);
 
-        });
-        when(refBookService.search(argThat(refBookCriteria -> "EK003".equals(refBookCriteria.getCode())))).thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
-            RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
-            if (refBookCriteria.getPageNumber() >= 1) {
-                return new RestPage<>(Collections.emptyList());
-            }
-            boolean ver3_0IsLoaded = versionIsLoaded("EK003", "3.0");
-            if(!ver3_0IsLoaded  ) {
-                return new RestPage<>(Collections.singletonList(ek003Ver3_0));
-            } else
-                return new RestPage<>(Collections.singletonList(ek003Ver3_1));
+        when(refBookService.search(argThat(refBookCriteria -> refBookCriteria!=null && Set.of(EK002, XML_EK002).contains(refBookCriteria.getCode()))))
+                .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
+                    RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
+                    if (refBookCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                    boolean ver1IsLoaded = versionIsLoaded(refBookCriteria.getCode(), "1");
+                    if(!ver1IsLoaded) {
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK002) ? ek002Ver1 : xmlek002Ver1));
+                    } else
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK002) ? ek002Ver2 : xmlek002Ver2));
+                });
+        when(refBookService.search(argThat(refBookCriteria -> Set.of(EK003, XML_EK003).contains(refBookCriteria.getCode()))))
+                .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
+                    RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
+                    if (refBookCriteria.getPageNumber() >= 1) {
+                        return new RestPage<>(Collections.emptyList());
+                    }
+                    boolean ver3_0IsLoaded = versionIsLoaded(refBookCriteria.getCode(), "3.0");
+                    if(!ver3_0IsLoaded  ) {
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK003) ? ek003Ver3_0 : xmlek003Ver3_0));
+                    } else
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK003) ? ek003Ver3_1 : xmlek003Ver3_1));
 
-        });
+                });
         return refBookService;
     }
 
     @Bean
     public VersionRestService versionService() throws IOException {
-        RefBookRowValue[] firstVersionRows = getVersionRows("/EK002-data_version1.json");
-        RefBookRowValue[] secondVersionRows = getVersionRows("/EK002-data_version2.json");
+        RefBookRowValue[] ek002v1Rows = getVersionRows("/EK002-data_version1.json");
+        RefBookRowValue[] ek002v2Rows = getVersionRows("/EK002-data_version2.json");
         RefBookRowValue[] ek003v3_0Rows = getVersionRows("/rdm_responses/EK003_data_version_3.0.json");
         RefBookRowValue[] ek003v3_1Rows = getVersionRows("/rdm_responses/EK003_data_version_3.1.json");
 
         VersionRestService versionService = mock(VersionRestService.class);
 
-        RefBookVersion ek002Version1 = new RefBookVersion();
-        ek002Version1.setId(199);
-        RefBookVersion ek002Version2 = new RefBookVersion();
-        ek002Version2.setId(286);
-        when(versionService.getVersion(eq("1"), eq("EK002"))).thenReturn(ek002Version1);
-        when(versionService.getVersion(eq("2"), eq("EK002"))).thenReturn(ek002Version2);
-
-        RefBookVersion ek003Version3_0 = new RefBookVersion();
-        ek003Version3_0.setId(206);
-        RefBookVersion ek003Version3_1 = new RefBookVersion();
-        ek003Version3_1.setId(293);
-        when(versionService.getVersion(eq("3.0"), eq("EK003"))).thenReturn(ek003Version3_0);
-        when(versionService.getVersion(eq("3.1"), eq("EK003"))).thenReturn(ek003Version3_1);
+        RefBookVersion ek002Version1 = getRefBookVersion("/EK002_version1.json");
+        RefBookVersion ek002Version2 = getRefBookVersion("/EK002_version2.json");
+        RefBookVersion xmlEk002Version2 = getRefBookVersion("/EK002_version2.json");
+        xmlEk002Version2.setCode(XML_EK002);
+        RefBookVersion xmlEk002Version1 = getRefBookVersion("/EK002_version1.json");
+        xmlEk002Version1.setCode(XML_EK002);
+        when(versionService.getVersion(eq("1"), eq(EK002))).thenReturn(ek002Version1);
+        when(versionService.getVersion(eq("2"), eq(EK002))).thenReturn(ek002Version2);
+        when(versionService.getVersion(eq("1"), eq(XML_EK002))).thenReturn(xmlEk002Version1);
+        when(versionService.getVersion(eq("2"), eq(XML_EK002))).thenReturn(xmlEk002Version2);
+        RefBookVersion ek003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
+        RefBookVersion ek003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
+        RefBookVersion xmlEk003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
+        xmlEk003Version3_0.setCode(XML_EK003);
+        RefBookVersion xmlEk003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
+        xmlEk003Version3_1.setCode(XML_EK003);
+        when(versionService.getVersion(eq("3.0"), eq(EK003))).thenReturn(ek003Version3_0);
+        when(versionService.getVersion(eq("3.1"), eq(EK003))).thenReturn(ek003Version3_1);
+        when(versionService.getVersion(eq("3.0"), eq(XML_EK003))).thenReturn(xmlEk003Version3_0);
+        when(versionService.getVersion(eq("3.1"), eq(XML_EK003))).thenReturn(xmlEk003Version3_1);
         when(versionService.search(eq(ek002Version1.getId()), any(SearchDataCriteria.class))).thenAnswer(
                 (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
                     SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
@@ -143,7 +164,7 @@ public class TestConfig {
                         return new RestPage<>(Collections.emptyList());
                     }
                      if (searchDataCriteria.getPageNumber() == 0 )
-                        return new RestPage<>(Arrays.asList(firstVersionRows));
+                        return new RestPage<>(Arrays.asList(ek002v1Rows));
 
                     return new RestPage<>(Collections.emptyList());
                 });
@@ -155,7 +176,7 @@ public class TestConfig {
                         return new RestPage<>(Collections.emptyList());
                     }
                     if (searchDataCriteria.getPageNumber() == 0)
-                        return new RestPage<>(Arrays.asList(secondVersionRows));
+                        return new RestPage<>(Arrays.asList(ek002v2Rows));
 
                     return new RestPage<>(Collections.emptyList());
                 });
@@ -222,7 +243,12 @@ public class TestConfig {
     public SyncSourceServiceFactory syncSourceServiceFactory() throws URISyntaxException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
-        String oid ="1.2.643.5.1.13.2.1.1.725";
+        fnsiMock(mockServer, OID);
+        fnsiMock(mockServer, XML_OID);
+        return new FnsiSyncSourceServiceFactory(restTemplate);
+    }
+
+    private void fnsiMock(MockRestServiceServer mockServer, String oid) throws URISyntaxException {
         //эмуляция получения справочников в зависимости от того что загружено
         searchRefBookMockServer(mockServer, oid, noVersionLoaded(oid), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.2.json"));
         //searchRefBookMockServer(mockServer, oid, versionLoaded(oid,  null), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725-refbook-1.2.json"));
@@ -241,8 +267,7 @@ public class TestConfig {
         dataMockServer(mockServer, versionLoaded(oid, "1.2"), oid, 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.8_page1.json"));
         dataMockServer(mockServer, versionLoaded(oid, "1.2"), oid, 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_data_v1.8_empty_page.json"));
 
-
-          compareMockServer(
+        compareMockServer(
                 mockServer,
                 oid,
                 LocalDateTime.of(2016, 12, 20, 0, 0),
@@ -256,7 +281,6 @@ public class TestConfig {
                 LocalDateTime.of(2018, 8, 28, 15, 48),
                 2,
                 new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_diff_v1.2_v1.8_page2.json"));
-        return new FnsiSyncSourceServiceFactory(restTemplate);
     }
 
     private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, Resource body) throws URISyntaxException {
@@ -279,6 +303,15 @@ public class TestConfig {
 
     private RefBook getRefBook(String path) throws IOException {
         return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBook.class);
+    }
+
+    private RefBookVersion getRefBookVersion(String path) throws IOException {
+        return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBookVersion.class);
+    }
+
+    private RefBook getRefBook(String path, String replacedCode, String code) throws IOException {
+        String version = IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8").replaceAll(replacedCode, code);
+        return objectMapper.readValue(version, RefBook.class);
     }
 
     private RefBookRowValue[] getVersionRows(String path) throws IOException {

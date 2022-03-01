@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
@@ -21,7 +20,7 @@ public class VersionMapping {
     private Integer id;
     private String code;
     private String refBookName;
-    private String version;
+    private String refBookVersion;
     private String table;
     private String sysPkColumn;
     private String source;
@@ -49,8 +48,8 @@ public class VersionMapping {
         return refBookName;
     }
 
-    public String getVersion() {
-        return version;
+    public String getRefBookVersion() {
+        return Objects.toString(refBookVersion, "CURRENT");
     }
 
     public String getTable() {
