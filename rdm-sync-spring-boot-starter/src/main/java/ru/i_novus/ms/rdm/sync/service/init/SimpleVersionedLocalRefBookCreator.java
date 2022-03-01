@@ -34,6 +34,6 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
         String tableName = split[1];
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()));
+        dao.createSimpleVersionedTables(schemaName, tableName, dao.getFieldMappings(versionMapping.getId()), versionMapping.getPrimaryField());
     }
 }

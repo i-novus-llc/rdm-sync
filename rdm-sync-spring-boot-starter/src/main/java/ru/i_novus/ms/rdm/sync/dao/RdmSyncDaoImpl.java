@@ -463,7 +463,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         concatColumnsAndValues(columns, values, batchValues, rows);
 
         final String sql = String.format("INSERT INTO %s (%s) VALUES(%s)",
-                escapeName(schemaTable), columns.toString(), values.toString());
+                escapeName(schemaTable), columns, values);
 
         namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
     }
@@ -825,14 +825,24 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         concatColumnsAndValues(columns, values, batchValues, convertToVersionedRows(rows, version));
 
         final String sql = String.format("INSERT INTO %s (%s) VALUES(%s) ON CONFLICT ON CONSTRAINT  %s DO UPDATE SET _versions = %s._versions||'{%s}'",
-                schemaTable, columns.toString(), values.toString(), "unique_hash", schemaTable, version);
+                schemaTable, columns, values, "unique_hash", schemaTable, version);
 
         namedParameterJdbcTemplate.batchUpdate(sql, batchValues);
     }
 
     @Override
-    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId) {
-        //todo
+    public void upsertVersionedRows(String schemaTable, List<Map<String, Object>> rows, Integer loadedVersionId, String primaryKey) {
+        if (CollectionUtils.isEmpty(rows)){
+            return;
+        }
+        StringJoiner columns = new StringJoiner(",");
+        StringJoiner values = new StringJoiner(",");
+        Map<String, Object>[] batchValues = new Map[rows.size()];
+        concatColumnsAndValues(columns, values, batchValues, rows);
+        columns.add(escapeName(LOADED_VERSION_REF));
+        values.add(String.valueOf(loadedVersionId));
+        namedParameterJdbcTemplate.batchUpdate(String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s, %s) DO UPDATE SET (%s) = (%s);",
+                escapeName(schemaTable), columns, values, escapeName(primaryKey), escapeName(LOADED_VERSION_REF), columns, values), batchValues);
     }
 
     private void concatColumnsAndValues(StringJoiner columns, StringJoiner values, Map<String, Object>[] batchValues, List<Map<String, Object>> rows) {
@@ -993,7 +1003,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings) {
+    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
         createTable(schema, table, fieldMappings,
                 Map.of(LOADED_VERSION_REF, "integer NOT NULL",
                         RECORD_SYS_COL, RECORD_SYS_COL_INFO)
@@ -1005,6 +1015,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         escapedSchemaTable, escapeName(table + "_" + LOADED_VERSION_REF + "_fk"), LOADED_VERSION_REF
                 )
         );
+        getJdbcTemplate().execute(
+                String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
+                escapedSchemaTable, escapeName(table + "_uq"), escapeName(primaryField), LOADED_VERSION_REF));
     }
 
     @Override
