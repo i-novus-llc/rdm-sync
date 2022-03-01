@@ -17,7 +17,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-public abstract class BaseRefBookUpdater implements RefBookUpdater{
+public abstract class BaseRefBookUpdater implements RefBookUpdater {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseRefBookUpdater.class);
 
@@ -29,7 +29,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     protected abstract PersisterService getPersisterService();
 
-    public BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
+    protected BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
         this.dao = dao;
         this.syncSourceService = syncSourceService;
         this.loggingService = loggingService;
@@ -82,7 +82,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
 
     private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
         VersionMapping versionMapping = dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
-        if(versionMapping == null) {
+        if (versionMapping == null) {
             versionMapping = dao.getVersionMapping(refBookVersion.getCode(), "CURRENT");
         }
         if (versionMapping == null) {
@@ -107,23 +107,20 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater{
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
         validateStructureAndMapping(newVersion, fieldMappings);
         boolean haveTrigger = dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
-        if (haveTrigger){
+        if (haveTrigger) {
             dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         }
 
         try {
             updateProcessing(newVersion, versionMapping);
-        } catch (Exception e) {
-            logger.error("cannot sync " + versionMapping.getCode(), e);
         } finally {
-            if (haveTrigger){
+            if (haveTrigger) {
                 dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
             }
         }
     }
 
     private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings) {
-
         List<String> clientRdmFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(toList());
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
         if (!actualFields.containsAll(clientRdmFields)) {
