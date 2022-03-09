@@ -103,7 +103,8 @@
                     <!--</validations>-->
                 </input-select>
 
-                <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}" default-value="true" label-class="w-50">
+                <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
+                          label-class="w-50" default-value="true">
                     <dependencies>
                         <enabling on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
@@ -111,7 +112,8 @@
                     </dependencies>
                 </checkbox>
 
-                <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}" default-value="false" label-class="w-50">
+                <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}"
+                          label-class="w-50" default-value="false">
                     <dependencies>
                         <reset on="refBook" apply-on-init="false"/>
                         <enabling on="refBook">
@@ -122,7 +124,7 @@
 
                 <input-select id="startVersion" label="${sync.entry.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
-                              required="true" label-class="w-50">
+                              label-class="w-50" required="true">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
                         <eq field-id="code" value="{refBook.id}"/>
