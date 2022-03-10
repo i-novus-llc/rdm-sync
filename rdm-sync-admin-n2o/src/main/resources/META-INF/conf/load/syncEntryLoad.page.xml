@@ -81,7 +81,7 @@
                     enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
             </button>
 
-            <button id="cancel" label="${sync.entry.page.button.cancel}">
+            <button id="cancel" label="${sync.entry.load.page.button.cancel}">
                 <close/>
             </button>
 
