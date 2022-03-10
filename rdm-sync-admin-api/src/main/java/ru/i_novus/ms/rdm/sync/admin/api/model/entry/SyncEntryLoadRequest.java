@@ -21,5 +21,5 @@ public class SyncEntryLoadRequest implements Serializable {
     private String entryId;
 
     @ApiModelProperty("Загружаемая версия (номер) справочника")
-    private String version;
+    private String startVersion;
 }

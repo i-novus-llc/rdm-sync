@@ -22,7 +22,7 @@
             <in>
                 <field id="entryId" mapping="['entryId']"/>
 
-                <field id="startVersion" mapping="['version']"/>
+                <field id="startVersion.version" mapping="['startVersion']"/>
             </in>
         </operation>
     </operations>
