@@ -79,6 +79,8 @@
         <toolbar place="bottomRight">
             <button id="ok" label="${sync.entry.load.page.button.ok}" color="primary"
                     enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
+                <invoke operation-id="loadEntry" close-after-success="true" message-on-success="false"
+                        redirect-target="application" redirect-url="${sync.admin.context-path}/main"/>
             </button>
 
             <button id="cancel" label="${sync.entry.load.page.button.cancel}">

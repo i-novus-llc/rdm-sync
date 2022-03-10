@@ -15,6 +15,16 @@
             </in>
         </operation>
 
+        <operation id="loadEntry">
+            <invocation>
+                <rest method="POST">${sync.admin.backend.path}/sync/admin/entries/versions/load</rest>
+            </invocation>
+            <in>
+                <field id="entryId" mapping="['entryId']"/>
+
+                <field id="startVersion" mapping="['version']"/>
+            </in>
+        </operation>
     </operations>
 
 </object>
