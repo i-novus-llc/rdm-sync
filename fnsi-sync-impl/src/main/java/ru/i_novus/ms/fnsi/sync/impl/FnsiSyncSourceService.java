@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.i_novus.ms.rdm.sync.api.model.*;
@@ -55,20 +58,23 @@ public class FnsiSyncSourceService implements SyncSourceService {
         } else {
             //получаю все версии чтобы заполнить дату закрытия версии
             return getVersions(code).stream()
-                    .filter(refBookVersion -> version.equals(refBookVersion.getVersion())).findAny().orElse(null);
+                    .filter(refBookVersion -> version.equals(refBookVersion.getVersion()))
+                    .findAny()
+                    .map(refBookVersionItem -> new RefBookVersion(refBookVersionItem, getRefBookStructure(refBookVersionItem.getCode(), refBookVersionItem.getVersion())))
+                    .orElse(null);
         }
     }
 
     @Override
-    public List<RefBookVersion> getVersions(String code) {
-        List<RefBookVersion> result = new ArrayList<>();
+    public List<RefBookVersionItem> getVersions(String code) {
+        List<RefBookVersionItem> result = new ArrayList<>();
         Iterator<JsonNode> versionNodeIterator = requestVersions(code).get("list").elements();
         while (versionNodeIterator.hasNext()) {
             JsonNode versionNode = versionNodeIterator.next();
             String version = versionNode.get("version").asText();
-            result.add(new RefBookVersion(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null, getRefBookStructure(code, version)));
+            result.add(new RefBookVersionItem(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null));
         }
-        Collections.sort(result, Comparator.comparing(RefBookVersion::getFrom));
+        Collections.sort(result, Comparator.comparing(RefBookVersionItem::getFrom));
         for (int i = 0; i < result.size() - 1; i++) {
             if (result.get(i).getTo() == null) {
                 result.get(i).setTo(result.get(i + 1).getFrom());
