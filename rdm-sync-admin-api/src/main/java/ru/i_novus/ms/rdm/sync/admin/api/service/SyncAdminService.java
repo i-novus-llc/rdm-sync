@@ -77,13 +77,22 @@ public interface SyncAdminService {
     void delete(@ApiParam("Идентификатор записи") @QueryParam("id") String id);
 
     @GET
-    @Path("/entries/versions/")
+    @Path("/entries/versions")
     @ApiOperation(value = "Получение версий записи о синхронизации")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Список версий записи"),
             @ApiResponse(code = 404, message = "Нет ресурса")
     })
     Page<SyncEntryVersion> searchVersions(@BeanParam SyncEntryVersionCriteria criteria);
+
+    @POST
+    @Path("/entries/versions/load")
+    @ApiOperation(value = "Загрузка версии записи о синхронизации (загрузка версии справочника)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Справочник"),
+            @ApiResponse(code = 400, message = "Некорректный запрос")
+    })
+    SyncEntry loadVersion(SyncEntryLoadRequest request);
 
     @GET
     @Path("/entries/mapping")

@@ -28,6 +28,13 @@
             <button id="delete" label="${sync.entry.list.page.button.delete}" icon="fa fa-trash" color="danger" enabled="{removable}">
                 <invoke operation-id="delete"/>
             </button>
+
+            <button id="load" label="${sync.entry.list.page.button.load}">
+                <open-page page-id="syncEntryLoad" page-name="${sync.entry.load.page.name}" upload="query"
+                           route="/:entryId/load">
+                    <path-param name="entryId" value="{id}"/>
+                </open-page>
+            </button>
         </toolbar>
 
         <columns>

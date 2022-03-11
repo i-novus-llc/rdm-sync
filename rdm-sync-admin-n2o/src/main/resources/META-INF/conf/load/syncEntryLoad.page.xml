@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<simple-page xmlns="http://n2oapp.net/framework/config/schema/page-3.0"
+             name="${sync.entry.load.page.default.name}">
+    <form name="${sync.entry.load.page.form.name}" query-id="syncEntry" object-id="syncEntry">
+
+        <pre-filters>
+            <eq field-id="entryId" param="entryId"/>
+        </pre-filters>
+
+        <fields>
+            <set field-label-location="left">
+                <row>
+                    <output-text id="entryId" visible="false"/>
+                    <output-text id="actionType" visible="false" default-value="load"/>
+                </row>
+
+                <select id="source" label="${sync.entry.page.source}"
+                        query-id="syncEntrySourceList" label-field-id="name" search="false"
+                        label-class="w-50" required="true" enabled="false"/>
+
+                <input-select id="refBook" label="${sync.entry.page.refbook}"
+                              query-id="syncSourceRefBookList" label-field-id="displayName"
+                              label-class="w-50" required="true" enabled="false">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="hasEntry" value="true"/>
+                    </pre-filters>
+                </input-select>
+
+                <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
+                          label-class="w-50" default-value="true" enabled="false"/>
+
+                <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}"
+                          label-class="w-50" default-value="false" enabled="false"/>
+
+                <input-select id="startVersion" label="${sync.entry.load.page.refbook.start.version}"
+                              query-id="syncSourceVersionList" label-field-id="displayName"
+                              label-class="w-50" required="true">
+                    <pre-filters>
+                        <eq field-id="sourceCode" value="{source.id}"/>
+                        <eq field-id="code" value="{refBook.id}"/>
+                    </pre-filters>
+
+                    <dependencies>
+                        <set-value on="refBook,versioned">
+                            if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                                (typeof versioned == 'undefined' || !versioned))
+                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                            else if (typeof refBook == 'undefined' || refBook?.id == null)
+                                return null;
+                            else
+                                return;
+                        </set-value>
+                        <enabling on="refBook,versioned">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                            (typeof versioned != 'undefined' &amp;&amp; versioned)
+                        </enabling>
+                    </dependencies>
+                </input-select>
+
+                <output-text id="versionName" no-label="true"
+                             label-class="w-50" enabled="false">
+                    <dependencies>
+                        <visibility on="startVersion">
+                            (typeof startVersion != 'undefined' &amp;&amp; startVersion?.name != null)
+                        </visibility>
+                        <set-value on="startVersion">
+                            if (typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null)
+                                return startVersion.name;
+                            else
+                                return null;
+                        </set-value>
+                    </dependencies>
+                </output-text>
+
+            </set>
+        </fields>
+
+        <toolbar place="bottomRight">
+            <button id="ok" label="${sync.entry.load.page.button.ok}" color="primary"
+                    enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
+                <invoke operation-id="loadEntry" close-after-success="true" message-on-success="false"
+                        redirect-target="application" redirect-url="${sync.admin.context-path}/main"/>
+            </button>
+
+            <button id="cancel" label="${sync.entry.load.page.button.cancel}">
+                <close/>
+            </button>
+
+        </toolbar>
+    </form>
+</simple-page>
