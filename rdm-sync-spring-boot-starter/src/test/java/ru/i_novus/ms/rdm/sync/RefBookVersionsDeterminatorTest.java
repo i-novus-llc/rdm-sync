@@ -9,6 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -58,7 +59,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testSomeVersionIsLoaded() {
         String code = "someCode";
-        List<RefBookVersion> versions = generateVersions(code);
+        List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.singletonList(new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now(), true)));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-2"), dao, syncSourceService);
@@ -71,7 +72,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testSomeVersionNotInRange() {
         String code = "someCode";
-        List<RefBookVersion> versions = generateVersions(code);
+        List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(versions);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-1"), dao, syncSourceService);
@@ -84,7 +85,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testAllVersionsLoaded() {
         String code = "someCode";
-        List<RefBookVersion> versions = generateVersions(code);
+        List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now(), null),
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now(), true)
@@ -113,7 +114,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testAllVersionLoadedAndCurrentMappingChanged() {
         String code = "someCode";
-        List<RefBookVersion> versions = generateVersions(code);
+        List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getMappingLastUpdated()).thenReturn(versions.get(1).getFrom().plusDays(1));
         when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
@@ -130,7 +131,7 @@ public class RefBookVersionsDeterminatorTest {
     public void testWhenRangeIsNull() {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
-        when(syncSourceService.getRefBook(code, null)).thenReturn(generateVersions(code).get(1));
+        when(syncSourceService.getRefBook(code, null)).thenReturn(new RefBookVersion(generateVersions(code).get(1), null));
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
         Assert.assertEquals(List.of("2"), determinator.getVersions());
     }
@@ -141,7 +142,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testWhenRangeIsNullAndHasLoadedVersion() {
         String code = "someCode";
-        RefBookVersion refBookVersion = generateVersions(code).get(1);
+        RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(2, code, refBookVersion.getVersion(),  refBookVersion.getFrom(), null, LocalDateTime.now(), true)
         ));
@@ -156,7 +157,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testWhenRangeIsNullAndHasLoadedVersionAndNewMapping() {
         String code = "someCode";
-        RefBookVersion refBookVersion = generateVersions(code).get(1);
+        RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         LocalDateTime mappingLastUpdate = refBookVersion.getFrom().plus(1, ChronoUnit.DAYS);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(2, code, refBookVersion.getVersion(), refBookVersion.getFrom(), null, LocalDateTime.now(), true)
@@ -175,7 +176,7 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testWhenRangeIsNullAndHasLoadedVersionAndOldMappingForSpecVersion() {
         String code = "someCode";
-        RefBookVersion refBookVersion = generateVersions(code).get(1);
+        RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(2, code, refBookVersion.getVersion(), refBookVersion.getFrom(), null, LocalDateTime.now(), true)
         ));
@@ -187,9 +188,9 @@ public class RefBookVersionsDeterminatorTest {
         Assert.assertTrue(determinator.getVersions().isEmpty());
     }
 
-    private List<RefBookVersion> generateVersions(String code) {
-        RefBookVersion v1 = new RefBookVersion(code, "1", LocalDateTime.of(2022, 1, 1, 10, 0), LocalDateTime.of(2022, 2, 1, 10, 0), 1, null);
-        RefBookVersion v2 = new RefBookVersion(code, "2", v1.getTo(), null, 2, null);
+    private List<RefBookVersionItem> generateVersions(String code) {
+        RefBookVersionItem v1 = new RefBookVersionItem(code, "1", LocalDateTime.of(2022, 1, 1, 10, 0), LocalDateTime.of(2022, 2, 1, 10, 0), 1);
+        RefBookVersionItem v2 = new RefBookVersionItem(code, "2", v1.getTo(), null, 2);
         return List.of(v1, v2);
     }
 

@@ -78,12 +78,12 @@ public class  RdmSyncSourceService implements SyncSourceService {
 
 
     @Override
-    public List<RefBookVersion> getVersions(String code) {
+    public List<RefBookVersionItem> getVersions(String code) {
         VersionCriteria versionCriteria = new VersionCriteria();
         versionCriteria.setRefBookCode(code);
         versionCriteria.setPageSize(Integer.MAX_VALUE);
         return versionService.getVersions(versionCriteria).getContent().stream()
-                .map(this::convertToRefBookVersion).collect(Collectors.toList());
+                .map(this::convertToRefBookVersionItem).collect(Collectors.toList());
     }
 
     @Override
@@ -140,11 +140,7 @@ public class  RdmSyncSourceService implements SyncSourceService {
 
     private RefBookVersion convertToRefBookVersion(ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmRefBook) {
         RefBookVersion refBook = new RefBookVersion();
-        refBook.setCode(rdmRefBook.getCode());
-        LocalDateTime publishDate = rdmRefBook.getFromDate();
-        refBook.setFrom(publishDate);
-        refBook.setVersion(rdmRefBook.getVersion());
-        refBook.setVersionId(rdmRefBook.getId());
+        fillRefBookVersionItem(refBook, rdmRefBook);
         RefBookStructure structure = new RefBookStructure();
         structure.setAttributesAndTypes(new HashMap<>());
         rdmRefBook.getStructure().getAttributes().forEach(attr -> {
@@ -161,5 +157,18 @@ public class  RdmSyncSourceService implements SyncSourceService {
         });
         refBook.setStructure(structure);
         return refBook;
+    }
+
+    private RefBookVersionItem convertToRefBookVersionItem(ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmRefBook) {
+        RefBookVersionItem refBookVersionItem = new RefBookVersionItem();
+        fillRefBookVersionItem(refBookVersionItem, rdmRefBook);
+        return refBookVersionItem;
+    }
+
+    private void fillRefBookVersionItem(RefBookVersionItem refBookVersionItem, ru.i_novus.ms.rdm.api.model.version.RefBookVersion rdmRefBook) {
+        refBookVersionItem.setCode(rdmRefBook.getCode());
+        refBookVersionItem.setFrom(rdmRefBook.getFromDate());
+        refBookVersionItem.setVersion(rdmRefBook.getVersion());
+        refBookVersionItem.setVersionId(rdmRefBook.getId());
     }
 }

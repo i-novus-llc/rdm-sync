@@ -228,33 +228,29 @@ public class FnsiSyncSourceServiceTest {
         passportMockServer(oid, "1.7", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.7.json"));
         passportMockServer(oid, "1.8", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.8.json"));
         passportMockServer(oid, "1.9", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.9.json"));
-        List<RefBookVersion> versions = syncSourceService.getVersions(oid);
+        List<RefBookVersionItem> versions = syncSourceService.getVersions(oid);
 
-        RefBookStructure structure = new RefBookStructure(null, List.of("ID"), Map.of("ID", INTEGER, "MNN_ID", INTEGER, "DRUG_FORM_ID", INTEGER, "DOSE_ID", INTEGER));
-        List<RefBookVersion> expected = List.of(
-                new RefBookVersion(
+        List<RefBookVersionItem> expected = List.of(
+                new RefBookVersionItem(
                         oid,
                         "1.7",
                         LocalDateTime.of(2018, 7, 10, 0, 0),
                         LocalDateTime.of(2018, 8, 3, 0, 0),
-                        null,
-                        structure
+                        null
                 ),
-                new RefBookVersion(
+                new RefBookVersionItem(
                         oid,
                         "1.8",
                         LocalDateTime.of(2018, 8, 3, 0, 0),
                         LocalDateTime.of(2018, 8, 29, 10, 54),
-                        null,
-                        structure
+                        null
                 ),
-                new RefBookVersion(
+                new RefBookVersionItem(
                         oid,
                         "1.9",
                         LocalDateTime.of(2018, 8, 29, 10, 54),
                         null,
-                        null,
-                        structure
+                        null
                 )
         );
 

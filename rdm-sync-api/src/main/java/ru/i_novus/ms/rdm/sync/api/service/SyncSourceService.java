@@ -11,7 +11,7 @@ public interface SyncSourceService {
 
     RefBookVersion getRefBook(String code, @Nullable String version);
 
-    List<RefBookVersion> getVersions(String code);
+    List<RefBookVersionItem> getVersions(String code);
 
     Page<Map<String, Object>> getData(DataCriteria dataCriteria);
 

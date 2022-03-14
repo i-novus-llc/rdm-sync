@@ -37,6 +37,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
 
     @Override
     public void update(String refCode, String version) {
+        logger.info("try to load {} version: {}", refCode, version);
         RefBookVersion newVersion;
         try {
             newVersion = getRefBookVersion(refCode, version);
@@ -150,11 +151,13 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
     }
 
     protected void editVersion(RefBookVersion newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion) {
+        logger.info("{} repeat version {}", newVersion.getCode(), newVersion.getVersion());
         getPersisterService().repeatVersion(newVersion, versionMapping, syncSourceService);
         dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo());
     }
 
     protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+        logger.info("{} sync new version {}", newVersion.getCode(), newVersion.getVersion());
         LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(newVersion.getCode());
         if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
             dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
@@ -164,6 +167,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
     }
 
     protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+        logger.info("{} first sync", newVersion.getCode());
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
         getPersisterService().firstWrite(newVersion, versionMapping, syncSourceService);
     }

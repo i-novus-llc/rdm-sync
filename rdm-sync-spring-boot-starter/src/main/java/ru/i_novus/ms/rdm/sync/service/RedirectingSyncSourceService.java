@@ -37,7 +37,7 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     }
 
     @Override
-    public List<RefBookVersion> getVersions(String code) {
+    public List<RefBookVersionItem> getVersions(String code) {
         return getSyncSourceService(code).getVersions(code);
     }
 
