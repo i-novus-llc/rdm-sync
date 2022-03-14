@@ -26,7 +26,10 @@ public class SyncEntryMapping implements Serializable {
     /** Версия записи о синхронизации. */
     private SyncEntryVersion version;
 
-    /** Маппинг полей версии. */
+    /** Информация о версиях, к которым применим маппинг. */
+    private SyncMappingVersionData mappingVersionData;
+
+    /** Маппинги полей версии. */
     private List<SyncMappingField> mappingFields;
 
     /** Тип выполняемого действия. */
@@ -34,6 +37,17 @@ public class SyncEntryMapping implements Serializable {
 
     public SyncEntryMapping() {
         // Nothing to do.
+    }
+
+    /** Текст с указанием версий, к которым применим маппинг. */
+    // NB: Не игнорируется в json-сериализации, т.к. используется в n2o.
+    public String getMappingVersionText() {
+
+        if (mappingVersionData == null)
+            return version.getVersion();
+
+        String text = mappingVersionData.getVersionText();
+        return (text == null) ? version.getVersion() : text;
     }
 
     @Override
@@ -45,13 +59,14 @@ public class SyncEntryMapping implements Serializable {
         return Objects.equals(id, that.id) &&
                 Objects.equals(entry, that.entry) &&
                 Objects.equals(version, that.version) &&
+                Objects.equals(mappingVersionData, that.mappingVersionData) &&
                 Objects.equals(mappingFields, that.mappingFields) &&
                 Objects.equals(actionType, that.actionType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, entry, version, mappingFields, actionType);
+        return Objects.hash(id, entry, version, mappingVersionData, mappingFields, actionType);
     }
 
     @Override
