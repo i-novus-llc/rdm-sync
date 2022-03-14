@@ -138,6 +138,10 @@
         <!--    <select mapping="['version']['displayName']"/>-->
         <!--</field>-->
 
+        <field id="mappingVersionText" domain="string">
+            <select mapping="['mappingVersionText']"/>
+        </field>
+
         <field id="storageCode" domain="string">
             <select mapping="['entry']['storageCode']"/>
         </field>
