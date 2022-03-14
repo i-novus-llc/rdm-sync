@@ -19,7 +19,7 @@ import java.util.Objects;
 public class SyncMappingVersionData implements Serializable {
 
     private static final String LIST_DELIMITER = ", ";
-    private static final String RANGE_DELIMITER = " - ";
+    private static final String RANGE_DELIMITER = " – ";
     private static final String RANGE_UNLIMITED_START_VERSION = "…";
     private static final String RANGE_UNLIMITED_END_VERSION = "…";
 
