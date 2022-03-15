@@ -57,7 +57,7 @@
 
                 <!--<input-select id="version" label="${sync.mapping.page.refbook.version}"-->
                 <!--              query-id="syncMapping" label-field-id="displayName"-->
-                <!--              required="true" label-class="w-50"-->
+                <!--              label-class="w-50" required="true"-->
                 <!--              visible="{actionType != 'create'}">-->
                 <!--    <pre-filters>-->
                 <!--        <eq field-id="sourceCode" value="{source.id}"/>-->
@@ -76,9 +76,12 @@
                 <!--        </enabling>-->
                 <!--    </dependencies>-->
                 <!--</input-select>-->
+                
+                <output-text id="mappingVersionText" label="${sync.mapping.page.mapping.version.text}"
+                             label-class="w-50" enabled="false"/>
 
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
-                            required="true" label-class="w-50"
+                            label-class="w-50" required="true"
                             enabled="{actionType == 'create'}">
                     <validations>
                         <condition id="checkStorageCode" severity="danger" side="client"

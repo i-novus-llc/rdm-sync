@@ -28,10 +28,10 @@
                 </input-select>
 
                 <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
-                          label-class="w-50" default-value="true" enabled="false"/>
+                          label-class="w-50" default-value="true" enabled="false" visible="false"/>
 
                 <checkbox id="versioned" label="${sync.entry.page.refbook.versioned}"
-                          label-class="w-50" default-value="false" enabled="false"/>
+                          label-class="w-50" default-value="false" enabled="false" visible="false"/>
 
                 <input-select id="startVersion" label="${sync.entry.load.page.refbook.start.version}"
                               query-id="syncSourceVersionList" label-field-id="displayName"
