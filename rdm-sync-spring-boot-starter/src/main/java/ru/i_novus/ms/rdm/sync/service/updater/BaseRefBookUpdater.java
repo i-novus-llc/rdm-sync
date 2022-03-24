@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
-import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -36,7 +35,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
     }
 
     @Override
-    public void update(String refCode, String version) {
+    public void update(String refCode, String version) throws RefBookUpdaterException {
         logger.info("try to load {} version: {}", refCode, version);
         RefBookVersion newVersion;
         try {
@@ -62,13 +61,13 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refCode);
             }
-        } catch (Exception e) {
-            logger.error(String.format("Error while updating new version with code '%s'.", refCode), e);
-
-            loggingService.logError(refCode, versionMapping.getRefBookVersion(), newVersion.getVersion(),
-                    e.getMessage(), ExceptionUtils.getStackTrace(e));
+        } catch (final Exception e) {
+            throw new RefBookUpdaterException(
+                e,
+                versionMapping,
+                newVersion
+            );
         }
-
     }
 
     private RefBookVersion getRefBookVersion(String refBookCode, String version) {

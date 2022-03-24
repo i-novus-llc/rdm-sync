@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 
@@ -95,6 +97,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.info("Interrupted, sync stopping");
             executorService.shutdownNow();
         }
@@ -110,8 +113,30 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
 
         RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
-        new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService).getVersions().forEach(version -> refBookUpdater.update(refBookCode, version));
-
+        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService);
+        final List<String> versions = determinator.getVersions();
+        for (String version : versions) {
+            try {
+                refBookUpdater.update(refBookCode, version);
+            } catch (final RefBookUpdaterException e) {
+                final Throwable cause = e.getCause();
+                logger.error(
+                    String.format(
+                        "Error while updating new version with code '%s'.",
+                        refBookCode
+                    ),
+                    cause
+                );
+                loggingService.logError(
+                    refBookCode,
+                    e.getVersionMapping().getRefBookVersion(),
+                    e.getNewVersion().getVersion(),
+                    cause.getMessage(),
+                    ExceptionUtils.getStackTrace(cause)
+                );
+                return;
+            }
+        }
     }
 
     @Override

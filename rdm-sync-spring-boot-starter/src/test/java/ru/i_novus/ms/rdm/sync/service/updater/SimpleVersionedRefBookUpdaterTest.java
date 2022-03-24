@@ -12,14 +12,12 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
-import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +45,12 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     public void setUp() throws Exception {
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getPrimaryField()).thenReturn("id");
-        when(dao.getVersionMapping(eq(code), eq("CURRENT"))).thenReturn(versionMapping);
+        when(dao.getVersionMapping(code, eq("CURRENT"))).thenReturn(versionMapping);
         when(dao.getFieldMappings(anyInt())).thenReturn(List.of(new FieldMapping("id", "integer", "id")));
     }
 
     @Test
-    public void testFirstWrite() {
+    public void testFirstWrite() throws RefBookUpdaterException {
         String version = "1.0";
         LocalDateTime pubDate = LocalDateTime.now();
         RefBookVersion refBookVersion = generateRefBookVersion(code, version, pubDate, null);
@@ -69,7 +67,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     /**
      * Уже есть загруженная версия, грузим след версию
      */
-    public void testLoadNextVersion() {
+    public void testLoadNextVersion() throws RefBookUpdaterException {
         String oldVersion = "1.0";
         String newVersion = "1.1";
         LocalDateTime oldVersionPubDate = LocalDateTime.of(2022, 1, 1, 11, 11);
@@ -91,7 +89,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
      * Для загруженной версии добавили специальный маппинг по ее версию
      */
     @Test
-    public void testAddMappingForLoadedVersion() {
+    public void testAddMappingForLoadedVersion() throws RefBookUpdaterException {
 
         String version = "1.0";
         LocalDateTime fromDate = LocalDateTime.of(2022, 1, 1, 11, 11);
@@ -104,7 +102,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.existsLoadedVersion(code)).thenReturn(true);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl" ,"","src", "id", null, mappingUpdDate, -1, null, null, null);
-        when(dao.getVersionMapping(eq(code), eq(version))).thenReturn(versionMapping);
+        when(dao.getVersionMapping(code, eq(version))).thenReturn(versionMapping);
 
         updater.update(code, null);
 
@@ -116,7 +114,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
      * Есть актуальная версия, но теперь грузим предыдущую которой не было. Актуальной должна остаться та же
      */
     @Test
-    public void testLoadPreviousVersion() {
+    public void testLoadPreviousVersion() throws RefBookUpdaterException {
         String actualVersion = "1.5";
         String previousVersion = "1.0";
         LocalDateTime actualVersionPubDate = LocalDateTime.of(2022, 1, 1, 11, 11);
