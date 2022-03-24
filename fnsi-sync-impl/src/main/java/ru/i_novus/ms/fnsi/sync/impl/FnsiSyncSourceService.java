@@ -189,7 +189,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
             params = new HashMap<>(params);
             params.put("version", version);
         }
-        return request(params, "y/rest/data");
+        return request(params, "/rest/data");
     }
 
     private JsonNode request(Map<String, Object> queryParams, String path) {
