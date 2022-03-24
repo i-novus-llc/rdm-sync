@@ -45,7 +45,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     public void setUp() throws Exception {
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getPrimaryField()).thenReturn("id");
-        when(dao.getVersionMapping(code, eq("CURRENT"))).thenReturn(versionMapping);
+        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
         when(dao.getFieldMappings(anyInt())).thenReturn(List.of(new FieldMapping("id", "integer", "id")));
     }
 
@@ -102,7 +102,7 @@ public class SimpleVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
         when(dao.existsLoadedVersion(code)).thenReturn(true);
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping versionMapping = new VersionMapping(5, code, null, version, "tbl" ,"","src", "id", null, mappingUpdDate, -1, null, null, null);
-        when(dao.getVersionMapping(code, eq(version))).thenReturn(versionMapping);
+        when(dao.getVersionMapping(code, version)).thenReturn(versionMapping);
 
         updater.update(code, null);
 
