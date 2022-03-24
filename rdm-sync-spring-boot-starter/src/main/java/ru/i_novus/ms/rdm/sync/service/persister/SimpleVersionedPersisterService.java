@@ -8,7 +8,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -31,10 +30,20 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     private final RdmMappingService mappingService;
 
-    public SimpleVersionedPersisterService(RdmSyncDao rdmSyncDao, @Value("${rdm-sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
+    private final int tries;
+
+    private final int timeout;
+
+    public SimpleVersionedPersisterService(RdmSyncDao rdmSyncDao,
+                                           @Value("${rdm-sync.load.size: 1000}") int maxSize,
+                                           RdmMappingService mappingService,
+                                           @Value("${rdm-sync.load.retry.tries: 5}") int tries,
+                                           @Value("${rdm-sync.load.retry.tries: 30000}") int timeout) {
         this.rdmSyncDao = rdmSyncDao;
         this.maxSize = maxSize;
         this.mappingService = mappingService;
+        this.timeout = timeout;
+        this.tries = tries;
     }
 
     @Override
@@ -84,8 +93,8 @@ public class SimpleVersionedPersisterService implements PersisterService {
 
     private void processRows(RefBookVersion newVersion, SyncSourceService syncSourceService,
                              List<FieldMapping> fieldMappings, DataCriteria searchDataCriteria, Consumer<List<Map<String, Object>>> rowProcessing) {
-        PageIterator<Map<String, Object>, DataCriteria> iter = new PageIterator<>(
-                syncSourceService::getData, searchDataCriteria, true);
+        RetryingPageIterator iter = new RetryingPageIterator<>(new PageIterator<>(
+                syncSourceService::getData, searchDataCriteria, true), tries, timeout);
         while (iter.hasNext()) {
             Page<? extends Map<String, Object>> page = iter.next();
             List<Map<String, Object>> mappedRows = page.getContent().stream().map(row -> mapRow(row, newVersion, fieldMappings)).collect(Collectors.toList());
