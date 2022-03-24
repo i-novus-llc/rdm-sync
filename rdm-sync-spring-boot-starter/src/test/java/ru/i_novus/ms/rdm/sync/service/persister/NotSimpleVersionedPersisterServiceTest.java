@@ -37,7 +37,7 @@ public class NotSimpleVersionedPersisterServiceTest {
 
     @Before
     public void setUp() {
-        persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl());
+        persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl(), 3, 1000);
     }
 
     /**
@@ -144,7 +144,7 @@ public class NotSimpleVersionedPersisterServiceTest {
 
 
 
-    private RefBookVersion createFirstRdmVersion() {
+    protected static RefBookVersion createFirstRdmVersion() {
 
         RefBookVersion refBook = new RefBookVersion();
         refBook.setVersionId(1);
@@ -198,21 +198,21 @@ public class NotSimpleVersionedPersisterServiceTest {
         return VersionsDiff.dataChangedInstance(new PageImpl<>(singletonList(row), createDataCriteria(), 1));
     }
 
-    private DataCriteria createDataCriteria() {
+    private static DataCriteria createDataCriteria() {
 
         DataCriteria searchDataCriteriaCount = new DataCriteria();
         searchDataCriteriaCount.setPageSize(100);
         return searchDataCriteriaCount;
     }
 
-    private List<FieldMapping> createFieldMappings() {
+    protected static List<FieldMapping> createFieldMappings() {
         List<FieldMapping> list = new ArrayList<>();
         list.add(new FieldMapping("id", "bigint", "id"));
         list.add(new FieldMapping("full_name", "varchar", "name"));
         return list;
     }
 
-    private Page<Map<String, Object>> createFirstRdmData() {
+    protected static Page<Map<String, Object>> createFirstRdmData() {
 
         List<Map<String, Object>> list = new ArrayList<>();
         list.add(Map.of("id", 1, "name", "London"));
@@ -238,7 +238,7 @@ public class NotSimpleVersionedPersisterServiceTest {
         return new PageImpl<>(list, createDataCriteria(), 3);
     }
 
-    private List<Map<String, Object>> createFirstVerifyDataMap() {
+    protected static List<Map<String, Object>> createFirstVerifyDataMap() {
 
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(1L));
