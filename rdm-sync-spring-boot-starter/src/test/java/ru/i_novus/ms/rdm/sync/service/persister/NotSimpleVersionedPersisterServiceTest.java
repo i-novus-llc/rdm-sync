@@ -144,7 +144,7 @@ public class NotSimpleVersionedPersisterServiceTest {
 
 
 
-    protected static RefBookVersion createFirstRdmVersion() {
+    private RefBookVersion createFirstRdmVersion() {
 
         RefBookVersion refBook = new RefBookVersion();
         refBook.setVersionId(1);
@@ -205,14 +205,14 @@ public class NotSimpleVersionedPersisterServiceTest {
         return searchDataCriteriaCount;
     }
 
-    protected static List<FieldMapping> createFieldMappings() {
+    private List<FieldMapping> createFieldMappings() {
         List<FieldMapping> list = new ArrayList<>();
         list.add(new FieldMapping("id", "bigint", "id"));
         list.add(new FieldMapping("full_name", "varchar", "name"));
         return list;
     }
 
-    protected static Page<Map<String, Object>> createFirstRdmData() {
+    private Page<Map<String, Object>> createFirstRdmData() {
 
         List<Map<String, Object>> list = new ArrayList<>();
         list.add(Map.of("id", 1, "name", "London"));
@@ -238,7 +238,7 @@ public class NotSimpleVersionedPersisterServiceTest {
         return new PageImpl<>(list, createDataCriteria(), 3);
     }
 
-    protected static List<Map<String, Object>> createFirstVerifyDataMap() {
+    private List<Map<String, Object>> createFirstVerifyDataMap() {
 
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(1L));

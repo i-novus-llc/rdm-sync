@@ -8,11 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Iterator;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static ru.i_novus.ms.rdm.sync.service.persister.NotSimpleVersionedPersisterServiceTest.createFirstRdmData;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RetryingPageIteratorTest {
@@ -23,17 +22,17 @@ public class RetryingPageIteratorTest {
     @Test
     public void testIteratorReturnExceptionAndTryAgain() {
 
-        Page<Map<String, Object>> data = createFirstRdmData();
+        Page page = mock(Page.class);
 
         when(original.next())
                 .thenThrow(HttpClientErrorException.class)
                 .thenThrow(HttpClientErrorException.class)
                 .thenThrow(HttpClientErrorException.class)
-                .thenReturn(data);
+                .thenReturn(page);
 
         RetryingPageIterator retryingPageIterator = new RetryingPageIterator(original, 10, 1000);
 
-        assertEquals(data, retryingPageIterator.next());
+        assertEquals(page, retryingPageIterator.next());
 
     }
 
