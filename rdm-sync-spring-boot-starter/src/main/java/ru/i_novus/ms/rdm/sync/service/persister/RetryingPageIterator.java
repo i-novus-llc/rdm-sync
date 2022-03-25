@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 public class RetryingPageIterator<T, C extends RestCriteria> implements Iterator<Page<? extends T>> {
@@ -31,7 +32,7 @@ public class RetryingPageIterator<T, C extends RestCriteria> implements Iterator
 
     @SneakyThrows
     @Override
-    public Page<? extends T> next() {
+    public Page<? extends T> next() throws NoSuchElementException {
         return retry(original::next);
     }
 
