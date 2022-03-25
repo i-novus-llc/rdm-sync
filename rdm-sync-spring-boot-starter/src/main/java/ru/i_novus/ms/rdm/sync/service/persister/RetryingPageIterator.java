@@ -33,9 +33,6 @@ public class RetryingPageIterator<T, C extends RestCriteria> implements Iterator
     @SneakyThrows
     @Override
     public Page<? extends T> next(){
-        if(!hasNext()){
-            throw new NoSuchElementException();
-        }
         return retry(original::next);
     }
 
