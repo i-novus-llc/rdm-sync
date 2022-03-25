@@ -35,7 +35,8 @@ public class RetryingPageIterator<T, C extends RestCriteria> implements Iterator
         return retry(original::next);
     }
 
-    private <E> E retry(Supplier<? extends E> supplier) throws InterruptedException {
+    @SneakyThrows
+    private <E> E retry(Supplier<? extends E> supplier){
         int count = 0;
         while (count++ < tries) {
             try {
