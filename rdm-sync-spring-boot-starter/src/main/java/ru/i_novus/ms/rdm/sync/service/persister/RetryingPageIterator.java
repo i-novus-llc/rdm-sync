@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
@@ -30,7 +31,7 @@ public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
 
     @SneakyThrows
     @Override
-    public Page<? extends T> next(){
+    public Page<? extends T> next() throws NoSuchElementException {
         return retry(original::next);
     }
 
@@ -40,7 +41,7 @@ public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
         while (count++ < tries) {
             try {
                 return supplier.get();
-            } catch (Throwable e) {
+            } catch (RuntimeException e) {
                 logger.warn(String.format("An error occurred, we will try again in %s seconds (%s tries left)", timeout / 1000, tries - count));
                 Thread.sleep(timeout);
             }
