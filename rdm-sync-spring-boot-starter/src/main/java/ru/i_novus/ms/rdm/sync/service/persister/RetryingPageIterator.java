@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 public class RetryingPageIterator<T, C extends RestCriteria> implements Iterator<Page<? extends T>> {
 
-    Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
+    private static Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
 
     private final Iterator<Page<? extends T>> original;
     private final int tries;
