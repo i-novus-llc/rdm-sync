@@ -6,7 +6,6 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
-@Transactional
 public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
 
     private final PersisterService persisterService;
@@ -22,4 +21,11 @@ public class NotVersionedRefBookUpdater extends BaseRefBookUpdater {
     protected PersisterService getPersisterService() {
         return persisterService;
     }
+
+    @Override
+    @Transactional(rollbackFor = RefBookUpdaterException.class)
+    public void update(final String refCode, final String version) throws RefBookUpdaterException {
+        super.update(refCode, version);
+    }
+
 }

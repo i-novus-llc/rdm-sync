@@ -74,7 +74,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
             String version = versionNode.get("version").asText();
             result.add(new RefBookVersionItem(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null));
         }
-        Collections.sort(result, Comparator.comparing(RefBookVersionItem::getFrom));
+        result.sort(Comparator.comparing(RefBookVersionItem::getFrom));
         for (int i = 0; i < result.size() - 1; i++) {
             if (result.get(i).getTo() == null) {
                 result.get(i).setTo(result.get(i + 1).getFrom());
@@ -156,17 +156,12 @@ public class FnsiSyncSourceService implements SyncSourceService {
     }
 
     private RowDiffStatusEnum getRowDiffStatusEnum(String fnsiOperation) {
-        switch (fnsiOperation) {
-            case "UPDATE":
-                return RowDiffStatusEnum.UPDATED;
-            case "DELETE":
-                return RowDiffStatusEnum.DELETED;
-            case "INSERT":
-                return RowDiffStatusEnum.INSERTED;
-        }
-
-        throw new UnsupportedOperationException("cannot get diff status from" + fnsiOperation + "operation");
-
+        return switch (fnsiOperation) {
+            case "UPDATE" -> RowDiffStatusEnum.UPDATED;
+            case "DELETE" -> RowDiffStatusEnum.DELETED;
+            case "INSERT" -> RowDiffStatusEnum.INSERTED;
+            default -> throw new UnsupportedOperationException("cannot get diff status from" + fnsiOperation + "operation");
+        };
     }
 
     private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page) {
@@ -219,7 +214,6 @@ public class FnsiSyncSourceService implements SyncSourceService {
             }
             return body;
         } catch (URISyntaxException e) {
-            logger.error("cannot create uri ", e);
             throw new IllegalArgumentException("invalid uri " + url, e);
         }
     }
@@ -242,17 +236,12 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
 
     private AttributeTypeEnum getAttrType(String fnsiDataType) {
-        switch (fnsiDataType) {
-            case "INTEGER":
-                return AttributeTypeEnum.INTEGER;
-            case "VARCHAR":
-                return AttributeTypeEnum.STRING;
-            case "DATETIME":
-                return AttributeTypeEnum.DATE;
-            case "BOOLEAN":
-                return AttributeTypeEnum.BOOLEAN;
-            default:
-                throw new IllegalArgumentException("unknown fnsi type " + fnsiDataType);
-        }
+        return switch (fnsiDataType) {
+            case "INTEGER" -> AttributeTypeEnum.INTEGER;
+            case "VARCHAR" -> AttributeTypeEnum.STRING;
+            case "DATETIME" -> AttributeTypeEnum.DATE;
+            case "BOOLEAN" -> AttributeTypeEnum.BOOLEAN;
+            default -> throw new IllegalArgumentException("unknown fnsi type " + fnsiDataType);
+        };
     }
 }

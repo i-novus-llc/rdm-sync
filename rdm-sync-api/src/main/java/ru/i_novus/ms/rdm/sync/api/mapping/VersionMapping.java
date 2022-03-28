@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @EqualsAndHashCode
-public class VersionMapping {
+public class VersionMapping implements Serializable {
 
     private Integer id;
     private String code;

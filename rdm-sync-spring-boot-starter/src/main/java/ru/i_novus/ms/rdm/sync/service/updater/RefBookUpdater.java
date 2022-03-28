@@ -4,6 +4,6 @@ import javax.annotation.Nullable;
 
 public interface RefBookUpdater {
 
-    void update(String refCode, @Nullable String version);
+    void update(String refCode, @Nullable String version) throws RefBookUpdaterException;
 
 }

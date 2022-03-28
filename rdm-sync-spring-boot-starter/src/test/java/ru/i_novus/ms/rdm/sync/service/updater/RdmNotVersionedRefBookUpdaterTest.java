@@ -48,7 +48,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     private ArgumentCaptor<SyncSourceService> syncSourceServiceArgumentCaptor;
 
     @Test
-    public void testFirstWrite() {
+    public void testFirstWrite() throws RefBookUpdaterException {
         RefBookVersion refBook = createRefbook();
 
         when(dao.existsLoadedVersion(refBook.getCode())).thenReturn(false);
@@ -68,7 +68,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
      * изменились данные справочника
      */
     @Test
-    public void testUpdateWithChangeUpdateDate() {
+    public void testUpdateWithChangeUpdateDate() throws RefBookUpdaterException {
         RefBookVersion refBook = createRefbook();
 
         LoadedVersion loadedVersion = createLoadedVersion();
@@ -87,7 +87,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     }
 
     @Test
-    public void testUpdateWithChangeMapping() {
+    public void testUpdateWithChangeMapping() throws RefBookUpdaterException {
         RefBookVersion refBook = createRefbook();
 
         VersionMapping versionMapping = createVersionMapping(SyncTypeEnum.RDM_NOT_VERSIONED);
@@ -107,7 +107,7 @@ public class RdmNotVersionedRefBookUpdaterTest extends AbstractRefBookUpdaterTes
     }
 
     @Test
-    public void testIgnoreUpdate() {
+    public void testIgnoreUpdate() throws RefBookUpdaterException {
 
         RefBookVersion refBook = createRefbook();
         LoadedVersion loadedVersion = createLoadedVersion();
