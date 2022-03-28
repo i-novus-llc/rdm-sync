@@ -198,7 +198,7 @@ public class NotSimpleVersionedPersisterServiceTest {
         return VersionsDiff.dataChangedInstance(new PageImpl<>(singletonList(row), createDataCriteria(), 1));
     }
 
-    private static DataCriteria createDataCriteria() {
+    private DataCriteria createDataCriteria() {
 
         DataCriteria searchDataCriteriaCount = new DataCriteria();
         searchDataCriteriaCount.setPageSize(100);
