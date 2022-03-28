@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
 
-    private static Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
+    private final static Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
 
     private final Iterator<Page<? extends T>> original;
     private final int tries;
