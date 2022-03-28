@@ -46,7 +46,7 @@ public class NotVersionedPersisterService implements PersisterService {
                                         @Value("${rdm-sync.load.size: 1000}") int maxSize,
                                         RdmMappingService mappingService,
                                         @Value("${rdm-sync.load.retry.tries: 5}") int tries,
-                                        @Value("${rdm-sync.load.retry.tries: 30000}") int timeout) {
+                                        @Value("${rdm-sync.load.retry.timeout: 30000}") int timeout) {
         this.maxSize = maxSize;
         this.dao = dao;
         this.mappingService = mappingService;
