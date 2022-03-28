@@ -37,10 +37,21 @@ public class NotVersionedPersisterService implements PersisterService {
 
     private final RdmMappingService mappingService;
 
-    public NotVersionedPersisterService(RdmSyncDao dao, @Value("${rdm-sync.load.size: 1000}") int maxSize, RdmMappingService mappingService) {
+    private final int tries;
+
+    private final int timeout;
+
+
+    public NotVersionedPersisterService(RdmSyncDao dao,
+                                        @Value("${rdm-sync.load.size: 1000}") int maxSize,
+                                        RdmMappingService mappingService,
+                                        @Value("${rdm-sync.load.retry.tries: 5}") int tries,
+                                        @Value("${rdm-sync.load.retry.timeout: 30000}") int timeout) {
         this.maxSize = maxSize;
         this.dao = dao;
         this.mappingService = mappingService;
+        this.timeout = timeout;
+        this.tries = tries;
     }
 
     @Override
@@ -58,8 +69,9 @@ public class NotVersionedPersisterService implements PersisterService {
         searchDataCriteria.setVersion(newVersion.getVersion());
         searchDataCriteria.setPageSize(maxSize);
 
-        PageIterator<Map<String, ?>, DataCriteria> iter = new PageIterator<>(
-                syncSourceService::getData, searchDataCriteria, true);
+        RetryingPageIterator iter = new RetryingPageIterator<>(new PageIterator<>
+                (syncSourceService::getData, searchDataCriteria, true),
+                tries, timeout);
         while (iter.hasNext()) {
             Page<? extends Map<String, ?>> page = iter.next();
 
@@ -84,8 +96,9 @@ public class NotVersionedPersisterService implements PersisterService {
 
         if (!diff.getRows().isEmpty()) {
 
-            PageIterator<RowDiff, VersionsDiffCriteria> iter = new PageIterator<>(
-                    criteria -> syncSourceService.getDiff(criteria).getRows(), versionsDiffCriteria, true);
+            RetryingPageIterator iter = new RetryingPageIterator<>(new PageIterator<>
+                    (criteria -> syncSourceService.getDiff(criteria).getRows(), versionsDiffCriteria, true),
+                    tries, timeout);
             while (iter.hasNext()) {
                 Page<? extends RowDiff> page = iter.next();
                 for (RowDiff rowDiff : page.getContent()) {
@@ -94,7 +107,6 @@ public class NotVersionedPersisterService implements PersisterService {
             }
         }
     }
-
 
 
     @Override
@@ -107,7 +119,7 @@ public class NotVersionedPersisterService implements PersisterService {
                           VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
 
         Map<String, Object> mappedRow = new HashMap<>();
-        for (Map.Entry<String, Object> entry : rowDiff.getRow().entrySet()){
+        for (Map.Entry<String, Object> entry : rowDiff.getRow().entrySet()) {
 
             Map<String, Object> mappedValue = mapValue(newVersion,
                     entry.getKey(),
@@ -156,7 +168,7 @@ public class NotVersionedPersisterService implements PersisterService {
             //добавляем ключи со значение null которых нет в нси но есть маппинге
             // это важно для того чтобы размерность строки была фиксированна
             fieldMappings.forEach(mapping -> {
-                if(!mappedRow.containsKey(mapping.getSysField())) {
+                if (!mappedRow.containsKey(mapping.getSysField())) {
                     mappedRow.put(mapping.getSysField(), null);
                 }
             });
@@ -174,20 +186,20 @@ public class NotVersionedPersisterService implements PersisterService {
                 insertRows.add(mappedRow);
             }
         }
-        if(!updateRows.isEmpty()) {
+        if (!updateRows.isEmpty()) {
             dao.updateRows(versionMapping.getTable(), versionMapping.getPrimaryField(), updateRows, true);
         }
-        if(!insertRows.isEmpty()) {
+        if (!insertRows.isEmpty()) {
             dao.insertRows(versionMapping.getTable(), insertRows, true);
         }
     }
 
     private void logProgress(String refBookCode, RestCriteria criteria, Page currentPage) {
         int totalPages = currentPage.getContent().isEmpty() ? 1 : (int) Math.ceil((double) currentPage.getTotalElements() / (double) criteria.getPageSize());
-        if(criteria.getPageNumber()%5==0) {
-            logger.info("refbook {} {} rows of {} synchronized", refBookCode,  (criteria.getPageNumber())*criteria.getPageSize() + currentPage.getContent().size(), currentPage.getTotalElements());
+        if (criteria.getPageNumber() % 5 == 0) {
+            logger.info("refbook {} {} rows of {} synchronized", refBookCode, (criteria.getPageNumber()) * criteria.getPageSize() + currentPage.getContent().size(), currentPage.getTotalElements());
         } else if (totalPages == criteria.getPageNumber() + 1) {
-            logger.info("refbook {} {} rows of {} synchronized", refBookCode,  currentPage.getTotalElements(), currentPage.getTotalElements());
+            logger.info("refbook {} {} rows of {} synchronized", refBookCode, currentPage.getTotalElements(), currentPage.getTotalElements());
         }
 
     }

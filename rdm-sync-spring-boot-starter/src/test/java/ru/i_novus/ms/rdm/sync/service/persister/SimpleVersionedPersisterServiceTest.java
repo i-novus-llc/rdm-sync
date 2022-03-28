@@ -10,10 +10,12 @@ import org.springframework.data.domain.PageImpl;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.*;
+import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.model.RefBookPassport;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 
 import java.math.BigInteger;
@@ -38,7 +40,7 @@ public class SimpleVersionedPersisterServiceTest {
 
     @Before
     public void setUp() {
-        persisterService = new SimpleVersionedPersisterService(dao, 1000, new RdmMappingServiceImpl());
+        persisterService = new SimpleVersionedPersisterService(dao, 1000, new RdmMappingServiceImpl(), 1, 1000);
     }
 
     @Test

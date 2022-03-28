@@ -37,7 +37,7 @@ public class NotSimpleVersionedPersisterServiceTest {
 
     @Before
     public void setUp() {
-        persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl());
+        persisterService = new NotVersionedPersisterService(dao, 100, new RdmMappingServiceImpl(), 3, 1000);
     }
 
     /**
