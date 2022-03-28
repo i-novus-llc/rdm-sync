@@ -30,6 +30,9 @@ public class RetryingPageIteratorTest {
                 .thenThrow(HttpClientErrorException.class)
                 .thenReturn(page);
 
+        when(original.hasNext())
+                .thenReturn(true);
+
         RetryingPageIterator retryingPageIterator = new RetryingPageIterator(original, 10, 1000);
 
         assertEquals(page, retryingPageIterator.next());

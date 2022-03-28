@@ -31,7 +31,10 @@ public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
 
     @SneakyThrows
     @Override
-    public Page<? extends T> next() throws NoSuchElementException {
+    public Page<? extends T> next() {
+        if(!hasNext()){
+            throw new NoSuchElementException();
+        }
         return retry(original::next);
     }
 
