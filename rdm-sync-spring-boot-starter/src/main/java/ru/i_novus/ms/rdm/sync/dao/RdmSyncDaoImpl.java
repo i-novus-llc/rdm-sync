@@ -1004,20 +1004,25 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
-        createTable(schema, table, fieldMappings,
-                Map.of(LOADED_VERSION_REF, "integer NOT NULL",
-                        RECORD_SYS_COL, RECORD_SYS_COL_INFO)
-        );
+        Boolean tableExists = getJdbcTemplate().queryForObject(
+                "SELECT EXISTS (SELECT FROM pg_tables  WHERE  schemaname = ? AND tablename  = ?)"
+                , Boolean.class, schema, table);
+        if (Boolean.FALSE.equals(tableExists)) {
+            createTable(schema, table, fieldMappings,
+                    Map.of(LOADED_VERSION_REF, "integer NOT NULL",
+                            RECORD_SYS_COL, RECORD_SYS_COL_INFO)
+            );
 
-        String escapedSchemaTable = escapeName(schema) + "." + escapeName(table);
-        getJdbcTemplate().execute(
-                String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES rdm_sync.loaded_version(id)",
-                        escapedSchemaTable, escapeName(table + "_" + LOADED_VERSION_REF + "_fk"), LOADED_VERSION_REF
-                )
-        );
-        getJdbcTemplate().execute(
-                String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
-                escapedSchemaTable, escapeName(table + "_uq"), escapeName(primaryField), LOADED_VERSION_REF));
+            String escapedSchemaTable = escapeName(schema) + "." + escapeName(table);
+            getJdbcTemplate().execute(
+                    String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES rdm_sync.loaded_version(id)",
+                            escapedSchemaTable, escapeName(table + "_" + LOADED_VERSION_REF + "_fk"), LOADED_VERSION_REF
+                    )
+            );
+            getJdbcTemplate().execute(
+                    String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
+                    escapedSchemaTable, escapeName(table + "_uq"), escapeName(primaryField), LOADED_VERSION_REF));
+        }
     }
 
     @Override
