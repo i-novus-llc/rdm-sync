@@ -451,6 +451,16 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.getSimpleVersionedData(criteria);
     }
 
+    /**
+     * проверка на идемпотентность метода  createSimpleVersionedTables
+     */
+    @Test
+    public void testIdempotentCreateSimpleVersionedTables() {
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
+        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
+
+    }
+
     private List<FieldMapping> generateFieldMappings() {
         return List.of(
                 new FieldMapping("ID", "integer", "ID"),
