@@ -2,13 +2,16 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,7 +64,8 @@ public class RefBookVersionsDeterminator {
         if(versionMapping == null) {
             versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), "CURRENT");
         }
-        return !loadedVersions.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(refBookVersion.getFrom()) && refBookVersion.getVersion().equals(actualVersion));
+            return !loadedVersions.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(refBookVersion.getFrom()) && refBookVersion.getVersion().equals(actualVersion))
+                    || (versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED));
     }
 
     private List<VersionsRange> getRanges(String range, List<RefBookVersionItem> versions) {

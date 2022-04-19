@@ -2,10 +2,13 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
@@ -53,7 +56,8 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refCode, newVersion.getVersion());
         try {
-            if (!dao.existsLoadedVersion(refCode) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)) {
+            if (!dao.existsLoadedVersion(refCode) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
+                    || (isNewVersionPublished(newVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
                 update(newVersion, versionMapping);
                 loggingService.logOk(refCode, versionMapping.getRefBookVersion(), newVersion.getVersion());
@@ -130,6 +134,10 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
                     String.join(",", clientRdmFields), newVersion.getCode()));
         }
 
+    }
+
+    private boolean isNewVersionPublished(RefBookVersionItem newVersion, LoadedVersion loadedVersion) {
+        return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
     }
 
     protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping) {

@@ -8,9 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
-import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
@@ -37,6 +35,7 @@ public class RefBookVersionsDeterminatorTest {
     @Before
     public void setUp() throws Exception {
         VersionMapping versionMapping = mock(VersionMapping.class);
+        when(versionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(versionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
         when(dao.getVersionMapping(any(), eq("CURRENT"))).thenReturn(versionMapping);
     }
@@ -116,6 +115,7 @@ public class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
+        when(versionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(versionMapping.getMappingLastUpdated()).thenReturn(versions.get(1).getFrom().plusDays(1));
         when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
@@ -182,10 +182,36 @@ public class RefBookVersionsDeterminatorTest {
         ));
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping specifyVersionMapping = mock(VersionMapping.class);
+        when(specifyVersionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(specifyVersionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
         when(dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(specifyVersionMapping);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
         Assert.assertTrue(determinator.getVersions().isEmpty());
+    }
+
+    @Test
+    public void testLoadRdmNotVersioned(){
+        String code = "someCode";
+        VersionMapping versionMapping = new VersionMapping(1,code, "someName", "1",
+                "someTable", "id", "RDM", "id", "is_deleted", LocalDateTime.of(2022, 4, 1, 10, 0),
+                -1, 1, SyncTypeEnum.RDM_NOT_VERSIONED, null);
+
+        when(dao.getLoadedVersions(any())).thenReturn(List.of(
+                new LoadedVersion(1, code, "-1",  LocalDateTime.of(2022, 4, 1, 10, 0), null, LocalDateTime.now(), true)
+        ));
+
+        when(dao.getVersionMapping(any(), eq("CURRENT"))).thenReturn(versionMapping);
+        RefBookVersion refBookVersion1 = new RefBookVersion();
+        refBookVersion1.setVersion("-1");
+        refBookVersion1.setVersionId(1);
+        refBookVersion1.setStructure(new RefBookStructure());
+        refBookVersion1.setFrom( LocalDateTime.of(2022, 5, 1, 10, 0));
+
+        when(syncSourceService.getRefBook(any(), any())).thenReturn(refBookVersion1);
+
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+
+        Assert.assertEquals(Collections.singletonList("-1"), determinator.getVersions());
     }
 
     private List<RefBookVersionItem> generateVersions(String code) {
