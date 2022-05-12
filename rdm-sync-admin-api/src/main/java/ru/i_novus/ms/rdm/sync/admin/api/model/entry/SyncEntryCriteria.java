@@ -27,6 +27,10 @@ public class SyncEntryCriteria extends AbstractCriteria {
     @QueryParam("name")
     private String name;
 
+    @ApiParam("Идентификатор источника")
+    @QueryParam("sourceId")
+    private String sourceId;
+
     @ApiParam("Текст для поиска по нескольким полям")
     @QueryParam("text")
     private String text;
@@ -45,6 +49,7 @@ public class SyncEntryCriteria extends AbstractCriteria {
         return Objects.equals(id, that.id) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(sourceId, that.sourceId) &&
 
                 Objects.equals(text, that.text) &&
                 Objects.equals(count, that.count);
@@ -52,6 +57,6 @@ public class SyncEntryCriteria extends AbstractCriteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, code, name, text, count);
+        return Objects.hash(super.hashCode(), id, code, name, sourceId, text, count);
     }
 }
