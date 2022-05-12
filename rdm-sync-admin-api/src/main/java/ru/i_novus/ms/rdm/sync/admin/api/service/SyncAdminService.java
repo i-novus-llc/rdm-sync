@@ -48,6 +48,18 @@ public interface SyncAdminService {
     })
     SyncEntry getByCode(@ApiParam("Код справочника") @PathParam("code") String code);
 
+    @GET
+    @Path("/entries/source-code/{sourceCode}/{code}")
+    @ApiOperation(value = "Получение записи о синхронизации справочника по коду источника и коду справочника")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Запись о синхронизации"),
+            @ApiResponse(code = 404, message = "Нет ресурса")
+    })
+    SyncEntry getBySourceAndCode(
+        @ApiParam("Код источника") @PathParam("sourceCode") String sourceCode,
+        @ApiParam("Код справочника") @PathParam("code") String code
+    );
+
     @POST
     @Path("/entries")
     @ApiOperation(value = "Создание новой записи о синхронизации (добавление справочника)")
