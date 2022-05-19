@@ -86,7 +86,7 @@
                     <validations>
                         <condition id="checkStorageCode" severity="danger" side="client"
                                    message="${sync.mapping.page.storage.code.check}">
-                            typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^[a-z][a-z0-9_]*$/.test(storageCode)
+                            typeof storageCode == 'undefined' || storageCode == null || storageCode == '' || /^([a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*$/.test(storageCode)
                         </condition>
                     </validations>
                 </input-text>
