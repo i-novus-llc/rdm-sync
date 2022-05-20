@@ -16,6 +16,7 @@
         </operation>
 
         <operation id="loadEntry">
+
             <invocation>
                 <rest method="POST">${sync.admin.backend.path}/sync/admin/entries/versions/load</rest>
             </invocation>
