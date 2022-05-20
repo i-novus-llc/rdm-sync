@@ -45,6 +45,9 @@ public class SyncEntry implements Serializable {
     /** Источник для обновления. */
     private SyncEntrySource source;
 
+    /** Наличие версии в системе. */
+    private boolean isPresent;
+
     /** Дата последнего обновления. */
     private LocalDateTime lastDateTime;
 
@@ -73,10 +76,12 @@ public class SyncEntry implements Serializable {
 
                 Objects.equals(versionId, that.versionId) &&
                 Objects.equals(version, that.version) &&
+
                 versioned == that.versioned &&
                 autoUpdatable == that.autoUpdatable &&
-
                 Objects.equals(source, that.source) &&
+
+                Objects.equals(isPresent, that.isPresent) &&
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus) &&
 
@@ -87,8 +92,8 @@ public class SyncEntry implements Serializable {
     public int hashCode() {
         return Objects.hash(id, code, name,
                 storageCode, removable,
-                versionId, version, versioned, autoUpdatable,
-                source, lastDateTime, lastStatus, displayName);
+                versionId, version, versioned, autoUpdatable, source,
+                isPresent, lastDateTime, lastStatus, displayName);
     }
 
     @Override
