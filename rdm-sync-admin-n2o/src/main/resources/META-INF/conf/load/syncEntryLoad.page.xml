@@ -45,7 +45,7 @@
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
-                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version, 'isPresent': refBook.isPresent };
                             else if (typeof refBook == 'undefined' || refBook?.id == null)
                                 return null;
                             else
@@ -78,7 +78,7 @@
 
         <toolbar place="bottomRight">
             <button id="ok" label="${sync.entry.load.page.button.ok}" color="primary"
-                    enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null}">
+                    enabled="{typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null &amp;&amp; !startVersion?.isPresent}">
                 <invoke operation-id="loadEntry" close-after-success="true" message-on-success="false"
                         redirect-target="application" redirect-url="${sync.admin.context-path}/main"/>
             </button>

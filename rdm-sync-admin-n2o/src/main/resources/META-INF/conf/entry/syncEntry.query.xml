@@ -103,6 +103,9 @@
         <field id="refBook.name" domain="string">
             <select mapping="['name']"/>
         </field>
+        <field id="refBook.isPresent" domain="string">
+            <select mapping="['isPresent']"/>
+        </field>
 
         <field id="startVersion.id" domain="string">
             <select mapping="['versionId']"/>
@@ -115,6 +118,9 @@
         </field>
         <field id="startVersion.name" domain="string">
             <select mapping="['name']"/>
+        </field>
+        <field id="startVersion.isPresent" domain="string">
+            <select mapping="['isPresent']"/>
         </field>
 
     </fields>

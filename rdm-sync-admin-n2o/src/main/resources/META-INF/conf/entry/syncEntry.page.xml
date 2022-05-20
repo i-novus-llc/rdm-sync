@@ -134,7 +134,7 @@
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
-                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version };
+                                return { 'id': refBook.versionId, 'displayName': refBook.version, 'version': refBook.version, 'isPresent': refBook.isPresent };
                             else if (typeof refBook == 'undefined' || refBook?.id == null)
                                 return null;
                             else

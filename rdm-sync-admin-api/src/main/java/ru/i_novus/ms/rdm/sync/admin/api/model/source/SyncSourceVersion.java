@@ -53,6 +53,9 @@ public class SyncSourceVersion implements Serializable {
     /** Дата последнего действия. */
     private LocalDateTime lastActionDate;
 
+    /** Признак наличия версии записи. */
+    private Boolean isPresent;
+
     /** Отображаемое наименование. */
     private String displayName;
 
@@ -79,6 +82,7 @@ public class SyncSourceVersion implements Serializable {
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(lastActionDate, that.lastActionDate) &&
 
+                Objects.equals(isPresent, that.isPresent) &&
                 Objects.equals(displayName, that.displayName);
     }
 
@@ -86,7 +90,7 @@ public class SyncSourceVersion implements Serializable {
     public int hashCode() {
         return Objects.hash(id, refBookId, structure, code, name, comment,
                 fromDate, toDate, creationDate, lastActionDate,
-                displayName);
+                isPresent, displayName);
     }
 
     @Override
