@@ -53,5 +53,9 @@
             <select/>
         </field>
 
+        <field id="isPresent" domain="boolean">
+            <select/>
+        </field>
+
     </fields>
 </query>
