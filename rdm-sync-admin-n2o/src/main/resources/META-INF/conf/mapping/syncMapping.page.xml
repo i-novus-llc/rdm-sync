@@ -55,30 +55,8 @@
                     <checkbox id="versioned" label="${sync.mapping.page.refbook.versioned}" visible="false"/>
                 </row>
 
-                <!--<input-select id="version" label="${sync.mapping.page.refbook.version}"-->
-                <!--              query-id="syncMapping" label-field-id="displayName"-->
-                <!--              label-class="w-50" required="true"-->
-                <!--              visible="{actionType != 'create'}">-->
-                <!--    <pre-filters>-->
-                <!--        <eq field-id="sourceCode" value="{source.id}"/>-->
-                <!--        <eq field-id="code" value="{refBook.code}"/>-->
-                <!--    </pre-filters>-->
-
-                <!--    <dependencies>-->
-                <!--        <set-value on="versioned">-->
-                <!--            if ((typeof versioned == 'undefined' || !versioned))-->
-                <!--                return { 'id': startVersion, 'displayName': startVersion, 'version': startVersion };-->
-                <!--            else-->
-                <!--                return;-->
-                <!--        </set-value>-->
-                <!--        <enabling on="versioned">-->
-                <!--            (typeof versioned != 'undefined' &amp;&amp; versioned)-->
-                <!--        </enabling>-->
-                <!--    </dependencies>-->
-                <!--</input-select>-->
-                
                 <output-text id="mappingVersionText" label="${sync.mapping.page.mapping.version.text}"
-                             label-class="w-50" enabled="false"/>
+                             label-class="w-50" enabled="false" visible="${sync.mapping.page.mapping.version.text.visible}"/>
 
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
                             label-class="w-50" required="true"

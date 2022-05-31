@@ -62,7 +62,8 @@
                              label-class="w-50" enabled="false">
                     <dependencies>
                         <visibility on="startVersion">
-                            (typeof startVersion != 'undefined' &amp;&amp; startVersion?.name != null)
+                            (typeof startVersion != 'undefined' &amp;&amp; startVersion?.name != null
+                                &amp;&amp; ${sync.entry.load.page.versionName.visible})
                         </visibility>
                         <set-value on="startVersion">
                             if (typeof startVersion != 'undefined' &amp;&amp; startVersion?.version != null)
