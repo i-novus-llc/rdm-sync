@@ -32,6 +32,7 @@
             <filters>
                 <eq filter-id="code">code={code}</eq>
             </filters>
+            <sorting mapping="['codeDirection']">sort=code: {codeDirection}</sorting>
         </field>
 
         <field id="name" domain="string">
@@ -39,6 +40,7 @@
             <filters>
                 <eq filter-id="name">name={name}</eq>
             </filters>
+            <sorting mapping="['nameDirection']">sort=name: {nameDirection}</sorting>
         </field>
 
         <field id="removable" domain="boolean">
@@ -47,14 +49,17 @@
 
         <field id="version" domain="string">
             <select/>
+            <sorting mapping="['versionDirection']">sort=version: {versionDirection}</sorting>
         </field>
 
         <field id="versioned" domain="boolean">
             <select/>
+            <sorting mapping="['versionedDirection']">sort=versioned: {versionedDirection}</sorting>
         </field>
 
         <field id="autoUpdatable" domain="boolean">
             <select/>
+            <sorting mapping="['autoUpdatableDirection']">sort=autoUpdatable: {autoUpdatableDirection}</sorting>
         </field>
 
         <field id="source.code" domain="string">
@@ -63,14 +68,17 @@
 
         <field id="source.caption" domain="string">
             <select mapping="['source']['caption']"/>
+            <sorting mapping="['sourceDirection']">sort=source: {sourceDirection}</sorting>
         </field>
 
         <field id="lastDateTime" domain="localdatetime">
             <select/>
+            <sorting mapping="['lastDateTimeDirection']">sort=lastDateTime: {lastDateTimeDirection}</sorting>
         </field>
 
         <field id="lastStatus" domain="string">
             <select/>
+            <sorting mapping="['lastStatusDirection']">sort=lastStatus: {lastStatusDirection}</sorting>
         </field>
 
         <!-- Поля для редактирования -->
