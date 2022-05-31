@@ -56,7 +56,7 @@
                 </row>
 
                 <output-text id="mappingVersionText" label="${sync.mapping.page.mapping.version.text}"
-                             label-class="w-50" enabled="false"/>
+                             label-class="w-50" enabled="false" visible="${sync.mapping.page.mapping.version.text.visible}"/>
 
                 <input-text id="storageCode" label="${sync.mapping.page.storage.code}"
                             label-class="w-50" required="true"
