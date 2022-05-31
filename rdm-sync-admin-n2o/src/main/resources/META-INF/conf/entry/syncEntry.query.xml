@@ -32,7 +32,7 @@
             <filters>
                 <eq filter-id="code">code={code}</eq>
             </filters>
-            <sorting/>
+            <sorting mapping="['codeDirection']">sort=code: {codeDirection}</sorting>
         </field>
 
         <field id="name" domain="string">
@@ -40,7 +40,7 @@
             <filters>
                 <eq filter-id="name">name={name}</eq>
             </filters>
-            <sorting/>
+            <sorting mapping="['nameDirection']">sort=name: {nameDirection}</sorting>
         </field>
 
         <field id="removable" domain="boolean">
@@ -69,7 +69,7 @@
 
         <field id="lastDateTime" domain="localdatetime">
             <select/>
-            <sorting/>
+            <sorting mapping="['lastDateTimeDirection']">sort=lastDateTime: {lastDateTimeDirection}</sorting>
         </field>
 
         <field id="lastStatus" domain="string">
