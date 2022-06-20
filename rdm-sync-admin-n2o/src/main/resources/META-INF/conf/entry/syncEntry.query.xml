@@ -35,16 +35,16 @@
             <sorting mapping="['codeDirection']">sort=code: {codeDirection}</sorting>
         </field>
 
-        <field id="otherCodes" domain="string">
-            <select normalize="#this != null ? T(java.lang.String).join(', ', #this) : ''"/>
-        </field>
-
         <field id="name" domain="string">
             <select/>
             <filters>
                 <eq filter-id="name">name={name}</eq>
             </filters>
             <sorting mapping="['nameDirection']">sort=name: {nameDirection}</sorting>
+        </field>
+
+        <field id="otherCodes" domain="string">
+            <select normalize="#this != null ? T(java.lang.String).join(', ', #this) : ''"/>
         </field>
 
         <field id="removable" domain="boolean">
