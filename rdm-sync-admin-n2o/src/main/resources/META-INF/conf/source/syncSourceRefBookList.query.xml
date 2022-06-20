@@ -49,6 +49,10 @@
             <select/>
         </field>
 
+        <field id="otherCodes" domain="string">
+            <select normalize="#this != null ? T(java.lang.String).join(', ', #this) : ''"/>
+        </field>
+
         <field id="version" domain="string">
             <select/>
         </field>
