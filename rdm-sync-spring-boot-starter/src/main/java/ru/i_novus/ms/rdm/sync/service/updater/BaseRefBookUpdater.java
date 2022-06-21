@@ -149,7 +149,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
             addNewVersion(newVersion, versionMapping);
 
         } else if (isMappingChanged(versionMapping, loadedVersion) || newVersion.getFrom().isAfter(loadedVersion.getPublicationDate())) {
-            //Значит в прошлый раз мы синхронизировались по старому маппингу.
+            //Значит в прошлый раз мы синхронизировались по-старому маппингу.
             //Необходимо полностью залить свежую версию.
             editVersion(newVersion, versionMapping, loadedVersion);
         }

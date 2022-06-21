@@ -62,7 +62,8 @@ public class NotVersionedPersisterService implements PersisterService {
         final FieldMapping primaryField = fieldMappings.stream()
                 .filter(mapping -> mapping.getSysField().equals(versionMapping.getPrimaryField()))
                 .findFirst().orElse(null);
-        List<Object> existingDataIds = dao.getDataIds(versionMapping.getTable(), primaryField);
+                                            //на тот случай если неизменяемый список придет
+        List<Object> existingDataIds = new ArrayList<>(dao.getDataIds(versionMapping.getTable(), primaryField));
 
         DataCriteria searchDataCriteria = new DataCriteria();
         searchDataCriteria.setCode(versionMapping.getCode());
@@ -180,6 +181,7 @@ public class NotVersionedPersisterService implements PersisterService {
                 Map<String, Object> updatedRow = new HashMap<>(mappedRow);
                 updatedRow.put(versionMapping.getDeletedField(), null);
                 updateRows.add(updatedRow);
+                existingDataIds.remove(primaryValue);
 
             } else {
                 // Иначе - создаём новую запись:
@@ -191,6 +193,10 @@ public class NotVersionedPersisterService implements PersisterService {
         }
         if (!insertRows.isEmpty()) {
             dao.insertRows(versionMapping.getTable(), insertRows, true);
+        }
+        if(!existingDataIds.isEmpty()) {
+            logger.info("existing values mark as deleted");
+            dao.markDeleted(versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), existingDataIds, newVersion.getFrom());
         }
     }
 

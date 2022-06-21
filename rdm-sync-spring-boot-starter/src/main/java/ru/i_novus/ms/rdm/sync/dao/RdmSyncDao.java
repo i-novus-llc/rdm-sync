@@ -125,6 +125,8 @@ public interface RdmSyncDao {
     void markDeleted(String schemaTable, String primaryField, String isDeletedField,
                      Object primaryValue, @Nullable LocalDateTime deletedTime, boolean markSynced);
 
+    void markDeleted(String schemaTable, String primaryField, String deletedField, List<Object> primaryValues, @Nullable LocalDateTime deletedTime);
+
     /**
      * Пометить все записи справочника клиента как (не)удалённые.
      *
