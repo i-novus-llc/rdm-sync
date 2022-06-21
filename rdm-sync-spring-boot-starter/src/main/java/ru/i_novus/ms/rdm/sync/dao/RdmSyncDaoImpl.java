@@ -34,6 +34,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -425,6 +426,15 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Map<String, Object>[] batchValues = new Map[rows.size()];
         namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
+    }
+
+    @Override
+    public void markDeleted(String schemaTable, String primaryField, String deletedField, List<Object> primaryValues, @Nullable LocalDateTime deletedTime) {
+        Map<String, Object> args = new HashMap<>();
+        args.put("primaryFieldValues", primaryValues);
+        args.put("deletedValue", deletedTime);
+        String sql = "UPDATE " + escapeName(schemaTable) + "SET " + RDM_SYNC_INTERNAL_STATE_COLUMN + "='" + SYNCED.name() + "'," + escapeName(deletedField) + "= :deletedValue " + " WHERE " + escapeName(primaryField) + "in (:primaryFieldValues)" ;
+        namedParameterJdbcTemplate.update(sql, args);
     }
 
     private List<Map<String, Object>> convertToVersionedRows(List<Map<String, Object>> rows, String version) {

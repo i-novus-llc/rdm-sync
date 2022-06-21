@@ -52,7 +52,7 @@ public class NotSimpleVersionedPersisterServiceTest {
         List<FieldMapping> fieldMappings = createFieldMappings();
         FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
         Page<Map<String, Object>> data = createFirstRdmData();
-        List<Map<String, Object>> dataMap = createFirstVerifyDataMap();
+        List<Map<String, Object>> dataMap = createFirstVerifyData();
 
         final String refBookCode = versionMapping.getCode();
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
@@ -67,6 +67,42 @@ public class NotSimpleVersionedPersisterServiceTest {
         dataMap.get(0).put(versionMapping.getDeletedField(), null);
         verify(dao).updateRows(versionMapping.getTable(), versionMapping.getPrimaryField(), singletonList(dataMap.get(0)), true);
         verify(dao).insertRows(versionMapping.getTable(), singletonList(dataMap.get(1)), true);
+    }
+
+    /**
+     * Кейс: Обновление справочника в первый раз, версия в маппинге не указана. В таблице клиента уже есть запись с id=10, которой нет в НСИ, из НСИ приходят записи с id=1,2.
+     * Ожидаемый результат: Запись с id=10 пометится как удаленная, с id=1,2 вставятся, в маппинге проставится дата и номер версии.
+     */
+    @Test
+    public void testFirstTimeUpdateWithMarkDeleted() {
+
+        RefBookVersion firstVersion = createFirstRdmVersion();
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
+        List<FieldMapping> fieldMappings = createFieldMappings();
+        FieldMapping primaryFieldMapping = fieldMappings.stream().filter(f -> f.getSysField().equals(versionMapping.getPrimaryField())).findFirst().orElse(null);
+        Page<Map<String, Object>> rdmData = createFirstRdmData();
+        List<Map<String, Object>> expectedData = createFirstVerifyData();
+
+
+        when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
+        when(dao.getDataIds(versionMapping.getTable(), primaryFieldMapping)).thenReturn(singletonList(10));
+
+        SyncSourceService syncSourceService = mock(SyncSourceService.class);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() == 0))).thenReturn(rdmData);
+        when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria!=null && dataCriteria.getPageNumber() > 0))).thenReturn(Page.empty());
+
+        persisterService.firstWrite(firstVersion, versionMapping, syncSourceService);
+
+
+        verify(dao, never()).updateRows(anyString(), anyString(), anyList(), anyBoolean());
+        verify(dao).insertRows(versionMapping.getTable(), expectedData, true);
+        verify(dao).markDeleted(
+                versionMapping.getTable(),
+                versionMapping.getPrimaryField(),
+                versionMapping.getDeletedField(),
+                singletonList(10),
+                firstVersion.getFrom()
+                );
     }
 
     /**
@@ -134,7 +170,7 @@ public class NotSimpleVersionedPersisterServiceTest {
 
         persisterService.repeatVersion(firstRdmVersion, versionMapping, syncSourceService);
 
-        List<Map<String, Object>> verifyData = createFirstVerifyDataMap();
+        List<Map<String, Object>> verifyData = createFirstVerifyData();
         verifyData.get(0).put(versionMapping.getDeletedField(), null);
         verify(dao).insertRows(testTable, Arrays.asList(verifyData.get(1)), true);
         verify(dao).updateRows(testTable, "id", Arrays.asList(verifyData.get(0)), true);
@@ -238,7 +274,7 @@ public class NotSimpleVersionedPersisterServiceTest {
         return new PageImpl<>(list, createDataCriteria(), 3);
     }
 
-    private List<Map<String, Object>> createFirstVerifyDataMap() {
+    private List<Map<String, Object>> createFirstVerifyData() {
 
         Map<String, Object> row1 = new HashMap<>();
         row1.put("id", BigInteger.valueOf(1L));

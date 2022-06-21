@@ -30,6 +30,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -114,7 +115,13 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
         RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
         final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService);
-        final List<String> versions = determinator.getVersions();
+        List<String> versions;
+        try {
+            versions = determinator.getVersions();
+        } catch (Exception e) {
+            logger.error("cannot get versions for refbook " + refBookCode, e);
+            versions = Collections.emptyList();
+        }
         for (String version : versions) {
             try {
                 refBookUpdater.update(refBookCode, version);
