@@ -20,6 +20,13 @@
             </filters>
         </field>
 
+        <field id="refBookId" domain="string">
+            <select mapping="['code']"/>
+            <filters>
+                <eq filter-id="refBookId">code={refBookId}</eq>
+            </filters>
+        </field>
+
         <field id="id" domain="string">
             <select mapping="['version']"/>
             <filters>

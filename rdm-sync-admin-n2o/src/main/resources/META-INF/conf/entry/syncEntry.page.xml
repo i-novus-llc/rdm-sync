@@ -109,12 +109,13 @@
                         <visibility on="refBook">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
                         </visibility>
-                        <set-value on="refBook">
-                            if (typeof refBook != 'undefined' &amp;&amp; refBook?.otherCodes != null)
-                                return refBook.otherCodes;
-                            else
-                                return null;
-                        </set-value>
+                        <fetch-value on="refBook" apply-on-init="false"
+                                     query-id="syncSourceRefBookList" size="1" value-field-id="otherCodes">
+                            <pre-filters>
+                                <eq field-id="sourceCode" value="{source.id}"/>
+                                <eq field-id="id" value="{refBook.id}"/>
+                            </pre-filters>
+                        </fetch-value>
                     </dependencies>
                 </output-text>
 
@@ -142,7 +143,7 @@
                               label-class="w-50" required="true">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
-                        <eq field-id="code" value="{refBook.id}"/>
+                        <eq field-id="refBookId" value="{refBook.id}"/>
                     </pre-filters>
 
                     <dependencies>
