@@ -103,6 +103,22 @@
                     <!--</validations>-->
                 </input-select>
 
+                <output-text id="otherCodes" label="${sync.entry.page.refbook.other-codes}"
+                             label-class="w-50">
+                    <dependencies>
+                        <visibility on="refBook">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                        </visibility>
+                        <fetch-value on="refBook" apply-on-init="false"
+                                     query-id="syncSourceRefBookList" size="1" value-field-id="otherCodes">
+                            <pre-filters>
+                                <eq field-id="sourceCode" value="{source.id}"/>
+                                <eq field-id="id" value="{refBook.id}"/>
+                            </pre-filters>
+                        </fetch-value>
+                    </dependencies>
+                </output-text>
+
                 <checkbox id="autoUpdatable" label="${sync.entry.page.refbook.auto-updatable}"
                           label-class="w-50" default-value="true">
                     <dependencies>
@@ -127,10 +143,14 @@
                               label-class="w-50" required="true">
                     <pre-filters>
                         <eq field-id="sourceCode" value="{source.id}"/>
-                        <eq field-id="code" value="{refBook.id}"/>
+                        <eq field-id="refBookId" value="{refBook.id}"/>
                     </pre-filters>
 
                     <dependencies>
+                        <enabling on="refBook,versioned">
+                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
+                            (typeof versioned != 'undefined' &amp;&amp; versioned)
+                        </enabling>
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
                                 (typeof versioned == 'undefined' || !versioned))
@@ -140,10 +160,6 @@
                             else
                                 return;
                         </set-value>
-                        <enabling on="refBook,versioned">
-                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
-                            (typeof versioned != 'undefined' &amp;&amp; versioned)
-                        </enabling>
                     </dependencies>
                 </input-select>
 

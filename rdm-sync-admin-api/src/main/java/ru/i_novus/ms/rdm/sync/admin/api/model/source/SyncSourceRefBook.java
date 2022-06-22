@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,6 +16,9 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncSourceRefBook extends SyncSourceVersion {
+
+    /** Дополнительные коды. */
+    private List<String> otherCodes;
 
     /** Возможность удаления. */
     private Boolean removable;
@@ -30,11 +34,12 @@ public class SyncSourceRefBook extends SyncSourceVersion {
         if (!super.equals(o)) return false;
 
         SyncSourceRefBook that = (SyncSourceRefBook) o;
-        return Objects.equals(removable, that.removable);
+        return Objects.equals(otherCodes, that.otherCodes) &&
+                Objects.equals(removable, that.removable);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), removable);
+        return Objects.hash(super.hashCode(), otherCodes, removable);
     }
 }

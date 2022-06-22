@@ -43,6 +43,10 @@
             <sorting mapping="['nameDirection']">sort=name: {nameDirection}</sorting>
         </field>
 
+        <field id="otherCodes" domain="string">
+            <select normalize="#this != null ? T(java.lang.String).join(', ', #this) : ''"/>
+        </field>
+
         <field id="removable" domain="boolean">
             <select/>
         </field>

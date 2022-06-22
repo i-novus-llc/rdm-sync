@@ -6,6 +6,7 @@ import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,9 @@ public class SyncEntry implements Serializable {
 
     /** Наименование справочника. */
     private String name;
+
+    /** Дополнительные коды. */
+    private List<String> otherCodes;
 
     /** Код локального хранилища. */
     private String storageCode;
@@ -70,6 +74,7 @@ public class SyncEntry implements Serializable {
         return Objects.equals(id, that.id) &&
                 Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(otherCodes, that.otherCodes) &&
 
                 Objects.equals(storageCode, that.storageCode) &&
                 Objects.equals(removable, that.removable) &&
@@ -90,7 +95,7 @@ public class SyncEntry implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, name,
+        return Objects.hash(id, code, name, otherCodes,
                 storageCode, removable,
                 versionId, version, versioned, autoUpdatable, source,
                 isPresent, lastDateTime, lastStatus, displayName);
