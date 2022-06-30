@@ -1,5 +1,8 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.mapping;
 
+/**
+ * Маппинг старого поля на новое поле.
+ */
 public class FieldToFieldMapping extends SyncToFieldMapping {
 
     private String oldField;

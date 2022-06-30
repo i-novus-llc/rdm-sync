@@ -13,10 +13,13 @@ import static java.util.Collections.singletonList;
 @SuppressWarnings("unused")
 public class SyncDataMapping {
 
+    /** Соответствие полей структуры. */
     private SyncStructureMapping structureMapping;
 
+    /** Старая структура. */
     private SyncStructure oldStructure;
 
+    /** Новая структура. */
     private SyncStructure newStructure;
 
     public SyncDataMapping(SyncStructureMapping structureMapping,

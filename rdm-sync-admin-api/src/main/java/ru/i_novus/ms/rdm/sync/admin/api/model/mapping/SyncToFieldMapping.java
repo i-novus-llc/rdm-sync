@@ -2,6 +2,9 @@ package ru.i_novus.ms.rdm.sync.admin.api.model.mapping;
 
 import java.io.Serializable;
 
+/**
+ * Маппинг на новое поле.
+ */
 public class SyncToFieldMapping implements Serializable {
 
     private String newField;

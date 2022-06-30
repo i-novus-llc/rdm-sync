@@ -14,8 +14,10 @@ import static org.springframework.util.StringUtils.isEmpty;
  */
 public class SyncStructureMapping {
 
+    /** Тип соответствия полей структуры. */
     private final SyncMappingTypeEnum type;
 
+    /** Поля (версии) справочника при маппинге. */
     private List<SyncToFieldMapping> fieldMappings;
 
     private SyncStructureMapping(SyncMappingTypeEnum type) {
