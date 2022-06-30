@@ -30,6 +30,9 @@ public class SyncField implements Serializable {
     /** Тип поля. */
     private String type;
 
+    /** Значение. */
+    private String value;
+
     /** Признак первичного ключа. */
     private boolean isPrimary;
 
