@@ -24,6 +24,9 @@ public class SyncMappingField extends SyncField {
     /** Присутствие поля. */
     private boolean isPresent;
 
+    /** Статус поля. */
+    private String status;
+
     public SyncMappingField() {
         // nothing to do.
     }

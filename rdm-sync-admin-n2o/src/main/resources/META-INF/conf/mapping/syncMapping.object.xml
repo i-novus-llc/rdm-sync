@@ -16,12 +16,7 @@
             <field id="description" domain="string"/>
 
             <field id="isPresent" domain="boolean"/>
-
-            <field id="matchingKind" domain="string"
-                   mapping="['code']"/>
-                   <!--mapping="['isPresent'] ? 'v' : 'x'"/>-->
-                   <!--mapping="!['isPresent'] ? ' ' : 'v'"/>-->
-                   <!--mapping="!['isPresent'] ? ' ' : ['originType'] == ['type'] ? 'v' : 'x'"/>-->
+            <field id="status" domain="string"/>
         </list>
     </fields>
 
