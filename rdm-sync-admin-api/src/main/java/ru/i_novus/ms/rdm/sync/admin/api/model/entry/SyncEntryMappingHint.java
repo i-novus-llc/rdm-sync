@@ -1,9 +1,6 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model.entry;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.admin.api.utils.JsonUtil;
 
 import java.io.Serializable;
@@ -13,14 +10,18 @@ import java.util.Objects;
  * Подсказка по маппингу для версии записи.
  */
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class SyncEntryMappingHint implements Serializable {
 
-    private String id;
-    private String name;
-    private String href;
+    private final String id;
+    private final String name;
+    private final String href;
+
+    public SyncEntryMappingHint(String id, String name, String href) {
+
+        this.id = id;
+        this.name = name;
+        this.href = href;
+    }
 
     @Override
     public boolean equals(Object o) {
