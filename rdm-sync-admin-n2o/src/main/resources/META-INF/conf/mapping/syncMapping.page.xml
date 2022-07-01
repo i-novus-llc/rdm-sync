@@ -73,8 +73,8 @@
             <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
                     <col size="1" visible="{actionType != 'create'}">
-                        <button id="label.status" label="${sync.mapping.page.field.status}" enabled="false"
-                                description="${sync.mapping.page.field.hint.status}" tooltip-position="top"/>
+                        <output-text id="label.status" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.status}"/>
                     </col>
 
                     <col size="2">
@@ -143,6 +143,10 @@
                     </col>
                 </row>
             </multi-set>
+
+            <output-list id="legend" no-label="true" no-label-block="true"
+                         label-field-id="name" href-field-id="href" direction="column" separator=""
+                         visible="{actionType != 'create'}"/>
 
         </fields>
 
