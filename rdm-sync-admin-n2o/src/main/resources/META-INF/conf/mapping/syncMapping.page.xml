@@ -73,8 +73,8 @@
             <set id="labels.mappingFields" label="${sync.mapping.page.mapping.fields}" field-label-location="top">
                 <row>
                     <col size="1" visible="{actionType != 'create'}">
-                        <button id="label.isPresent" label="${sync.mapping.page.field.isPresent}" enabled="false"
-                                description="${sync.mapping.page.field.hint.isPresent}" tooltip-position="top"/>
+                        <output-text id="label.status" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.status}"/>
                     </col>
 
                     <col size="2">
@@ -94,9 +94,13 @@
                         <output-text id="label.code" no-label="true" no-label-block="true"
                                      default-value="${sync.mapping.page.field.code}"/>
                     </col>
-                    <col size="5">
+                    <col size="3">
                         <output-text id="label.name" no-label="true" no-label-block="true"
                                      default-value="${sync.mapping.page.field.name}"/>
+                    </col>
+                    <col size="2">
+                        <output-text id="label.originType" no-label="true" no-label-block="true"
+                                     default-value="${sync.mapping.page.field.originType}"/>
                     </col>
                 </row>
             </set>
@@ -105,7 +109,8 @@
                        can-add="false" can-remove="false" can-remove-first="false" can-remove-all="false">
                 <row>
                     <col size="1" visible="{actionType != 'create'}">
-                        <checkbox id="isPresent" no-label="true" no-label-block="true" enabled="false"/>
+                        <output-text id="status" no-label="true" no-label-block="true" enabled="false"
+                                     style="${sync.mapping.page.mapping.field.status.style}"/>
                     </col>
 
                     <col size="2">
@@ -130,11 +135,18 @@
                             <!--</validations>-->
                         <!--</input-text>-->
                     </col>
-                    <col size="5">
+                    <col size="3">
                         <input-text id="name" no-label="true" no-label-block="true"/>
+                    </col>
+                    <col size="2">
+                        <input-text id="originType" no-label="true" no-label-block="true" enabled="false"/>
                     </col>
                 </row>
             </multi-set>
+
+            <output-list id="legend" no-label="true" no-label-block="true"
+                         label-field-id="name" href-field-id="href" direction="column" separator=""
+                         visible="{actionType != 'create'}"/>
 
         </fields>
 

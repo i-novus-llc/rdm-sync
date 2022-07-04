@@ -10,11 +10,13 @@
             <field id="code" domain="string"/>
             <field id="name" domain="string"/>
             <field id="type" domain="string"/>
+            <field id="value" domain="string"/>
 
             <field id="isPrimary" domain="boolean"/>
             <field id="description" domain="string"/>
 
             <field id="isPresent" domain="boolean"/>
+            <field id="status" domain="string"/>
         </list>
     </fields>
 

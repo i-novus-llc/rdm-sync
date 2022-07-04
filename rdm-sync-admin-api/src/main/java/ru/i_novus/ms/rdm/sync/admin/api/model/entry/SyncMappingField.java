@@ -24,6 +24,9 @@ public class SyncMappingField extends SyncField {
     /** Присутствие поля. */
     private boolean isPresent;
 
+    /** Статус поля. */
+    private String status;
+
     public SyncMappingField() {
         // nothing to do.
     }
@@ -57,11 +60,12 @@ public class SyncMappingField extends SyncField {
         SyncMappingField that = (SyncMappingField) o;
         return Objects.equals(originCode, that.originCode) &&
                 Objects.equals(originType, that.originType) &&
-                isPresent == that.isPresent;
+                isPresent == that.isPresent &&
+                Objects.equals(status, that.status);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), originCode, originType, isPresent);
+        return Objects.hash(super.hashCode(), originCode, originType, isPresent, status);
     }
 }

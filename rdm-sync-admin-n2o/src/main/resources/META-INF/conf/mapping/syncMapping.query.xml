@@ -150,6 +150,10 @@
             <select/>
         </field>
 
+        <field id="legend">
+            <select/>
+        </field>
+
         <field id="actionType" domain="string">
             <select/>
             <filters>

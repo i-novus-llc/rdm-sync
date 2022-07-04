@@ -30,6 +30,9 @@ public class SyncField implements Serializable {
     /** Тип поля. */
     private String type;
 
+    /** Значение. */
+    private String value;
+
     /** Признак первичного ключа. */
     private boolean isPrimary;
 
@@ -49,6 +52,7 @@ public class SyncField implements Serializable {
         this.code = field.code;
         this.name = field.name;
         this.type = field.type;
+        this.value = field.value;
 
         this.isPrimary = field.isPrimary;
         this.description = field.description;
@@ -65,6 +69,7 @@ public class SyncField implements Serializable {
         return Objects.equals(code, that.code) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(type, that.type) &&
+                Objects.equals(value, that.value) &&
 
                 Objects.equals(isPrimary, that.isPrimary) &&
                 Objects.equals(description, that.description) &&
@@ -73,7 +78,7 @@ public class SyncField implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, name, type, isPrimary, description, params);
+        return Objects.hash(code, name, type, value, isPrimary, description, params);
     }
 
     @Override
