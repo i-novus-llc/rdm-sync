@@ -106,9 +106,6 @@
                 <output-text id="otherCodes" label="${sync.entry.page.refbook.other-codes}"
                              label-class="w-50">
                     <dependencies>
-                        <visibility on="refBook">
-                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
-                        </visibility>
                         <fetch-value on="refBook" apply-on-init="false"
                                      query-id="syncSourceRefBookList" size="1" value-field-id="otherCodes">
                             <pre-filters>
