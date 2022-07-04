@@ -75,6 +75,11 @@
             <sorting mapping="['sourceDirection']">sort=source: {sourceDirection}</sorting>
         </field>
 
+        <field id="lastVersion" domain="string">
+            <select/>
+            <sorting mapping="['lastVersionDirection']">sort=lastVersion: {lastVersionDirection}</sorting>
+        </field>
+
         <field id="lastDateTime" domain="localdatetime">
             <select/>
             <sorting mapping="['lastDateTimeDirection']">sort=lastDateTime: {lastDateTimeDirection}</sorting>

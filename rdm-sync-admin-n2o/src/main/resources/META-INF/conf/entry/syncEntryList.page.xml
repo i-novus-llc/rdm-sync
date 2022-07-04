@@ -54,6 +54,7 @@
                 <text format="date DD.MM.YYYY"/>
             </column>
             <column text-field-id="lastStatus" label="${sync.entry.list.page.refbook.last-status}"/>
+            <column text-field-id="lastVersion" label="${sync.entry.list.page.refbook.last-version}"/>
 
             <column text-field-id="otherCodes" label="${sync.entry.list.page.refbook.other-codes}"/>
         </columns>
