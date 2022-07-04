@@ -41,6 +41,9 @@
                     </col>
                 </row>
 
+                <output-text id="otherCodes" label="${sync.mapping.page.refbook.other-codes}"
+                             label-class="w-50"/>
+
                 <output-text id="startVersionName" label="${sync.mapping.page.refbook.version.name}"
                              label-class="w-50" enabled="false"
                              visible="{startVersionName != null &amp;&amp; startVersionName != refBook.name}"/>
