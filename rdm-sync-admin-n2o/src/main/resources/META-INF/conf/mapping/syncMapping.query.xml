@@ -96,6 +96,11 @@
             </filters>
         </field>
 
+        <field id="otherCodes" domain="string">
+            <select mapping="['entry']['otherCodes']"
+                    normalize="#this != null ? T(java.lang.String).join(', ', #this) : ''"/>
+        </field>
+
         <field id="version" domain="string">
             <filters>
                 <eq filter-id="version">version={version}</eq>
