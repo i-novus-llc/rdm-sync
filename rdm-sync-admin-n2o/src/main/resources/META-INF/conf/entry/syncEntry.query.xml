@@ -127,8 +127,8 @@
         <field id="startVersion.id" domain="string">
             <select mapping="['versionId']"/>
         </field>
-        <field id="startVersion.displayName" domain="string">
-            <select mapping="['version']"/>
+        <field id="startVersion.displayVersion" domain="string">
+            <select mapping="['displayVersion']"/>
         </field>
         <field id="startVersion.version" domain="string">
             <select mapping="['version']"/>

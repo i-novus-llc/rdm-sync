@@ -57,6 +57,10 @@
             <select/>
         </field>
 
+        <field id="displayVersion" domain="string">
+            <select/>
+        </field>
+
         <field id="comment" domain="string">
             <select/>
         </field>

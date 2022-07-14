@@ -34,10 +34,10 @@
             </filters>
         </field>
 
-        <field id="displayName" domain="string">
+        <field id="displayVersion" domain="string">
             <select/>
             <filters>
-                <eq filter-id="displayName">text={displayName}</eq>
+                <eq filter-id="displayVersion">text={displayVersion}</eq>
             </filters>
         </field>
 
