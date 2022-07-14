@@ -108,7 +108,7 @@
         </field>
 
         <field id="startVersion" domain="string">
-            <select mapping="['version']['displayVersion']"/>
+            <select mapping="['version']['version']"/>
             <filters>
                 <eq filter-id="startVersion">version={startVersion}</eq>
             </filters>
