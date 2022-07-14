@@ -37,7 +37,7 @@ public class SyncEntry implements Serializable {
     /** Идентификатор версии справочника. */
     private String versionId;
 
-    /** Версия (номер) справочника. */
+    /** Версия (номер версии) справочника. */
     private String version;
 
     /** Поддержка версионности. */
@@ -63,6 +63,9 @@ public class SyncEntry implements Serializable {
 
     /** Отображаемое наименование справочника. */
     private String displayName;
+
+    /** Отображаемый номер версии. */
+    private String displayVersion;
 
     public SyncEntry() {
         // Nothing to do.
@@ -94,7 +97,8 @@ public class SyncEntry implements Serializable {
                 Objects.equals(lastDateTime, that.lastDateTime) &&
                 Objects.equals(lastStatus, that.lastStatus) &&
 
-                Objects.equals(displayName, that.displayName);
+                Objects.equals(displayName, that.displayName) &&
+                Objects.equals(displayVersion, that.displayVersion);
     }
 
     @Override
@@ -102,7 +106,8 @@ public class SyncEntry implements Serializable {
         return Objects.hash(id, code, name, otherCodes,
                 storageCode, removable,
                 versionId, version, versioned, autoUpdatable, source,
-                isPresent, lastVersion, lastDateTime, lastStatus, displayName);
+                isPresent, lastVersion, lastDateTime, lastStatus,
+                displayName, displayVersion);
     }
 
     @Override
