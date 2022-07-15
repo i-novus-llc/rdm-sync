@@ -45,7 +45,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
             newVersion = getRefBookVersion(refCode, version);
 
         } catch (Exception e) {
-            logger.error(String.format("Error while fetching new version with code '%s'.", refCode), e);
+            logger.error("Error while fetching new version with code '{}'.", refCode, e);
             return;
         }
 
@@ -54,7 +54,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
             versionMapping = getVersionMapping(newVersion);
 
         } catch (Exception e) {
-            logger.error(String.format("Error while fetching mapping for new version with code '%s'.", refCode), e);
+            logger.error("Error while fetching mapping for new version with code '{}'.", refCode, e);
             return;
         }
 
