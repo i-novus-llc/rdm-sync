@@ -174,4 +174,8 @@ public interface RdmSyncDao {
     void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField);
 
     SyncRefBook getSyncRefBook(String code);
+
+    void createTempDataTbl(String tableName);
+
+    void insertTempData(String tableName, List<Map<String, Object>> data);
 }

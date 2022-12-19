@@ -1,5 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +85,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final String VERSIONS_SYS_COL = "_versions";
     private static final String LOADED_VERSION_REF = "version_id";
     private static final String HASH_SYS_COL = "_hash";
+
+    private ObjectMapper jsonMapper = new ObjectMapper();
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -1051,6 +1055,24 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return null;
 
         return result.get(0);
+    }
+
+    @Override
+    public void createTempDataTbl(String tableName) {
+        getJdbcTemplate().execute("CREATE TABLE " + escapeName(tableName) + "( id serial, data json);");
+    }
+
+    @Override
+    public void insertTempData(String tableName, List<Map<String, Object>> data) {
+
+        getJdbcTemplate().batchUpdate("INSERT INTO " + escapeName(tableName) + "(data) VALUES(?)",
+                data.stream().map(map -> {
+                    try {
+                        return new Object[] {jsonMapper.writeValueAsString(data)};
+                    } catch (JsonProcessingException e) {
+                        throw new IllegalArgumentException("cannot convert " + map + " to json");
+                    }
+                }).collect(Collectors.toList()));
     }
 
     private void createTable(String schema, String table,
