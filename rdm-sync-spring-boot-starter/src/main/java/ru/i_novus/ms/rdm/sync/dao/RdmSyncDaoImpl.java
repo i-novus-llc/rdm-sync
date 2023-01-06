@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import net.n2oapp.platform.jaxrs.RestCriteria;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -21,20 +23,16 @@ import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
 import ru.i_novus.ms.rdm.sync.dao.criteria.BaseDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
-import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -45,14 +43,10 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -86,9 +80,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    private RdmMappingService rdmMappingService;
 
     @Override
     public List<VersionMapping> getVersionMappings() {
@@ -272,18 +263,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping) {
-
-        final String sql = String.format("SELECT %s FROM %s",
-                addDoubleQuotes(primaryFieldMapping.getSysField()), escapeName(schemaTable));
-
-        DataTypeEnum dataType = DataTypeEnum.getByDataType(primaryFieldMapping.getSysDataType());
-        return namedParameterJdbcTemplate.query(sql,
-                (rs, rowNum) -> rdmMappingService.map(AttributeTypeEnum.STRING, dataType, rs.getObject(1))
-        );
-    }
-
-    @Override
     public boolean isIdExists(String schemaTable, String primaryField, Object primaryValue) {
 
         final String sql = String.format("SELECT count(*) > 0 FROM %s WHERE %s = :primary",
@@ -401,42 +380,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         executeUpdate(schemaTable, Collections.singletonList(args), primaryField);
     }
 
-    @Override
-    public void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced) {
-
-        Map<String, Object> args = new HashMap<>();
-        if (markSynced) {
-            args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
-        }
-        args.put(isDeletedField, deletedTime);
-
-
-        List<Map<String, Object>> rows = Collections.singletonList(args);
-
-        if (CollectionUtils.isEmpty(rows)) {
-            return;
-        }
-
-        String sqlFormat = "UPDATE %s SET %s WHERE %s IS NULL";
-        final String fields = rows.get(0).keySet().stream()
-                .map(field -> addDoubleQuotes(field) + " = :" + field)
-                .collect(joining(", "));
-
-        String sql = String.format(sqlFormat, schemaTable, fields, escapeName(isDeletedField));
-
-        Map<String, Object>[] batchValues = new Map[rows.size()];
-        namedParameterJdbcTemplate.batchUpdate(sql, rows.toArray(batchValues));
-    }
-
-    @Override
-    public void markDeleted(String schemaTable, String primaryField, String deletedField, List<Object> primaryValues, @Nullable LocalDateTime deletedTime) {
-        Map<String, Object> args = new HashMap<>();
-        args.put("primaryFieldValues", primaryValues);
-        args.put("deletedValue", deletedTime);
-        String sql = "UPDATE " + escapeName(schemaTable) + "SET " + RDM_SYNC_INTERNAL_STATE_COLUMN + "='" + SYNCED.name() + "'," + escapeName(deletedField) + "= :deletedValue " + " WHERE " + escapeName(primaryField) + "in (:primaryFieldValues)" ;
-        namedParameterJdbcTemplate.update(sql, args);
-    }
-
     private List<Map<String, Object>> convertToVersionedRows(List<Map<String, Object>> rows, String version) {
         return rows.stream().map(row -> {
             Map<String, Object> newMap = new HashMap<>(row);
@@ -453,10 +396,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private List<Map<String, Object>> convertToSimpleVersionedRows(List<Map<String, Object>> rows, Integer loadedVersionId) {
         return rows.stream().map(row -> {
             Map<String, Object> newMap = new HashMap<>(row);
-            StringBuilder stringBuilder = new StringBuilder();
-            row.entrySet().stream()
-                    .filter(entry -> entry.getValue() != null)
-                    .forEach(entry -> stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(";"));
             newMap.put(LOADED_VERSION_REF, loadedVersionId);
             return newMap;
         }).collect(toList());
@@ -796,9 +735,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         Page<Map<String, Object>> data = getData0(sql, args, criteria);
-        data.getContent().forEach(row -> {
-            row.remove(LOADED_VERSION_REF);
-        });
+        data.getContent().forEach(row -> row.remove(LOADED_VERSION_REF));
 
         return data;
     }
@@ -992,7 +929,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Boolean pkIsExists = getJdbcTemplate().queryForObject("SELECT EXISTS (SELECT * FROM pg_constraint " +
                 "                   WHERE conrelid = ?::regclass and contype = 'p')", Boolean.class, schema+"."+table);
-        if (!pkIsExists) {
+        if (!Boolean.TRUE.equals(pkIsExists)) {
             String sql = "ALTER TABLE " + escapeName(schema) + "." + escapeName(table) + " ADD CONSTRAINT "
                     + escapeName(table + "_pk") + " PRIMARY KEY (" + escapeName(sysPkColumn) + ");";
 
@@ -1013,7 +950,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
+    public void createSimpleVersionedTable(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
         Boolean tableExists = getJdbcTemplate().queryForObject(
                 "SELECT EXISTS (SELECT FROM pg_tables  WHERE  schemaname = ? AND tablename  = ?)"
                 , Boolean.class, schema, table);
@@ -1051,6 +988,143 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return null;
 
         return result.get(0);
+    }
+
+    @Override
+    public void createVersionTempDataTbl(String tempTableName, String refTableName, String sysPkColumn, String refPk) {
+        String escapedTempTable = escapeName(tempTableName);
+        getJdbcTemplate().execute("CREATE UNLOGGED TABLE " + escapedTempTable + " AS TABLE " + escapeName(refTableName) + " WITH NO DATA;"
+                + " ALTER TABLE " + escapedTempTable + " DROP COLUMN IF EXISTS version_id;");
+        if (sysPkColumn != null) {
+            getJdbcTemplate().execute(" ALTER TABLE " + escapedTempTable + " DROP COLUMN IF EXISTS  " + escapeName(sysPkColumn));
+        }
+        getJdbcTemplate().execute("CREATE UNIQUE INDEX ON " + escapedTempTable + "(" + escapeName(refPk) + ");");
+    }
+
+    @Override
+    public void createDiffTempDataTbl(String tempTableName, String refTableName) {
+        String escapedTempTable = escapeName(tempTableName);
+        String escapedRefTable = escapeName(refTableName);
+        String queryTemplate = "CREATE TABLE {tempTbl} AS TABLE {refTbl} WITH NO DATA; ALTER TABLE {tempTbl} ADD COLUMN diff_type VARCHAR;";
+        getJdbcTemplate().execute(StringSubstitutor.replace(queryTemplate, Map.of("tempTbl", escapedTempTable, "refTbl", escapedRefTable),"{", "}"));
+
+    }
+
+    @Override
+    public void insertVersionAsTempData(String tableName, List<Map<String, Object>> data) {
+        if(data.isEmpty()) {
+            return;
+        }
+        List<String> columns = data.stream().flatMap(map -> map.keySet().stream()).distinct().collect(toList());
+        String paramsExpression = columns.stream().map(column -> "?").collect(Collectors.joining(","));
+        getJdbcTemplate().batchUpdate(
+                "INSERT INTO " + escapeName(tableName) + "(" + columns.stream().map(this::escapeName).collect(joining(",")) + ")  VALUES(" + paramsExpression + ") ",
+                data.stream().map(map -> {
+                    Object[] params = new Object[columns.size()];
+                    for (int i = 0; i < columns.size(); i++) {
+                        params[i] = map.get(columns.get(i));
+                    }
+                    return params;
+                }).collect(Collectors.toList()));
+    }
+
+    @Override
+    public void insertDiffAsTempData(String tableName, List<Map<String, Object>> newData, List<Map<String, Object>> updatedData, List<Map<String, Object>> deletedData) {
+        String escapedTable = escapeName(tableName);
+        List<String> columns = Stream.of(newData, updatedData, deletedData)
+                .flatMap(Collection::stream)
+                .flatMap(map -> map.keySet().stream())
+                .distinct()
+                .collect(Collectors.toUnmodifiableList());
+        StringJoiner valuesJoiner = new StringJoiner(",");
+        StringJoiner columnsJoiner = new StringJoiner(",");
+        columns.forEach(column -> {
+            valuesJoiner.add("?");
+            columnsJoiner.add(escapeName(column));
+        });
+        String queryTemplate = "INSERT INTO {tempTbl}({columns}, diff_type) VALUES({values}, ?) ";
+
+        String query = StringSubstitutor.replace(queryTemplate, Map.of("tempTbl", escapedTable, "columns", columnsJoiner.toString(), "values", valuesJoiner.toString()), "{", "}");
+
+        BiFunction<Map<String, Object>, String, Object[]> toValuesArr = (map, diffType) -> {
+            Object[] params = new Object[columns.size()+1];
+
+            for (int i = 0; i < columns.size(); i++) {
+                params[i] = map.get(columns.get(i));
+            }
+            params[columns.size()] = diffType;
+            return params;
+        };
+        getJdbcTemplate().batchUpdate(query, newData.stream().map(map -> toValuesArr.apply(map, "I")).collect(Collectors.toList()));
+        getJdbcTemplate().batchUpdate(query, updatedData.stream().map(map -> toValuesArr.apply(map, "U")).collect(Collectors.toList()));
+        getJdbcTemplate().batchUpdate(query, deletedData.stream().map(map -> toValuesArr.apply(map, "D")).collect(Collectors.toList()));
+    }
+
+    @Override
+    public void migrateNotVersionedTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
+        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
+                "SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE NOT EXISTS (SELECT 1 FROM {refTbl} WHERE {deletedField} IS NULL AND {pk} = {tempTbl}.{pk} );";
+        String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
+                "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
+        String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
+        String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+
+        String query = StringSubstitutor.replace(insertQueryTemplate + updateQueryTemplate + deleteQueryTemplate,
+                Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
+        namedParameterJdbcTemplate.update(query, Map.of("deletedTime", deletedTime));
+    }
+
+    @Override
+    public void migrateDiffTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
+        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) (SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE diff_type = 'I');";
+        String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
+                "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'U' AND {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
+        String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'D' AND {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
+        String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+
+        String query = StringSubstitutor.replace(insertQueryTemplate + updateQueryTemplate + deleteQueryTemplate,
+                Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
+        namedParameterJdbcTemplate.update(query, Map.of("deletedTime", deletedTime));
+
+    }
+
+    @Override
+    public void migrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
+        String columnsExpression =  fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        namedParameterJdbcTemplate.update("INSERT INTO " + escapeName(refTable) + "(" + columnsExpression + ", version_id) " +
+                "(SELECT "+ columnsExpression + ", :versionId FROM " + escapeName(tempTable) + ")", Map.of("versionId", versionId));
+    }
+
+    @Override
+    public void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
+        String escapedRefTbl = escapeName(refTable);
+        String escapedPk = escapeName(pkField);
+        String columnsExpression = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        String escapedTempTbl = escapeName(tempTable);
+        Map<String, String> queryPlaceholders = Map.of("refTbl", escapedRefTbl, "columns", columnsExpression, "tempTbl", escapedTempTbl, "pk", escapedPk);
+
+        //удаляем записи которых нет в версии
+        String deleteQueryTemplate = "DELETE FROM {refTbl}" +
+                " WHERE NOT EXISTS(SELECT 1 FROM {tempTbl}  WHERE {pk} = {refTbl}.{pk}) " +
+                "AND version_id = :versionId";
+        String deleteQuery = StringSubstitutor.replace(deleteQueryTemplate, queryPlaceholders,"{", "}");
+        namedParameterJdbcTemplate.update(deleteQuery, Map.of("versionId", versionId));
+
+        //Добавляем записи которые появились в версии
+        String insertQueryTemplate = "INSERT INTO {refTbl}({columns}, version_id) " +
+                "(SELECT {columns}, :versionId FROM {tempTbl} WHERE NOT exists(SELECT 1 FROM {refTbl} WHERE {pk} =  {tempTbl}.{pk} AND version_id = :versionId) )";
+        String insertQuery = StringSubstitutor.replace( insertQueryTemplate, queryPlaceholders, "{", "}");
+        namedParameterJdbcTemplate.update(insertQuery, Map.of("versionId", versionId));
+
+        //редактируем записи которые изменились
+        String updateQueryTemplate = "UPDATE {refTbl} SET ({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) WHERE exists(SELECT 1 FROM {tempTbl} WHERE {pk} =  {refTbl}.{pk}) AND version_id = :versionId ";
+        String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders,"{", "}");
+        namedParameterJdbcTemplate.update(updateQuery, Map.of("versionId", versionId));
+    }
+
+    @Override
+    public void dropTable(String tableName) {
+        getJdbcTemplate().execute("DROP TABLE IF EXISTS " + escapeName(tableName));
     }
 
     private void createTable(String schema, String table,

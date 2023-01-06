@@ -8,17 +8,17 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? extends T>> {
-    private final Function<? super C, Page<? extends T>> pageSource;
+public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<T>> {
+    private final Function<? super C, Page<T>> pageSource;
     private final C criteria;
     private int currentPage;
-    private Page<? extends T> nextPage;
+    private Page<T> nextPage;
 
-    public PageIterator(Function<? super C, Page<? extends T>> pageSource, C criteria) {
+    public PageIterator(Function<? super C, Page<T>> pageSource, C criteria) {
         this(pageSource, criteria, false);
     }
 
-    public PageIterator(Function<? super C, Page<? extends T>> pageSource, C criteria, boolean defaultSortProvied) {
+    public PageIterator(Function<? super C, Page<T>> pageSource, C criteria, boolean defaultSortProvied) {
         if (!defaultSortProvied && criteria.getSort() == null) {
             throw new IllegalArgumentException("You must either ensure that default sort is provided by pageSource or set some sorting in your criteria.");
         } else {
@@ -38,11 +38,11 @@ public class PageIterator<T, C extends RestCriteria> implements Iterator<Page<? 
         return !content.isEmpty();
     }
 
-    public Page<? extends T> next() {
+    public Page<T> next() {
         if(!hasNext()){
             throw new NoSuchElementException();
         }
-        Page<? extends T>  result;
+        Page<T>  result;
         if (this.nextPage != null) {
             result = this.nextPage;
             this.nextPage = null;

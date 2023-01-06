@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -16,6 +17,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class VersionMapping implements Serializable {
 
     private Integer id;

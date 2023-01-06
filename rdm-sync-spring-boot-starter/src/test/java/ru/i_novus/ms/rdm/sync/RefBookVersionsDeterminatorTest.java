@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,9 +36,9 @@ public class RefBookVersionsDeterminatorTest {
     @Before
     public void setUp() throws Exception {
         VersionMapping versionMapping = mock(VersionMapping.class);
-        when(versionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(versionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
         when(dao.getVersionMapping(any(), eq("CURRENT"))).thenReturn(versionMapping);
+        when(syncSourceService.getRefBook(any(), any())).thenAnswer(invocationOnMock -> new RefBookVersion(invocationOnMock.getArgument(0), invocationOnMock.getArgument(1), null, null, null, null));
     }
 
     /**
@@ -115,7 +116,6 @@ public class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
-        when(versionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(versionMapping.getMappingLastUpdated()).thenReturn(versions.get(1).getFrom().plusDays(1));
         when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
@@ -182,7 +182,6 @@ public class RefBookVersionsDeterminatorTest {
         ));
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping specifyVersionMapping = mock(VersionMapping.class);
-        when(specifyVersionMapping.getType()).thenReturn(SyncTypeEnum.NOT_VERSIONED);
         when(specifyVersionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
         when(dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(specifyVersionMapping);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
@@ -213,6 +212,18 @@ public class RefBookVersionsDeterminatorTest {
 
         Assert.assertEquals(Collections.singletonList("-1"), determinator.getVersions());
     }
+
+    /**
+     * нет диапазона версий и  нет изменений
+     */
+    @Test
+    public void testNoChangesByCurrent() {
+
+    }
+
+    // проверка что нет первичного ключа
+    // проверка что нет изменений No changes.
+    //validateStructureAndMapping
 
     private List<RefBookVersionItem> generateVersions(String code) {
         RefBookVersionItem v1 = new RefBookVersionItem(code, "1", LocalDateTime.of(2022, 1, 1, 10, 0), LocalDateTime.of(2022, 2, 1, 10, 0), 1);
