@@ -61,15 +61,6 @@ public interface RdmSyncDao {
     void closeLoadedVersion(String code, String version, LocalDateTime closeDate);
 
     /**
-     * Получить список значений первичных ключей в таблице клиента.
-     *
-     * @param schemaTable         таблица справочника на стороне клиента
-     * @param primaryFieldMapping маппинг для поля - первичного ключа в таблице клиента
-     * @return Список идентификаторов данных справочника клиента
-     */
-    List<Object> getDataIds(String schemaTable, FieldMapping primaryFieldMapping);
-
-    /**
      * Проверить существование значения первичного ключа в таблице клиента.
      *
      * @param schemaTable  таблица справочника на стороне клиента
@@ -125,17 +116,6 @@ public interface RdmSyncDao {
     void markDeleted(String schemaTable, String primaryField, String isDeletedField,
                      Object primaryValue, @Nullable LocalDateTime deletedTime, boolean markSynced);
 
-    void markDeleted(String schemaTable, String primaryField, String deletedField, List<Object> primaryValues, @Nullable LocalDateTime deletedTime);
-
-    /**
-     * Пометить все записи справочника клиента как (не)удалённые.
-     *
-     * @param schemaTable    таблица справочника на стороне клиента
-     * @param isDeletedField поле - признак удаления записи в таблице клиента
-     * @param deletedTime    дата удаления, если строка не удаленна то null
-     */
-    void markDeleted(String schemaTable, String isDeletedField, LocalDateTime deletedTime, boolean markSynced);
-
     void log(String status, String refbookCode, String oldVersion, String newVersion, String message, String stack);
 
     List<Log> getList(LocalDate date, String refbookCode);
@@ -171,11 +151,37 @@ public interface RdmSyncDao {
 
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn);
 
-    void createSimpleVersionedTables(String schema, String table, List<FieldMapping> fieldMappings, String primaryField);
+    void createSimpleVersionedTable(String schema, String table, List<FieldMapping> fieldMappings, String primaryField);
 
     SyncRefBook getSyncRefBook(String code);
 
-    void createTempDataTbl(String tableName);
+    /**
+     * Создает временную таблицу для версионных данных на основе таблицы, где лежат данные справочника
+     * @param tempTableName наименование для временной таблицы
+     * @param refTableName наименование таблицы, где лежат данные справочника
+     * @param sysPkColumn системный первичный ключ таблицы если есть
+     * @param refPk первичный ключ справочника
+     */
+    void createVersionTempDataTbl(String tempTableName, String refTableName, String sysPkColumn, String refPk);
 
-    void insertTempData(String tableName, List<Map<String, Object>> data);
+    /**
+     * Создает временную таблицу для разницы данных на основе таблицы, где лежат данные справочника
+     * @param tempTableName наименование для временной таблицы
+     * @param refTableName наименование таблицы, где лежат данные справочника
+     */
+    void createDiffTempDataTbl(String tempTableName, String refTableName);
+
+    void insertVersionAsTempData(String tableName, List<Map<String, Object>> data);
+
+    void insertDiffAsTempData(String tableName, List<Map<String, Object>> newData, List<Map<String, Object>> updatedData, List<Map<String, Object>> deletedData);
+
+    void migrateNotVersionedTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime);
+
+    void migrateDiffTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime);
+
+    void migrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
+
+    void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
+
+    void dropTable(String tableName);
 }

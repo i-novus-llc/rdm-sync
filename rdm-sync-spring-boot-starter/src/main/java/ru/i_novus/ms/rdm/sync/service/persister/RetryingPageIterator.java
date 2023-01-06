@@ -9,15 +9,15 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
+public class RetryingPageIterator<T> implements Iterator<Page<T>> {
 
     private final static Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
 
-    private final Iterator<Page<? extends T>> original;
+    private final Iterator<Page<T>> original;
     private final int tries;
     private final int timeout;
 
-    public RetryingPageIterator(Iterator<Page<? extends T>> original, int tries, int timeout) {
+    public RetryingPageIterator(Iterator<Page<T>> original, int tries, int timeout) {
         this.original = original;
         this.timeout = timeout;
         this.tries = tries;
@@ -31,7 +31,7 @@ public class RetryingPageIterator<T> implements Iterator<Page<? extends T>> {
 
     @SneakyThrows
     @Override
-    public Page<? extends T> next() {
+    public Page<T> next() {
         if(!hasNext()){
             throw new NoSuchElementException();
         }

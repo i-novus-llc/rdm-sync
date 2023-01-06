@@ -1,9 +1,10 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
-import javax.annotation.Nullable;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 
 public interface RefBookUpdater {
 
-    void update(String refCode, @Nullable String version) throws RefBookUpdaterException;
+    void update(RefBookVersion refBookVersion, DownloadResult downloadResult) throws RefBookUpdaterException;
 
 }

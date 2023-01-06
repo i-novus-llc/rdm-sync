@@ -12,6 +12,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -26,6 +27,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
@@ -385,26 +387,10 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testMarkDeletedToMultipleRows() {
-
-        LocalDateTime expectedNowDeletedDate = LocalDateTime.of(2021, 9, 26, 12, 30);
-        LocalDateTime expectedBeforeDeletedDate = LocalDateTime.of(2021, 9, 25, 12, 30);
-        rdmSyncDao.markDeleted("ref_cars", "deleted_ts", expectedNowDeletedDate, true);
-
-        LocalDataCriteria criteria = createSyncedCriteria("ref_cars");
-        List<Map<String, Object>> content = rdmSyncDao.getData(criteria).getContent();
-
-        LocalDateTime actualBeforeDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(1)).findAny().get().get("deleted_ts");
-        LocalDateTime actualNowDeleted = (LocalDateTime) content.stream().filter(row -> row.get("id").equals(2)).findAny().get().get("deleted_ts");
-        Assert.assertEquals(expectedBeforeDeletedDate, actualBeforeDeleted);
-        Assert.assertEquals(expectedNowDeletedDate, actualNowDeleted);
-    }
-
-    @Test
     public void testCRUSimpleVersionedData() {
         List<FieldMapping> fieldMappings = generateFieldMappings();
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", fieldMappings, "ID");
+        rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", fieldMappings, "ID");
         Integer loadedVersionId = rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         List<Map<String, Object>> rows = generateRows();
         rdmSyncDao.insertSimpleVersionedRows("public.simple_ver_table", rows, loadedVersionId);
@@ -440,7 +426,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test(expected = BadRequestException.class)
     public void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
+        rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
         rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
         rdmSyncDao.insertLoadedVersion("another_test_refbook_with_same_loaded_version", "1.0", publishDate, null, true);
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
@@ -456,9 +442,129 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      */
     @Test
     public void testIdempotentCreateSimpleVersionedTables() {
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
-        rdmSyncDao.createSimpleVersionedTables("public", "simple_ver_table", generateFieldMappings(), "ID");
+        rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
+        rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
 
+    }
+
+    /**
+     * Создание версионной таблицы с данными, создание временной таблицы по ней, добавление данных во временную таблицу,
+     * миграция данных из временной в версионную таблицу, повторная миграция
+     */
+    @Test
+    public void testSyncVersionedDataLifeCycle() {
+        rdmSyncDao.createSimpleVersionedTable("public", "ver_ref_tbl", generateFieldMappings(), "ID");
+        String refCode = "ver_ref_tbl";
+        Integer loadedVersionId = rdmSyncDao.insertLoadedVersion(refCode, "1.0", LocalDateTime.now(), null, true);
+        List<Map<String, Object>> rows = generateRows();
+        List<Map<String, Object>> tempDataRows = List.of(
+                Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 4, "name", "name4", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
+        String refTableName = "public.ver_ref_tbl";
+        rdmSyncDao.insertSimpleVersionedRows(refTableName, rows, loadedVersionId);
+
+        String temp_table = "temp_ver_ref_tbl_1_1";
+        rdmSyncDao.createVersionTempDataTbl(temp_table, refTableName,"_sync_rec_id", "ID");
+        rdmSyncDao.insertVersionAsTempData(temp_table, tempDataRows);
+        rdmSyncDao.closeLoadedVersion(refCode, "1.0", LocalDateTime.now());
+        loadedVersionId = rdmSyncDao.insertLoadedVersion(refCode, "1.1", LocalDateTime.now(), null, true);
+        List<String> fields = List.of("ID", "name", "some_dt", "flag");
+        rdmSyncDao.migrateVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
+
+        List<Map<String, Object>> actualData_1_1 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.1"))
+                .getContent().stream().peek(map -> {
+                    map.remove("_sync_rec_id");
+                    prepareRowToAssert(map);
+                }).collect(Collectors.toList());
+        Assert.assertEquals(tempDataRows, actualData_1_1);
+
+        List<Map<String, Object>> actualData_1_0 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.0"))
+                .getContent().stream().peek(map -> {
+                    map.remove("_sync_rec_id");
+                    prepareRowToAssert(map);
+                }).collect(Collectors.toList());
+        Assert.assertEquals(rows, actualData_1_0);
+
+        //повторно грузим версию
+        rdmSyncDao.dropTable(temp_table);
+        rdmSyncDao.createVersionTempDataTbl(temp_table, refTableName, "_sync_rec_id", "ID");
+        tempDataRows = List.of(
+                Map.of("ID", 33, "name", "name33", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 4, "name", "name44", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
+        rdmSyncDao.insertVersionAsTempData(temp_table, tempDataRows);
+        rdmSyncDao.reMigrateVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
+        actualData_1_1 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.1"))
+                .getContent().stream().peek(map -> {
+                    map.remove("_sync_rec_id");
+                    prepareRowToAssert(map);
+                }).collect(Collectors.toList());
+        //оборачиваю в сет, чтобы игнорировать порядок
+        Assert.assertEquals(new HashSet<>(tempDataRows), new HashSet<>(actualData_1_1));
+    }
+
+    /**
+     * Создание неверсионной таблицы с данными, создание временной таблицы по ней, добавление diff'a во временную таблицу,
+     * миграция данных из временной в неверсионную таблицу, повторная миграция
+     */
+    @Test
+    public void testSyncNotVersionedDataLifeCycle() {
+        String refTbl = "ref_tbl";
+        String tempTbl = "temp_tbl";
+        rdmSyncDao.createTableIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "_sys_rec");
+        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists("public", refTbl);
+
+        List<Map<String, Object>> rows_1_0 = generateRows();
+        rdmSyncDao.insertRows(refTbl, rows_1_0, true);
+
+        List<Map<String, Object>> newDataRows = List.of(
+                Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
+                Map.of("ID", 4, "name", "name4", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
+        );
+        rdmSyncDao.createDiffTempDataTbl(tempTbl, refTbl);
+        List<Map<String, Object>> updatedData = singletonList(Map.of("ID", 1, "name", "name111", "some_dt", LocalDate.of(2021, 1, 1), "flag", false));
+        List<Map<String, Object>> deletedData = singletonList(Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false));
+        rdmSyncDao.insertDiffAsTempData(
+                tempTbl,
+                newDataRows,
+                updatedData,
+                deletedData
+        );
+        List<String> fields = List.of("ID", "name", "some_dt", "flag");
+        LocalDateTime deletedTs = LocalDateTime.now();
+        rdmSyncDao.migrateDiffTempData(tempTbl, refTbl, "ID", DELETED_FIELD_COL, fields, deletedTs);
+        LocalDataCriteria criteria = new LocalDataCriteria( refTbl, "ID", 500, 0, null);
+        criteria.setDeleted( new DeletedCriteria(DELETED_FIELD_COL, false));
+        Page<Map<String, Object>> actualData = rdmSyncDao.getData(criteria);
+        List<Map<String, Object>> expectedData = new ArrayList<>();
+        expectedData.addAll(newDataRows);
+        expectedData.addAll(updatedData);
+        expectedData.add(rows_1_0.get(1));//потому что запись проапдейтилась и есть в updatedData
+        expectedData.remove(deletedData.get(0));
+        actualData.forEach(map -> {
+            prepareRowToAssert(map);
+            map.remove(DELETED_FIELD_COL);
+            map.remove("rdm_sync_internal_local_row_state");
+            map.remove("_sys_rec");
+        });
+        //оборачиваю в сет, чтобы игнорировать порядок
+        Assert.assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
+
+        //поверх данных грузим новую версию целиком
+        rdmSyncDao.dropTable(tempTbl);
+        rdmSyncDao.createVersionTempDataTbl(tempTbl, refTbl, "_sync_rec_id", "ID");
+        expectedData = generateRows();
+        rdmSyncDao.insertVersionAsTempData(tempTbl, expectedData);
+        rdmSyncDao.migrateNotVersionedTempData(tempTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
+        actualData = rdmSyncDao.getData(criteria);
+        actualData.forEach(map -> {
+            prepareRowToAssert(map);
+            map.remove(DELETED_FIELD_COL);
+            map.remove("rdm_sync_internal_local_row_state");
+            map.remove("_sys_rec");
+        });
+        Assert.assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
     }
 
     private List<FieldMapping> generateFieldMappings() {

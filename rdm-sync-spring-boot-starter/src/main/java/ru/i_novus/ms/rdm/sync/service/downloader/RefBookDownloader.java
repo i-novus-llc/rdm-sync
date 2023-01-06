@@ -8,7 +8,7 @@ public interface RefBookDownloader {
      *
      * @param refCode - код справочника
      * @param version - версия справочника
-     * @return Наименование таблицы куда скачались данные
+     * @return Наименование таблицы куда скачались данные и тип данных версия или разница между версиями
      */
-    String download(String refCode, @Nullable String version);
+    DownloadResult download(String refCode, @Nullable String version);
 }

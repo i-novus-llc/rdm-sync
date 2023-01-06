@@ -33,6 +33,8 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
+import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloader;
+import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloaderImpl;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreator;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreatorLocator;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
@@ -251,29 +253,26 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public RefBookUpdater notVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                     SyncSourceService syncSourceService,
                                                      @Qualifier("notVersionedPersisterService") PersisterService persisterService,
                                                      RdmLoggingService rdmLoggingService
                                                      ) {
-        return new NotVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
     }
 
     @Bean
     public RefBookUpdater rdmNotVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        SyncSourceService syncSourceService,
                                                         @Qualifier("notVersionedPersisterService") PersisterService persisterService,
                                                         RdmLoggingService rdmLoggingService
     ) {
-        return new RdmNotVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
     }
 
     @Bean
     public RefBookUpdater simpleVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        SyncSourceService syncSourceService,
                                                         @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
                                                         RdmLoggingService rdmLoggingService
     ) {
-        return new SimpleVersionedRefBookUpdater(rdmSyncDao, syncSourceService, persisterService, rdmLoggingService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
     }
 
 
