@@ -58,9 +58,13 @@
             <column text-field-id="lastVersion" label="${sync.entry.list.page.refbook.last-version}"/>
 
             <column text-field-id="otherCodes" label="${sync.entry.list.page.refbook.other-codes}"/>
-            <column id="notExistsInExternal" label="Внимание" type="iconAndText" icon="fa-triangle-exclamation"
-                    text-field-id="notExistsInExternalMsg"
-                    tooltip-field-id="notExistsInExternalMsg" visible="true"/>
+            <column text-field-id="notExistsInExternal" label="" type="icon" tooltip-field-id="notExistsInExternalMsg">
+                <icon>
+                    <switch value-field-id="notExistsInExternal">
+                        <case value="true">fa fa-exclamation-triangle fa-lg</case>
+                    </switch>
+                </icon>
+            </column>
         </columns>
 
         <rows>
