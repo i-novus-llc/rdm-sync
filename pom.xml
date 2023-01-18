@@ -47,7 +47,7 @@
         <rdm.version>4.11.0</rdm.version>
         <n2o.version>7.16.30</n2o.version>
 
-        <lombok.version>1.18.4</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
 
         <apache.poi.version>3.17</apache.poi.version>
         <filestorage.version>2.3</filestorage.version>

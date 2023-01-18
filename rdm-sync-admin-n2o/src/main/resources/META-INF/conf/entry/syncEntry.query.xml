@@ -90,6 +90,13 @@
             <sorting mapping="['lastStatusDirection']">sort=lastStatus: {lastStatusDirection}</sorting>
         </field>
 
+        <field id="notExistsInExternal" domain="boolean">
+            <select mapping="not ['existsInExternal']"/>
+        </field>
+        <field id="notExistsInExternalMsg" domain="boolean">
+            <select mapping="['existsInExternal'] ? '' : 'Справочник не найден в ФНСИ. Редактирование недоступно.'"/>
+        </field>
+
         <!-- Поля для редактирования -->
         <field id="entryId" domain="string">
             <select mapping="['id']"/>
@@ -122,6 +129,9 @@
         </field>
         <field id="refBook.isPresent" domain="string">
             <select mapping="['isPresent']"/>
+        </field>
+        <field id="refBook.existsInExternal" domain="boolean">
+            <select mapping="['existsInExternal']"/>
         </field>
 
         <field id="startVersion.id" domain="string">

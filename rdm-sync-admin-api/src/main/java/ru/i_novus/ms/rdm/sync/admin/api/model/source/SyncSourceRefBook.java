@@ -23,6 +23,8 @@ public class SyncSourceRefBook extends SyncSourceVersion {
     /** Возможность удаления. */
     private Boolean removable;
 
+    private Boolean existsInExternal;
+
     public SyncSourceRefBook() {
         // Nothing to do.
     }
