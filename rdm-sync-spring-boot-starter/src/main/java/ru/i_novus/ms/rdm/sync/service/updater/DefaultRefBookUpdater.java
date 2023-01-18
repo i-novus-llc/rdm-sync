@@ -2,16 +2,16 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.i_novus.ms.rdm.api.model.refbook.RefBook;
+import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
+import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
 import java.util.List;
@@ -19,78 +19,61 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-public abstract class BaseRefBookUpdater implements RefBookUpdater {
+public class DefaultRefBookUpdater implements RefBookUpdater {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseRefBookUpdater.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultRefBookUpdater.class);
 
     protected final RdmSyncDao dao;
 
-    protected final SyncSourceService syncSourceService;
-
     private final RdmLoggingService loggingService;
 
-    protected abstract PersisterService getPersisterService();
+    protected final PersisterService persisterService;
 
-    protected BaseRefBookUpdater(RdmSyncDao dao, SyncSourceService syncSourceService, RdmLoggingService loggingService) {
+    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService) {
         this.dao = dao;
-        this.syncSourceService = syncSourceService;
         this.loggingService = loggingService;
+        this.persisterService = persisterService;
     }
 
     @Override
-    public void update(String refCode, String version) throws RefBookUpdaterException {
-        logger.info("try to load {} version: {}", refCode, version);
-        RefBookVersion newVersion;
-        try {
-            newVersion = getRefBookVersion(refCode, version);
+    @Transactional
+    public void update(RefBookVersion refBookVersion, DownloadResult downloadResult) throws RefBookUpdaterException {
+        logger.info("try to load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
 
-        } catch (Exception e) {
-            logger.error("Error while fetching new version with code '{}'.", refCode, e);
+        if (!refBookVersion.getStructure().hasPrimary()) {
+            logger.error("Reference book with code '{}' has not primary key.", refBookVersion.getCode());
             return;
         }
 
         VersionMapping versionMapping;
         try {
-            versionMapping = getVersionMapping(newVersion);
+            versionMapping = getVersionMapping(refBookVersion);
 
         } catch (Exception e) {
-            logger.error("Error while fetching mapping for new version with code '{}'.", refCode, e);
+            logger.error("Error while fetching mapping for new version with code '{}'.", refBookVersion.getCode(), e);
             return;
         }
 
         if (versionMapping == null) {
-            logger.error("No version mapping found for reference book with code '{}'.", refCode);
+            logger.error("No version mapping found for reference book with code '{}'.", refBookVersion.getCode());
             return;
         }
 
-        LoadedVersion loadedVersion = dao.getLoadedVersion(refCode, newVersion.getVersion());
-        try {
-            if (!dao.existsLoadedVersion(refCode) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
-                    || (isNewVersionPublished(newVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
+        LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
+        try {//это надо перенести в RefBookVersionsDeterminator
+            if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
+                    || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
-                update(newVersion, versionMapping);
-                loggingService.logOk(refCode, versionMapping.getRefBookVersion(), newVersion.getVersion());
+                update(refBookVersion, versionMapping, downloadResult);
+                loggingService.logOk(refBookVersion.getCode(), versionMapping.getRefBookVersion(), refBookVersion.getVersion());
 
             } else {
-                logger.info("Skipping update on '{}'. No changes.", refCode);
+                logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
             }
         } catch (final Exception e) {
-            throw new RefBookUpdaterException(
-                e,
-                versionMapping,
-                newVersion
-            );
+            logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
+            throw new RefBookUpdaterException(e, versionMapping, refBookVersion);
         }
-    }
-
-    private RefBookVersion getRefBookVersion(String refBookCode, String version) {
-        RefBookVersion refBook = syncSourceService.getRefBook(refBookCode, version);
-        if (refBook == null)
-            throw new IllegalArgumentException(String.format("Reference book with code '%s' not found.", refBookCode));
-
-        if (!refBook.getStructure().hasPrimary())
-            throw new IllegalStateException(String.format("Reference book with code '%s' has not primary key.", refBookCode));
-        return refBook;
     }
 
     private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
@@ -114,7 +97,7 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
         return versionMapping.getMappingLastUpdated().isAfter(loadedVersion.getLastSync());
     }
 
-    protected void update(RefBookVersion newVersion, VersionMapping versionMapping) {
+    protected void update(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
@@ -125,10 +108,11 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
         }
 
         try {
-            updateProcessing(newVersion, versionMapping);
+            updateProcessing(newVersion, versionMapping, downloadResult);
         } finally {
             if (haveTrigger) {
                 dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
+                dao.dropTable(downloadResult.getTableName());
             }
         }
     }
@@ -149,43 +133,43 @@ public abstract class BaseRefBookUpdater implements RefBookUpdater {
         return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
     }
 
-    protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping) {
+    protected void updateProcessing(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         LoadedVersion loadedVersion = dao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
         if (loadedVersion == null && !dao.existsLoadedVersion(newVersion.getCode())) {
-            addFirstVersion(newVersion, versionMapping);
+            addFirstVersion(newVersion, versionMapping, downloadResult);
 
         } else if (loadedVersion == null) {
-            addNewVersion(newVersion, versionMapping);
+            addNewVersion(newVersion, versionMapping, downloadResult);
 
         } else if (isMappingChanged(versionMapping, loadedVersion) || newVersion.getFrom().isAfter(loadedVersion.getPublicationDate())) {
             //Значит в прошлый раз мы синхронизировались по-старому маппингу.
             //Необходимо полностью залить свежую версию.
-            editVersion(newVersion, versionMapping, loadedVersion);
+            editVersion(newVersion, versionMapping, loadedVersion, downloadResult);
         }
 
         logger.info("{}, version {} sync finished", newVersion.getCode(), newVersion.getVersion());
     }
 
-    protected void editVersion(RefBookVersion newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion) {
+    protected void editVersion(RefBookVersion newVersion, VersionMapping versionMapping, LoadedVersion loadedVersion, DownloadResult downloadResult) {
         logger.info("{} repeat version {}", newVersion.getCode(), newVersion.getVersion());
-        getPersisterService().repeatVersion(newVersion, versionMapping, syncSourceService);
+        persisterService.repeatVersion(newVersion, versionMapping, downloadResult);
         dao.updateLoadedVersion(loadedVersion.getId(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo());
     }
 
-    protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+    protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} sync new version {}", newVersion.getCode(), newVersion.getVersion());
         LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(newVersion.getCode());
         if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
             dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
         }
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
-        getPersisterService().merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, syncSourceService);
+        persisterService.merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, downloadResult);
     }
 
-    protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping) {
+    protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} first sync", newVersion.getCode());
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
-        getPersisterService().firstWrite(newVersion, versionMapping, syncSourceService);
+        persisterService.firstWrite(newVersion, versionMapping, downloadResult);
     }
 
 }

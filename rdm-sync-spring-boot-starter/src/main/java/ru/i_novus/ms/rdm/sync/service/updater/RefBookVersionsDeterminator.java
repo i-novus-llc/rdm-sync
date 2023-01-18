@@ -1,7 +1,10 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -20,6 +23,8 @@ import java.util.stream.Stream;
  */
 public class RefBookVersionsDeterminator {
 
+    private static final Logger logger = LoggerFactory.getLogger(RefBookVersionsDeterminator.class);
+
     private final SyncRefBook refBook;
 
     private final RdmSyncDao rdmSyncDao;
@@ -35,13 +40,12 @@ public class RefBookVersionsDeterminator {
     public List<String> getVersions() {
 
         List<LoadedVersion> loadedVersions = rdmSyncDao.getLoadedVersions(refBook.getCode());
-        List<String> loadedVersionsStringValues = new ArrayList<>();
+
         String actualLoadedVersion = null;
         for (LoadedVersion loadedVersion : loadedVersions ) {
             if(Boolean.TRUE.equals(loadedVersion.getActual())) {
                 actualLoadedVersion = loadedVersion.getVersion();
             }
-            loadedVersionsStringValues.add(loadedVersion.getVersion());
         }
         Stream<RefBookVersionItem> refBookVersionStream;
         if(refBook.getRange() == null) {
@@ -54,18 +58,34 @@ public class RefBookVersionsDeterminator {
         }
         final String finalActualVersion = actualLoadedVersion;
         return refBookVersionStream
-                .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersionsStringValues, finalActualVersion))
+                .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersions, finalActualVersion))
                 .map(RefBookVersionItem::getVersion)
                 .collect(Collectors.toList());
     }
 
-    private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<String> loadedVersions, String actualVersion) {
+    private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<LoadedVersion> loadedVersions, String actualVersion) {
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), refBookVersion.getVersion());
         if(versionMapping == null) {
             versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), "CURRENT");
         }
-            return !loadedVersions.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(refBookVersion.getFrom()) && refBookVersion.getVersion().equals(actualVersion))
-                    || (versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED));
+        List<String> loadedVersionsStringValues = new ArrayList<>();
+        LoadedVersion currentLoadedVersion = null;
+        for (LoadedVersion loadedVersion : loadedVersions ) {
+            loadedVersionsStringValues.add(loadedVersion.getVersion());
+            if(loadedVersion.getVersion().equals(refBookVersion.getVersion())) {
+                currentLoadedVersion = loadedVersion;
+            }
+        }
+        boolean result = !loadedVersionsStringValues.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(refBookVersion.getFrom()) && refBookVersion.getVersion().equals(actualVersion))
+                || currentLoadedVersion != null && isNewVersionPublished(refBookVersion, currentLoadedVersion) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED);
+        if(!result) {
+            logger.info("skip update refbook {} version {}", refBookVersion.getCode(), refBookVersion.getVersion());
+        }
+        return result;
+    }
+
+    private boolean isNewVersionPublished(RefBookVersionItem newVersion, LoadedVersion loadedVersion) {
+        return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
     }
 
     private List<VersionsRange> getRanges(String range, List<RefBookVersionItem> versions) {
@@ -106,9 +126,9 @@ public class RefBookVersionsDeterminator {
 
     private static class VersionsRange {
 
-        private RefBookVersionItem left;
+        private final RefBookVersionItem left;
 
-        private RefBookVersionItem right;
+        private final RefBookVersionItem right;
 
         VersionsRange(RefBookVersionItem left, RefBookVersionItem right) {
             this.left = left;
