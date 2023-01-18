@@ -67,6 +67,8 @@ public class SyncEntry implements Serializable {
     /** Отображаемый номер версии. */
     private String displayVersion;
 
+    private Boolean existsInExternal;
+
     public SyncEntry() {
         // Nothing to do.
     }

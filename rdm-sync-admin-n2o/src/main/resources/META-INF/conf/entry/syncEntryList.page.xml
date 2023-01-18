@@ -25,11 +25,12 @@
                 </open-page>
             </button>
 
-            <button id="delete" label="${sync.entry.list.page.button.delete}" icon="fa fa-trash" color="danger" enabled="{removable}">
+            <button id="delete" label="${sync.entry.list.page.button.delete}" icon="fa fa-trash" color="danger"
+                    enabled="{removable}">
                 <invoke operation-id="delete"/>
             </button>
 
-            <button id="load" label="${sync.entry.list.page.button.load}">
+            <button id="load" label="${sync.entry.list.page.button.load}" enabled="{refBook.existsInExternal}">
                 <open-page page-id="syncEntryLoad" page-name="${sync.entry.load.page.name}" upload="query"
                            route="/:entryId/load">
                     <path-param name="entryId" value="{id}"/>
@@ -57,7 +58,20 @@
             <column text-field-id="lastVersion" label="${sync.entry.list.page.refbook.last-version}"/>
 
             <column text-field-id="otherCodes" label="${sync.entry.list.page.refbook.other-codes}"/>
+            <column text-field-id="notExistsInExternal" label="" type="icon" tooltip-field-id="notExistsInExternalMsg">
+                <icon>
+                    <switch value-field-id="notExistsInExternal">
+                        <case value="true">fa fa-exclamation-triangle fa-lg</case>
+                    </switch>
+                </icon>
+            </column>
         </columns>
+
+        <rows>
+            <switch value-field-id="notExistsInExternal">
+                <case value="true">bg-danger</case>
+            </switch>
+        </rows>
     </table>
 
 </simple-page>

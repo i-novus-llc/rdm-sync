@@ -14,6 +14,16 @@
                     <output-text id="actionType" visible="false" default-value="create"/>
                 </row>
 
+                <alert id="notExistsInExternal" color="warning">
+                    Справочник не найден в системе ФНСИ.
+                    Редактирование недоступно.
+                    <dependencies>
+                        <visibility on="refBook.existsInExternal">
+                            !refBook.existsInExternal
+                        </visibility>
+                    </dependencies>
+                </alert>
+
                 <select id="source" label="${sync.entry.page.source}"
                         query-id="syncEntrySourceList" label-field-id="name" search="false"
                         label-class="w-50" required="true">
@@ -120,7 +130,9 @@
                           label-class="w-50" default-value="true">
                     <dependencies>
                         <enabling on="refBook">
-                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                            typeof refBook != 'undefined' &amp;&amp;
+                            refBook?.id != null &amp;&amp;
+                            refBook?.existsInExternal
                         </enabling>
                     </dependencies>
                 </checkbox>
@@ -130,7 +142,9 @@
                     <dependencies>
                         <reset on="refBook" apply-on-init="false"/>
                         <enabling on="refBook">
-                            (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null)
+                            typeof refBook != 'undefined' &amp;&amp;
+                            refBook?.id != null &amp;&amp;
+                            refBook?.existsInExternal
                         </enabling>
                     </dependencies>
                 </checkbox>
@@ -146,7 +160,8 @@
                     <dependencies>
                         <enabling on="refBook,versioned">
                             (typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
-                            (typeof versioned != 'undefined' &amp;&amp; versioned)
+                            (typeof versioned != 'undefined' &amp;&amp; versioned) &amp;&amp;
+                            refBook?.existsInExternal
                         </enabling>
                         <set-value on="refBook,versioned">
                             if ((typeof refBook != 'undefined' &amp;&amp; refBook?.id != null) &amp;&amp;
@@ -194,6 +209,11 @@
                     <query-param name="autoUpdatable" value="{autoUpdatable}"/>
                     <query-param name="actionType" value="{actionType}"/>
                 </show-modal>
+                <dependencies>
+                    <enabling>
+                        typeof refBook != 'undefined' &amp;&amp; refBook?.existsInExternal
+                    </enabling>
+                </dependencies>
             </button>
 
             <button id="cancel" label="${sync.entry.page.button.cancel}">
