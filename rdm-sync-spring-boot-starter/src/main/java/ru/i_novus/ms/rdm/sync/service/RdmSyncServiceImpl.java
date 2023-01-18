@@ -17,6 +17,8 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
+import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloader;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
@@ -48,9 +50,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
-    @Value("${rdm-sync.load.size: 1000}")
-    private int MAX_SIZE = 1000;
-
     @Value("${rdm-sync.threads.count:3}")
     private int threadsCount = 3;
 
@@ -65,6 +64,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
     @Autowired
     private SyncSourceService syncSourceService;
+
+    @Autowired
+    private RefBookDownloader refBookDownloader;
 
 
     private ExecutorService executorService;
@@ -124,7 +126,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
         for (String version : versions) {
             try {
-                refBookUpdater.update(refBookCode, version);
+                DownloadResult downloadResult = refBookDownloader.download(refBookCode, version);
+                refBookUpdater.update(syncSourceService.getRefBook(refBookCode, version), downloadResult);
             } catch (final RefBookUpdaterException e) {
                 final Throwable cause = e.getCause();
                 logger.error(
