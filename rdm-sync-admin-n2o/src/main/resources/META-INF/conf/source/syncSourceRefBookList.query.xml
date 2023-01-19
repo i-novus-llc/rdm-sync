@@ -70,5 +70,10 @@
                 <eq filter-id="hasEntry">hasEntry={hasEntry}</eq>
             </filters>
         </field>
+
+        <field id="existsInExternal">
+            <select/>
+        </field>
+
     </fields>
 </query>
