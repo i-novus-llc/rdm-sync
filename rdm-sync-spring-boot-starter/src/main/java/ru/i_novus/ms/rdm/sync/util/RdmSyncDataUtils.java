@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.util;
 
+import com.google.common.base.CaseFormat;
 import org.springframework.data.util.Pair;
 import org.springframework.util.ReflectionUtils;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -9,7 +10,6 @@ import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
-import static ru.i_novus.ms.rdm.api.util.StringUtils.camelCaseToSnakeCase;
 
 public final class RdmSyncDataUtils {
 
@@ -80,6 +80,11 @@ public final class RdmSyncDataUtils {
         }
         return list;
     }
+
+    private static String camelCaseToSnakeCase(String s) {
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s);
+    }
+
 
     public static <T extends Serializable> Map<String, Object> mapForPgInsert(T t, List<Pair<String, String>> columnTypes) {
 
