@@ -43,9 +43,6 @@ class RdmSyncJobConfigurer {
     @Autowired
     private ClusterLockService clusterLockService;
 
-    @Autowired
-    private RdmSyncInitializer rdmSyncInitializer;
-
     @Value("${rdm-sync.init.delay:#{null}}")
     private Integer rdmSyncInitDelay;
 
@@ -160,9 +157,6 @@ class RdmSyncJobConfigurer {
             }
 
             JobKey jobKey = JobKey.jobKey(jobName, JOB_GROUP);
-            if (rdmSyncInitDelay == null) {
-                rdmSyncInitializer.init();
-            }
 
             TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
             Trigger oldTrigger = scheduler.getTrigger(triggerKey);
