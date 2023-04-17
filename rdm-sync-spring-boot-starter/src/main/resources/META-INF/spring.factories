@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.i_novus.ms.rdm.sync.RdmClientSyncAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ru.i_novus.ms.rdm.sync.RdmClientSyncAutoConfiguration,\
+ru.i_novus.ms.rdm.sync.MapperConfigurerAutoConfiguration
