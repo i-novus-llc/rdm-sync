@@ -28,17 +28,16 @@ import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.*;
-import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloader;
-import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloaderImpl;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreator;
 import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreatorLocator;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
-import ru.i_novus.ms.rdm.sync.service.updater.*;
+import ru.i_novus.ms.rdm.sync.service.updater.DefaultRefBookUpdater;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -157,12 +156,6 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnMissingBean
     public ExportFileProvider exportFileProvider() {
         return new ExportFileProvider();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public RdmMapperConfigurer rdmMapperConfigurer() {
-        return new RdmMapperConfigurer();
     }
 
     @Bean(name = "publishDictionaryTopicMessageListenerContainerFactory")
