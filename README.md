@@ -377,7 +377,7 @@ spring.quartz.job-store-type=jdbc
 spring.quartz.jdbc.initialize-schema=always
 spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
 spring.quartz.properties.org.quartz.scheduler.instanceName=RdmSyncScheduler
-spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.class=org.springframework.scheduling.quartz.LocalDataSourceJobStore
 spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
 spring.quartz.properties.org.quartz.jobStore.isClustered=true
 #изменить как надо. время обновления данных из НСИ
