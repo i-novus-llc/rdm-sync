@@ -692,11 +692,15 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
-
         Map<String, Serializable> args = new HashMap<>();
-        String sql = String.format("  FROM %s %n WHERE %s = :state",
-                escapeName(localDataCriteria.getSchemaTable()),
-                addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
+        String sql = String.format("  FROM %s %n WHERE 1=1 ", escapeName(localDataCriteria.getSchemaTable()));
+        String selectSubQuery = null;
+        if(columnExists(LOADED_VERSION_REF, localDataCriteria.getSchemaTable())) {
+            selectSubQuery = "(SELECT version FROM rdm_sync.loaded_version where id = version_id) as version_num ";
+        } else {
+            sql += " AND " + addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN) +" = :state";
+            args.put("state", localDataCriteria.getState().name());
+        }
 
         if (localDataCriteria.getRecordId() != null) {
             String sysPkColumn = localDataCriteria.getSysPkColumn();
@@ -704,9 +708,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             args.put(sysPkColumn, localDataCriteria.getRecordId());
         }
 
-        args.put("state", localDataCriteria.getState().name());
 
-        if (localDataCriteria.getDeleted() != null) {
+        if (localDataCriteria.getDeleted() != null && localDataCriteria.getDeleted().getFieldName() != null) {
             String deletedFieldName = addDoubleQuotes(localDataCriteria.getDeleted().getFieldName());
             if (Boolean.TRUE.equals(localDataCriteria.getDeleted().isDeleted())) {
                 sql += "\n AND " + deletedFieldName + " is not null";
@@ -715,8 +718,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             }
         }
 
-        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
-        data.getContent().forEach(row -> row.remove(RDM_SYNC_INTERNAL_STATE_COLUMN));
+        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria, selectSubQuery);
+        data.getContent().forEach(row -> {
+            row.remove(RDM_SYNC_INTERNAL_STATE_COLUMN);
+            row.remove(LOADED_VERSION_REF);
+        });
         return data;
     }
 
@@ -734,7 +740,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             args.put("version", criteria.getVersion());
         }
 
-        Page<Map<String, Object>> data = getData0(sql, args, criteria);
+        Page<Map<String, Object>> data = getData0(sql, args, criteria, null);
         data.getContent().forEach(row -> row.remove(LOADED_VERSION_REF));
 
         return data;
@@ -752,7 +758,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             args.put(VERSIONS_SYS_COL, "%{" + localDataCriteria.getVersion() + "}%");
         }
 
-        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria);
+        Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria, null);
         data.getContent().forEach(row -> {
             row.remove(VERSIONS_SYS_COL);
             row.remove(HASH_SYS_COL);
@@ -820,7 +826,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     }
 
-    private Page<Map<String, Object>> getData0(String sql, Map<String, Serializable> args, BaseDataCriteria dataCriteria) {
+    private Page<Map<String, Object>> getData0(String sql, Map<String, Serializable> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
 
         SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
         if (filterBuilder != null) {
@@ -839,7 +845,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         sql += String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
 
-        sql = "SELECT *" + sql;
+        sql = "SELECT * " + (selectSubQuery != null ? ", " + selectSubQuery + " " : "")  + sql;
 
         if (logger.isDebugEnabled()) {
             logger.debug("getData0 sql:\n{}\n binding args:\n{}\n.", sql, args);
@@ -1178,5 +1184,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return null;
 
         return timestamp.toLocalDateTime();
+    }
+
+    private boolean columnExists(String columnName, String schemaTable) {
+        return namedParameterJdbcTemplate.queryForObject("select exists (select 1\n" +
+                "FROM information_schema.columns\n" +
+                "where table_schema||'.'||table_name=:schemaTable and column_name= :colName)",
+                Map.of("schemaTable", schemaTable, "colName", columnName), Boolean.class);
     }
 }
