@@ -156,12 +156,12 @@ public class FnsiSyncSourceService implements SyncSourceService {
     }
 
     private RowDiffStatusEnum getRowDiffStatusEnum(String fnsiOperation) {
-        return switch (fnsiOperation) {
-            case "UPDATE" -> RowDiffStatusEnum.UPDATED;
-            case "DELETE" -> RowDiffStatusEnum.DELETED;
-            case "INSERT" -> RowDiffStatusEnum.INSERTED;
-            default -> throw new UnsupportedOperationException("cannot get diff status from" + fnsiOperation + "operation");
-        };
+        switch (fnsiOperation) {
+            case "UPDATE" : return RowDiffStatusEnum.UPDATED;
+            case "DELETE" : return RowDiffStatusEnum.DELETED;
+            case "INSERT" : return RowDiffStatusEnum.INSERTED;
+            default : throw new UnsupportedOperationException("cannot get diff status from" + fnsiOperation + "operation");
+        }
     }
 
     private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page) {
@@ -236,12 +236,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
 
     private AttributeTypeEnum getAttrType(String fnsiDataType) {
-        return switch (fnsiDataType) {
-            case "INTEGER" -> AttributeTypeEnum.INTEGER;
-            case "VARCHAR" -> AttributeTypeEnum.STRING;
-            case "DATETIME" -> AttributeTypeEnum.DATE;
-            case "BOOLEAN" -> AttributeTypeEnum.BOOLEAN;
-            default -> throw new IllegalArgumentException("unknown fnsi type " + fnsiDataType);
-        };
+        switch (fnsiDataType) {
+            case "INTEGER":
+                return AttributeTypeEnum.INTEGER;
+            case "VARCHAR":
+                return AttributeTypeEnum.STRING;
+            case "DATETIME":
+                return AttributeTypeEnum.DATE;
+            case "BOOLEAN":
+                return AttributeTypeEnum.BOOLEAN;
+            default:
+                throw new IllegalArgumentException("unknown fnsi type " + fnsiDataType);
+        }
     }
 }
