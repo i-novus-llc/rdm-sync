@@ -50,14 +50,20 @@ public enum DataTypeEnum {
     /** Преобразование списка строк в список значений соответствующего типа. */
     public List<Serializable> toValues(List<String> list) {
 
-        return switch (this) {
-            case BOOLEAN -> list.stream().map(Boolean::valueOf).collect(toList());
-            case INTEGER -> list.stream().map(BigInteger::new).collect(toList());
-            case FLOAT -> list.stream().map(BigDecimal::new).collect(toList());
-            case DATE -> list.stream().map(TimeUtils::parseLocalDate).collect(toList());
-            case VARCHAR -> new ArrayList<>(list);
-            default -> throw new RdmException("Cast from string to " + this.name() + " not supported.");
-        };
+        switch (this) {
+            case BOOLEAN:
+                return list.stream().map(Boolean::valueOf).collect(toList());
+            case INTEGER:
+                return list.stream().map(BigInteger::new).collect(toList());
+            case FLOAT:
+                return list.stream().map(BigDecimal::new).collect(toList());
+            case DATE:
+                return list.stream().map(TimeUtils::parseLocalDate).collect(toList());
+            case VARCHAR:
+                return new ArrayList<>(list);
+            default:
+                throw new RdmException("Cast from string to " + this.name() + " not supported.");
+        }
     }
 
     /** Преобразование строки в значение соответствующего типа. */
@@ -72,15 +78,26 @@ public enum DataTypeEnum {
         FilterTypeEnum.list().forEach(type -> result.put(type, new ArrayList<>(list.size())));
 
         switch (this) {
-            case BOOLEAN -> addListValues(list, Boolean::valueOf, result);
-            case INTEGER -> addListValues(list, BigInteger::new, result);
-            case FLOAT -> addListValues(list, BigDecimal::new, result);
-            case DATE -> addListValues(list, TimeUtils::parseLocalDate, result);
-            case VARCHAR -> addListValues(list, this::fromString, result);
-            default -> throw new RdmException("Cast from string to " + this.name() + " not supported.");
-        };
+            case BOOLEAN:
+                addListValues(list, Boolean::valueOf, result);
+                return result;
+            case INTEGER:
+                addListValues(list, BigInteger::new, result);
+                return result;
+            case FLOAT:
+                addListValues(list, BigDecimal::new, result);
+                return result;
+            case DATE:
+                addListValues(list, TimeUtils::parseLocalDate, result);
+                return result;
+            case VARCHAR:
+                addListValues(list, this::fromString, result);
+                return result;
+            default:
+                throw new RdmException("Cast from string to " + this.name() + " not supported.");
+        }
 
-        return result;
+
     }
 
     /** Конвертер для значений-строк. */
@@ -128,14 +145,22 @@ public enum DataTypeEnum {
     public static DataTypeEnum getByRdmAttr(AttributeTypeEnum type) {
 
 
-        return switch (type) {
-            case DATE -> DATE;
-            case FLOAT -> FLOAT;
-            case INTEGER -> INTEGER;
-            case STRING, REFERENCE -> VARCHAR;
-            case BOOLEAN -> BOOLEAN;
-            default -> throw new RdmException(String.format("Attribute type '%s' is not supported", type));
-        };
+        switch (type) {
+            case DATE:
+                return DATE;
+            case FLOAT:
+                return FLOAT;
+            case INTEGER:
+                return INTEGER;
+            case STRING:
+                return VARCHAR;
+            case REFERENCE:
+                return VARCHAR;
+            case BOOLEAN:
+                return BOOLEAN;
+            default:
+                throw new RdmException(String.format("Attribute type '%s' is not supported", type));
+        }
     }
 }
 

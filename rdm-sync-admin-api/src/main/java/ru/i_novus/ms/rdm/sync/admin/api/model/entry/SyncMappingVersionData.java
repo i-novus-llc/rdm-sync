@@ -42,11 +42,15 @@ public class SyncMappingVersionData implements Serializable {
         if (type == null || CollectionUtils.isEmpty(versions))
             return null;
 
-        return switch (type) {
-            case UNIQUE -> versions.get(0);
-            case LIST -> String.join(LIST_DELIMITER, versions);
-            case RANGE -> getRangeText();
-        };
+        switch (type) {
+            case UNIQUE:
+                return versions.get(0);
+            case LIST:
+                return String.join(LIST_DELIMITER, versions);
+            case RANGE:
+                return getRangeText();
+        }
+        return null;
     }
 
     /** Текст с указанием версий в случае диапазона. */
