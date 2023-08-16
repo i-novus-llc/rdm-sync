@@ -43,15 +43,15 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
 
         String fieldName = addDoubleQuotes(field);
         switch (filter.getType()) {
-            case EQUAL -> parseEqual(fieldName, bindName, filter.getValues());
-            case LIKE -> parseLike(fieldName, type, bindName, filter.getValues());
-            case ILIKE -> parseILike(fieldName, type, bindName, filter.getValues());
-            case QLIKE -> parseQLike(fieldName, type, bindName, filter.getValues());
-            case IQLIKE -> parseIQLike(fieldName, type, bindName, filter.getValues());
-            case IS_NULL -> parseIsNull(fieldName);
-            case IS_NOT_NULL -> parseIsNotNull(fieldName);
-            default -> throw new RdmException("Unknown type '" + filter.getType() + "' of field value filter");
-        };
+            case EQUAL : parseEqual(fieldName, bindName, filter.getValues());
+            case LIKE : parseLike(fieldName, type, bindName, filter.getValues());
+            case ILIKE : parseILike(fieldName, type, bindName, filter.getValues());
+            case QLIKE : parseQLike(fieldName, type, bindName, filter.getValues());
+            case IQLIKE : parseIQLike(fieldName, type, bindName, filter.getValues());
+            case IS_NULL : parseIsNull(fieldName);
+            case IS_NOT_NULL : parseIsNotNull(fieldName);
+            default : throw new RdmException("Unknown type '" + filter.getType() + "' of field value filter");
+        }
     }
 
     private void parseEqual(String field, String bindName, List<? extends Serializable> values) {
