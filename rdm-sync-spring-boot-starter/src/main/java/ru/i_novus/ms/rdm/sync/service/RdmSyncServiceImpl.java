@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -143,6 +144,17 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                     e.getNewVersion().getVersion(),
                     cause.getMessage(),
                     ExceptionUtils.getStackTrace(cause)
+                );
+                return;
+            } catch (Exception e) {
+                logger.error("cannot load version {} of refbook {}", version, refBookCode, e);
+                LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(refBookCode);
+                loggingService.logError(
+                        refBookCode,
+                        actualLoadedVersion != null ? actualLoadedVersion.getVersion() : null,
+                        version,
+                        e.getMessage(),
+                        ExceptionUtils.getStackTrace(e)
                 );
                 return;
             }

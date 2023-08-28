@@ -76,7 +76,7 @@ public class RefBookVersionsDeterminator {
                 currentLoadedVersion = loadedVersion;
             }
         }
-        boolean result = !loadedVersionsStringValues.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(refBookVersion.getFrom()) && refBookVersion.getVersion().equals(actualVersion))
+        boolean result = !loadedVersionsStringValues.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(currentLoadedVersion.getLastSync()) && refBookVersion.getVersion().equals(actualVersion))
                 || currentLoadedVersion != null && isNewVersionPublished(refBookVersion, currentLoadedVersion) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED);
         if(!result) {
             logger.info("skip update refbook {} version {}", refBookVersion.getCode(), refBookVersion.getVersion());
