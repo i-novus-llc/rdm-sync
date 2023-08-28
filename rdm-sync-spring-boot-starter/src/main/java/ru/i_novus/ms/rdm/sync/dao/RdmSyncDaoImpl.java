@@ -1001,7 +1001,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String escapedTempTable = escapeName(tempTableName);
         getJdbcTemplate().execute("CREATE UNLOGGED TABLE " + escapedTempTable + " AS TABLE " + escapeName(refTableName) + " WITH NO DATA;"
                 + " ALTER TABLE " + escapedTempTable + " DROP COLUMN IF EXISTS version_id;");
-        if (sysPkColumn != null) {
+        if (sysPkColumn != null  && !sysPkColumn.equals(refPk)) {
             getJdbcTemplate().execute(" ALTER TABLE " + escapedTempTable + " DROP COLUMN IF EXISTS  " + escapeName(sysPkColumn));
         }
         getJdbcTemplate().execute("CREATE UNIQUE INDEX ON " + escapedTempTable + "(" + escapeName(refPk) + ");");
