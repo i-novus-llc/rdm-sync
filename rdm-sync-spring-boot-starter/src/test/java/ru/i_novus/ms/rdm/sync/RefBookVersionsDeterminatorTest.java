@@ -114,13 +114,14 @@ public class RefBookVersionsDeterminatorTest {
     @Test
     public void testAllVersionLoadedAndCurrentMappingChanged() {
         String code = "someCode";
+        LocalDateTime now = LocalDateTime.now();
         List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
-        when(versionMapping.getMappingLastUpdated()).thenReturn(versions.get(1).getFrom().plusDays(1));
+        when(versionMapping.getMappingLastUpdated()).thenReturn(now.plusDays(1));
         when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
-                new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now(), null),
-                new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now(), true)
+                new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, now.minusDays(1), null),
+                new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, now, true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-*"), dao, syncSourceService);
@@ -158,9 +159,10 @@ public class RefBookVersionsDeterminatorTest {
     public void testWhenRangeIsNullAndHasLoadedVersionAndNewMapping() {
         String code = "someCode";
         RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
-        LocalDateTime mappingLastUpdate = refBookVersion.getFrom().plus(1, ChronoUnit.DAYS);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime mappingLastUpdate = now.plus(1, ChronoUnit.DAYS);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
-                new LoadedVersion(2, code, refBookVersion.getVersion(), refBookVersion.getFrom(), null, LocalDateTime.now(), true)
+                new LoadedVersion(2, code, refBookVersion.getVersion(), refBookVersion.getFrom(), null, now, true)
         ));
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping versionMapping = mock(VersionMapping.class);
