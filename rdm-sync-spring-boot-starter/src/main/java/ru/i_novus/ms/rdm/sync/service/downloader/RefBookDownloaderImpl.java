@@ -112,9 +112,15 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             List<Map<String, Object>> deletedRows = new ArrayList<>();
             page.getContent().forEach(rowDiff -> {
                 switch (rowDiff.getStatus()) {
-                    case INSERTED : newRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
-                    case UPDATED : editedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
-                    case DELETED : deletedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                    case INSERTED:
+                        newRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        break;
+                    case UPDATED:
+                        editedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        break;
+                    case DELETED:
+                        deletedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        break;
                 }
             });
             rdmSyncDao.insertDiffAsTempData(tempTableName, newRows, editedRows, deletedRows);
