@@ -2,12 +2,12 @@ package ru.i_novus.ms.rdm.sync.impl;
 
 
 import net.n2oapp.platform.jaxrs.RestPage;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.api.model.Structure;
 import ru.i_novus.ms.rdm.api.model.refbook.RefBookCriteria;
 import ru.i_novus.ms.rdm.api.service.RefBookService;
@@ -20,7 +20,7 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RdmSyncSourceServiceTest {
 
     @InjectMocks
@@ -45,6 +45,6 @@ public class RdmSyncSourceServiceTest {
         rdmRefBook.setCode(testCode);
         when(refBookService.search(any(RefBookCriteria.class))).thenReturn(new RestPage<>(Arrays.asList(rdmRefBook)));
         RefBookVersion refBook = rdmSynсSourceService.getRefBook(testCode, null);
-        Assert.assertEquals(rdmRefBook.getCode(), refBook.getCode());
+        Assertions.assertEquals(rdmRefBook.getCode(), refBook.getCode());
     }
 }

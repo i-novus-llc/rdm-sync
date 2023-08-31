@@ -2,10 +2,10 @@ package ru.i_novus.ms.rdm.sync.admin.api.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonUtilTest {
 

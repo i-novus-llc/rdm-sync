@@ -1,12 +1,13 @@
 package ru.i_novus.ms.rdm.sync.service.downloader;
 
+
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RefBookDownloaderImplTest {
 
 
@@ -36,7 +37,7 @@ public class RefBookDownloaderImplTest {
     @Mock
     private SyncSourceService syncSourceService;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         refBookDownloader = new RefBookDownloaderImpl(syncSourceService, dao, new RdmMappingServiceImpl(), 1, 0, 2);
 

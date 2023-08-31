@@ -1,10 +1,11 @@
 package ru.i_novus.ms.rdm.sync.service.persister;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
@@ -25,7 +26,7 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NotSimpleVersionedPersisterServiceTest {
 
     private NotVersionedPersisterService persisterService;
@@ -33,7 +34,7 @@ public class NotSimpleVersionedPersisterServiceTest {
     @Mock
     private RdmSyncDao dao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         persisterService = new NotVersionedPersisterService(dao);
     }

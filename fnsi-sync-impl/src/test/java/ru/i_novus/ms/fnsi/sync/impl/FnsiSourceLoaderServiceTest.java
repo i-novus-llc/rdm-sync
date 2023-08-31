@@ -1,30 +1,25 @@
 package ru.i_novus.ms.fnsi.sync.impl;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = FnsiSourceProperty.class)
 @EnableConfigurationProperties(FnsiSourceProperty.class)
 @TestPropertySource("classpath:fnsi-source-test.properties")
 public class FnsiSourceLoaderServiceTest {
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Autowired
     FnsiSourceProperty fnsiSourceProperty;
@@ -34,7 +29,7 @@ public class FnsiSourceLoaderServiceTest {
 
     private FnsiSourceLoaderService sourceLoaderService;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sourceLoaderService = new FnsiSourceLoaderService(fnsiSourceProperty, syncSourceDao);
     }

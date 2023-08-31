@@ -1,10 +1,10 @@
 package ru.i_novus.ms.rdm.sync.service.persister;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -16,7 +16,6 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +24,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SimpleVersionedPersisterServiceTest {
 
     private SimpleVersionedPersisterService persisterService;
@@ -33,7 +32,7 @@ public class SimpleVersionedPersisterServiceTest {
     @Mock
     private RdmSyncDao dao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         persisterService = new SimpleVersionedPersisterService(dao);
     }

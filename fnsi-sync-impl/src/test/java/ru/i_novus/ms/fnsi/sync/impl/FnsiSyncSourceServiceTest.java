@@ -1,9 +1,8 @@
 package ru.i_novus.ms.fnsi.sync.impl;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -28,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum.*;
 
 public class FnsiSyncSourceServiceTest {
@@ -42,7 +42,7 @@ public class FnsiSyncSourceServiceTest {
 
     private final SyncSourceService syncSourceService = new FnsiSyncSourceService(restTemplate, url, userKey);
 
-    @Before
+    @BeforeEach
     public void init() {
         mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
     }
@@ -65,10 +65,10 @@ public class FnsiSyncSourceServiceTest {
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
         RefBookVersion refBook = syncSourceService.getRefBook(oid, null);
-        Assert.assertEquals(oid, refBook.getCode());
-        Assert.assertEquals("3.13", refBook.getVersion());
-        Assert.assertEquals(LocalDateTime.of(2019, 10, 4, 17, 42), refBook.getFrom());
-        Assert.assertEquals(expectedStructure, refBook.getStructure());
+        assertEquals(oid, refBook.getCode());
+        assertEquals("3.13", refBook.getVersion());
+        assertEquals(LocalDateTime.of(2019, 10, 4, 17, 42), refBook.getFrom());
+        assertEquals(expectedStructure, refBook.getStructure());
     }
 
     /**
@@ -78,7 +78,7 @@ public class FnsiSyncSourceServiceTest {
     public void testGetNotExistingRefBook() throws URISyntaxException {
         String identifier = "not_exists_id";
         searchRefBookMockServer(identifier, new ClassPathResource("/fnsi_test_responses/not-found-ref.json"));
-        Assert.assertNull(syncSourceService.getRefBook(identifier, null));
+        assertNull(syncSourceService.getRefBook(identifier, null));
 
     }
 
@@ -98,9 +98,9 @@ public class FnsiSyncSourceServiceTest {
         dataCriteria.setPageSize(pageSize);
         Page<Map<String, Object>> data = syncSourceService.getData(dataCriteria);
 
-        Assert.assertEquals(174, data.getTotalElements());
-        Assert.assertEquals(170, data.getContent().size());
-        Assert.assertEquals(
+        assertEquals(174, data.getTotalElements());
+        assertEquals(170, data.getContent().size());
+        assertEquals(
                 Map.of(
                         "ID", 1,
                         "NAME", "Микрохирургические, расширенные, комбинированные и реконструктивно-пластические операции на поджелудочной железе, в том числе лапароскопически ассистированные операции",
@@ -111,7 +111,7 @@ public class FnsiSyncSourceServiceTest {
                 ),
                 data.getContent().get(0)
         );
-        Assert.assertEquals(
+        assertEquals(
                 Map.of(
                         "ID", 18,
                         "NAME", "Микрохирургические вмешательства при злокачественных (первичных и вторичных) и доброкачественных новообразованиях оболочек головного мозга с вовлечением синусов, серповидного отростка и намета мозжечка",
@@ -125,9 +125,9 @@ public class FnsiSyncSourceServiceTest {
         //получение 2й страницы
         dataCriteria.setPageNumber(1);
         data = syncSourceService.getData(dataCriteria);
-        Assert.assertEquals(174, data.getTotalElements());
-        Assert.assertEquals(4, data.getContent().size());
-        Assert.assertEquals(
+        assertEquals(174, data.getTotalElements());
+        assertEquals(4, data.getContent().size());
+        assertEquals(
                 Map.of(
                         "ID", 171,
                         "NAME", "Хирургическая, сосудистая и эндоваскулярная реваскуляризация магистральных артерий нижних конечностей при синдроме диабетической стопы",
@@ -137,7 +137,7 @@ public class FnsiSyncSourceServiceTest {
                 ),
                 data.getContent().get(0)
         );
-        Assert.assertEquals(
+        assertEquals(
                 Map.of(
                         "ID", 174,
                         "NAME", "Гастроинтестинальные комбинированные рестриктивно-шунтирующие операции при сахарном диабете 2 типа",
@@ -151,7 +151,7 @@ public class FnsiSyncSourceServiceTest {
         // за 3й страницей
         dataCriteria.setPageNumber(2);
         data = syncSourceService.getData(dataCriteria);
-        Assert.assertTrue(data.getContent().isEmpty());
+        assertTrue(data.getContent().isEmpty());
     }
 
 
@@ -186,9 +186,9 @@ public class FnsiSyncSourceServiceTest {
 
         List<RowDiff> diffContent = diff.getRows().getContent();
 
-        Assert.assertEquals(1, diffContent.size());
-        Assert.assertEquals(expected, diffContent.get(0));
-        Assert.assertFalse(diff.isStructureChanged());
+        assertEquals(1, diffContent.size());
+        assertEquals(expected, diffContent.get(0));
+        assertFalse(diff.isStructureChanged());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class FnsiSyncSourceServiceTest {
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
         VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.6", "1.5");
-        Assert.assertTrue(syncSourceService.getDiff(versionsDiffCriteria).isStructureChanged());
+        assertTrue(syncSourceService.getDiff(versionsDiffCriteria).isStructureChanged());
     }
 
     @Test
@@ -217,8 +217,8 @@ public class FnsiSyncSourceServiceTest {
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
         VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.7", "1.6");
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
-        Assert.assertFalse(diff.isStructureChanged());
-        Assert.assertTrue(diff.getRows().isEmpty());
+        assertFalse(diff.isStructureChanged());
+        assertTrue(diff.getRows().isEmpty());
     }
 
     @Test
@@ -254,7 +254,7 @@ public class FnsiSyncSourceServiceTest {
                 )
         );
 
-        Assert.assertEquals(expected, versions);
+        assertEquals(expected, versions);
 
     }
 

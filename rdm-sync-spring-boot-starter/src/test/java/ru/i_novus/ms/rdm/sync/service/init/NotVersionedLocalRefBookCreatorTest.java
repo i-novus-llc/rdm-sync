@@ -1,11 +1,12 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
@@ -21,7 +22,7 @@ import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NotVersionedLocalRefBookCreatorTest {
 
     @InjectMocks
@@ -42,7 +43,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     @Mock
     private SyncSourceService syncSourceService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
     }
@@ -64,14 +65,14 @@ public class NotVersionedLocalRefBookCreatorTest {
 
         ArgumentCaptor<VersionMapping> mappingCaptor = ArgumentCaptor.forClass(VersionMapping.class);
         verify(rdmSyncDao, times(1)).insertVersionMapping(mappingCaptor.capture());
-        Assert.assertEquals(code, mappingCaptor.getValue().getCode());
-        Assert.assertEquals(refBookName, mappingCaptor.getValue().getRefBookName());
-        Assert.assertEquals(-1, mappingCaptor.getValue().getMappingVersion());
-        Assert.assertEquals("deleted_ts", mappingCaptor.getValue().getDeletedField());
-        Assert.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
-        Assert.assertEquals("id", mappingCaptor.getValue().getPrimaryField());
-        Assert.assertEquals("TEST_SOURCE_CODE",mappingCaptor.getValue().getSource());
-        Assert.assertEquals(SyncTypeEnum.NOT_VERSIONED,mappingCaptor.getValue().getType());
+        Assertions.assertEquals(code, mappingCaptor.getValue().getCode());
+        Assertions.assertEquals(refBookName, mappingCaptor.getValue().getRefBookName());
+        Assertions.assertEquals(-1, mappingCaptor.getValue().getMappingVersion());
+        Assertions.assertEquals("deleted_ts", mappingCaptor.getValue().getDeletedField());
+        Assertions.assertEquals("rdm.ref_test_code", mappingCaptor.getValue().getTable());
+        Assertions.assertEquals("id", mappingCaptor.getValue().getPrimaryField());
+        Assertions.assertEquals("TEST_SOURCE_CODE",mappingCaptor.getValue().getSource());
+        Assertions.assertEquals(SyncTypeEnum.NOT_VERSIONED,mappingCaptor.getValue().getType());
 
         verify(rdmSyncDao, times(1)).insertFieldMapping(eq(1), argThat(ignoreOrderEqList(expectedFieldMappingList)));
 

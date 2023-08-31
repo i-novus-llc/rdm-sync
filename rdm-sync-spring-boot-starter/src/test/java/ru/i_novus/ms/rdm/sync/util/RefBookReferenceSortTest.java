@@ -1,22 +1,20 @@
 package ru.i_novus.ms.rdm.sync.util;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+
+import org.junit.jupiter.api.Test;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 
 import java.util.*;
 
 import static java.util.Collections.*;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-@RunWith(JUnit4.class)
 public class RefBookReferenceSortTest {
 
     @Test

@@ -1,13 +1,13 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -29,8 +29,8 @@ import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-@Ignore("Не используется тестируемый класс")
+@ExtendWith(MockitoExtension.class)
+@Disabled("Не используется тестируемый класс")
 public class VersionedLocalRefBookCreatorTest {
 
     @InjectMocks
@@ -51,7 +51,7 @@ public class VersionedLocalRefBookCreatorTest {
     @Mock
     private SyncSourceDao syncSourceDao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
