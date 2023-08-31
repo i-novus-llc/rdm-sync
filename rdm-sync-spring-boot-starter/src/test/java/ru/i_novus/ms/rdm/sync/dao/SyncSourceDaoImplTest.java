@@ -1,8 +1,8 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 
 class SyncSourceDaoImplTest extends BaseDaoTest {
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Configuration
     static class Config {
