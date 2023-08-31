@@ -1,14 +1,14 @@
 package ru.i_novus.ms.rdm.sync.admin.api.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
 import ru.i_novus.ms.rdm.sync.admin.api.BaseTest;
 
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AbstractCriteriaTest extends BaseTest {
 
@@ -20,10 +20,10 @@ public class AbstractCriteriaTest extends BaseTest {
         assertSpecialEquals(criteria);
 
         AbstractCriteria copyCriteria = new AbstractCriteria(criteria);
-        assertObjects(Assert::assertEquals, criteria, copyCriteria);
+        assertObjects(Assertions::assertEquals, criteria, copyCriteria);
 
         AbstractCriteria sameCriteria = new AbstractCriteria(criteria.getPageNumber(), criteria.getPageSize());
-        assertObjects(Assert::assertEquals, criteria, sameCriteria);
+        assertObjects(Assertions::assertEquals, criteria, sameCriteria);
     }
 
     @Test
@@ -34,12 +34,12 @@ public class AbstractCriteriaTest extends BaseTest {
         AbstractCriteria unpagedCriteria = new AbstractCriteria();
         unpagedCriteria.makeUnpaged();
         assertTrue(unpagedCriteria.madeUnpaged());
-        assertObjects(Assert::assertNotEquals, criteria, unpagedCriteria);
+        assertObjects(Assertions::assertNotEquals, criteria, unpagedCriteria);
 
         AbstractCriteria pagedCriteria = new AbstractCriteria(1000, 1000);
         assertFalse(pagedCriteria.madeUnpaged());
-        assertObjects(Assert::assertNotEquals, criteria, pagedCriteria);
-        assertObjects(Assert::assertNotEquals, unpagedCriteria, pagedCriteria);
+        assertObjects(Assertions::assertNotEquals, criteria, pagedCriteria);
+        assertObjects(Assertions::assertNotEquals, unpagedCriteria, pagedCriteria);
     }
 
     @Test
@@ -53,6 +53,6 @@ public class AbstractCriteriaTest extends BaseTest {
         AbstractCriteria sortedCriteria = new AbstractCriteria();
         sortedCriteria.setOrders(orders);
         assertEquals(orders, sortedCriteria.getOrders());
-        assertObjects(Assert::assertNotEquals, criteria, sortedCriteria);
+        assertObjects(Assertions::assertNotEquals, criteria, sortedCriteria);
     }
 }

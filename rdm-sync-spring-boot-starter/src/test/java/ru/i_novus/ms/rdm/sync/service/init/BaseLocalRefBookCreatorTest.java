@@ -1,26 +1,24 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BaseLocalRefBookCreatorTest {
 
     @Mock
@@ -29,7 +27,7 @@ public class BaseLocalRefBookCreatorTest {
     @Mock
     private RdmSyncDao dao;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(dao.lockRefBookForUpdate(anyString(), anyBoolean())).thenReturn(true);
     }
@@ -47,7 +45,7 @@ public class BaseLocalRefBookCreatorTest {
         creator.create(new VersionAndFieldMapping(versionMapping, fieldMappings));
         verify(dao).insertVersionMapping(versionMapping);
         verify(dao).insertFieldMapping(anyInt(), eq(fieldMappings));
-        Assert.assertEquals(versionMapping, createTableArgCaptor.get(1));
+        Assertions.assertEquals(versionMapping, createTableArgCaptor.get(1));
     }
 
     /**
@@ -63,7 +61,7 @@ public class BaseLocalRefBookCreatorTest {
         creator.create(new VersionAndFieldMapping( versionMapping, fieldMappings));
         verify(dao, never()).insertVersionMapping(any());
         verify(dao, never()).insertFieldMapping(anyInt(), anyList());
-        Assert.assertTrue(createTableArgCaptor.isEmpty());
+        Assertions.assertTrue(createTableArgCaptor.isEmpty());
     }
 
     /**
@@ -82,7 +80,7 @@ public class BaseLocalRefBookCreatorTest {
         creator.create(new VersionAndFieldMapping( newVersionMapping, fieldMappings));
         verify(dao).updateCurrentMapping(newVersionMapping);
         verify(dao).insertFieldMapping(oldVersionMapping.getMappingId(), fieldMappings);
-        Assert.assertTrue(createTableArgCaptor.isEmpty());
+        Assertions.assertTrue(createTableArgCaptor.isEmpty());
     }
 
     private BaseLocalRefBookCreator getCreator(List<Object> createTableArgCaptor){

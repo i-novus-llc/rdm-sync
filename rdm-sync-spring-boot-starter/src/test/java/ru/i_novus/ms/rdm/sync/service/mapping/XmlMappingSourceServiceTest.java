@@ -1,11 +1,14 @@
 package ru.i_novus.ms.rdm.sync.service.mapping;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -17,13 +20,13 @@ import java.util.List;
 /**
  * Тест кейсы для лоадера источника маппинга из *.xml
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class XmlMappingSourceServiceTest {
 
     @InjectMocks
     private XmlMappingSourceService xmlMappingSourceService;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         xmlMappingSourceService.setRdmMappingXmlPath("/mapping-sources/rdm-mapping.xml");
     }
@@ -36,7 +39,7 @@ public class XmlMappingSourceServiceTest {
         VersionMapping expectedVersionMapping = MappingCreator.createVersionMapping();
         VersionAndFieldMapping actualVersionMapping = xmlMappingSourceService.getVersionAndFieldMappingList().get(0);
 
-        Assert.assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getVersionMapping().getCode());
+        Assertions.assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getVersionMapping().getCode());
     }
 
     /**
@@ -48,17 +51,17 @@ public class XmlMappingSourceServiceTest {
         List<VersionAndFieldMapping> expectedEmptyVersionMappingList = Collections.emptyList();
         List<VersionAndFieldMapping> actualEmptyVersionMappingList = xmlMappingSourceService.getVersionAndFieldMappingList();
 
-        Assert.assertEquals(expectedEmptyVersionMappingList, actualEmptyVersionMappingList);
+        Assertions.assertEquals(expectedEmptyVersionMappingList, actualEmptyVersionMappingList);
     }
 
 
     /**
      * Ситуация когда путь к *.xml задан некорректно
      */
-    @Test(expected = RdmException.class)
+    @Test
     public void testXmlMappingLoadError() {
         xmlMappingSourceService.setRdmMappingXmlPath("");
-        xmlMappingSourceService.getVersionAndFieldMappingList();
+        Assertions.assertThrows(RdmException.class, () -> xmlMappingSourceService.getVersionAndFieldMappingList());
     }
 
 }

@@ -1,13 +1,17 @@
 package ru.i_novus.ms.rdm.sync.admin.api;
 
 import net.n2oapp.platform.i18n.UserException;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 @SuppressWarnings({"java:S2187","java:S5778"})
 public class BaseTest {
@@ -111,11 +115,11 @@ public class BaseTest {
     public void assertSpecialEquals(Object current) {
 
         assertNotNull(current);
-        assertObjects(Assert::assertEquals, current, current);
-        assertObjects(Assert::assertNotEquals, current, null);
+        assertObjects(Assertions::assertEquals, current, current);
+        assertObjects(Assertions::assertNotEquals, current, null);
 
         Object other = (!BigInteger.ZERO.equals(current)) ? BigInteger.ZERO : BigInteger.ONE;
-        assertObjects(Assert::assertNotEquals, current, other);
+        assertObjects(Assertions::assertNotEquals, current, other);
     }
 
     /** Check method execution for success. */

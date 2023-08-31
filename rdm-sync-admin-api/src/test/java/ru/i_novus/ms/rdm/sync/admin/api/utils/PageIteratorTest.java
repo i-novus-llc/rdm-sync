@@ -1,13 +1,17 @@
 package ru.i_novus.ms.rdm.sync.admin.api.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PageIteratorTest {
 
@@ -33,10 +37,10 @@ public class PageIteratorTest {
         expectedPages.add(Arrays.asList("7", "8"));
 
         for (int i = 0; i<3; i++) {
-            Assert.assertTrue((i+1) + " - page number of 3 not found", pageIterator.hasNext());
+            assertTrue(pageIterator.hasNext(), (i+1) + " - page number of 3 not found");
             Page<? extends String> page = pageIterator.next();
             String displayContent = String.join(",", page.getContent());
-            Assert.assertTrue(displayContent + " - unexpected content", expectedPages.remove(page.getContent()));
+            assertTrue(expectedPages.remove(page.getContent()), displayContent + " - unexpected content");
         }
     }
 

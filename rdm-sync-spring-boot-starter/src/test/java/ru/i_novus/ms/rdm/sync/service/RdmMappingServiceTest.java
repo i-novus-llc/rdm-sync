@@ -1,25 +1,24 @@
 package ru.i_novus.ms.rdm.sync.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.Month;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.model.DataTypeEnum.*;
 
 /**
  * @author lgalimova
  * @since 22.02.2019
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RdmMappingServiceTest {
 
     @InjectMocks

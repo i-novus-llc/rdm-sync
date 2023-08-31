@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.admin.api.utils;
 
 import net.n2oapp.platform.jaxrs.RestPage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.admin.api.utils.CriteriaUtils.*;
 
 public class CriteriaUtilsTest {
