@@ -1,7 +1,8 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Sql({"/dao-test.sql"})
 public class RdmSyncDaoTest extends BaseDaoTest {
@@ -383,7 +384,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     @Test
     public void testGetLastMappingVersion() {
 
-        Assert.assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
+        assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
     }
 
     @Test
@@ -397,7 +398,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
         Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
         simpleVersionedData.getContent().forEach(this::prepareRowToAssert);
-        Assert.assertEquals(rows, simpleVersionedData.getContent());
+        assertEquals(rows, simpleVersionedData.getContent());
 
 
         //грузим след версию
@@ -410,8 +411,8 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         //получаем версию 1.1
         Page<Map<String, Object>> secondVersionData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionData.getContent().forEach(this::prepareRowToAssert);
-        Assert.assertEquals(secondVersionRows, secondVersionData.getContent());
-        Assert.assertEquals(secondVersionPublishDate, rdmSyncDao.getLoadedVersion("test", "1.0").getCloseDate());
+        assertEquals(secondVersionRows, secondVersionData.getContent());
+        assertEquals(secondVersionPublishDate, rdmSyncDao.getLoadedVersion("test", "1.0").getCloseDate());
 
         //upsert версии 1.1
         secondVersionRows.remove(2);
@@ -420,10 +421,10 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         //получаем версию 1.1 после upsert
         Page<Map<String, Object>> secondVersionEditedData = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria("test","public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.1"));
         secondVersionEditedData.getContent().forEach(this::prepareRowToAssert);
-        Assert.assertEquals(secondVersionRows, secondVersionEditedData.getContent());
+        assertEquals(secondVersionRows, secondVersionEditedData.getContent());
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
         rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
@@ -431,10 +432,10 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.insertLoadedVersion("another_test_refbook_with_same_loaded_version", "1.0", publishDate, null, true);
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria("test", "public.simple_ver_table", "_sync_rec_id", 100, 0, null, "1.0");
         Page<Map<String, Object>> simpleVersionedData = rdmSyncDao.getSimpleVersionedData(criteria);
-        Assert.assertEquals(0, simpleVersionedData.getTotalElements());
+        assertEquals(0, simpleVersionedData.getTotalElements());
 
         criteria.setRefBookCode(null);
-        rdmSyncDao.getSimpleVersionedData(criteria);
+        Assertions.assertThrows(BadRequestException.class, () -> rdmSyncDao.getSimpleVersionedData(criteria));
     }
 
     /**
@@ -477,14 +478,14 @@ public class RdmSyncDaoTest extends BaseDaoTest {
                     map.remove("_sync_rec_id");
                     prepareRowToAssert(map);
                 }).collect(Collectors.toList());
-        Assert.assertEquals(tempDataRows, actualData_1_1);
+        assertEquals(tempDataRows, actualData_1_1);
 
         List<Map<String, Object>> actualData_1_0 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.0"))
                 .getContent().stream().peek(map -> {
                     map.remove("_sync_rec_id");
                     prepareRowToAssert(map);
                 }).collect(Collectors.toList());
-        Assert.assertEquals(rows, actualData_1_0);
+        assertEquals(rows, actualData_1_0);
 
         //повторно грузим версию
         rdmSyncDao.dropTable(temp_table);
@@ -501,7 +502,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
                     prepareRowToAssert(map);
                 }).collect(Collectors.toList());
         //оборачиваю в сет, чтобы игнорировать порядок
-        Assert.assertEquals(new HashSet<>(tempDataRows), new HashSet<>(actualData_1_1));
+        assertEquals(new HashSet<>(tempDataRows), new HashSet<>(actualData_1_1));
     }
 
     /**
@@ -549,7 +550,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
             map.remove("_sys_rec");
         });
         //оборачиваю в сет, чтобы игнорировать порядок
-        Assert.assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
+        assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
 
         //поверх данных грузим новую версию целиком
         rdmSyncDao.dropTable(tempTbl);
@@ -564,7 +565,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
             map.remove("rdm_sync_internal_local_row_state");
             map.remove("_sys_rec");
         });
-        Assert.assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
+        assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
     }
 
     private List<FieldMapping> generateFieldMappings() {
@@ -576,11 +577,11 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     private void assertMappingEquals(VersionMapping expected, VersionMapping actual) {
-        Assert.assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
-        Assert.assertEquals(expected.getDeletedField(), actual.getDeletedField());
-        Assert.assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
-        Assert.assertEquals(expected.getTable(), actual.getTable());
-        Assert.assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getMappingVersion(), actual.getMappingVersion());
+        assertEquals(expected.getDeletedField(), actual.getDeletedField());
+        assertEquals(expected.getPrimaryField(), actual.getPrimaryField());
+        assertEquals(expected.getTable(), actual.getTable());
+        assertEquals(expected.getType(), actual.getType());
     }
 
     private LocalDataCriteria createSyncedCriteria(String table) {
