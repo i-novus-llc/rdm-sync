@@ -4,6 +4,7 @@ import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.integration.spring.SpringLiquibase;
+import liquibase.integration.spring.SpringResourceAccessor;
 import liquibase.resource.ResourceAccessor;
 import org.apache.cxf.common.util.ReflectionUtil;
 import org.springframework.context.ApplicationContext;
@@ -31,10 +32,11 @@ public class InitCustomTaskChange implements CustomTaskChange {
     public void setFileOpener(final ResourceAccessor resourceAccessor) {
         final SpringLiquibase liquibase = ReflectionUtil.accessDeclaredField(
             "this$0",
-            SpringLiquibase.SpringResourceOpener.class,
+            SpringResourceAccessor.class,
             resourceAccessor,
             SpringLiquibase.class
         );
+
         final ApplicationContext context = (ApplicationContext) liquibase.getResourceLoader();
         initializer = context.getBean(RdmSyncInitializer.class);
     }
