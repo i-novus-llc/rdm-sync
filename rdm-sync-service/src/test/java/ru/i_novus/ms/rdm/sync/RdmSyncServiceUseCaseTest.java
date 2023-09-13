@@ -2,10 +2,7 @@ package ru.i_novus.ms.rdm.sync;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,9 +12,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
@@ -26,8 +28,8 @@ import java.util.Map;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("classpath:application-test.properties")
-@AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.OPENTABLE)
 @Import(TestConfig.class)
+@Testcontainers
 public class RdmSyncServiceUseCaseTest {
 
     @LocalServerPort
@@ -41,6 +43,32 @@ public class RdmSyncServiceUseCaseTest {
     private static final int MAX_TIMEOUT = 70;
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";
+
+
+    @Container
+    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>
+            ("postgres:15")
+            .withDatabaseName("rdm_sync")
+            .withUsername("postgres")
+            .withPassword("postgres");
+
+    @BeforeClass
+    public static void beforeAll() {
+        postgres.start();
+    }
+
+    @AfterClass
+    public static void afterAll() {
+        postgres.stop();
+    }
+
+    @DynamicPropertySource
+    public static void registerProperties(final DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
+    }
 
     @Before
     public void setUp() {
