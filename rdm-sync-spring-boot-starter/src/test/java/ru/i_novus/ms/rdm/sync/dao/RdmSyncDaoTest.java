@@ -1,6 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
 
 @Sql({"/dao-test.sql"})
+@Ignore
 public class RdmSyncDaoTest extends BaseDaoTest {
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";

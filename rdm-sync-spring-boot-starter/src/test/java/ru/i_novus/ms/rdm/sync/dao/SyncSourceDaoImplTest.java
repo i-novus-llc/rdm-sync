@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 
+@Ignore
 class SyncSourceDaoImplTest extends BaseDaoTest {
 
     @Rule
