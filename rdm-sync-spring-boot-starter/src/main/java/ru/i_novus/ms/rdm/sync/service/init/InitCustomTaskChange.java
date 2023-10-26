@@ -30,14 +30,13 @@ public class InitCustomTaskChange implements CustomTaskChange {
 
     @Override
     public void setFileOpener(final ResourceAccessor resourceAccessor) {
-        final SpringLiquibase liquibase = ReflectionUtil.accessDeclaredField(
-            "this$0",
-            SpringResourceAccessor.class,
-            resourceAccessor,
-            SpringLiquibase.class
+        final ApplicationContext context = ReflectionUtil.accessDeclaredField(
+                "resourceLoader",
+                SpringResourceAccessor.class,
+                resourceAccessor,
+                ApplicationContext.class
         );
 
-        final ApplicationContext context = (ApplicationContext) liquibase.getResourceLoader();
         initializer = context.getBean(RdmSyncInitializer.class);
     }
 
