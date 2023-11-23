@@ -8,7 +8,7 @@
     <parent>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
         <artifactId>rdm-sync</artifactId>
-        <version>1.36.7</version>
+        <version>1.36.8-SNAPSHOT</version>
     </parent>
 
     <properties>
