@@ -566,6 +566,68 @@ public class RdmSyncDaoTest extends BaseDaoTest {
             map.remove("_sys_rec");
         });
         assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
+
+    }
+
+    /**
+     * Строку пометили как удаленную, а потом вновь добавили
+     */
+    @Test
+    void testSyncNotVersionedWithNaturalPkWhenRevertDeletedRow() {
+        List<String> fields = List.of("ID", "name", "some_dt", "flag");
+        String refTbl = "ref_tbl_with_natural_pk";
+        String tempTbl = "temp_tbl_with_natural_pk";
+        rdmSyncDao.createTableWithNaturalPrimaryKeyIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "ID");
+        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists("public", refTbl);
+        rdmSyncDao.createVersionTempDataTbl(tempTbl, refTbl, "ID", "ID");
+
+        // добавляем данные
+        List<Map<String, Object>> rows = generateRows();
+        rdmSyncDao.insertRows(refTbl, rows, true);
+        rdmSyncDao.markDeleted(refTbl, "ID", DELETED_FIELD_COL, rows.get(0).get("ID"), LocalDateTime.now(), true);
+        rdmSyncDao.insertVersionAsTempData(tempTbl, rows);
+
+        rdmSyncDao.migrateNotVersionedTempData(tempTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
+
+        LocalDataCriteria criteria = new LocalDataCriteria( refTbl, "ID", 500, 0, null);
+        criteria.setDeleted( new DeletedCriteria(DELETED_FIELD_COL, false));
+        Page<Map<String, Object>> actualData = rdmSyncDao.getData(criteria);
+        actualData.forEach(map -> {
+            prepareRowToAssert(map);
+            map.remove(DELETED_FIELD_COL);
+            map.remove("rdm_sync_internal_local_row_state");
+            map.remove("_sys_rec");
+        });
+        assertEquals(rows, actualData.getContent());
+
+
+        //теперь тоже самое для diff
+
+        String tempDiffTbl = "diff_temp_tbl_with_natural_pk";
+        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl);
+
+        rdmSyncDao.insertDiffAsTempData(tempDiffTbl, new ArrayList<>(), new ArrayList<>(), rows);
+        rdmSyncDao.migrateDiffTempData(tempDiffTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
+
+        assertTrue(rdmSyncDao.getData(criteria).getContent().isEmpty());
+
+        rdmSyncDao.dropTable(tempDiffTbl);
+        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl);
+
+        rdmSyncDao.insertDiffAsTempData(tempDiffTbl, rows, new ArrayList<>(), new ArrayList<>() );
+        rdmSyncDao.migrateDiffTempData(tempDiffTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
+
+        actualData = rdmSyncDao.getData(criteria);
+        actualData.forEach(map -> {
+            prepareRowToAssert(map);
+            map.remove(DELETED_FIELD_COL);
+            map.remove("rdm_sync_internal_local_row_state");
+            map.remove("_sys_rec");
+        });
+        assertEquals(rows, actualData.getContent());
+
+
+
     }
 
     private List<FieldMapping> generateFieldMappings() {
