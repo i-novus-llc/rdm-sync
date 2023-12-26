@@ -31,7 +31,7 @@ public class NotVersionedPersisterService implements PersisterService {
     }
 
     @Override
-    public void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping,  DownloadResult downloadResult) {
+    public void merge(RefBookVersion newVersion, String syncedVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = dao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
 
         if (DownloadResultType.VERSION.equals(downloadResult.getType())) {
