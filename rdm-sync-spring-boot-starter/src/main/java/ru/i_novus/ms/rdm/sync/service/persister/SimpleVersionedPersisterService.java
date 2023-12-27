@@ -28,7 +28,7 @@ public class SimpleVersionedPersisterService implements PersisterService {
     }
 
     @Override
-    public void merge(RefBookVersion newVersion, String synchedVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
+    public void merge(RefBookVersion newVersion, String syncedVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         firstWrite(newVersion, versionMapping, downloadResult);
     }
 

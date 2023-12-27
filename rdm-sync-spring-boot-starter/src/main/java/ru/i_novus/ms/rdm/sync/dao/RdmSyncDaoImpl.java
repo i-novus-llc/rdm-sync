@@ -13,7 +13,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -1068,27 +1067,32 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void migrateNotVersionedTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
-        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
-                "SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE NOT EXISTS (SELECT 1 FROM {refTbl} WHERE {deletedField} IS NULL AND {pk} = {tempTbl}.{pk} );";
-        String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
+        String revertDeletedRowsQueryTemplate = "UPDATE {refTbl} SET({columns}, {deletedField}) = (SELECT {columns}, null::timestamp without time zone  FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
+                "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NOT NULL;";
+        String addNewRowsQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
+                "SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE NOT EXISTS (SELECT 1 FROM {refTbl} WHERE {pk} = {tempTbl}.{pk} );";
+        String updateEditRowsQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
-        String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
+        String markDeletedQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
         String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
 
-        String query = StringSubstitutor.replace(insertQueryTemplate + updateQueryTemplate + deleteQueryTemplate,
+        String query = StringSubstitutor.replace(revertDeletedRowsQueryTemplate + addNewRowsQueryTemplate + updateEditRowsQueryTemplate + markDeletedQueryTemplate,
                 Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
         namedParameterJdbcTemplate.update(query, Map.of("deletedTime", deletedTime));
     }
 
     @Override
     public void migrateDiffTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
-        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) (SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE diff_type = 'I');";
+        String revertDeletedRowsQueryTemplate = "UPDATE {refTbl} SET({columns}, {deletedField}) = (SELECT {columns}, null::timestamp without time zone  FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
+                "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk} AND diff_type = 'I' ) AND {deletedField} IS NOT NULL;";
+        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
+                "(SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE diff_type = 'I' AND NOT EXISTS(SELECT 1 FROM {refTbl} WHERE  {pk} = {tempTbl}.{pk} ));";
         String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'U' AND {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
         String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'D' AND {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
         String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
 
-        String query = StringSubstitutor.replace(insertQueryTemplate + updateQueryTemplate + deleteQueryTemplate,
+        String query = StringSubstitutor.replace(updateQueryTemplate + revertDeletedRowsQueryTemplate + insertQueryTemplate +  deleteQueryTemplate,
                 Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
         namedParameterJdbcTemplate.update(query, Map.of("deletedTime", deletedTime));
 
