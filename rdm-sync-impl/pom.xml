@@ -3,7 +3,7 @@
     <parent>
         <artifactId>rdm-sync</artifactId>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
-        <version>1.38.3-SNAPSHOT</version>
+        <version>1.38.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
