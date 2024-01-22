@@ -513,7 +513,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     public void testSyncNotVersionedDataLifeCycle() {
         String refTbl = "ref_tbl";
         String tempTbl = "temp_tbl";
-        rdmSyncDao.createTableIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "_sys_rec");
+        rdmSyncDao.createNotVersionedTableIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "_sys_rec", "ID");
         rdmSyncDao.addInternalLocalRowStateColumnIfNotExists("public", refTbl);
 
         List<Map<String, Object>> rows_1_0 = generateRows();

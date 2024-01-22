@@ -79,12 +79,13 @@ public class NotVersionedLocalRefBookCreatorTest {
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
 
         verify(rdmSyncDao, times(1))
-                .createTableIfNotExists(
+                .createNotVersionedTableIfNotExists(
                         eq("rdm"),
                         eq("ref_test_code"),
                         argThat(ignoreOrderEqList(expectedFieldMappingList)),
                         eq("deleted_ts"),
-                        eq("_sync_rec_id"));
+                        eq("_sync_rec_id"),
+                        eq("id"));
 
     }
 

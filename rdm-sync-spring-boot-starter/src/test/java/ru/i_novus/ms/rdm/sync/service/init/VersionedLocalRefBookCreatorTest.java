@@ -119,7 +119,7 @@ public class VersionedLocalRefBookCreatorTest {
         creator.create(versionAndFieldMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).createSchemaIfNotExists(any());
-        verify(rdmSyncDao, never()).createTableIfNotExists(any(), any(), any(), any(), any());
+        verify(rdmSyncDao, never()).createVersionedTableIfNotExists(any(), any(), any(), any());
     }
 
     private VersionAndFieldMapping createVersionAndFieldMappingByRefBookCode(String refBookCode){
