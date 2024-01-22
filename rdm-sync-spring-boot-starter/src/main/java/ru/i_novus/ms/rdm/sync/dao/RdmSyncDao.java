@@ -147,7 +147,7 @@ public interface RdmSyncDao {
     RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
     void createSchemaIfNotExists(String schema);
     void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn);
-    void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn);
+    void createNotVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, String primaryField);
 
     void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn);
 

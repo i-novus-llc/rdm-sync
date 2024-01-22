@@ -921,11 +921,16 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void createTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn) {
+    public void createNotVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, String primaryField) {
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
                         sysPkColumn, RECORD_SYS_COL_INFO)
         );
+        String addUniqueConstraint = "ALTER TABLE {schema}.{table} ADD CONSTRAINT {constraint} UNIQUE({column})";
+
+        getJdbcTemplate().execute(StringSubstitutor.replace(
+                addUniqueConstraint,
+                Map.of("schema", escapeName(schema), "table", escapeName(table), "constraint", escapeName(table+"_uq"), "column", escapeName(primaryField)), "{", "}"));
     }
 
     @Override
