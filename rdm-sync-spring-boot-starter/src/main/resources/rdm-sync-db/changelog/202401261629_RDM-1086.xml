@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202401261629_RDM-1086" author="shgaripov"  dbms="postgresql">
+        <comment>Обновление комментариев для полей таблиц.</comment>
+
+        <sql>
+        COMMENT ON TABLE rdm_sync.cluster_lock IS 'Таблица для блокирования процесса добавления соответствия полей';
+        COMMENT ON COLUMN rdm_sync.cluster_lock.last_acquired IS 'Время установки блокировки процесса добавления соответствия полей';
+        COMMENT ON COLUMN rdm_sync.field_mapping.mapping_id IS 'Ссылка на соответствие полей';
+        COMMENT ON TABLE rdm_sync.mapping IS 'Информация о соответствии полей';
+        COMMENT ON COLUMN rdm_sync.mapping.mapping_version IS 'Версия соответствия полей';
+        COMMENT ON COLUMN rdm_sync.mapping.mapping_last_updated IS 'Время последнего изменения соответствия полей';
+        COMMENT ON COLUMN rdm_sync.version.mapping_id IS 'Ссылка на соответствие полей';
+        COMMENT ON COLUMN rdm_sync.source.service_factory IS 'Реализация java-класса SyncSourceService';
+        COMMENT ON COLUMN loaded_version.close_dt IS 'Дата окончания версии';
+        COMMENT ON COLUMN mapping.sys_pk_field IS 'Наименование колонки первичного ключа таблицы';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
