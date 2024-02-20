@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.ms.rdm.sync</groupId>
     <artifactId>rdm-sync</artifactId>
-    <version>1.38.4-SNAPSHOT</version>
+    <version>1.38.4</version>
     <packaging>pom</packaging>
 
     <name>rdm-sync</name>
@@ -35,7 +35,7 @@
         <connection>scm:git:https://git.i-novus.ru/microservices/rdm-sync.git</connection>
         <url>https://git.i-novus.ru/microservices/rdm-sync</url>
         <developerConnection>scm:git:https://git.i-novus.ru/microservices/rdm-sync.git</developerConnection>
-        <tag>1.38.0</tag>
+        <tag>1.38.4</tag>
     </scm>
 
     <properties>
