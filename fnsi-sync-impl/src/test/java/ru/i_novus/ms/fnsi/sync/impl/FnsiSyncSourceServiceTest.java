@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum.*;
@@ -96,6 +97,8 @@ public class FnsiSyncSourceServiceTest {
         DataCriteria dataCriteria = new DataCriteria();
         dataCriteria.setCode(oid);
         dataCriteria.setPageSize(pageSize);
+        Set<String> fields = Set.of("ID", "NAME", "CODE", "RAZDEL", "DATE_BEGIN");
+        dataCriteria.setFields(fields);
         Page<Map<String, Object>> data = syncSourceService.getData(dataCriteria);
 
         assertEquals(174, data.getTotalElements());
@@ -152,6 +155,22 @@ public class FnsiSyncSourceServiceTest {
         dataCriteria.setPageNumber(2);
         data = syncSourceService.getData(dataCriteria);
         assertTrue(data.getContent().isEmpty());
+
+
+        // проверка что исключенная колонка не будет в результате
+        dataCriteria.setFields(Set.of("NAME", "CODE", "RAZDEL", "DATE_BEGIN"));
+        dataCriteria.setPageNumber(1);
+        data = syncSourceService.getData(dataCriteria);
+        assertEquals(
+                Map.of(
+                        "NAME", "Хирургическая, сосудистая и эндоваскулярная реваскуляризация магистральных артерий нижних конечностей при синдроме диабетической стопы",
+                        "RAZDEL", 2,
+                        "DATE_BEGIN", LocalDate.of(2019, 1, 1)
+
+                ),
+                data.getContent().get(0)
+        );
+
     }
 
 
@@ -162,7 +181,7 @@ public class FnsiSyncSourceServiceTest {
                 Map.of(
                         "ID", 1,
                         "SMOCOD", "01003",
-                        "CODPVP" , "001",
+                        "CODPVP", "001",
                         "ADDRESS", "Республика Адыгея, г. Майкоп, ул. Советская, 185",
                         "PHONE", "(8772) 59-32-00",
                         "DATEBEG", LocalDate.of(2017, 11, 21)
@@ -180,7 +199,7 @@ public class FnsiSyncSourceServiceTest {
         passportMockServer(oid, "3.13", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
 
 
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "3.13", "3.12");
+        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "3.13", "3.12", Set.of("ID", "SMOCOD", "CODPVP", "ADDRESS", "PHONE", "DATEBEG"));
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
 
 
@@ -189,6 +208,11 @@ public class FnsiSyncSourceServiceTest {
         assertEquals(1, diffContent.size());
         assertEquals(expected, diffContent.get(0));
         assertFalse(diff.isStructureChanged());
+
+        //проверка что используется только поля из критерия
+        VersionsDiffCriteria versionsDiffCriteria2 = new VersionsDiffCriteria(oid, "3.13", "3.12", Set.of("ID"));
+        assertEquals(Set.of("ID"), syncSourceService.getDiff(versionsDiffCriteria2).getRows().getContent().get(0).getRow().keySet());
+
     }
 
     @Test
@@ -201,7 +225,7 @@ public class FnsiSyncSourceServiceTest {
                 new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_v1.5_v1.6_diff.json")
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.6", "1.5");
+        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.6", "1.5", Set.of("ID", "CODE", "NAME"));
         assertTrue(syncSourceService.getDiff(versionsDiffCriteria).isStructureChanged());
     }
 
@@ -215,7 +239,7 @@ public class FnsiSyncSourceServiceTest {
                 new ClassPathResource("/fnsi_test_responses/empty_diff.json")
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.7", "1.6");
+        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.7", "1.6", Set.of("ID", "CODE", "NAME"));
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         assertFalse(diff.isStructureChanged());
         assertTrue(diff.getRows().isEmpty());

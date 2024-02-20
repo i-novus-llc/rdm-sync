@@ -95,7 +95,9 @@ public class  RdmSyncSourceService implements SyncSourceService {
                 versionService.search(rdmVersion.getId(), new SearchDataCriteria(dataCriteria.getPageNumber(), dataCriteria.getPageSize())),
                 refBookRowValue -> {
                     Map<String, Object> mapValue = new LinkedHashMap<>();
-                    refBookRowValue.getFieldValues().forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
+                    refBookRowValue.getFieldValues().stream()
+                            .filter(fieldValue -> dataCriteria.getFields().contains(fieldValue.getField()))
+                            .forEach(fieldVale -> mapValue.put(fieldVale.getField(), fieldVale.getValue()));
                     data.add(mapValue);
                     return mapValue;
                 });
@@ -118,15 +120,15 @@ public class  RdmSyncSourceService implements SyncSourceService {
         compareDataCriteria.setPageNumber(criteria.getPageNumber());
         RefBookDataDiff diff = compareService.compareData(compareDataCriteria);
 
-        return VersionsDiff.dataChangedInstance(PageMapper.map(diff.getRows(), this::convert));
+        return VersionsDiff.dataChangedInstance(PageMapper.map(diff.getRows(), diffRowValue -> convert(diffRowValue, criteria)));
     }
 
-    private RowDiff convert(DiffRowValue diffRowValue) {
+    private RowDiff convert(DiffRowValue diffRowValue, VersionsDiffCriteria criteria) {
         if (diffRowValue == null) {
             return null;
         }
         Map<String, Object> row = new LinkedHashMap<>();
-        diffRowValue.getValues().forEach(diffFieldValue -> {
+        diffRowValue.getValues().stream().filter(diffFieldValue -> criteria.getFields().contains(diffFieldValue.getField().getName())).forEach(diffFieldValue -> {
             if (diffRowValue.getStatus().equals(DiffStatusEnum.DELETED)) {
                 row.put(diffFieldValue.getField().getName(), diffFieldValue.getOldValue());
             } else {

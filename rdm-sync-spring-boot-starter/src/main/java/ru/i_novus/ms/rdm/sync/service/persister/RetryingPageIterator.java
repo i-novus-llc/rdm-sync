@@ -45,6 +45,7 @@ public class RetryingPageIterator<T> implements Iterator<Page<T>> {
             try {
                 return supplier.get();
             } catch (RuntimeException e) {
+                logger.error("cannot load page", e);
                 logger.warn(String.format("An error occurred, we will try again in %s seconds (%s tries left)", timeout / 1000, tries - count));
                 Thread.sleep(timeout);
             }

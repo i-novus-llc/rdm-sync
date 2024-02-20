@@ -5,11 +5,13 @@ import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DataCriteria extends RestCriteria {
 
     private String code;
     private String version;
+    private Set<String> fields;
 
     @Override
     protected List<Sort.Order> getDefaultOrders() {
@@ -30,5 +32,13 @@ public class DataCriteria extends RestCriteria {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Set<String> getFields() {
+        return fields;
+    }
+
+    public void setFields(Set<String> fields) {
+        this.fields = fields;
     }
 }
