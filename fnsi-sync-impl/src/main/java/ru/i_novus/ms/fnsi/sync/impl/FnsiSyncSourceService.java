@@ -94,12 +94,14 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 String value = cellNode.get("value").asText();
                 if (!"null".equals(value.trim())) {
                     String column = cellNode.get("column").asText();
-                    AttributeTypeEnum attributeTypeEnum = refBook.getStructure().getAttributesAndTypes().get(column);
-                    try {
-                        row.put(column, attributeTypeEnum.castValue(value));
-                    } catch (Exception e) {
-                        logger.error("cannot add value = {} to column {}", value, column);
-                        throw e;
+                    if (dataCriteria.getFields().contains(column)) {
+                        AttributeTypeEnum attributeTypeEnum = refBook.getStructure().getAttributesAndTypes().get(column);
+                        try {
+                            row.put(column, attributeTypeEnum.castValue(value));
+                        } catch (Exception e) {
+                            logger.error("cannot add value = {} to column {}", value, column);
+                            throw e;
+                        }
                     }
                 }
             });
@@ -135,6 +137,9 @@ public class FnsiSyncSourceService implements SyncSourceService {
             Map<String, AttributeTypeEnum> attributesAndTypes = refBookStructure.getAttributesAndTypes();
             Map<String, Object> row = new HashMap<>();
             for (Map.Entry<String, AttributeTypeEnum> entry : attributesAndTypes.entrySet()) {
+                if(!criteria.getFields().contains(entry.getKey())) {
+                    continue;
+                }
                 JsonNode nodeValue = diffNode.get(entry.getKey());
                 if (nodeValue.asText().trim().equals("null")) {
                     continue;

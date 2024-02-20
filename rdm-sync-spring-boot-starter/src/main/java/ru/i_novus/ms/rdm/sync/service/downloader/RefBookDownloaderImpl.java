@@ -18,10 +18,7 @@ import ru.i_novus.ms.rdm.sync.service.persister.RetryingPageIterator;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -79,6 +76,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
     private DownloadResult downloadVersion(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
         rdmSyncDao.createVersionTempDataTbl(tempTableName, versionMapping.getTable(), versionMapping.getSysPkColumn(), versionMapping.getPrimaryField());
         DataCriteria dataCriteria = new DataCriteria();
+        dataCriteria.setFields(fieldMappings.stream().map(FieldMapping::getRdmField).collect(Collectors.toSet()));
         dataCriteria.setVersion(refBookVersion.getVersion());
         dataCriteria.setCode(refBookVersion.getCode());
         dataCriteria.setPageSize(maxSize);
@@ -96,7 +94,8 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
     private DownloadResult downloadDiff(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
         LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(refBookVersion.getCode());
-        VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion());
+        Set<String> usesRefBookFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(Collectors.toSet());
+        VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion(), usesRefBookFields);
         criteria.setPageSize(maxSize);
         if(syncSourceService.getDiff(criteria).isStructureChanged()) {
             return downloadVersion(refBookVersion,  tempTableName, versionMapping, fieldMappings);

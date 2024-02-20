@@ -6,6 +6,7 @@ import ru.i_novus.ms.rdm.sync.api.model.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface SyncSourceService {
 
