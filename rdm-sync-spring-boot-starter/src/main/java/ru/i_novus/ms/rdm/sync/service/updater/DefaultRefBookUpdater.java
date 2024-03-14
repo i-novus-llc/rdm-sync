@@ -72,7 +72,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
             }
         } catch (final Exception e) {
             logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
-            throw new RefBookUpdaterException(e, versionMapping, refBookVersion);
+            throw new RefBookUpdaterException(e, versionMapping.getRefBookVersion(), refBookVersion.getVersion());
         }
     }
 
