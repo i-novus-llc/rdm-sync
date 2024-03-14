@@ -115,50 +115,68 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
+        List<String> versions = getVersions(refBookCode, syncRefBook);
+        for (String version : versions) {
+            // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
+            if (!syncVersion(refBookCode, syncRefBook, version)) return;
+        }
+    }
 
-        RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
+    private List<String> getVersions(String refBookCode, SyncRefBook syncRefBook) {
         final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService);
         List<String> versions;
         try {
             versions = determinator.getVersions();
-        } catch (Exception e) {
+        } catch (RefBookUpdaterException e) {
             logger.error("cannot get versions for refbook " + refBookCode, e);
+            loggingService.logError(
+                    refBookCode,
+                    e.getOldVersion(),
+                    e.getNewVersion(),
+                    e.getCause().getMessage(),
+                    ExceptionUtils.getStackTrace(e.getCause())
+            );
             versions = Collections.emptyList();
         }
-        for (String version : versions) {
-            try {
-                DownloadResult downloadResult = refBookDownloader.download(refBookCode, version);
-                refBookUpdater.update(syncSourceService.getRefBook(refBookCode, version), downloadResult);
-            } catch (final RefBookUpdaterException e) {
-                final Throwable cause = e.getCause();
-                logger.error(
-                    String.format(
-                        "Error while updating new version with code '%s'.",
+        return versions;
+    }
+
+    private boolean syncVersion(String refBookCode, SyncRefBook syncRefBook, String version) {
+        try {
+            RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
+
+            DownloadResult downloadResult = refBookDownloader.download(refBookCode, version);
+            refBookUpdater.update(syncSourceService.getRefBook(refBookCode, version), downloadResult);
+        } catch (final RefBookUpdaterException e) {
+            final Throwable cause = e.getCause();
+            logger.error(
+                String.format(
+                    "Error while updating new version with code '%s'.",
                         refBookCode
-                    ),
-                    cause
-                );
-                loggingService.logError(
+                ),
+                cause
+            );
+            loggingService.logError(
                     refBookCode,
-                    e.getVersionMapping().getRefBookVersion(),
-                    e.getNewVersion().getVersion(),
-                    cause.getMessage(),
-                    ExceptionUtils.getStackTrace(cause)
-                );
-                return;
-            } catch (Exception e) {
-                logger.error("cannot load version {} of refbook {}", version, refBookCode, e);
-                LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(refBookCode);
-                loggingService.logError(
-                        refBookCode,
-                        actualLoadedVersion != null ? actualLoadedVersion.getVersion() : null,
-                        version,
-                        e.getMessage(),
-                        ExceptionUtils.getStackTrace(e)
-                );
-                return;
-            }
+                e.getOldVersion(),
+                e.getNewVersion(),
+                cause.getMessage(),
+                ExceptionUtils.getStackTrace(cause)
+            );
+            return false;
+        } catch (Exception e) {
+            logger.error("cannot load version {} of refbook {}", version, refBookCode, e);
+            LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(refBookCode);
+            loggingService.logError(
+                    refBookCode,
+                    actualLoadedVersion != null ? actualLoadedVersion.getVersion() : null,
+                    version,
+                    e.getMessage(),
+                    ExceptionUtils.getStackTrace(e)
+            );
+            return false;
         }
+        return true;
     }
 
     @Override

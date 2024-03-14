@@ -1,29 +1,25 @@
 package ru.i_novus.ms.rdm.sync.service.updater;
 
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
-
 public class RefBookUpdaterException extends Exception {
 
-    private final VersionMapping versionMapping;
-    private final RefBookVersion newVersion;
+    private final String oldVersion;
+    private final String newVersion;
 
     public RefBookUpdaterException(
         final Exception cause,
-        final VersionMapping versionMapping,
-        final RefBookVersion newVersion
+        final String oldVersion,
+        final String newVersion
     ) {
         super(cause);
-        this.versionMapping = versionMapping;
+        this.oldVersion = oldVersion;
         this.newVersion = newVersion;
     }
 
-    public VersionMapping getVersionMapping() {
-        return versionMapping;
+    public String getOldVersion() {
+        return oldVersion;
     }
 
-    public RefBookVersion getNewVersion() {
+    public String getNewVersion() {
         return newVersion;
     }
-
 }
