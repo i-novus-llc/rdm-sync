@@ -11,6 +11,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 
 import java.time.LocalDateTime;
@@ -45,7 +46,7 @@ public class RefBookVersionsDeterminatorTest {
      * Ни одна версия не была загружена еще
      */
     @Test
-    public void testNoVersionLoaded() {
+    void testNoVersionLoaded() throws RefBookUpdaterException {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(generateVersions(code));
@@ -57,7 +58,7 @@ public class RefBookVersionsDeterminatorTest {
      * одна версия уже загружена, а другая нет
      */
     @Test
-    public void testSomeVersionIsLoaded() {
+    void testSomeVersionIsLoaded() throws RefBookUpdaterException {
         String code = "someCode";
         List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.singletonList(new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now(), true)));
@@ -70,7 +71,7 @@ public class RefBookVersionsDeterminatorTest {
      * Часть версий вне диапазона
      */
     @Test
-    public void testSomeVersionNotInRange() {
+    void testSomeVersionNotInRange() throws RefBookUpdaterException {
         String code = "someCode";
         List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
@@ -83,7 +84,7 @@ public class RefBookVersionsDeterminatorTest {
      * все версии уже загружены
      */
     @Test
-    public void testAllVersionsLoaded() {
+    void testAllVersionsLoaded() throws RefBookUpdaterException {
         String code = "someCode";
         List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
@@ -100,7 +101,7 @@ public class RefBookVersionsDeterminatorTest {
      * Диапазон на все версии
      */
     @Test
-    public void testLoadAllVersions() {
+    void testLoadAllVersions() throws RefBookUpdaterException {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(generateVersions(code));
@@ -112,7 +113,7 @@ public class RefBookVersionsDeterminatorTest {
      * Диапазон задан, все версии загружены, для всех один маппинг CURRENT и он меняется, тогда обновляем только актуальный
      */
     @Test
-    public void testAllVersionLoadedAndCurrentMappingChanged() {
+    void testAllVersionLoadedAndCurrentMappingChanged() throws RefBookUpdaterException {
         String code = "someCode";
         LocalDateTime now = LocalDateTime.now();
         List<RefBookVersionItem> versions = generateVersions(code);
@@ -129,7 +130,7 @@ public class RefBookVersionsDeterminatorTest {
     }
 
     @Test
-    public void testWhenRangeIsNull() {
+    void testWhenRangeIsNull() throws RefBookUpdaterException {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getRefBook(code, null)).thenReturn(new RefBookVersion(generateVersions(code).get(1), null));
@@ -141,7 +142,7 @@ public class RefBookVersionsDeterminatorTest {
      * Нет диапазона и последняя версия уже загружена
      */
     @Test
-    public void testWhenRangeIsNullAndHasLoadedVersion() {
+    void testWhenRangeIsNullAndHasLoadedVersion() throws RefBookUpdaterException {
         String code = "someCode";
         RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
@@ -156,7 +157,7 @@ public class RefBookVersionsDeterminatorTest {
      * Нет диапазона и последняя версия загружена со старым маппингом
      */
     @Test
-    public void testWhenRangeIsNullAndHasLoadedVersionAndNewMapping() {
+    void testWhenRangeIsNullAndHasLoadedVersionAndNewMapping() throws RefBookUpdaterException {
         String code = "someCode";
         RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         LocalDateTime now = LocalDateTime.now();
@@ -176,7 +177,7 @@ public class RefBookVersionsDeterminatorTest {
      * Нет диапазона, последняя версия загружена, обновлен текущий маппинг, но маппинг для версии тот же, поэтому не обновляем
      */
     @Test
-    public void testWhenRangeIsNullAndHasLoadedVersionAndOldMappingForSpecVersion() {
+    void testWhenRangeIsNullAndHasLoadedVersionAndOldMappingForSpecVersion() throws RefBookUpdaterException {
         String code = "someCode";
         RefBookVersion refBookVersion = new RefBookVersion(generateVersions(code).get(1), null);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
@@ -191,7 +192,7 @@ public class RefBookVersionsDeterminatorTest {
     }
 
     @Test
-    public void testLoadRdmNotVersioned(){
+    void testLoadRdmNotVersioned() throws RefBookUpdaterException {
         String code = "someCode";
         VersionMapping versionMapping = new VersionMapping(1,code, "someName", "1",
                 "someTable", "id", "RDM", "id", "is_deleted", LocalDateTime.of(2022, 4, 1, 10, 0),
@@ -213,14 +214,6 @@ public class RefBookVersionsDeterminatorTest {
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
 
         Assert.assertEquals(Collections.singletonList("-1"), determinator.getVersions());
-    }
-
-    /**
-     * нет диапазона версий и  нет изменений
-     */
-    @Test
-    public void testNoChangesByCurrent() {
-
     }
 
     // проверка что нет первичного ключа
