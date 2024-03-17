@@ -57,8 +57,6 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
     @Override
     public DownloadResult download(String refCode, @Nullable String version) {
-        logger.info("trying to download version {} of {}", version, refCode);
-
         String tempTableName = ("temp_" + refCode + "_" + version).replace(".", "_");
         rdmSyncDao.dropTable(tempTableName);
         VersionMapping versionMapping = rdmSyncDao.getVersionMapping(refCode, "CURRENT");
@@ -68,8 +66,10 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         if(rdmSyncDao.getLoadedVersion(refCode, version) == null && rdmSyncDao.existsLoadedVersion(refCode)
                 && !SyncTypeEnum.SIMPLE_VERSIONED.equals(rdmSyncDao.getSyncRefBook(refCode).getType())
         ) {
+            logger.info("trying to download diff for version {} of {}", version, refCode);
             downloadResult = downloadDiff(refBookVersion, tempTableName, versionMapping, fieldMappings);
         } else {
+            logger.info("trying to download version {} of {}", version, refCode);
             downloadResult = downloadVersion(refBookVersion, tempTableName, versionMapping, fieldMappings);
         }
         logger.info("version {} of {} was downloaded", version, refCode);
@@ -82,6 +82,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         dataCriteria.setVersion(refBookVersion.getVersion());
         dataCriteria.setCode(refBookVersion.getCode());
         dataCriteria.setPageSize(maxSize);
+        dataCriteria.setRefBookStructure(refBookVersion.getStructure());
 
         RetryingPageIterator<Map<String, Object>> iter = new RetryingPageIterator<>(new PageIterator<>
                 (syncSourceService::getData, dataCriteria, true),
@@ -96,9 +97,10 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
     private DownloadResult downloadDiff(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
         LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(refBookVersion.getCode());
-        VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion());
+        VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion(), refBookVersion.getStructure());
         criteria.setPageSize(maxSize);
         if(syncSourceService.getDiff(criteria).isStructureChanged()) {
+            logger.info("structure refbook {} version {} was changed, downloading full version", refBookVersion.getCode(), refBookVersion.getVersion());
             return downloadVersion(refBookVersion,  tempTableName, versionMapping, fieldMappings);
         }
         rdmSyncDao.createDiffTempDataTbl(tempTableName, versionMapping.getTable());
@@ -129,7 +131,6 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         return new DownloadResult(tempTableName, DownloadResultType.DIFF);
     }
 
-    //неверсионный но первый раз
 
     private void logProgress(String refBookCode, RestCriteria criteria, Page currentPage) {
         int totalPages = currentPage.getContent().isEmpty() ? 1 : (int) Math.ceil((double) currentPage.getTotalElements() / (double) criteria.getPageSize());
@@ -138,7 +139,6 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         } else if (totalPages == criteria.getPageNumber() + 1) {
             logger.info("refbook {} {} rows of {} downloaded", refBookCode, currentPage.getTotalElements(), currentPage.getTotalElements());
         }
-
     }
 
     /**

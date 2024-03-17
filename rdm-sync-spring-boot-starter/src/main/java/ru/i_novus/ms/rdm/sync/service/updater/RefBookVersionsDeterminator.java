@@ -62,10 +62,11 @@ public class RefBookVersionsDeterminator {
                     .map(RefBookVersionItem::getVersion)
                     .collect(Collectors.toList());
             if(versions.isEmpty()) {
-                throw new RefBookUpdaterException(new IllegalStateException("cannot find versions"), finalActualVersion, null);
+                logger.info("there are no downloadable versions for refbook {}", refBook.getCode());
             }
             return versions;
         } catch (RuntimeException e) {
+            logger.error("cannot get versions", e);
             throw new RefBookUpdaterException(e, actualLoadedVersion, null);
         }
     }
