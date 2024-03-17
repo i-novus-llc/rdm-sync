@@ -22,7 +22,6 @@ import ru.i_novus.ms.rdm.sync.impl.util.PageMapper;
 import ru.i_novus.platform.datastorage.temporal.enums.DiffStatusEnum;
 import ru.i_novus.platform.datastorage.temporal.model.value.DiffRowValue;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -116,7 +115,7 @@ public class  RdmSyncSourceService implements SyncSourceService {
         CompareDataCriteria compareDataCriteria = new CompareDataCriteria();
         compareDataCriteria.setOldVersionId(oldVersionId);
         compareDataCriteria.setNewVersionId(newVersionId);
-        compareDataCriteria.setPageSize(100);
+        compareDataCriteria.setPageSize(criteria.getPageSize());
         compareDataCriteria.setPageNumber(criteria.getPageNumber());
         RefBookDataDiff diff = compareService.compareData(compareDataCriteria);
 

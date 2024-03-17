@@ -68,11 +68,22 @@ public class FnsiSyncSourceService implements SyncSourceService {
     @Override
     public List<RefBookVersionItem> getVersions(String code) {
         List<RefBookVersionItem> result = new ArrayList<>();
-        Iterator<JsonNode> versionNodeIterator = requestVersions(code).get("list").elements();
-        while (versionNodeIterator.hasNext()) {
-            JsonNode versionNode = versionNodeIterator.next();
-            String version = versionNode.get("version").asText();
-            result.add(new RefBookVersionItem(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null));
+        int page = 1;
+        JsonNode versionsNode = requestVersions(code, page);
+        int total = versionsNode.get("total").asInt();
+        int pageCount = (total + 200 - 1) /200;
+        while (pageCount >= page) {
+            if(versionsNode == null) {
+                versionsNode = requestVersions(code, page);
+            }
+            Iterator<JsonNode> versionNodeIterator = versionsNode.get("list").elements();
+            while (versionNodeIterator.hasNext()) {
+                JsonNode versionNode = versionNodeIterator.next();
+                String version = versionNode.get("version").asText();
+                result.add(new RefBookVersionItem(code, version, LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter), null, null));
+            }
+            versionsNode = null;
+            page++;
         }
         result.sort(Comparator.comparing(RefBookVersionItem::getFrom));
         for (int i = 0; i < result.size() - 1; i++) {
@@ -85,7 +96,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
     @Override
     public Page<Map<String, Object>> getData(DataCriteria dataCriteria) {
-        RefBookVersion refBook = getRefBook(dataCriteria.getCode(), dataCriteria.getVersion());
+        RefBookStructure refBookStructure = dataCriteria.getRefBookStructure();
         JsonNode jsonNode = requestData(dataCriteria.getCode(), dataCriteria.getVersion(), dataCriteria.getPageNumber() + 1, dataCriteria.getPageSize());
         List<Map<String, Object>> data = new ArrayList<>();
         jsonNode.get("list").elements().forEachRemaining(itemNode -> {
@@ -95,7 +106,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 if (!"null".equals(value.trim())) {
                     String column = cellNode.get("column").asText();
                     if (dataCriteria.getFields().contains(column)) {
-                        AttributeTypeEnum attributeTypeEnum = refBook.getStructure().getAttributesAndTypes().get(column);
+                        AttributeTypeEnum attributeTypeEnum = refBookStructure.getAttributesAndTypes().get(column);
                         try {
                             row.put(column, attributeTypeEnum.castValue(value));
                         } catch (Exception e) {
@@ -112,18 +123,12 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
     @Override
     public VersionsDiff getDiff(VersionsDiffCriteria criteria) {
-        LocalDateTime fromDate = null;
-        LocalDateTime toDate = null;
-        Iterator<JsonNode> versionNodeIterator = requestVersions(criteria.getRefBookCode()).get("list").elements();
-        while (versionNodeIterator.hasNext() && (fromDate == null || toDate == null)) {
-            JsonNode versionNode = versionNodeIterator.next();
-            if (versionNode.get("version").asText().equals(criteria.getOldVersion())) {
-                fromDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
-            } else if (versionNode.get("version").asText().equals(criteria.getNewVersion())) {
-                toDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
-            }
+        if (criteria.getFromDate() == null && criteria.getToDate() == null) {
+            initVersionDates(criteria);
         }
-        JsonNode jsonNode = requestDiff(criteria.getRefBookCode(), fromDate, toDate, criteria.getPageNumber() + 1);
+        LocalDateTime fromDate = criteria.getFromDate();
+        LocalDateTime toDate = criteria.getToDate();
+        JsonNode jsonNode = requestDiff(criteria.getRefBookCode(), fromDate, toDate, criteria.getPageNumber() + 1, criteria.getPageSize());
         if ("ERROR".equals(jsonNode.get("result").asText().trim())) {
             return getErrorDiff(jsonNode);
         }
@@ -131,10 +136,10 @@ public class FnsiSyncSourceService implements SyncSourceService {
             return VersionsDiff.structureChangedInstance();
         }
         JsonNode diffsNode = jsonNode.get("data").get("list");
+        int total = jsonNode.get("data").get("total").intValue();
         List<RowDiff> rowDiffList = new ArrayList<>();
-        RefBookStructure refBookStructure = getRefBookStructure(criteria.getRefBookCode(), criteria.getNewVersion());
         diffsNode.elements().forEachRemaining(diffNode -> {
-            Map<String, AttributeTypeEnum> attributesAndTypes = refBookStructure.getAttributesAndTypes();
+            Map<String, AttributeTypeEnum> attributesAndTypes = criteria.getNewVersionStructure().getAttributesAndTypes();
             Map<String, Object> row = new HashMap<>();
             for (Map.Entry<String, AttributeTypeEnum> entry : attributesAndTypes.entrySet()) {
                 if(!criteria.getFields().contains(entry.getKey())) {
@@ -149,7 +154,36 @@ public class FnsiSyncSourceService implements SyncSourceService {
             RowDiff rowDiff = new RowDiff(getRowDiffStatusEnum(diffNode.get("operation").asText()), row);
             rowDiffList.add(rowDiff);
         });
-        return VersionsDiff.dataChangedInstance(new PageImpl<>(rowDiffList));
+        return VersionsDiff.dataChangedInstance(new PageImpl<>(rowDiffList, criteria, total));
+    }
+
+    private void initVersionDates(VersionsDiffCriteria criteria) {
+        LocalDateTime fromDate = null;
+        LocalDateTime toDate = null;
+        int page = 1;
+        JsonNode versionsNode = requestVersions(criteria.getRefBookCode(), page);
+        int totalVersions = versionsNode.get("total").asInt();
+        int pageCount = (totalVersions + 200 - 1) /200;
+        while ((fromDate == null || toDate == null) && pageCount >= page) {
+            if(versionsNode == null) {
+                versionsNode = requestVersions(criteria.getRefBookCode(), page);
+            }
+            Iterator<JsonNode> versionNodeIterator = versionsNode.get("list").elements();
+            while (versionNodeIterator.hasNext() && (fromDate == null || toDate == null)) {
+                JsonNode versionNode = versionNodeIterator.next();
+                if (versionNode.get("version").asText().equals(criteria.getOldVersion())) {
+                    fromDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
+                } else if (versionNode.get("version").asText().equals(criteria.getNewVersion())) {
+                    toDate = LocalDateTime.parse(versionNode.get("publishDate").asText(), formatter);
+                }
+            }
+            versionsNode = null;
+            page++;
+
+        }
+        // кэшируем даты чтобы на последующих страницах не делать лишние запросы за датами
+        criteria.setFromDate(fromDate);
+        criteria.setToDate(toDate);
     }
 
     private VersionsDiff getErrorDiff(JsonNode jsonNode) {
@@ -169,13 +203,13 @@ public class FnsiSyncSourceService implements SyncSourceService {
         }
     }
 
-    private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page) {
+    private JsonNode requestDiff(String oid, LocalDateTime fromDate, LocalDateTime toDate, int page, int size) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return request(Map.of("userKey", userKey, "identifier", oid, "date1", dtf.format(fromDate), "date2", dtf.format(toDate), "page", page, "size", 200), "/rest/compare");
+        return request(Map.of("userKey", userKey, "identifier", oid, "date1", dtf.format(fromDate), "date2", dtf.format(toDate), "page", page, "size", size), "/rest/compare");
     }
 
-    private JsonNode requestVersions(String oid) {
-        return request(Map.of("userKey", userKey, "identifier", oid, "page", 1, "size", 200), "/rest/versions");
+    private JsonNode requestVersions(String oid, int page) {
+        return request(Map.of("userKey", userKey, "identifier", oid, "page", page, "size", 200), "/rest/versions");
     }
 
 
