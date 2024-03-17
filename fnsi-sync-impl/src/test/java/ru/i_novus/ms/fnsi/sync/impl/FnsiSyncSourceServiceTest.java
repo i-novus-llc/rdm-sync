@@ -207,6 +207,7 @@ class FnsiSyncSourceServiceTest {
                 Set.of("ID", "SMOCOD", "CODPVP", "ADDRESS", "PHONE", "DATEBEG"),
                 new RefBookStructure(Collections.emptyList(), List.of("ID"), Map.of("ID", INTEGER, "SMOCOD", STRING, "CODPVP", STRING, "ADDRESS", STRING, "PHONE", STRING, "DATEBEG", DATE, "DATEEND", DATE))
         );
+        versionsDiffCriteria.setPageSize(200);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
 
 
@@ -219,6 +220,7 @@ class FnsiSyncSourceServiceTest {
         //проверка что используется только поля из критерия
         VersionsDiffCriteria versionsDiffCriteria2 = new VersionsDiffCriteria(oid, "3.13", "3.12", Set.of("ID"),
                 new RefBookStructure(Collections.emptyList(), List.of("ID"), Map.of("ID", INTEGER, "SMOCOD", STRING, "CODPVP", STRING, "ADDRESS", STRING, "PHONE", STRING, "DATEBEG", DATE, "DATEEND", DATE)));
+        versionsDiffCriteria2.setPageSize(200);
         assertEquals(Set.of("ID"), syncSourceService.getDiff(versionsDiffCriteria2).getRows().getContent().get(0).getRow().keySet());
 
     }
@@ -235,6 +237,7 @@ class FnsiSyncSourceServiceTest {
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
         VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.6", "1.5", Set.of("ID", "CODE", "NAME"),
                 new RefBookStructure());
+        versionsDiffCriteria.setPageSize(200);
         assertTrue(syncSourceService.getDiff(versionsDiffCriteria).isStructureChanged());
     }
 
@@ -249,6 +252,7 @@ class FnsiSyncSourceServiceTest {
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
         VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.7", "1.6", Set.of("ID", "CODE", "NAME"), new RefBookStructure());
+        versionsDiffCriteria.setPageSize(200);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         assertFalse(diff.isStructureChanged());
         assertTrue(diff.getRows().isEmpty());
