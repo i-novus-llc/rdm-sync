@@ -12,6 +12,10 @@ public class DataCriteria extends RestCriteria {
     private String code;
     private String version;
     private Set<String> fields;
+    /**
+     * Чтобы каждый раз не запрашивать структуру из НСИ, кэшируем ее при первом обращении
+     */
+    private RefBookStructure refBookStructure;
 
     @Override
     protected List<Sort.Order> getDefaultOrders() {
@@ -40,5 +44,13 @@ public class DataCriteria extends RestCriteria {
 
     public void setFields(Set<String> fields) {
         this.fields = fields;
+    }
+
+    public RefBookStructure getRefBookStructure() {
+        return refBookStructure;
+    }
+
+    public void setRefBookStructure(RefBookStructure refBookStructure) {
+        this.refBookStructure = refBookStructure;
     }
 }
