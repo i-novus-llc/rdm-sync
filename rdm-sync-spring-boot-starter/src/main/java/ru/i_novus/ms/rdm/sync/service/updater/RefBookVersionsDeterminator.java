@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -37,30 +36,39 @@ public class RefBookVersionsDeterminator {
         this.syncSourceService = syncSourceService;
     }
 
-    public List<String> getVersions() {
+    public List<String> getVersions() throws RefBookUpdaterException {
 
         List<LoadedVersion> loadedVersions = rdmSyncDao.getLoadedVersions(refBook.getCode());
 
         String actualLoadedVersion = null;
-        for (LoadedVersion loadedVersion : loadedVersions ) {
-            if(Boolean.TRUE.equals(loadedVersion.getActual())) {
-                actualLoadedVersion = loadedVersion.getVersion();
+        try {
+            for (LoadedVersion loadedVersion : loadedVersions ) {
+                if(Boolean.TRUE.equals(loadedVersion.getActual())) {
+                    actualLoadedVersion = loadedVersion.getVersion();
+                }
             }
+            Stream<RefBookVersionItem> refBookVersionStream;
+            if(refBook.getRange() == null) {
+                refBookVersionStream = Stream.of(syncSourceService.getRefBook(this.refBook.getCode(), null));
+            } else {
+                List<RefBookVersionItem> allVersions = syncSourceService.getVersions(refBook.getCode());
+                List<VersionsRange> ranges = getRanges(refBook.getRange(), allVersions);
+                refBookVersionStream =  allVersions.stream()
+                        .filter(refBookVersion -> ranges.stream().anyMatch(range -> range.contains(refBookVersion)));
+            }
+            final String finalActualVersion = actualLoadedVersion;
+            List<String> versions = refBookVersionStream
+                    .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersions, finalActualVersion))
+                    .map(RefBookVersionItem::getVersion)
+                    .collect(Collectors.toList());
+            if(versions.isEmpty()) {
+                logger.info("there are no downloadable versions for refbook {}", refBook.getCode());
+            }
+            return versions;
+        } catch (RuntimeException e) {
+            logger.error("cannot get versions", e);
+            throw new RefBookUpdaterException(e, actualLoadedVersion, null);
         }
-        Stream<RefBookVersionItem> refBookVersionStream;
-        if(refBook.getRange() == null) {
-            refBookVersionStream = Stream.of(syncSourceService.getRefBook(this.refBook.getCode(), null));
-        } else {
-            List<RefBookVersionItem> allVersions = syncSourceService.getVersions(refBook.getCode());
-            List<VersionsRange> ranges = getRanges(refBook.getRange(), allVersions);
-            refBookVersionStream =  allVersions.stream()
-                    .filter(refBookVersion -> ranges.stream().anyMatch(range -> range.contains(refBookVersion)));
-        }
-        final String finalActualVersion = actualLoadedVersion;
-        return refBookVersionStream
-                .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersions, finalActualVersion))
-                .map(RefBookVersionItem::getVersion)
-                .collect(Collectors.toList());
     }
 
     private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<LoadedVersion> loadedVersions, String actualVersion) {
