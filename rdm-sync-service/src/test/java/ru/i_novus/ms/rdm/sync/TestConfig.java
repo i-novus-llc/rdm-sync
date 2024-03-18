@@ -324,7 +324,7 @@ public class TestConfig {
 
     private void compareMockServer(MockRestServiceServer mockServer, String identifier, LocalDateTime fromDate, LocalDateTime toDate, int page,  ClassPathResource body) throws URISyntaxException {
         DateTimeFormatter dtf =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        Map<String, String> params = Map.of("identifier", identifier, "date1", encode(dtf.format(fromDate)), "date2", encode(dtf.format(toDate)), "page", ""+page, "size", "200");
+        Map<String, String> params = Map.of("identifier", identifier, "date1", encode(dtf.format(fromDate)), "date2", encode(dtf.format(toDate)), "page", ""+page, "size", "100");
         fnsiApiMockServer(mockServer, null, "/rest/compare", params, body);
     }
 
