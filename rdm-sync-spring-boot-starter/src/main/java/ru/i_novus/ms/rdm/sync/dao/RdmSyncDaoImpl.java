@@ -198,7 +198,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<FieldMapping> getFieldMappings(String refbookCode) {
 
-        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field \n" +
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
                 "  FROM rdm_sync.field_mapping m \n" +
                 " WHERE m.mapping_id = ( \n" +
                 "       SELECT v.mapping_id \n" +
@@ -214,14 +214,16 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 (rs, rowNum) -> new FieldMapping(
                         rs.getString(1),
                         rs.getString(2),
-                        rs.getString(3)
+                        rs.getString(3),
+                        rs.getBoolean(4),
+                        rs.getString(5)
                 )
         );
     }
 
     @Override
     public List<FieldMapping> getFieldMappings(Integer mappingId) {
-        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field \n" +
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
                 "  FROM rdm_sync.field_mapping m \n" +
                 " WHERE m.mapping_id = :mappingId";
 
@@ -230,7 +232,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 (rs, rowNum) -> new FieldMapping(
                         rs.getString(1),
                         rs.getString(2),
-                        rs.getString(3)
+                        rs.getString(3),
+                        rs.getBoolean(4),
+                        rs.getString(5)
                 )
         );
     }
@@ -572,8 +576,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         getJdbcTemplate().update(sqlDelete, mappingId);
 
         final String sqlInsert = "INSERT INTO rdm_sync.field_mapping \n" +
-                "      (mapping_id, sys_field, sys_data_type, rdm_field) \n" +
-                "VALUES(?, ?, ?, ?)";
+                "      (mapping_id, sys_field, sys_data_type, rdm_field, ignore_if_not_exists, default_value) \n" +
+                "VALUES(?, ?, ?, ?, ?, ?)";
 
         getJdbcTemplate().batchUpdate(sqlInsert,
                 new BatchPreparedStatementSetter() {
@@ -584,6 +588,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         ps.setString(2, fieldMappings.get(i).getSysField());
                         ps.setString(3, fieldMappings.get(i).getSysDataType());
                         ps.setString(4, fieldMappings.get(i).getRdmField());
+                        ps.setBoolean(5, fieldMappings.get(i).getIgnoreIfNotExists());
+                        ps.setString(6, fieldMappings.get(i).getDefaultValue());
                     }
 
                     public int getBatchSize() {

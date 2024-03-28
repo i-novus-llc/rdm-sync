@@ -245,6 +245,23 @@ public class TestConfig {
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
         fnsiMock(mockServer, OID);
         fnsiMock(mockServer, XML_OID);
+        //1.2.643.5.1.13.13.11.1040
+        searchRefBookMockServer(mockServer, "1.2.643.5.1.13.13.11.1040", noVersionLoaded("1.2.643.5.1.13.13.11.1040"), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_refbook_v1.0.json"));
+        searchRefBookMockServer(mockServer, "1.2.643.5.1.13.13.11.1040", versionLoaded("1.2.643.5.1.13.13.11.1040", "1.0"), new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_refbook_v2.1.json"));
+        versionsMockServer(mockServer, "1.2.643.5.1.13.13.11.1040", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_versions.json"));
+        passportMockServer(mockServer, "1.2.643.5.1.13.13.11.1040", "1.0", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_passport_v1.0.json"));
+        passportMockServer(mockServer, "1.2.643.5.1.13.13.11.1040", "2.1", new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_passport_v2.1.json"));
+        dataMockServer(mockServer, noVersionLoaded("1.2.643.5.1.13.13.11.1040"), "1.2.643.5.1.13.13.11.1040", 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_data_v1.0.json"));
+        dataMockServer(mockServer, noVersionLoaded("1.2.643.5.1.13.13.11.1040"), "1.2.643.5.1.13.13.11.1040", 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_data_empty_page.json"));
+        dataMockServer(mockServer, versionLoaded("1.2.643.5.1.13.13.11.1040", "1.0"), "1.2.643.5.1.13.13.11.1040", 1, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_data_v2.1.json"));
+        dataMockServer(mockServer, versionLoaded("1.2.643.5.1.13.13.11.1040", "1.0"), "1.2.643.5.1.13.13.11.1040", 2, 100, new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_data_empty_page.json"));
+        compareMockServer(
+                mockServer,
+                "1.2.643.5.1.13.13.11.1040",
+                LocalDateTime.of(2016, 12, 6, 0, 0),
+                LocalDateTime.of(2016, 12, 18, 0, 0),
+                1,
+                new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.13.11.1040_diff_v1.0_v2.1.json"));
         return new FnsiSyncSourceServiceFactory(restTemplate);
     }
 
@@ -281,6 +298,9 @@ public class TestConfig {
                 LocalDateTime.of(2018, 8, 28, 15, 48),
                 2,
                 new ClassPathResource("/fnsi_responses/1.2.643.5.1.13.2.1.1.725_diff_v1.2_v1.8_page2.json"));
+
+
+
     }
 
     private void fnsiApiMockServer(MockRestServiceServer mockServer, RequestMatcher additionalMatcher, String methodUrl, Map<String, String> params, Resource body) throws URISyntaxException {

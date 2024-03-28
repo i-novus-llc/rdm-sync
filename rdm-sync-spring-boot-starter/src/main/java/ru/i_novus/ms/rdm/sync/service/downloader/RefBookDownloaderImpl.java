@@ -85,12 +85,23 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         RetryingPageIterator<Map<String, Object>> iter = new RetryingPageIterator<>(new PageIterator<>
                 (syncSourceService::getData, dataCriteria, true),
                 tries, timeout);
+        Map<String, Object> defaultValues = getDefaultValues(refBookVersion, fieldMappings);
         while (iter.hasNext()) {
             Page<Map<String, Object>> nextPage = iter.next();
-            rdmSyncDao.insertVersionAsTempData(tempTableName, nextPage.getContent().stream().map(row -> mapRow(row, refBookVersion, fieldMappings)).collect(Collectors.toList()));
+            rdmSyncDao.insertVersionAsTempData(tempTableName, nextPage.getContent().stream().map(row -> {
+                row.putAll(defaultValues);
+                return mapRow(row, refBookVersion, fieldMappings);
+            }).collect(Collectors.toList()));
             logProgress(refBookVersion.getCode(), dataCriteria, nextPage);
         }
         return new DownloadResult(tempTableName, DownloadResultType.VERSION);
+    }
+
+    private Map<String, Object> getDefaultValues(RefBookVersion refBookVersion, List<FieldMapping> fieldMappings) {
+        return fieldMappings
+                .stream()
+                .filter(fieldMapping -> fieldMapping.getDefaultValue() != null && !refBookVersion.getStructure().getAttributesAndTypes().keySet().contains(fieldMapping.getRdmField()))
+                .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getDefaultValue));
     }
 
     private DownloadResult downloadDiff(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {

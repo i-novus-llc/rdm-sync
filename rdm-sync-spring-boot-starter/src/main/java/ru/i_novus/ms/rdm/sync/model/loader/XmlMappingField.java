@@ -16,6 +16,10 @@ public class XmlMappingField {
 
     private String sysField;
 
+    private boolean ignoreIfNotExists;
+
+    private String defaultValue;
+
     @XmlAttribute(name = "rdm-field", required = true)
     public String getRdmField() {
         return rdmField;
@@ -43,6 +47,24 @@ public class XmlMappingField {
         this.sysField = sysField;
     }
 
+    @XmlAttribute(name = "ignore-if-not-exists")
+    public boolean isIgnoreIfNotExists() {
+        return ignoreIfNotExists;
+    }
+
+    public void setIgnoreIfNotExists(boolean ignoreIfNotExists) {
+        this.ignoreIfNotExists = ignoreIfNotExists;
+    }
+
+    @XmlAttribute(name = "default-value")
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     public static XmlMappingField createBy(FieldMapping mapping) {
 
         XmlMappingField result = new XmlMappingField();
@@ -50,11 +72,13 @@ public class XmlMappingField {
         result.setSysDataType(mapping.getSysDataType());
         result.setSysField(mapping.getSysField());
         result.setRdmField(mapping.getRdmField());
+        result.setIgnoreIfNotExists(mapping.getIgnoreIfNotExists());
+        result.setDefaultValue(mapping.getDefaultValue());
 
         return result;
     }
 
     public FieldMapping convertToFieldMapping() {
-        return new FieldMapping(sysField, sysDataType, rdmField);
+        return new FieldMapping(sysField, sysDataType, rdmField, ignoreIfNotExists, defaultValue);
     }
 }

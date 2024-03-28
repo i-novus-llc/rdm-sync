@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
@@ -27,7 +27,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected abstract void createTable(String refBookCode, VersionMapping mapping);
 
-    public BaseLocalRefBookCreator(String defaultSchema,
+    protected BaseLocalRefBookCreator(String defaultSchema,
                                    Boolean caseIgnore,
                                    RdmSyncDao dao,
                                    SyncSourceDao syncSourceDao) {
@@ -39,17 +39,17 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(VersionAndFieldMapping versionAndFieldMapping) {
-        String refBookCode = versionAndFieldMapping.getVersionMapping().getCode();
+    public void create(SyncMapping syncMapping) {
+        String refBookCode = syncMapping.getVersionMapping().getCode();
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, versionAndFieldMapping.getVersionMapping().getRefBookVersion());
-        saveMapping(versionAndFieldMapping.getVersionMapping(), versionAndFieldMapping.getFieldMapping(), versionMapping);
+        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
+        saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
 
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
         if (versionMapping == null) {
-            createTable(refBookCode, versionAndFieldMapping.getVersionMapping());
+            createTable(refBookCode, syncMapping.getVersionMapping());
         }
     }
 

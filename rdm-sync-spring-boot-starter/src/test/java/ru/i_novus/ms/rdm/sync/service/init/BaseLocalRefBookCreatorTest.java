@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
@@ -19,7 +19,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class BaseLocalRefBookCreatorTest {
+class BaseLocalRefBookCreatorTest {
 
     @Mock
     private SyncSourceDao syncSourceDao;
@@ -36,13 +36,13 @@ public class BaseLocalRefBookCreatorTest {
      * Первая загрузка маппинга и создание таблицы
      */
     @Test
-    public void testFirstCreate() {
+    void testFirstCreate() {
         VersionMapping versionMapping = MappingCreator.createVersionMapping();
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
 
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
-        creator.create(new VersionAndFieldMapping(versionMapping, fieldMappings));
+        creator.create(new SyncMapping(versionMapping, fieldMappings));
         verify(dao).insertVersionMapping(versionMapping);
         verify(dao).insertFieldMapping(anyInt(), eq(fieldMappings));
         Assertions.assertEquals(versionMapping, createTableArgCaptor.get(1));
@@ -52,13 +52,13 @@ public class BaseLocalRefBookCreatorTest {
      * Маппинг не менялся и таблицы уже созданы
      */
     @Test
-    public void testNoCreate() {
+    void testNoCreate() {
         VersionMapping versionMapping = MappingCreator.createVersionMapping();
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
         when(dao.getVersionMapping(versionMapping.getCode(), "CURRENT")).thenReturn(versionMapping);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
-        creator.create(new VersionAndFieldMapping( versionMapping, fieldMappings));
+        creator.create(new SyncMapping( versionMapping, fieldMappings));
         verify(dao, never()).insertVersionMapping(any());
         verify(dao, never()).insertFieldMapping(anyInt(), anyList());
         Assertions.assertTrue(createTableArgCaptor.isEmpty());
@@ -68,7 +68,7 @@ public class BaseLocalRefBookCreatorTest {
      * Маппинг изменился, а таблица уже есть
      */
     @Test
-    public void testMappingChanged() {
+    void testMappingChanged() {
         VersionMapping newVersionMapping = MappingCreator.createVersionMapping();
         newVersionMapping.setMappingVersion(1);
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
@@ -77,7 +77,7 @@ public class BaseLocalRefBookCreatorTest {
         when(dao.getVersionMapping(newVersionMapping.getCode(), "CURRENT")).thenReturn(oldVersionMapping);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
-        creator.create(new VersionAndFieldMapping( newVersionMapping, fieldMappings));
+        creator.create(new SyncMapping( newVersionMapping, fieldMappings));
         verify(dao).updateCurrentMapping(newVersionMapping);
         verify(dao).insertFieldMapping(oldVersionMapping.getMappingId(), fieldMappings);
         Assertions.assertTrue(createTableArgCaptor.isEmpty());

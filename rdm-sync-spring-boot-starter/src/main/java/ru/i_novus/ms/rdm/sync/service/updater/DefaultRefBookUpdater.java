@@ -118,7 +118,11 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
     }
 
     private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings) {
-        List<String> clientRdmFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(toList());
+        List<String> clientRdmFields = fieldMappings
+                .stream()
+                .filter(fieldMapping -> (!fieldMapping.getIgnoreIfNotExists() && fieldMapping.getDefaultValue() == null))
+                .map(FieldMapping::getRdmField)
+                .collect(toList());
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
         if (!actualFields.containsAll(clientRdmFields)) {
             // В новой версии удалены поля, которые ведутся в системе

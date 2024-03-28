@@ -7,14 +7,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
@@ -38,7 +37,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = AutoCreateRefBookProperty.class)
 @EnableConfigurationProperties(AutoCreateRefBookProperty.class)
 @TestPropertySource("classpath:mapping-sources/test-mapping-source.properties")
-public class PropMappingSourceServiceTest {
+class PropMappingSourceServiceTest {
 
     @Mock
     private SyncSourceDao syncSourceDao;
@@ -81,7 +80,7 @@ public class PropMappingSourceServiceTest {
      * Получение списка {@link VersionMapping} из *.properties
      */
     @Test
-    public void testGetVersionMappingListFromProperties() {
+    void testGetVersionMappingListFromProperties() {
 
         RefBookStructure structure = new RefBookStructure(null, List.of("id"), Map.of("name", AttributeTypeEnum.STRING));
         RefBookVersion refBookVersion = new RefBookVersion("EK003", "1", null, null, null, structure);
@@ -89,7 +88,7 @@ public class PropMappingSourceServiceTest {
         when(syncSourceService.getRefBook(any(), any())).thenReturn(refBookVersion);
 
         VersionMapping expectedVersionMapping = MappingCreator.createVersionMapping();
-        VersionAndFieldMapping actualVersionMapping = propMappingSourceService.getVersionAndFieldMappingList().get(0);
+        SyncMapping actualVersionMapping = propMappingSourceService.getMappings().get(0);
 
         Assertions.assertEquals(expectedVersionMapping.getCode(), actualVersionMapping.getVersionMapping().getCode());
     }
@@ -98,15 +97,15 @@ public class PropMappingSourceServiceTest {
      * Ситуация когда лоадер источника маппинга не нашел справочник, в этом случае должен вернуться пустой список
      */
     @Test
-    public void testLoaderSourceMappingWithoutRefbooks() {
+    void testLoaderSourceMappingWithoutRefbooks() {
         AutoCreateRefBookProperty autoCreateRefBookPropertyWithoutRefbooks = new AutoCreateRefBookProperty();
         PropMappingSourceService propMappingSourceServiceWithoutRefbooks =
                 new PropMappingSourceService(syncSourceDao, rdmSyncDao,syncSourceServiceFactorySet,
                         caseIgnore, defaultSchema, autoCreateRefBookPropertyWithoutRefbooks);
 
-        List<VersionAndFieldMapping> actualEmptyVersionMappingList = propMappingSourceServiceWithoutRefbooks
-                .getVersionAndFieldMappingList();
-        List<VersionAndFieldMapping> expectedEmptyVersionMappingList = Collections.emptyList();
+        List<SyncMapping> actualEmptyVersionMappingList = propMappingSourceServiceWithoutRefbooks
+                .getMappings();
+        List<SyncMapping> expectedEmptyVersionMappingList = Collections.emptyList();
 
         Assertions.assertEquals(expectedEmptyVersionMappingList, actualEmptyVersionMappingList);
     }

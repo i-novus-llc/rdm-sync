@@ -9,7 +9,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
@@ -23,7 +23,7 @@ import java.util.Set;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NotVersionedLocalRefBookCreatorTest {
+class NotVersionedLocalRefBookCreatorTest {
 
     @InjectMocks
     private NotVersionedLocalRefBookCreator creator;
@@ -49,7 +49,7 @@ public class NotVersionedLocalRefBookCreatorTest {
     }
 
     @Test
-    public void testCreate() {
+    void testCreate() {
         Integer mappingId = 1;
         String code = "test.code";
         String refBookName = "test.name";
@@ -93,11 +93,11 @@ public class NotVersionedLocalRefBookCreatorTest {
      * маппинг уже есть, поэтому игнорируем
      */
     @Test
-    public void testIgnoreCreateWhenRefBookWasLoaded() {
+    void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
         when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
-        VersionAndFieldMapping versionAndFieldMapping = createVersionMapping(code);
-        creator.create(versionAndFieldMapping);
+        SyncMapping syncMapping = createVersionMapping(code);
+        creator.create(syncMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).insertVersionMapping(any());
 
@@ -109,12 +109,12 @@ public class NotVersionedLocalRefBookCreatorTest {
         return list -> list.size()==expectedList.size() && list.containsAll(expectedList) && expectedList.containsAll(list);
     }
 
-    private VersionAndFieldMapping createVersionMapping(String testCode) {
+    private SyncMapping createVersionMapping(String testCode) {
         VersionMapping versionMapping = new VersionMapping(1, testCode, "test.name",
                 "CURRENT", "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
                 "id", "deleted_ts", null, -1, null,
                 SyncTypeEnum.NOT_VERSIONED, null);
-        return new VersionAndFieldMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
+        return new SyncMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
     }
 
 }

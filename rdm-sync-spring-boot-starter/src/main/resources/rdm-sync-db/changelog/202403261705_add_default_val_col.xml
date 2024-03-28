@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202403261705_add_default_val_col" author="tnurdinov"  dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists schemaName="rdm_sync" tableName="field_mapping" columnName="default_value"/>
+            </not>
+        </preConditions>
+        <comment>Добавление колонки для возможности указания значения по умолчанию для несуществующих аттрибутов.</comment>
+        <sql>
+            ALTER TABLE rdm_sync.field_mapping ADD COLUMN default_value text;
+            COMMENT ON COLUMN rdm_sync.field_mapping.default_value IS 'Значение по умолчанию для несуществующих аттрибутов';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

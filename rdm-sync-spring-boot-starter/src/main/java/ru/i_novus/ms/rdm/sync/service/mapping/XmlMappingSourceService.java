@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.init.RdmSyncInitializer;
@@ -40,7 +40,7 @@ public class XmlMappingSourceService implements MappingSourceService {
     }
 
     @Override
-    public List<VersionAndFieldMapping> getVersionAndFieldMappingList() {
+    public List<SyncMapping> getMappings() {
         try (InputStream io = RdmSyncInitializer.class.getResourceAsStream(rdmMappingXmlPath)) {
 
             if (io == null) {
@@ -60,9 +60,9 @@ public class XmlMappingSourceService implements MappingSourceService {
         }
     }
 
-    private List<VersionAndFieldMapping> toVersionMappingList(List<XmlMappingRefBook> refBooks) {
+    private List<SyncMapping> toVersionMappingList(List<XmlMappingRefBook> refBooks) {
         return refBooks.stream()
-                .map(XmlMappingRefBook::convertToVersionAndFieldMapping)
+                .map(XmlMappingRefBook::convertToSyncMapping)
                 .collect(Collectors.toList());
     }
 

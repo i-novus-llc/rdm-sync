@@ -31,6 +31,10 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             return AttributeTypeEnum.BOOLEAN.equals(attributeType) ? mapBoolean(clientType, value) : null;
         }
 
+        if(attributeType == null) {
+            attributeType = getAttributeType(clientType);
+        }
+
         Object result = null;
         switch (attributeType) {
             case STRING:
@@ -50,6 +54,25 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         }
 
         return result;
+    }
+
+    private AttributeTypeEnum getAttributeType(DataTypeEnum clientType) {
+        switch (clientType) {
+            case BOOLEAN:
+                return AttributeTypeEnum.BOOLEAN;
+            case DATE:
+                return AttributeTypeEnum.DATE;
+            case FLOAT:
+                return AttributeTypeEnum.FLOAT;
+            case INTEGER:
+                return AttributeTypeEnum.INTEGER;
+            case JSONB:
+                return AttributeTypeEnum.REFERENCE;
+            case VARCHAR:
+                return AttributeTypeEnum.STRING;
+
+        }
+        throw new IllegalArgumentException("unknown type " + clientType);
     }
 
     private Object mapInteger(DataTypeEnum clientType, Object value) {

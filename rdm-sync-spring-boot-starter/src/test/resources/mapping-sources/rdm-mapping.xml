@@ -6,5 +6,7 @@
         <field rdm-field="code_en" sys-data-type="varchar" sys-field="code_en"/>
         <field rdm-field="id" sys-data-type="integer" sys-field="id"/>
         <field rdm-field="is_cold" sys-data-type="boolean" sys-field="is_cold"/>
+        <field rdm-field="some_ignored_field" sys-data-type="varchar" sys-field="some_ignored_field" ignore-if-not-exists="true"/>
+        <field rdm-field="def_val_field" sys-data-type="varchar" sys-field="def_val_field" default-value="some default value"/>
     </refbook>
 </mapping>

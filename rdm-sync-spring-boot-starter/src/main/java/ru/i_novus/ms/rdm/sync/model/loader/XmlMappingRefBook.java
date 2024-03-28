@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
@@ -156,8 +156,8 @@ public class XmlMappingRefBook {
         this.refBookVersion = refBookVersion;
     }
 
-    public VersionAndFieldMapping convertToVersionAndFieldMapping() {
-        return new VersionAndFieldMapping(generateVersionMapping(), generateFieldMappings());
+    public SyncMapping convertToSyncMapping() {
+        return new SyncMapping(generateVersionMapping(), generateFieldMappings());
     }
 
     private VersionMapping generateVersionMapping() {
