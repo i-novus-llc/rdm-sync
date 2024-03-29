@@ -100,29 +100,29 @@ public class TestConfig {
         RefBook xmlek003Ver3_0 = getRefBook("/rdm_responses/EK003_version_3.0.json", EK003, XML_EK003);
         RefBook xmlek003Ver3_1 = getRefBook("/rdm_responses/EK003_version_3.1.json", EK003, XML_EK003);
 
-        when(refBookService.search(argThat(refBookCriteria -> refBookCriteria!=null && Set.of(EK002, XML_EK002).contains(refBookCriteria.getCode()))))
+        when(refBookService.search(argThat(refBookCriteria -> refBookCriteria!=null && Set.of(EK002, XML_EK002).contains(refBookCriteria.getCodeExact()))))
                 .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
                     RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
                     if (refBookCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    boolean ver1IsLoaded = versionIsLoaded(refBookCriteria.getCode(), "1");
+                    boolean ver1IsLoaded = versionIsLoaded(refBookCriteria.getCodeExact(), "1");
                     if(!ver1IsLoaded) {
-                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK002) ? ek002Ver1 : xmlek002Ver1));
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK002) ? ek002Ver1 : xmlek002Ver1));
                     } else
-                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK002) ? ek002Ver2 : xmlek002Ver2));
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK002) ? ek002Ver2 : xmlek002Ver2));
                 });
-        when(refBookService.search(argThat(refBookCriteria -> Set.of(EK003, XML_EK003).contains(refBookCriteria.getCode()))))
+        when(refBookService.search(argThat(refBookCriteria -> Set.of(EK003, XML_EK003).contains(refBookCriteria.getCodeExact()))))
                 .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
                     RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
                     if (refBookCriteria.getPageNumber() >= 1) {
                         return new RestPage<>(Collections.emptyList());
                     }
-                    boolean ver3_0IsLoaded = versionIsLoaded(refBookCriteria.getCode(), "3.0");
+                    boolean ver3_0IsLoaded = versionIsLoaded(refBookCriteria.getCodeExact(), "3.0");
                     if(!ver3_0IsLoaded  ) {
-                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK003) ? ek003Ver3_0 : xmlek003Ver3_0));
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK003) ? ek003Ver3_0 : xmlek003Ver3_0));
                     } else
-                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCode().equals(EK003) ? ek003Ver3_1 : xmlek003Ver3_1));
+                        return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK003) ? ek003Ver3_1 : xmlek003Ver3_1));
 
                 });
         return refBookService;
