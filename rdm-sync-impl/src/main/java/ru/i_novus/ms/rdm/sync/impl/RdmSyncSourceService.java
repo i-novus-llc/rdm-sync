@@ -53,7 +53,7 @@ public class  RdmSyncSourceService implements SyncSourceService {
             rdmRefBook = versionService.getVersion(version, code);
         } else {
             RefBookCriteria refBookCriteria = new RefBookCriteria();
-            refBookCriteria.setCode(code);
+            refBookCriteria.setCodeExact(code);
             refBookCriteria.setSourceType(RefBookSourceType.LAST_PUBLISHED);
 
             Page<ru.i_novus.ms.rdm.api.model.refbook.RefBook> pageOfRdmRefBooks = refBookService.search(refBookCriteria);
