@@ -1,0 +1,24 @@
+{
+  "result": "OK",
+  "resultCode": null,
+  "resultText": null,
+  "total": 2,
+  "list": [
+    {
+      "version": "2.1",
+      "createDate": "06.12.2016",
+      "publishDate": "18.12.2016 00:00",
+      "lastUpdate": "15.12.2022 15:00",
+      "releaseNotes": "<strong>АББРЕВИАТУРЫ:</strong>\n\nОтсутствуют\n\n<strong>НАЗНАЧЕНИЕ:</strong>\n\nСправочник \"Пол пациента\" предназначен для использования в системах ведения ИЭМК и документов ЭМК с целью возможности отметить пол пациента.\n\n<strong>ДОПОЛНИТЕЛЬНЫЕ ИСТОЧНИКИ ИНФОРМАЦИИ:</strong>\n\nОтсутствуют",
+      "archive": false
+    },
+    {
+      "version": "1.0",
+      "createDate": "06.12.2016",
+      "publishDate": "06.12.2016 00:00",
+      "lastUpdate": "06.12.2016 00:00",
+      "releaseNotes": "Классификатор типов пола",
+      "archive": true
+    }
+  ]
+}

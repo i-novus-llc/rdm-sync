@@ -2,11 +2,15 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.List;
 
+@ToString
 @AllArgsConstructor
-public class VersionAndFieldMapping {
+@EqualsAndHashCode
+public class SyncMapping {
 
     private VersionMapping versionMapping;
 

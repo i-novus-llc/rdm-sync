@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 public class RetryingPageIterator<T> implements Iterator<Page<T>> {
 
-    private final static Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
+    private static final Logger logger = LoggerFactory.getLogger(RetryingPageIterator.class);
 
     private final Iterator<Page<T>> original;
     private final int tries;

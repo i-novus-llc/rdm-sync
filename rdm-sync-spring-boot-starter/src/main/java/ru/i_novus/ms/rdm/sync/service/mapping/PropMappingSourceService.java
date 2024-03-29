@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
@@ -58,26 +58,26 @@ public class PropMappingSourceService implements MappingSourceService {
     }
 
     @Override
-    public List<VersionAndFieldMapping> getVersionAndFieldMappingList() {
+    public List<SyncMapping> getMappings() {
 
         List<AutoCreateRefBookPropertyValue> autoCreateOnPropValues =
                 autoCreateRefBookProperties == null || autoCreateRefBookProperties.getRefbooks() == null
                         ? new ArrayList<>()
                         : autoCreateRefBookProperties.getRefbooks();
-        List<VersionAndFieldMapping> versionAndFieldMappings = new ArrayList<>();
+        List<SyncMapping> syncMappings = new ArrayList<>();
 
         autoCreateOnPropValues.forEach(refbook ->
-                versionAndFieldMappings.add(createMapping(refbook)));
+                syncMappings.add(createMapping(refbook)));
 
-        return versionAndFieldMappings;
+        return syncMappings;
     }
 
-    private VersionAndFieldMapping createMapping(AutoCreateRefBookPropertyValue refbook) {
+    private SyncMapping createMapping(AutoCreateRefBookPropertyValue refbook) {
         RefBookVersion lastPublished = getSyncSourceService(refbook.getSource()).getRefBook(refbook.getCode(), null);
         if (lastPublished == null) {
             throw new IllegalArgumentException(refbook.getCode() + " not found in " + refbook.getCode());
         }
-        return new VersionAndFieldMapping(
+        return new SyncMapping(
                 generateVersionMapping(refbook,  lastPublished.getStructure()),
                 generateFieldMappings(lastPublished.getStructure())
         );

@@ -212,10 +212,12 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 Для автоматического создания таблиц необходимо в xml-конфигурации указать значения code, sys-table, type, source, name
 <br/>`code` - код, оид справочника
 <br/> `source` - источник, RDM или значение из  `rdm-sync.source.fnsi.values[*].code` для ФНСИ
-<br/> `name` - человекочитаемое наименование справочника, по умолчанию будет равно значнию атрибута `code`
+<br/> `name` - человеко-читаемое наименование справочника, по умолчанию будет равно значению атрибута `code`
 <br/> `type` - тип синхронизации, подробнее [тут](Типы-синхронизации)
 <br/> `range` - диапазон версий справочника, подробнее [тут](Задание-диапазона-версий-справочника)
 <br/> `sys-table` - наименование таблицы справочника, подробнее [тут](создание-таблиц)  
+<br/> `ignore-if-not-exists` - признак игнорирования атрибута при его отсутствии в НСИ у справочника. true - игнорировать, false(дефолтное значение) - выдавать ошибку.
+<br/> `default-value` - значение по умолчанию атрибута при его отсутствии в НСИ у справочника. Если задан этот атрибут, то не нужно указывать ignore-if-not-exists 
 <br/>
 <br/>
 Пример:
@@ -232,6 +234,8 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
     <refbook code="R001" sys-table="rdm.some_table" type="RDM_NOT_VERSIONED" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Еще какой-то справочник из RDM" range="*">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
+        <field sys-field="id" sys-data-type="integer" rdm-field="id" ignore-if-not-exists="true"/>
+        <field sys-field="new_id" sys-data-type="integer" rdm-field="new_id" default-value="-1"/>
     </refbook>
 
     <refbook code="1.2.643.5.1.13.2.1.1.725" sys-table="rdm.some_table2" type="SIMPLE_VERSIONED" unique-sys-field="code" mapping-version="1" source="FNSI" name="Еще какой-то справочник из ФНСИ" range="*">

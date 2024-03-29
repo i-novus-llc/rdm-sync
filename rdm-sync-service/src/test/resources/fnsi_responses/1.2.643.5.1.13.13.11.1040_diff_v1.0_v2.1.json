@@ -1,0 +1,67 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "fields": [
+    {
+      "field": {
+        "Name": "ID",
+        "Alias": "Код ",
+        "Description": "уникальный идентификатор",
+        "DataType": "INTEGER",
+        "Number": 1,
+        "Visible": true
+      },
+      "operation": "ALTER_ADD_COLUMN"
+    },
+    {
+      "field": {
+        "Name": "CODE",
+        "Alias": "CODE",
+        "Description": "Уникальный идентификатор (УИ). (первичный ключ)",
+        "DataType": "INTEGER",
+        "Number": 1,
+        "Visible": true
+      },
+      "operation": "ALTER_DROP_COLUMN"
+    }
+  ],
+  "keys": [
+    {
+      "key": {
+        "number": 1,
+        "field": "ID",
+        "type": "PRIMARY"
+      },
+      "operation": "ALTER_ADD_KEY"
+    },
+    {
+      "key": {
+        "number": 1,
+        "field": "CODE",
+        "type": "PRIMARY"
+      },
+      "operation": "ALTER_DROP_KEY"
+    }
+  ],
+  "data": {
+    "total": 3,
+    "list": [
+      {
+        "NAME": "Мужской",
+        "ID": 1,
+        "operation": "UPDATE"
+      },
+      {
+        "NAME": "Женский",
+        "ID": 2,
+        "operation": "UPDATE"
+      },
+      {
+        "NAME": "Неопределенный",
+        "ID": 3,
+        "operation": "UPDATE"
+      }
+    ]
+  }
+}

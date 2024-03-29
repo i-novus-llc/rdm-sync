@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Disabled("Не используется тестируемый класс")
-public class VersionedLocalRefBookCreatorTest {
+class VersionedLocalRefBookCreatorTest {
 
     @InjectMocks
     private VersionedLocalRefBookCreator creator;
@@ -61,15 +61,15 @@ public class VersionedLocalRefBookCreatorTest {
     }
 
     @Test
-    public void testCreate() {
+    void testCreate() {
         String testCode = "test";
         String source = "some source";
         List<FieldMapping> fieldMappings = createFieldMappings();
-        VersionAndFieldMapping versionAndFieldMapping = createVersionAndFieldMappingByRefBookCode(testCode);
-        when(rdmSyncDao.getFieldMappings(versionAndFieldMapping.getVersionMapping().getId())).thenReturn(fieldMappings);
-        creator.create(versionAndFieldMapping);
-        versionAndFieldMapping.getVersionMapping().setId(null);
-        verify(rdmSyncDao, times(1)).insertVersionMapping(versionAndFieldMapping.getVersionMapping());
+        SyncMapping syncMapping = createVersionAndFieldMappingByRefBookCode(testCode);
+        when(rdmSyncDao.getFieldMappings(syncMapping.getVersionMapping().getId())).thenReturn(fieldMappings);
+        creator.create(syncMapping);
+        syncMapping.getVersionMapping().setId(null);
+        verify(rdmSyncDao, times(1)).insertVersionMapping(syncMapping.getVersionMapping());
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
 
         verify(rdmSyncDao, times(1))
@@ -85,16 +85,16 @@ public class VersionedLocalRefBookCreatorTest {
      * создание таблицы при существующем маппинге
      */
     @Test
-    public void testCreateWithExistingMapping() {
+    void testCreateWithExistingMapping() {
         String testCode = "test";
         String source = "some source";
         List<FieldMapping> fieldMappings = createFieldMappings();
 
-        VersionAndFieldMapping versionAndFieldMapping = createVersionAndFieldMappingByRefBookCode(testCode);
-        when(rdmSyncDao.getVersionMapping(testCode, "CURRENT")).thenReturn(versionAndFieldMapping.getVersionMapping());
-        when(rdmSyncDao.getFieldMappings(versionAndFieldMapping.getVersionMapping().getId())).thenReturn(fieldMappings);
+        SyncMapping syncMapping = createVersionAndFieldMappingByRefBookCode(testCode);
+        when(rdmSyncDao.getVersionMapping(testCode, "CURRENT")).thenReturn(syncMapping.getVersionMapping());
+        when(rdmSyncDao.getFieldMappings(syncMapping.getVersionMapping().getId())).thenReturn(fieldMappings);
 
-        creator.create(versionAndFieldMapping);
+        creator.create(syncMapping);
 
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, times(1)).createSchemaIfNotExists("rdm");
@@ -112,18 +112,18 @@ public class VersionedLocalRefBookCreatorTest {
      * игнорируем создание маппинга и таблицы если была загруженна хоть одна версия
      */
     @Test
-    public void testIgnoreCreateIfExistsLoadedVersion() {
-        VersionAndFieldMapping versionAndFieldMapping = createVersionAndFieldMappingByRefBookCode("test");
+    void testIgnoreCreateIfExistsLoadedVersion() {
+        SyncMapping syncMapping = createVersionAndFieldMappingByRefBookCode("test");
 
         when(rdmSyncDao.existsLoadedVersion(any())).thenReturn(true);
-        creator.create(versionAndFieldMapping);
+        creator.create(syncMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
         verify(rdmSyncDao, never()).createSchemaIfNotExists(any());
         verify(rdmSyncDao, never()).createVersionedTableIfNotExists(any(), any(), any(), any());
     }
 
-    private VersionAndFieldMapping createVersionAndFieldMappingByRefBookCode(String refBookCode){
-        return new VersionAndFieldMapping(createVersionMapping(refBookCode), createFieldMappings());
+    private SyncMapping createVersionAndFieldMappingByRefBookCode(String refBookCode){
+        return new SyncMapping(createVersionMapping(refBookCode), createFieldMappings());
     }
 
     private VersionMapping createVersionMapping(String testCode) {

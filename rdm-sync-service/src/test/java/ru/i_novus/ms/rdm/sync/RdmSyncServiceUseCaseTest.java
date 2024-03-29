@@ -2,10 +2,7 @@ package ru.i_novus.ms.rdm.sync;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +24,9 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,12 +82,12 @@ public class RdmSyncServiceUseCaseTest {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Test
-    public void testLoadAndReadRefBookAutoCreatedOnProperties() throws InterruptedException, JsonProcessingException {
+    void testLoadAndReadRefBookAutoCreatedOnProperties() throws InterruptedException, JsonProcessingException {
         testLoadAndReadNotVersionedRefBook(TestConfig.EK002);
     }
 
     @Test
-    public void testLoadAndReadRefBookAutoCreatedOnXml() throws InterruptedException, JsonProcessingException {
+    void testLoadAndReadRefBookAutoCreatedOnXml() throws InterruptedException, JsonProcessingException {
         testLoadAndReadNotVersionedRefBook(TestConfig.XML_EK002);
     }
 
@@ -129,14 +129,35 @@ public class RdmSyncServiceUseCaseTest {
     }
 
     @Test
-    public void testFnsiSync() throws InterruptedException {
+    void testFnsiSync() throws InterruptedException {
         testFnsiSync(TestConfig.OID);
     }
 
     @Test
-    public void testFnsiSyncAutoCreatedOnXml() throws InterruptedException {
+    void testFnsiSyncAutoCreatedOnXml() throws InterruptedException {
         testFnsiSync(TestConfig.XML_OID);
     }
+
+    @Test
+    void testDefaultValue() throws InterruptedException {
+        String oid = "1.2.643.5.1.13.13.11.1040";
+        ResponseEntity<String> startResponse = startSync(oid);
+        assertEquals(204, startResponse.getStatusCodeValue());
+        for (int i = 0; i<MAX_TIMEOUT && rdmSyncDao.getLoadedVersion(oid, "1.0") == null; i++) {
+            Thread.sleep(1000);
+        }
+        Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/version/1.0" +  "?getDeleted=false", Map.class).getBody();
+        assertEquals(3, getTotalElements(result));
+        List<Map<String, Object>> resultRows = getResultRows(result);
+        resultRows.forEach( row -> Assertions.assertEquals("-1", row.get("src_id").toString()));
+
+        // версия 2.1
+        result = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/version/2.1" +  "?getDeleted=false", Map.class).getBody();
+        assertEquals(3, getTotalElements(result));
+        resultRows = getResultRows(result);
+        Assertions.assertEquals(Set.of("1", "2", "3"), resultRows.stream().map(row -> row.get("src_id").toString()).collect(Collectors.toSet()));
+    }
+
 
     private void testFnsiSync(String oid) throws InterruptedException {
 
@@ -187,15 +208,15 @@ public class RdmSyncServiceUseCaseTest {
     }
 
     /**
-     * Загрузка справочника c с версиями
+     * Загрузка справочника с версиями
      */
     @Test
-    public void testRdmLoadSimpleVersionedAutoCreatedOnProperties() throws InterruptedException {
+    void testRdmLoadSimpleVersionedAutoCreatedOnProperties() throws InterruptedException {
         testRdmLoadSimpleVersioned(TestConfig.EK003);
     }
 
     @Test
-    public void testRdmLoadSimpleVersionedAutoCreatedOnXml() throws InterruptedException {
+    void testRdmLoadSimpleVersionedAutoCreatedOnXml() throws InterruptedException {
         testRdmLoadSimpleVersioned(TestConfig.XML_EK003);
     }
 

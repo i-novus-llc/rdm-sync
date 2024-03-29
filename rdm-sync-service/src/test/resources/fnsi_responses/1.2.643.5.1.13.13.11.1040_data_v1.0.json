@@ -1,0 +1,38 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 3,
+  "list": [
+    [
+      {
+        "column": "CODE",
+        "value": "3"
+      },
+      {
+        "column": "NAME",
+        "value": "Не определенный"
+      }
+    ],
+    [
+      {
+        "column": "CODE",
+        "value": "2"
+      },
+      {
+        "column": "NAME",
+        "value": "Женский"
+      }
+    ],
+    [
+      {
+        "column": "CODE",
+        "value": "1"
+      },
+      {
+        "column": "NAME",
+        "value": "Мужской"
+      }
+    ]
+  ]
+}

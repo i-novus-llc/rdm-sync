@@ -1,0 +1,60 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "identifier": "C51007",
+  "oid": "1.2.643.5.1.13.13.11.1040",
+  "version": "1.0",
+  "rowsCount": 3,
+  "createDate": "06.12.2016 00:00",
+  "publishDate": "06.12.2016 00:00",
+  "lastUpdate": "06.12.2016 00:00",
+  "fullName": "Классификатор половой принадлежности",
+  "shortName": "Классификатор половой принадлежности",
+  "description": "Классификатор типов пола",
+  "structureNotes": "1)CODE, Уникальный идентификатор (УИ). (первичный ключ);\n2)NAME, Название записи;",
+  "releaseNotes": "",
+  "laws": [],
+  "respOrganizationId": null,
+  "authOrganizationId": null,
+  "typeId": null,
+  "groupId": 13,
+  "approveDate": "30.06.2026",
+  "fields": [
+    {
+      "field": "CODE",
+      "dataType": "INTEGER",
+      "alias": "CODE",
+      "description": "Уникальный идентификатор (УИ). (первичный ключ)"
+    },
+    {
+      "field": "NAME",
+      "dataType": "VARCHAR",
+      "alias": "NAME",
+      "description": "Название записи"
+    }
+  ],
+  "keys": [
+    {
+      "field": "CODE",
+      "type": "PRIMARY"
+    },
+    {
+      "field": "NAME",
+      "type": "VALUE"
+    }
+  ],
+  "codes": [
+    {
+      "value": "1.2.643.5.1.13.13.11.1040",
+      "type": "TYPE_PRIMARY"
+    },
+    {
+      "value": "1.2.643.5.1.13.2.1.1.156",
+      "type": "TYPE_OTHER"
+    }
+  ],
+  "hierarchical": false,
+  "archive": true,
+  "nsiDictionaryId": 43235
+}

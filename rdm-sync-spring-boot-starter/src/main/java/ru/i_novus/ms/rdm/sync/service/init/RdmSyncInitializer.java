@@ -3,10 +3,9 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
@@ -38,7 +37,7 @@ public class RdmSyncInitializer {
     public void init() {
 
         sourceLoaderServiceInit();
-        autoCreate(getVersionAndFieldMappings());
+        autoCreate(getSyncMappings());
 
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
@@ -54,27 +53,27 @@ public class RdmSyncInitializer {
         sourceLoaderServiceList.forEach(SourceLoaderService::load);
     }
 
-    private void autoCreate(List<VersionAndFieldMapping> versionAndFieldMappings) {
+    private void autoCreate(List<SyncMapping> syncMappings) {
 
-        versionAndFieldMappings.stream()
-                .sorted(Comparator.comparingInt(VersionAndFieldMapping::getMappingVersion).reversed())
-                .forEach(versionAndFieldMapping ->
-                        localRefBookCreatorLocator.getLocalRefBookCreator(getSyncType(versionAndFieldMapping))
-                .create(versionAndFieldMapping));
+        syncMappings.stream()
+                .sorted(Comparator.comparingInt(SyncMapping::getMappingVersion).reversed())
+                .forEach(syncMapping ->
+                        localRefBookCreatorLocator.getLocalRefBookCreator(getSyncType(syncMapping))
+                .create(syncMapping));
     }
 
-    private SyncTypeEnum getSyncType(VersionAndFieldMapping versionAndFieldMapping) {
-        return versionAndFieldMapping.getVersionMapping().getType();
+    private SyncTypeEnum getSyncType(SyncMapping syncMapping) {
+        return syncMapping.getVersionMapping().getType();
     }
 
-    private List<VersionAndFieldMapping> getVersionAndFieldMappings() {
+    private List<SyncMapping> getSyncMappings() {
         return mappingSourceServiceList.stream()
-                .map(MappingSourceService::getVersionAndFieldMappingList)
-                .reduce(new ArrayList<>(), (versionAndFieldMappingListFromXml, versionAndFieldMappingListFromProperties) ->
+                .map(MappingSourceService::getMappings)
+                .reduce(new ArrayList<>(), (syncMappings1, syncMappings2) ->
                 {
-                    List<VersionAndFieldMapping> result = new ArrayList<>();
-                    result.addAll(versionAndFieldMappingListFromXml);
-                    result.addAll(versionAndFieldMappingListFromProperties);
+                    List<SyncMapping> result = new ArrayList<>();
+                    result.addAll(syncMappings1);
+                    result.addAll(syncMappings2);
                     return result;
                 });
     }

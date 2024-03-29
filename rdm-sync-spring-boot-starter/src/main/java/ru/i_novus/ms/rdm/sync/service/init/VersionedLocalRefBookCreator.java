@@ -5,14 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
-import ru.i_novus.ms.rdm.sync.api.mapping.VersionAndFieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-
-import java.util.Set;
 
 /**
  * пока не используется, предполагался использоваться в более оптимальном хранении версионности
@@ -36,15 +32,15 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
 
 
     @Override
-    public void create(VersionAndFieldMapping versionAndFieldMapping) {
-        String refBookCode =  versionAndFieldMapping.getVersionMapping().getCode();
-        String refBookName = versionAndFieldMapping.getVersionMapping().getRefBookName();
-        String source = versionAndFieldMapping.getVersionMapping().getSource();
-        SyncTypeEnum type = versionAndFieldMapping.getVersionMapping().getType();
-        String table = versionAndFieldMapping.getVersionMapping().getTable();
-        String sysPkColumn = versionAndFieldMapping.getVersionMapping().getSysPkColumn();
-        String range = versionAndFieldMapping.getVersionMapping().getRange();
-        String pk = versionAndFieldMapping.getFieldMapping().get(0).getSysField();
+    public void create(SyncMapping syncMapping) {
+        String refBookCode =  syncMapping.getVersionMapping().getCode();
+        String refBookName = syncMapping.getVersionMapping().getRefBookName();
+        String source = syncMapping.getVersionMapping().getSource();
+        SyncTypeEnum type = syncMapping.getVersionMapping().getType();
+        String table = syncMapping.getVersionMapping().getTable();
+        String sysPkColumn = syncMapping.getVersionMapping().getSysPkColumn();
+        String range = syncMapping.getVersionMapping().getRange();
+        String pk = syncMapping.getFieldMapping().get(0).getSysField();
         if(rdmSyncDao.existsLoadedVersion(refBookCode)) {
             logger.info("auto create for code {} was skipped", refBookCode);
             return;
