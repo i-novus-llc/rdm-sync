@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -89,7 +90,10 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         while (iter.hasNext()) {
             Page<Map<String, Object>> nextPage = iter.next();
             rdmSyncDao.insertVersionAsTempData(tempTableName, nextPage.getContent().stream().map(row -> {
-                row.putAll(defaultValues);
+                if (!CollectionUtils.isEmpty(defaultValues)) {
+                    row = new LinkedHashMap<>(row);
+                    row.putAll(defaultValues);
+                }
                 return mapRow(row, refBookVersion, fieldMappings);
             }).collect(Collectors.toList()));
             logProgress(refBookVersion.getCode(), dataCriteria, nextPage);
