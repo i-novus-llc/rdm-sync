@@ -218,6 +218,7 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 <br/> `sys-table` - наименование таблицы справочника, подробнее [тут](создание-таблиц)  
 <br/> `ignore-if-not-exists` - признак игнорирования атрибута при его отсутствии в НСИ у справочника. true - игнорировать, false(дефолтное значение) - выдавать ошибку.
 <br/> `default-value` - значение по умолчанию атрибута при его отсутствии в НСИ у справочника. Если задан этот атрибут, то не нужно указывать ignore-if-not-exists 
+<br/> `match-case` - настройка игнорирования регистра в наименовании колонк в ФНСИ, по умолчанию true, т.е. регистр учитывается 
 <br/>
 <br/>
 Пример:
@@ -225,7 +226,7 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapping>
 
-    <refbook code="T001" sys-table="rdm.test_rb" type="NOT_VERSIONED" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Какой-то справочник из RDM">
+    <refbook code="T001" match-case="false"  sys-table="rdm.test_rb" type="NOT_VERSIONED" unique-sys-field="code" deleted-field="deleted_ts" mapping-version="1" source="RDM" name="Какой-то справочник из RDM">
         <field sys-field="code" sys-data-type="varchar" rdm-field="id"/>
         <field sys-field="name" sys-data-type="varchar" rdm-field="short_name"/>
         <field sys-field="doc_number" sys-data-type="integer" rdm-field="doc_num"/>

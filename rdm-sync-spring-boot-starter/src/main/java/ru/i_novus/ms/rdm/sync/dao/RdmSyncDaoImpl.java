@@ -85,7 +85,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range, match_case \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n";
@@ -105,7 +105,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(14)
+                        rs.getString(14),
+                        rs.getBoolean(15)
                 )
         );
     }
@@ -151,7 +152,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range, match_case \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
@@ -173,7 +174,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(14)
+                        rs.getString(14),
+                        rs.getBoolean(15)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -498,13 +500,15 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    mapping_version,\n" +
                 "    sys_table,\n" +
                 "    sys_pk_field,\n" +
-                "    unique_sys_field)\n" +
+                "    unique_sys_field," +
+            "        match_case)\n" +
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
                 "    :sys_table,\n" +
                 "    :sys_pk_field,\n" +
-                "    :unique_sys_field) RETURNING id";
+                "    :unique_sys_field," +
+                "    :match_case) RETURNING id";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
 
@@ -530,6 +534,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         result.put("sys_pk_field", versionMapping.getSysPkColumn());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
         result.put("deleted_field", versionMapping.getDeletedField());
+        result.put("match_case", versionMapping.isMatchCase());
 
         return result;
     }
@@ -537,7 +542,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void updateCurrentMapping(VersionMapping versionMapping) {
 
-        final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field" +
+        final String sql = "update rdm_sync.mapping set deleted_field = :deleted_field, mapping_version = :mapping_version, sys_table = :sys_table, unique_sys_field = :unique_sys_field, match_case = :match_case" +
                 " where id = (select mapping_id from rdm_sync.version where version = :version and ref_id = (select id from rdm_sync.refbook where code = :code))";
 
         namedParameterJdbcTemplate.update(sql, toUpdateMappingValues(versionMapping));
@@ -564,6 +569,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
         result.put("deleted_field", versionMapping.getDeletedField());
+        result.put("match_case", versionMapping.isMatchCase());
 
         return result;
     }

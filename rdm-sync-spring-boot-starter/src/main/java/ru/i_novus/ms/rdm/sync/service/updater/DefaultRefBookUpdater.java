@@ -14,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -101,7 +102,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         logger.info("{} sync started", newVersion.getCode());
         // Если изменилась структура, проверяем актуальность полей в маппинге
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
-        validateStructureAndMapping(newVersion, fieldMappings);
+        validateStructureAndMapping(newVersion, fieldMappings, versionMapping.isMatchCase());
         boolean haveTrigger = dao.existsInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
         if (haveTrigger) {
             dao.disableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
@@ -117,18 +118,23 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
     }
 
-    private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings) {
+    private void validateStructureAndMapping(RefBookVersion newVersion, List<FieldMapping> fieldMappings, boolean matchCase) {
         List<String> clientRdmFields = fieldMappings
                 .stream()
                 .filter(fieldMapping -> (!fieldMapping.getIgnoreIfNotExists() && fieldMapping.getDefaultValue() == null))
                 .map(FieldMapping::getRdmField)
                 .collect(toList());
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
-        if (!actualFields.containsAll(clientRdmFields)) {
+        Set<String> unknownClientRdmFields = new HashSet<>();
+        clientRdmFields.forEach(clientRdmField -> {
+            if((matchCase && !actualFields.contains(clientRdmField)) || (!matchCase && !actualFields.contains(clientRdmField.toUpperCase()) && !actualFields.contains(clientRdmField.toLowerCase())) ) {
+                unknownClientRdmFields.add(clientRdmField);
+            }
+        });
+        if (!unknownClientRdmFields.isEmpty()) {
             // В новой версии удалены поля, которые ведутся в системе
-            clientRdmFields.removeAll(actualFields);
             throw new IllegalStateException(String.format("Field '%s' was deleted in version with code '%s'. Update your mappings.",
-                    String.join(",", clientRdmFields), newVersion.getCode()));
+                    String.join(",", unknownClientRdmFields), newVersion.getCode()));
         }
 
     }

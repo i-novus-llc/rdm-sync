@@ -57,7 +57,10 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
     public DownloadResult download(String refCode, @Nullable String version) {
         String tempTableName = ("temp_" + refCode + "_" + version).replace(".", "_");
         rdmSyncDao.dropTable(tempTableName);
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(refCode, "CURRENT");
+        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(refCode, version);
+        if(versionMapping == null) {
+            versionMapping = rdmSyncDao.getVersionMapping(refCode, "CURRENT");
+        }
         List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getId());
         RefBookVersion refBookVersion = getRefBookVersion(refCode, version);
         DownloadResult downloadResult;
@@ -77,7 +80,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
     private DownloadResult downloadVersion(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
         rdmSyncDao.createVersionTempDataTbl(tempTableName, versionMapping.getTable(), versionMapping.getSysPkColumn(), versionMapping.getPrimaryField());
         DataCriteria dataCriteria = new DataCriteria();
-        dataCriteria.setFields(fieldMappings.stream().map(FieldMapping::getRdmField).collect(Collectors.toSet()));
+        dataCriteria.setFields(getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase()));
         dataCriteria.setVersion(refBookVersion.getVersion());
         dataCriteria.setCode(refBookVersion.getCode());
         dataCriteria.setPageSize(maxSize);
@@ -94,7 +97,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
                     row = new LinkedHashMap<>(row);
                     row.putAll(defaultValues);
                 }
-                return mapRow(row, refBookVersion, fieldMappings);
+                return mapRow(row, refBookVersion, fieldMappings, versionMapping.isMatchCase());
             }).collect(Collectors.toList()));
             logProgress(refBookVersion.getCode(), dataCriteria, nextPage);
         }
@@ -110,7 +113,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
     private DownloadResult downloadDiff(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
         LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(refBookVersion.getCode());
-        Set<String> usesRefBookFields = fieldMappings.stream().map(FieldMapping::getRdmField).collect(Collectors.toSet());
+        Set<String> usesRefBookFields = getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase());
         VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion(), usesRefBookFields, refBookVersion.getStructure());
         criteria.setPageSize(maxSize);
         if(syncSourceService.getDiff(criteria).isStructureChanged()) {
@@ -129,13 +132,13 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             page.getContent().forEach(rowDiff -> {
                 switch (rowDiff.getStatus()) {
                     case INSERTED:
-                        newRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        newRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings, versionMapping.isMatchCase()));
                         break;
                     case UPDATED:
-                        editedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        editedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings, versionMapping.isMatchCase()));
                         break;
                     case DELETED:
-                        deletedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings));
+                        deletedRows.add(mapRow(rowDiff.getRow(), refBookVersion, fieldMappings, versionMapping.isMatchCase()));
                         break;
                 }
             });
@@ -143,6 +146,17 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             logProgress(refBookVersion.getCode(), criteria, page);
         }
         return new DownloadResult(tempTableName, DownloadResultType.DIFF);
+    }
+
+    private Set<String> getUsesRefBookFields(List<FieldMapping> fieldMappings, RefBookStructure structure, boolean matchCase) {
+        if (matchCase) {
+            return fieldMappings.stream().map(FieldMapping::getRdmField).collect(Collectors.toSet());
+        } else {
+            return fieldMappings.stream()
+                    .map(fieldMapping -> structure.getAttributesAndTypes().keySet().stream().filter(attr -> fieldMapping.getRdmField().equalsIgnoreCase(attr)).findAny().orElse(null))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+        }
     }
 
 
@@ -161,10 +175,10 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
      * @param row строка из источника данных
      * @return строка пригодная для сохранения
      */
-    private Map<String, Object> mapRow(Map<String, ?> row, RefBookVersion refBookVersion, List<FieldMapping> fieldMappings) {
+    private Map<String, Object> mapRow(Map<String, ?> row, RefBookVersion refBookVersion, List<FieldMapping> fieldMappings, boolean matchCase) {
         Map<String, Object> mappedRow = new HashMap<>();
         for (Map.Entry<String, ?> fieldValue : row.entrySet()) {
-            Map<String, Object> mappedValue = mapValue(refBookVersion, fieldValue.getKey(), fieldValue.getValue(), fieldMappings);
+            Map<String, Object> mappedValue = mapValue(refBookVersion, fieldValue.getKey(), fieldValue.getValue(), fieldMappings, matchCase);
             if (mappedValue != null) {
                 mappedRow.putAll(mappedValue);
             }
@@ -182,15 +196,20 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
     }
 
     private Map<String, Object> mapValue(RefBookVersion newVersion, String rdmField, Object value,
-                                         List<FieldMapping> fieldMappings) {
+                                         List<FieldMapping> fieldMappings, boolean matchCase) {
 
         FieldMapping fieldMapping = fieldMappings.stream()
-                .filter(mapping -> mapping.getRdmField().equals(rdmField))
+                .filter(mapping -> {
+                    if(matchCase)
+                        return mapping.getRdmField().equals(rdmField);
+                    else
+                        return mapping.getRdmField().equalsIgnoreCase(rdmField);
+                })
                 .findAny().orElse(null);
         if (fieldMapping == null)
             return null; // Поле не ведётся в системе
 
-        AttributeTypeEnum attributeType = newVersion.getStructure().getAttributesAndTypes().get(fieldMapping.getRdmField());
+        AttributeTypeEnum attributeType = newVersion.getStructure().getAttributesAndTypes().get(rdmField);
         DataTypeEnum clientType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
 
         Map<String, Object> mappedValue = new HashMap<>();

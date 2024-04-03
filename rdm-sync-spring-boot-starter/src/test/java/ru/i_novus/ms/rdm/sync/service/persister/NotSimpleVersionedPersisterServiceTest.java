@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class NotSimpleVersionedPersisterServiceTest {
+class NotSimpleVersionedPersisterServiceTest {
 
     private NotVersionedPersisterService persisterService;
 
@@ -44,10 +44,10 @@ public class NotSimpleVersionedPersisterServiceTest {
      * Ожидаемый результат: Запись с id=1 обновится, с id=2 вставится, в маппинге проставится дата и номер версии.
      */
     @Test
-    public void testFirstTimeUpdate() {
+    void testFirstTimeUpdate() {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null, true);
         List<FieldMapping> fieldMappings = createFieldMappings();
 
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
@@ -62,11 +62,11 @@ public class NotSimpleVersionedPersisterServiceTest {
      * Кейс: Обновление следующей версией справочника, т.е уже есть загруженная версия и появилась новая
      */
     @Test
-    public void testUpdate() {
+    void testUpdate() {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
         RefBookVersion secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null, true);
         List<FieldMapping> fieldMappings = createFieldMappings();
 
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
@@ -76,11 +76,11 @@ public class NotSimpleVersionedPersisterServiceTest {
     }
 
     @Test
-    public void testRepeatVersion() {
+    void testRepeatVersion() {
         String testTable = "test_table";
         RefBookVersion firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
-        VersionMapping versionMapping = new VersionMapping(1, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED, null);
+        VersionMapping versionMapping = new VersionMapping(1, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED, null, true);
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
 
         persisterService.repeatVersion(firstRdmVersion, versionMapping, new DownloadResult("temp_tbl", DownloadResultType.VERSION));

@@ -1,9 +1,6 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Setter;
+import lombok.*;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.io.Serializable;
@@ -17,7 +14,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @EqualsAndHashCode
-@Builder
+@ToString
 public class VersionMapping implements Serializable {
 
     private Integer id;
@@ -34,6 +31,7 @@ public class VersionMapping implements Serializable {
     private Integer mappingId;
     private SyncTypeEnum type;
     private String range;
+    private boolean matchCase = true;
 
     public String getRange() {
         return range;
@@ -89,6 +87,10 @@ public class VersionMapping implements Serializable {
 
     public SyncTypeEnum getType() {
         return type;
+    }
+
+    public boolean isMatchCase() {
+        return matchCase;
     }
 }
 
