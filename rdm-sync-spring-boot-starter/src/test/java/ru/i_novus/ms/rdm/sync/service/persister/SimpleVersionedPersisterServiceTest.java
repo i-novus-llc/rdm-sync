@@ -25,7 +25,7 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class SimpleVersionedPersisterServiceTest {
+class SimpleVersionedPersisterServiceTest {
 
     private SimpleVersionedPersisterService persisterService;
 
@@ -38,7 +38,7 @@ public class SimpleVersionedPersisterServiceTest {
     }
 
     @Test
-    public void testFirstWrite() {
+    void testFirstWrite() {
         RefBookVersion refBook = generateRefBookVersion();
         VersionMapping versionMapping = generateVersionMapping(refBook);
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(generateFieldMappings());
@@ -50,7 +50,7 @@ public class SimpleVersionedPersisterServiceTest {
     }
 
     @Test
-    public void testMerge() {
+    void testMerge() {
         RefBookVersion newVersion = generateRefBookVersion();
         newVersion.setVersion("2");
         RefBookVersion oldVersion = generateRefBookVersion();
@@ -67,7 +67,7 @@ public class SimpleVersionedPersisterServiceTest {
     }
 
     @Test
-    public void testRepeatVersion() {
+    void testRepeatVersion() {
         RefBookVersion refBookVersion = generateRefBookVersion();
         refBookVersion.setTo(LocalDateTime.now());
         VersionMapping versionMapping = generateVersionMapping(refBookVersion);
@@ -108,6 +108,7 @@ public class SimpleVersionedPersisterServiceTest {
                 -1,
                 null,
                 SyncTypeEnum.SIMPLE_VERSIONED,
-                null);
+                null,
+                true);
     }
 }

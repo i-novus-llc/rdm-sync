@@ -40,6 +40,8 @@ public class XmlMappingRefBook {
 
     private String range;
 
+    private boolean matchCase = true;
+
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
         return code;
@@ -156,6 +158,15 @@ public class XmlMappingRefBook {
         this.refBookVersion = refBookVersion;
     }
 
+    @XmlAttribute(name = "match-case")
+    public boolean isMatchCase() {
+        return matchCase;
+    }
+
+    public void setMatchCase(boolean matchCase) {
+        this.matchCase = matchCase;
+    }
+
     public SyncMapping convertToSyncMapping() {
         return new SyncMapping(generateVersionMapping(), generateFieldMappings());
     }
@@ -163,7 +174,7 @@ public class XmlMappingRefBook {
     private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
         return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, range);
+                uniqueSysField, deletedField, null, mappingVersion, null, type, range, matchCase);
     }
 
     private List<FieldMapping> generateFieldMappings() {

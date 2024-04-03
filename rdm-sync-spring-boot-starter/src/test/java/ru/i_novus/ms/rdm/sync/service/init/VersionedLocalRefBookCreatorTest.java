@@ -127,7 +127,7 @@ class VersionedLocalRefBookCreatorTest {
     }
 
     private VersionMapping createVersionMapping(String testCode) {
-        return new VersionMapping(1, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.SIMPLE_VERSIONED, null);
+        return new VersionMapping(1, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.SIMPLE_VERSIONED, null, true);
     }
 
     private RefBookVersion createRefBook(String refBookCode) {

@@ -113,7 +113,7 @@ class NotVersionedLocalRefBookCreatorTest {
         VersionMapping versionMapping = new VersionMapping(1, testCode, "test.name",
                 "CURRENT", "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
                 "id", "deleted_ts", null, -1, null,
-                SyncTypeEnum.NOT_VERSIONED, null);
+                SyncTypeEnum.NOT_VERSIONED, null, true);
         return new SyncMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
     }
 

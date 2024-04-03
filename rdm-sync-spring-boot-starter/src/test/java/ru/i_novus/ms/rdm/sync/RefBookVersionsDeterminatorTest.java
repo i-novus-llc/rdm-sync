@@ -199,7 +199,7 @@ class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         VersionMapping versionMapping = new VersionMapping(1,code, "someName", "1",
                 "someTable", "id", "RDM", "id", "is_deleted", LocalDateTime.of(2022, 4, 1, 10, 0),
-                -1, 1, SyncTypeEnum.RDM_NOT_VERSIONED, null);
+                -1, 1, SyncTypeEnum.RDM_NOT_VERSIONED, null, true);
 
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(1, code, "-1",  LocalDateTime.of(2022, 4, 1, 10, 0), null, LocalDateTime.now(), true)

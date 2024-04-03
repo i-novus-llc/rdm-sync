@@ -19,6 +19,7 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Set;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RefBookDownloaderImplTest {
+class RefBookDownloaderImplTest {
 
 
     private RefBookDownloaderImpl refBookDownloader;
@@ -45,7 +46,7 @@ public class RefBookDownloaderImplTest {
         when(dao.getFieldMappings(anyInt())).thenReturn(List.of(
                 new FieldMapping("ID", "integer", "ID"),
                 new FieldMapping("CODE", "varchar", "CODE"),
-                new FieldMapping("name", "varchar", "name")
+                new FieldMapping("name", "varchar", "NAME")
         ));
         when(syncSourceService.getRefBook(anyString(), anyString())).thenAnswer(invocation -> {
             RefBookVersion refBookVersion = new RefBookVersion();
@@ -55,13 +56,33 @@ public class RefBookDownloaderImplTest {
                     Map.of("ID", AttributeTypeEnum.INTEGER, "CODE", AttributeTypeEnum.STRING, "name", AttributeTypeEnum.STRING)));
             return refBookVersion;
         });
+
+        when(dao.getVersionMapping(anyString(), anyString()))
+                .thenReturn(
+                        new VersionMapping(
+                                1,
+                                "code",
+                                "some name",
+                                null,
+                                "ref_table",
+                                null,
+                                null,
+                                "id",
+                                "deleted_ts",
+                                LocalDateTime.now(),
+                                1,
+                                null,
+                                null,
+                                null,
+                                false)
+                );
     }
 
     /**
      * Скачивание версии справочника целиком
      */
     @Test
-    public void testDowloadVersion() {
+    void testDowloadVersion() {
         Page<Map<String, Object>> page1 = pageOf(
                 Map.of("ID", BigInteger.valueOf(1), "CODE", "code1", "name", "name1"),
                 Map.of("ID", BigInteger.valueOf(2), "CODE", "code2", "name", "name2")
@@ -80,13 +101,6 @@ public class RefBookDownloaderImplTest {
         when(syncSourceService.getData(argThat(dataCriteria -> dataCriteria != null && dataCriteria.getPageNumber() > 1)))
                 .thenReturn(Page.empty());
         String refBookTable = "ref_table";
-        when(dao.getVersionMapping(anyString(), anyString()))
-                .thenReturn(VersionMapping.builder()
-                        .table(refBookTable)
-                        .primaryField("id")
-                        .id(1)
-                        .build()
-                );
 
         DownloadResult downloadResult = refBookDownloader.download("code", "1.0");
         Assert.assertEquals(DownloadResultType.VERSION, downloadResult.getType());
@@ -102,7 +116,7 @@ public class RefBookDownloaderImplTest {
      * Проверка загрузки изменений между версиями
      */
     @Test
-    public void testDownloadDiff() {
+    void testDownloadDiff() {
         RowDiff rec1 = new RowDiff(RowDiffStatusEnum.UPDATED, Map.of("ID", BigInteger.valueOf(1), "CODE", "code", "name", "testName"));
         RowDiff rec2 = new RowDiff(RowDiffStatusEnum.INSERTED, Map.of("ID", BigInteger.valueOf(2), "CODE", "code2", "name", "testName2"));
         RowDiff rec3 = new RowDiff(RowDiffStatusEnum.INSERTED, Map.of("ID", BigInteger.valueOf(3), "CODE", "code3", "name", "testName3"));
@@ -116,7 +130,6 @@ public class RefBookDownloaderImplTest {
                 .thenReturn(VersionsDiff.dataChangedInstance(new PageImpl<>(Collections.emptyList())));
         when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", null, null, null, null));
         String refBookTable = "ref_table";
-        when(dao.getVersionMapping(anyString(), anyString())).thenReturn(VersionMapping.builder().id(1).table(refBookTable).build());
 
         DownloadResult downloadResult = refBookDownloader.download("testCode", "1.0");
 
@@ -130,7 +143,7 @@ public class RefBookDownloaderImplTest {
      * Diff возвращает что структура изменилась и скачиваем целиком версию
      */
     @Test
-    public void testDownloadWhenDiffByChangedStructure() {
+    void testDownloadWhenDiffByChangedStructure() {
         Page<Map<String, Object>> page1 = pageOf(
                 Map.of("ID", BigInteger.valueOf(1), "CODE", "code1", "name", "name1"),
                 Map.of("ID", BigInteger.valueOf(2), "CODE", "code2", "name", "name2")
@@ -146,12 +159,7 @@ public class RefBookDownloaderImplTest {
         when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", null, null, null, null));
         when(syncSourceService.getDiff(any(VersionsDiffCriteria.class))).thenReturn(VersionsDiff.structureChangedInstance());
         String refBookTable = "ref_table";
-        when(dao.getVersionMapping(anyString(), anyString())).thenReturn(VersionMapping.builder()
-                .table(refBookTable)
-                .primaryField("id")
-                .id(1)
-                .build()
-        );
+
 
         DownloadResult downloadResult = refBookDownloader.download("test", "1.0");
 

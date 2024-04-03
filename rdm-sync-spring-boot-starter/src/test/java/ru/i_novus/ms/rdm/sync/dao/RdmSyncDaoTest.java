@@ -34,7 +34,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Sql({"/dao-test.sql"})
-public class RdmSyncDaoTest extends BaseDaoTest {
+class RdmSyncDaoTest extends BaseDaoTest {
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";
 
@@ -57,7 +57,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     private RdmSyncDao rdmSyncDao;
 
     @Test
-    public void testGetDataWithFilters() {
+    void testGetDataWithFilters() {
 
         final Map<String, Object> firstRow = Map.of("name", "test name1", "id", 1);
         final Map<String, Object> secondRow = Map.of("name", "test name2", "id", 2);
@@ -122,7 +122,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testBatchInsertAndUpdateRows() {
+    void testBatchInsertAndUpdateRows() {
 
         List<Map<String, Object>> insertRows = new ArrayList<>();
         insertRows.add(Map.of("name", "test name1", "id", 1));
@@ -148,7 +148,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testInsertAndUpdateRows() {
+    void testInsertAndUpdateRows() {
 
         Map<String, Object> insertRow = Map.of("name", "test name1", "id", 1);
         String table = "ref_ek002";
@@ -177,7 +177,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      * Создание версионной таблицы, добавление записей разных версий
      */
     @Test
-    public void testVersionedTable() {
+    void testVersionedTable() {
 
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
@@ -217,7 +217,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testTableWithNaturalPrimaryKey() {
+    void testTableWithNaturalPrimaryKey() {
         String schema = "public";
         String table = "ref_001_with_natural_pk";
         String sysPkColumn = "id";
@@ -284,7 +284,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testAddingLoadedVersion() {
+    void testAddingLoadedVersion() {
 
         String code = "testAddingLoadedVersion";
         String version = "version";
@@ -308,13 +308,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
 
 
     @Test
-    public void testSaveVersionMapping() {
+    void testSaveVersionMapping() {
 
         String version = "CURRENT";
         String refBookCode = "test";
         String refBookName = "test Name";
         String pkSysColumn = "test_pk_field";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
@@ -337,13 +337,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testUpdateVersionMappingAndChangeRefbookTable(){
+    void testUpdateVersionMappingAndChangeRefbookTable(){
         String refBookCode = "EK001";
         String refBookName = "Справочник 1";
         String refBookVersion = "CURRENT";
         VersionMapping versionMapping = new
                 VersionMapping(null, refBookCode, refBookName, refBookVersion, "test_table", "id","CODE-1", "id",
-                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null);
+                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         //Проверка update'а таблицы rdm_sync.refbook
@@ -360,7 +360,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testInternalLocalRowStateUpdateTriggerListIsEmpty() {
+    void testInternalLocalRowStateUpdateTriggerListIsEmpty() {
 
         rdmSyncDao.createVersionedTableIfNotExists(
                 "public",
@@ -382,13 +382,13 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testGetLastMappingVersion() {
+    void testGetLastMappingVersion() {
 
         assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
     }
 
     @Test
-    public void testCRUSimpleVersionedData() {
+    void testCRUSimpleVersionedData() {
         List<FieldMapping> fieldMappings = generateFieldMappings();
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
         rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", fieldMappings, "ID");
@@ -425,7 +425,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    public void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
+    void testGetSimpleVersionedDataOnRefbooksWithSameVersionNumber() {
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);
         rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
         rdmSyncDao.insertLoadedVersion("test", "1.0", publishDate, null, true);
@@ -442,7 +442,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      * проверка на идемпотентность метода  createSimpleVersionedTables
      */
     @Test
-    public void testIdempotentCreateSimpleVersionedTables() {
+    void testIdempotentCreateSimpleVersionedTables() {
         rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
         rdmSyncDao.createSimpleVersionedTable("public", "simple_ver_table", generateFieldMappings(), "ID");
 
@@ -453,7 +453,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      * миграция данных из временной в версионную таблицу, повторная миграция
      */
     @Test
-    public void testSyncVersionedDataLifeCycle() {
+    void testSyncVersionedDataLifeCycle() {
         rdmSyncDao.createSimpleVersionedTable("public", "ver_ref_tbl", generateFieldMappings(), "ID");
         String refCode = "ver_ref_tbl";
         Integer loadedVersionId = rdmSyncDao.insertLoadedVersion(refCode, "1.0", LocalDateTime.now(), null, true);
@@ -510,7 +510,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
      * миграция данных из временной в неверсионную таблицу, повторная миграция
      */
     @Test
-    public void testSyncNotVersionedDataLifeCycle() {
+    void testSyncNotVersionedDataLifeCycle() {
         String refTbl = "ref_tbl";
         String tempTbl = "temp_tbl";
         rdmSyncDao.createNotVersionedTableIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "_sys_rec", "ID");
@@ -666,7 +666,7 @@ public class RdmSyncDaoTest extends BaseDaoTest {
         return new VersionMapping(
                 1, null, "RDM", null, "rdm.ref_ek003", "id",
                 "RDM", "_sync_rec_id", "deleted_ts", null, 1,
-                1, SyncTypeEnum.NOT_VERSIONED, "");
+                1, SyncTypeEnum.NOT_VERSIONED, "", true);
     }
 }
 
