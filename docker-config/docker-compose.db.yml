@@ -12,6 +12,7 @@ services:
       resources:
         limits:
           memory: 1024M
+          cpus: '0.50'
       placement:
         constraints:
         - node.labels.type == db

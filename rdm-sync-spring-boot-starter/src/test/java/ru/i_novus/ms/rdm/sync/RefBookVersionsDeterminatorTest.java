@@ -197,9 +197,7 @@ class RefBookVersionsDeterminatorTest {
     @Test
     void testLoadRdmNotVersioned() throws RefBookUpdaterException {
         String code = "someCode";
-        VersionMapping versionMapping = new VersionMapping(1,code, "someName", "1",
-                "someTable", "id", "RDM", "id", "is_deleted", LocalDateTime.of(2022, 4, 1, 10, 0),
-                -1, 1, SyncTypeEnum.RDM_NOT_VERSIONED, null, true);
+        VersionMapping versionMapping = createVersionMapping(code,LocalDateTime.of(2022, 4, 1, 10, 0),  SyncTypeEnum.RDM_NOT_VERSIONED, null, false);
 
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(1, code, "-1",  LocalDateTime.of(2022, 4, 1, 10, 0), null, LocalDateTime.now(), true)
@@ -219,14 +217,86 @@ class RefBookVersionsDeterminatorTest {
         assertEquals(Collections.singletonList("-1"), determinator.getVersions());
     }
 
+    /**
+     * включено обновление всех версий диапазона при изменении маппинга и маппинг изменился
+     */
+    @Test
+    void testRefreshableRangeWhenMappingChanged() throws RefBookUpdaterException {
+        String code = "someCode";
+        List<RefBookVersionItem> versions = generateVersions(code);
+        when(dao.getLoadedVersions(any())).thenReturn(List.of(
+                new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now().minusDays(2), null),
+                new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
+        ));
+        when(syncSourceService.getVersions(any())).thenReturn(versions);
+        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-*"), dao, syncSourceService);
+        assertEquals(List.of("1", "2"), determinator.getVersions());
+    }
+
+    /**
+     * включено обновление всех версий диапазона при изменении маппинга, но маппинг не изменился
+     */
+    @Test
+    void testRefreshableRangeWhenMappingNotChanged() throws RefBookUpdaterException {
+        String code = "someCode";
+        List<RefBookVersionItem> versions = generateVersions(code);
+        when(dao.getLoadedVersions(any())).thenReturn(List.of(
+                new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now().minusDays(2), null),
+                new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
+        ));
+        when(syncSourceService.getVersions(any())).thenReturn(versions);
+        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-*"), dao, syncSourceService);
+        assertTrue(determinator.getVersions().isEmpty());
+    }
+
+    /**
+     * включено обновление всех версий диапазона при изменении маппинга, но маппинг только для конкретной версии
+     */
+    @Test
+    void testRefreshableRangeWhenMappingChangedForSpecifyVersion() throws RefBookUpdaterException {
+        String code = "someCode";
+        List<RefBookVersionItem> versions = generateVersions(code);
+        when(dao.getLoadedVersions(any())).thenReturn(List.of(
+                new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now().minusDays(2), null),
+                new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
+        ));
+        when(syncSourceService.getVersions(any())).thenReturn(versions);
+        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        when(dao.getVersionMapping(code, "1")).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, "1-*"), dao, syncSourceService);
+        assertEquals(List.of("1"), determinator.getVersions());
+    }
+
     // проверка что нет первичного ключа
     // проверка что нет изменений No changes.
-    //validateStructureAndMapping
 
     private List<RefBookVersionItem> generateVersions(String code) {
         RefBookVersionItem v1 = new RefBookVersionItem(code, "1", LocalDateTime.of(2022, 1, 1, 10, 0), LocalDateTime.of(2022, 2, 1, 10, 0), 1);
         RefBookVersionItem v2 = new RefBookVersionItem(code, "2", v1.getTo(), null, 2);
         return List.of(v1, v2);
+    }
+
+    private VersionMapping createVersionMapping(String code, LocalDateTime mappingLastUpdated, SyncTypeEnum type, String range, boolean refreshableRange) {
+       return new VersionMapping(
+               1,
+               code,
+               "someName",
+               "1",
+                "someTable",
+               "id",
+               "someSource",
+               "id",
+               "is_deleted",
+               mappingLastUpdated,
+                -1,
+               1,
+               type,
+               range,
+               true,
+               refreshableRange
+       );
     }
 
 }

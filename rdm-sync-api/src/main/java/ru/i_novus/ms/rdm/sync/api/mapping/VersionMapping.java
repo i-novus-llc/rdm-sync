@@ -32,6 +32,7 @@ public class VersionMapping implements Serializable {
     private SyncTypeEnum type;
     private String range;
     private boolean matchCase = true;
+    private boolean refreshableRange;
 
     public String getRange() {
         return range;
@@ -91,6 +92,14 @@ public class VersionMapping implements Serializable {
 
     public boolean isMatchCase() {
         return matchCase;
+    }
+
+    public boolean isRefreshableRange() {
+        return refreshableRange;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
 

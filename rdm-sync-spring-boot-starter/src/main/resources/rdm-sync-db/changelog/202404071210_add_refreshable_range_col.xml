@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202404071210_add_refreshable_range_col" author="tnurdinov"  dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists schemaName="rdm_sync" tableName="mapping" columnName="refreshable_range"/>
+            </not>
+        </preConditions>
+        <comment>Добавление колонки признака повторной загрузки диапазона версий справочника при изменении маппинга</comment>
+        <sql>
+            ALTER TABLE rdm_sync.mapping ADD COLUMN refreshable_range BOOLEAN NOT NULL DEFAULT false;;
+            COMMENT ON COLUMN rdm_sync.mapping.refreshable_range IS 'Признак повторной загрузки диапазона версий справочника при изменении маппинга. Учитывается только при заданном диапазоне';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -42,6 +42,8 @@ public class XmlMappingRefBook {
 
     private boolean matchCase = true;
 
+    private boolean refreshableRange;
+
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
         return code;
@@ -167,6 +169,15 @@ public class XmlMappingRefBook {
         this.matchCase = matchCase;
     }
 
+    @XmlAttribute(name = "refreshable-range")
+    public boolean isRefreshableRange() {
+        return refreshableRange;
+    }
+
+    public void setRefreshableRange(boolean refreshableRange) {
+        this.refreshableRange = refreshableRange;
+    }
+
     public SyncMapping convertToSyncMapping() {
         return new SyncMapping(generateVersionMapping(), generateFieldMappings());
     }
@@ -174,7 +185,7 @@ public class XmlMappingRefBook {
     private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
         return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, range, matchCase);
+                uniqueSysField, deletedField, null, mappingVersion, null, type, range, matchCase, refreshableRange);
     }
 
     private List<FieldMapping> generateFieldMappings() {

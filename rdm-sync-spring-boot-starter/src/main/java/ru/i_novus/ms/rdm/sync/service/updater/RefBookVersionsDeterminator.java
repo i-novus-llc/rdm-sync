@@ -84,8 +84,15 @@ public class RefBookVersionsDeterminator {
                 currentLoadedVersion = loadedVersion;
             }
         }
-        boolean result = !loadedVersionsStringValues.contains(refBookVersion.getVersion()) || (!versionMapping.getMappingLastUpdated().isBefore(currentLoadedVersion.getLastSync()) && refBookVersion.getVersion().equals(actualVersion))
-                || currentLoadedVersion != null && isNewVersionPublished(refBookVersion, currentLoadedVersion) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED);
+        boolean isNewVersion = !loadedVersionsStringValues.contains(refBookVersion.getVersion());
+        boolean isMappingChanged = currentLoadedVersion != null && !versionMapping.getMappingLastUpdated().isBefore(currentLoadedVersion.getLastSync());
+        if(isMappingChanged && versionMapping.isRefreshableRange()) {
+            logger.info("refresh refbook {} version {} because mapping is changed", refBook.getCode(), refBookVersion.getVersion());
+            return true;
+        }
+        // изменился неверсионный справочник в rdm
+        boolean isRdmNotVersionedRefBookChanged = currentLoadedVersion != null && isNewVersionPublished(refBookVersion, currentLoadedVersion) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED);
+        boolean result =  isNewVersion || (isMappingChanged && refBookVersion.getVersion().equals(actualVersion)) || isRdmNotVersionedRefBookChanged;
         if(!result) {
             logger.info("skip update refbook {} version {}", refBookVersion.getCode(), refBookVersion.getVersion());
         }
