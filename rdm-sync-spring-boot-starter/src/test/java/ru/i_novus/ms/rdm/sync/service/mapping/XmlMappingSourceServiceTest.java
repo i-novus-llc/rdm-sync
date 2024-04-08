@@ -51,6 +51,7 @@ class XmlMappingSourceServiceTest {
                 null,
                 SyncTypeEnum.NOT_VERSIONED,
                 null,
+                false,
                 false);
         List<FieldMapping> expectedFieldMappings = List.of(
                 new FieldMapping("ref", "varchar", "ref"),

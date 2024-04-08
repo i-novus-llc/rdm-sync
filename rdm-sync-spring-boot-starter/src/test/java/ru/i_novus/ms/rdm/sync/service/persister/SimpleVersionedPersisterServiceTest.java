@@ -109,6 +109,7 @@ class SimpleVersionedPersisterServiceTest {
                 null,
                 SyncTypeEnum.SIMPLE_VERSIONED,
                 null,
-                true);
+                true,
+                false);
     }
 }

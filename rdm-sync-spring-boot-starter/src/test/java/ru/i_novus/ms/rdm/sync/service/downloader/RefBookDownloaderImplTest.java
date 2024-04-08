@@ -74,6 +74,7 @@ class RefBookDownloaderImplTest {
                                 null,
                                 null,
                                 null,
+                                false,
                                 false)
                 );
     }

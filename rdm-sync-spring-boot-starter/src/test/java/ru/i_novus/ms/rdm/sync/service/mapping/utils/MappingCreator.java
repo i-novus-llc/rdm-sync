@@ -13,7 +13,7 @@ public final class MappingCreator {
     public static VersionMapping createVersionMapping(){
         return new VersionMapping(null, "EK003", "Справочник", null,
                 "rdm.ref_ek003", "_sync_rec_id", "RDM", "id", "deleted_ts",
-                null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true);
+                null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
     }
 
     public static List<FieldMapping> createFieldMapping() {
