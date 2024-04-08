@@ -503,7 +503,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "    sys_table,\n" +
                 "    sys_pk_field,\n" +
                 "    unique_sys_field," +
-            "        match_case)\n" +
+            "        match_case," +
+                "    refreshable_range)\n" +
                 "values (\n" +
                 "    :deleted_field,\n" +
                 "    :mapping_version,\n" +
