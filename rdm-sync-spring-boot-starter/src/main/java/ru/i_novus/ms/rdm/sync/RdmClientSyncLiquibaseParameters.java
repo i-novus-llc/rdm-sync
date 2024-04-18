@@ -1,10 +1,8 @@
 package ru.i_novus.ms.rdm.sync;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@ConfigurationProperties(prefix = "rdm.sync.liquibase.param")
+@ConfigurationProperties(prefix = "rdm-sync.liquibase.param")
 public class RdmClientSyncLiquibaseParameters {
 
     private static final String QUARTZ_SCHEMA_NAME = "rdm_sync_qz";
@@ -13,6 +11,8 @@ public class RdmClientSyncLiquibaseParameters {
     private String quartzSchemaName = QUARTZ_SCHEMA_NAME;
 
     private String quartzTablePrefix = QUARTZ_TABLE_PREFIX;
+
+    private boolean quartzEnabled;
 
     public String getQuartzSchemaName() {
         return quartzSchemaName;
@@ -28,5 +28,13 @@ public class RdmClientSyncLiquibaseParameters {
 
     public void setQuartzTablePrefix(String quartzTablePrefix) {
         this.quartzTablePrefix = quartzTablePrefix;
+    }
+
+    public boolean isQuartzEnabled() {
+        return quartzEnabled;
+    }
+
+    public void setQuartzEnabled(boolean quartzEnabled) {
+        this.quartzEnabled = quartzEnabled;
     }
 }
