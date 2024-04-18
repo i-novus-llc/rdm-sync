@@ -113,8 +113,8 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         } finally {
             if (haveTrigger) {
                 dao.enableInternalLocalRowStateUpdateTrigger(versionMapping.getTable());
-                dao.dropTable(downloadResult.getTableName());
             }
+            dao.dropTable(downloadResult.getTableName());
         }
     }
 

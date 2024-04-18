@@ -516,13 +516,19 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
 
-        final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type, range) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type, :range)  RETURNING id";
-        String refBookName = versionMapping.getRefBookName();
-        Map<String, String> params = new HashMap<>(Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()));
-        params.put("range", versionMapping.getRange());
-        Integer refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
-                params,
-                Integer.class);
+        SyncRefBook syncRefBook = getSyncRefBook(versionMapping.getCode());
+        Integer refBookId;
+        if(syncRefBook == null) {
+            final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type, range) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type, :range)  RETURNING id";
+            String refBookName = versionMapping.getRefBookName();
+            Map<String, String> params = new HashMap<>(Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()));
+            params.put("range", versionMapping.getRange());
+            refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
+                    params,
+                    Integer.class);
+        } else {
+            refBookId = syncRefBook.getId();
+        }
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
                 Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRefBookVersion() != null ? versionMapping.getRefBookVersion() : "CURRENT"));
@@ -638,7 +644,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String schemaTable = escapeName(schema + "." + table);
 
         final String sqlExists = "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE NOT tgisinternal AND tgname = :tgname)";
-        Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlExists, Map.of("tgname", triggerName), Boolean.class);
+        Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlExists, Map.of("tgname", triggerName.replaceAll("\"", "")), Boolean.class);
 
         if (Boolean.TRUE.equals(exists))
             return;
@@ -940,6 +946,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createNotVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, String primaryField) {
+        if(isTableExists(schema, table)) {
+            return;
+        }
         createTable(schema, table, fieldMappings,
                 Map.of(isDeletedFieldName, "timestamp without time zone",
                         sysPkColumn, RECORD_SYS_COL_INFO)
@@ -953,6 +962,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn){
+        if(isTableExists(schema, table)) {
+            return;
+        }
         createTable(schema, table, fieldMappings,  Map.of(isDeletedFieldName, "timestamp without time zone"));
 
         Boolean pkIsExists = getJdbcTemplate().queryForObject("SELECT EXISTS (SELECT * FROM pg_constraint " +
@@ -968,6 +980,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void createVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String sysPkColumn) {
 
+        if(isTableExists(schema, table)){
+            return;
+        }
         createTable(schema, table, fieldMappings,
                 Map.of(VERSIONS_SYS_COL, "text NOT NULL",
                         HASH_SYS_COL, "text NOT NULL",
@@ -979,9 +994,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void createSimpleVersionedTable(String schema, String table, List<FieldMapping> fieldMappings, String primaryField) {
-        Boolean tableExists = getJdbcTemplate().queryForObject(
-                "SELECT EXISTS (SELECT FROM pg_tables  WHERE  schemaname = ? AND tablename  = ?)"
-                , Boolean.class, schema, table);
+        Boolean tableExists = isTableExists(schema, table);
         if (Boolean.FALSE.equals(tableExists)) {
             createTable(schema, table, fieldMappings,
                     Map.of(LOADED_VERSION_REF, "integer NOT NULL",
@@ -1000,6 +1013,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
     }
 
+    private boolean isTableExists(String schema, String table) {
+        return getJdbcTemplate().queryForObject(
+                "SELECT EXISTS (SELECT FROM pg_tables  WHERE  schemaname = ? AND tablename  = ?)"
+                , Boolean.class, schema, table);
+    }
+
     @Override
     public SyncRefBook getSyncRefBook(String code) {
         List<SyncRefBook> result = namedParameterJdbcTemplate.query("select * from rdm_sync.refbook where code = :code", Map.of("code", code),
@@ -1016,6 +1035,20 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return null;
 
         return result.get(0);
+    }
+
+    @Override
+    public List<SyncRefBook> getActualSyncRefBooks() {
+        return namedParameterJdbcTemplate.query("select * from rdm_sync.refbook where exists(select 1 from rdm_sync.version where ref_id = rdm_sync.refbook .id) ",
+                (rs, rowNum) ->
+                        new SyncRefBook(
+                                rs.getInt("id"),
+                                rs.getString("code"),
+                                SyncTypeEnum.valueOf(rs.getString("sync_type")),
+                                rs.getString("name"),
+                                rs.getString("range")
+                        )
+        );
     }
 
     @Override

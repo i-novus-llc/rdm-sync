@@ -12,7 +12,6 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.service.mapping.MappingSourceService;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -54,9 +53,8 @@ public class RdmSyncInitializer {
     }
 
     private void autoCreate(List<SyncMapping> syncMappings) {
-
         syncMappings.stream()
-                .sorted(Comparator.comparingInt(SyncMapping::getMappingVersion).reversed())
+                .sorted(new SyncMappingComparator())
                 .forEach(syncMapping ->
                         localRefBookCreatorLocator.getLocalRefBookCreator(getSyncType(syncMapping))
                 .create(syncMapping));

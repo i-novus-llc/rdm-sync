@@ -5,6 +5,8 @@ import liquibase.integration.spring.SpringLiquibase;
 import net.n2oapp.platform.jaxrs.LocalDateTimeISOParameterConverter;
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 import net.n2oapp.platform.jaxrs.autoconfigure.MissingGenericBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,10 +57,12 @@ import java.util.Map;
 @ConditionalOnClass(RdmSyncServiceImpl.class)
 @ConditionalOnProperty(value = "rdm-sync.enabled", matchIfMissing = true)
 @ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
-@EnableConfigurationProperties({RdmClientSyncProperties.class})
+@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncLiquibaseParameters.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
 public class RdmClientSyncAutoConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(RdmClientSyncAutoConfiguration.class);
 
     @Autowired
     @Qualifier("cxfObjectMapper")
@@ -84,12 +88,17 @@ public class RdmClientSyncAutoConfiguration {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setDatabaseChangeLogLockTable("databasechangeloglock_rdms");
-        liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelog.xml");
-
-        Map<String, String> changeLogParameters = new HashMap<>(2);
-        changeLogParameters.put("quartz_schema_name", parameters.getQuartzSchemaName());
-        changeLogParameters.put("quartz_table_prefix", parameters.getQuartzTablePrefix());
-        liquibase.setChangeLogParameters(changeLogParameters);
+        if(!parameters.isQuartzEnabled()) {
+            logger.info("disabled quartz schemas initialization");
+            liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelog.xml");
+        } else {
+            logger.info("enabled quartz schemas initialization");
+            liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelogWithQuartz.xml");
+            Map<String, String> changeLogParameters = new HashMap<>(2);
+            changeLogParameters.put("quartz_schema_name", parameters.getQuartzSchemaName());
+            changeLogParameters.put("quartz_table_prefix", parameters.getQuartzTablePrefix());
+            liquibase.setChangeLogParameters(changeLogParameters);
+        }
 
         return liquibase;
     }

@@ -156,6 +156,12 @@ public interface RdmSyncDao {
     SyncRefBook getSyncRefBook(String code);
 
     /**
+     *
+     * @return Список справочников для которых настроен маппинг
+     */
+    List<SyncRefBook> getActualSyncRefBooks();
+
+    /**
      * Создает временную таблицу для версионных данных на основе таблицы, где лежат данные справочника
      * @param tempTableName наименование для временной таблицы
      * @param refTableName наименование таблицы, где лежат данные справочника
