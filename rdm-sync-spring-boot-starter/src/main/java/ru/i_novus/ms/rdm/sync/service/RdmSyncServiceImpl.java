@@ -90,11 +90,11 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Override
     public void update() {
 
-        List<VersionMapping> versionMappings = dao.getVersionMappings();
+        List<SyncRefBook> refBooks = dao.getActualSyncRefBooks();
         List<Callable<Void>> tasks = new ArrayList<>();
-        for (VersionMapping mapping : versionMappings) {
+        for (SyncRefBook refBook : refBooks) {
             tasks.add(() -> {
-                update(mapping.getCode());
+                update(refBook.getCode());
                 return null;
             });
         }
