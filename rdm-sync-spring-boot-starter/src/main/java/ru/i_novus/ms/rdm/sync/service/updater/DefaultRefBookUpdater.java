@@ -127,7 +127,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
         Set<String> unknownClientRdmFields = new HashSet<>();
         clientRdmFields.forEach(clientRdmField -> {
-            if((matchCase && !actualFields.contains(clientRdmField)) || (!matchCase && !actualFields.contains(clientRdmField.toUpperCase()) && !actualFields.contains(clientRdmField.toLowerCase())) ) {
+            if((matchCase && !actualFields.contains(clientRdmField)) || (!matchCase && actualFields.stream().noneMatch(clientRdmField::equalsIgnoreCase)) ) {
                 unknownClientRdmFields.add(clientRdmField);
             }
         });
