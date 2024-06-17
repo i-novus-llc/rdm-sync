@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.platform.datastorage.temporal.model.Reference;
@@ -10,6 +11,7 @@ import ru.i_novus.platform.datastorage.temporal.model.Reference;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.model.DataTypeEnum.*;
@@ -19,13 +21,13 @@ import static ru.i_novus.ms.rdm.sync.model.DataTypeEnum.*;
  * @since 22.02.2019
  */
 @ExtendWith(MockitoExtension.class)
-public class RdmMappingServiceTest {
+class RdmMappingServiceTest {
 
     @InjectMocks
     private RdmMappingServiceImpl rdmMappingService;
 
     @Test
-    public void testInteger() {
+    void testInteger() {
         Object result = rdmMappingService.map(AttributeTypeEnum.INTEGER, INTEGER, BigInteger.ONE);
         assertEquals(BigInteger.ONE, result);
 
@@ -58,7 +60,7 @@ public class RdmMappingServiceTest {
     }
 
     @Test
-    public void testString() {
+    void testString() {
         Object result = rdmMappingService.map(AttributeTypeEnum.STRING, VARCHAR, "10");
         assertEquals("10", result);
 
@@ -83,7 +85,7 @@ public class RdmMappingServiceTest {
     }
 
     @Test
-    public void testBoolean() {
+    void testBoolean() {
         Object result = rdmMappingService.map(AttributeTypeEnum.BOOLEAN, BOOLEAN, true);
         assertEquals(true, result);
 
@@ -105,7 +107,7 @@ public class RdmMappingServiceTest {
     }
 
     @Test
-    public void testDate() {
+    void testDate() {
         LocalDate date = LocalDate.of(2007, Month.OCTOBER, 15);
 
         Object result = rdmMappingService.map(AttributeTypeEnum.DATE, DATE, date);
@@ -123,7 +125,7 @@ public class RdmMappingServiceTest {
     }
 
     @Test
-    public void testReference() {
+    void testReference() {
         Reference reference = new Reference("1", "Moscow");
         Object result = rdmMappingService.map(AttributeTypeEnum.REFERENCE, JSONB, new Reference("1", "Moscow"));
         assertEquals(reference, result);
@@ -134,5 +136,14 @@ public class RdmMappingServiceTest {
         } catch (ClassCastException e) {
             assertEquals("Error while casting INTEGER to JSONB. Value: 1", e.getMessage());
         }
+    }
+
+    @Test
+    void testIntegerArray() {
+        assertEquals(List.of(1,2,4), rdmMappingService.map(AttributeTypeEnum.INTEGER, INTEGER_ARRAY, "1;2;4"));
+        assertEquals(List.of(1,2,4), rdmMappingService.map(AttributeTypeEnum.STRING, INTEGER_ARRAY, "1;2;4"));
+        assertEquals(List.of(1,2,4), rdmMappingService.map(null, INTEGER_ARRAY, "1;2;4"));
+        assertNull(rdmMappingService.map(null, INTEGER_ARRAY, null));
+        assertNull(rdmMappingService.map(null, INTEGER_ARRAY, ""));
     }
 }

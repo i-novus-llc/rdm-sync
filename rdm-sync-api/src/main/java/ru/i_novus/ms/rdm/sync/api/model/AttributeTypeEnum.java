@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public enum AttributeTypeEnum {
     STRING(String::toString),
@@ -25,7 +27,9 @@ public enum AttributeTypeEnum {
     }),
     BOOLEAN(Boolean::valueOf),
     REFERENCE(String::toString),
-    TREE(String::toString);
+    TREE(String::toString),
+    INT_ARRAY(value -> Arrays.stream(value.trim().split(";")).map(item -> Integer.valueOf(item.trim())).collect(Collectors.toList())),
+    STRING_ARRAY(value -> Arrays.stream(value.trim().split(";")).map(item -> item.trim()).collect(Collectors.toList()));
 
     private  final Function<String, Object> castFunction;
 

@@ -35,14 +35,12 @@ import javax.annotation.Nonnull;
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1083,7 +1081,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 data.stream().map(map -> {
                     Object[] params = new Object[columns.size()];
                     for (int i = 0; i < columns.size(); i++) {
-                        params[i] = map.get(columns.get(i));
+                        if(map.get(columns.get(i)) instanceof List) {
+                            params[i] = createSqlArray((List<Integer>) map.get(columns.get(i)));
+                        } else {
+                            params[i] = map.get(columns.get(i));
+                        }
                     }
                     return params;
                 }).collect(Collectors.toList()));
@@ -1252,4 +1254,23 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "where table_schema||'.'||table_name=:schemaTable and column_name= :colName)",
                 Map.of("schemaTable", schemaTable, "colName", columnName), Boolean.class);
     }
+
+    private java.sql.Array createSqlArray(List<?> list) {
+        if (list.isEmpty())
+            return null;
+        if (list.get(0) instanceof Integer) {
+            Integer[] result = list.toArray(new Integer[0]);
+            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                    (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), result)
+            );
+        } else {
+            String[] result = list.toArray(new String[0]);
+            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                    (Connection c) -> c.createArrayOf(JDBCType.VARCHAR.getName(), result)
+            );
+        }
+
+    }
 }
+
+

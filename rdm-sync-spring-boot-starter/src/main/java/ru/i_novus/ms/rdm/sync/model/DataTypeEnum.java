@@ -23,6 +23,8 @@ public enum DataTypeEnum {
 
     VARCHAR(asList("varchar", "text", "character varying")),
     INTEGER(asList("integer", "smallint", "bigint", "serial", "bigserial")),
+    INTEGER_ARRAY(singletonList("integer[]")),
+    STRING_ARRAY(singletonList("text[]")),
     DATE(singletonList("date")),
     BOOLEAN(singletonList("boolean")),
     FLOAT(asList("decimal", "numeric")),
