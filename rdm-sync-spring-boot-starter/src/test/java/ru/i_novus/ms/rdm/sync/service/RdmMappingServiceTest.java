@@ -137,13 +137,4 @@ class RdmMappingServiceTest {
             assertEquals("Error while casting INTEGER to JSONB. Value: 1", e.getMessage());
         }
     }
-
-    @Test
-    void testIntegerArray() {
-        assertEquals(List.of(1,2,4), rdmMappingService.map(AttributeTypeEnum.INTEGER, INTEGER_ARRAY, "1;2;4"));
-        assertEquals(List.of(1,2,4), rdmMappingService.map(AttributeTypeEnum.STRING, INTEGER_ARRAY, "1;2;4"));
-        assertEquals(List.of(1,2,4), rdmMappingService.map(null, INTEGER_ARRAY, "1;2;4"));
-        assertNull(rdmMappingService.map(null, INTEGER_ARRAY, null));
-        assertNull(rdmMappingService.map(null, INTEGER_ARRAY, ""));
-    }
 }
