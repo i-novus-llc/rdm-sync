@@ -33,14 +33,12 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.BadRequestException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Date;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -713,7 +711,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE 1=1 ", escapeName(localDataCriteria.getSchemaTable()));
         String selectSubQuery = null;
         if(columnExists(LOADED_VERSION_REF, localDataCriteria.getSchemaTable())) {
@@ -749,7 +747,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getSimpleVersionedData(VersionedLocalDataCriteria criteria) {
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
                 escapeName(criteria.getSchemaTable()));
 
@@ -770,7 +768,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
 
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
                 escapeName(localDataCriteria.getSchemaTable()));
 
@@ -847,7 +845,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     }
 
-    private Page<Map<String, Object>> getData0(String sql, Map<String, Serializable> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
+    private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
 
         SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
         if (filterBuilder != null) {
@@ -880,6 +878,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         String key = rs.getMetaData().getColumnName(i);
                         if (val instanceof Timestamp) {
                             val = ((Timestamp) val).toLocalDateTime();
+                        } else if( val instanceof Array) {
+                            val = Arrays.asList((Object[]) ((Array)val).getArray());
                         }
                         map.put(key, val);
                     }

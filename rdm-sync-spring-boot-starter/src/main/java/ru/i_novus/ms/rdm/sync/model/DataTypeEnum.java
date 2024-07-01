@@ -74,9 +74,9 @@ public enum DataTypeEnum {
     }
 
     /** Преобразование списка строк в набор значений с соответствующими фильтрами. */
-    public Map<FilterTypeEnum, List<Serializable>> toMap(List<String> list) {
+    public Map<FilterTypeEnum, List<Object>> toMap(List<String> list) {
 
-        Map<FilterTypeEnum, List<Serializable>> result = new HashMap<>(FilterTypeEnum.size());
+        Map<FilterTypeEnum, List<Object>> result = new HashMap<>(FilterTypeEnum.size());
         FilterTypeEnum.list().forEach(type -> result.put(type, new ArrayList<>(list.size())));
 
         switch (this) {
@@ -95,6 +95,12 @@ public enum DataTypeEnum {
             case VARCHAR:
                 addListValues(list, this::fromString, result);
                 return result;
+            case STRING_ARRAY:
+                addListValues(list, rawString -> rawString.trim().split(";"), result);
+                return result;
+            case INTEGER_ARRAY:
+                addListValues(list, rawString -> Arrays.stream(rawString.trim().split(";")).map(Integer::valueOf).collect(toList()).toArray(new Integer[0]), result);
+                return result;
             default:
                 throw new RdmException("Cast from string to " + this.name() + " not supported.");
         }
@@ -109,8 +115,8 @@ public enum DataTypeEnum {
 
     /** Преобразование списка строк в значения и добавление этих значений в набор. */
     private void addListValues(List<String> list,
-                               Function<String, Serializable> converter,
-                               Map<FilterTypeEnum, List<Serializable>> result) {
+                               Function<String, Object> converter,
+                               Map<FilterTypeEnum, List<Object>> result) {
 
         list.stream()
                 .filter(item -> !StringUtils.isEmpty(item))
@@ -119,8 +125,8 @@ public enum DataTypeEnum {
 
     /** Преобразование строки в значение и добавление этого значения в набор. */
     private void addItemValue(String item,
-                              Function<String, Serializable> converter,
-                              Map<FilterTypeEnum, List<Serializable>> result) {
+                              Function<String, Object> converter,
+                              Map<FilterTypeEnum, List<Object>> result) {
 
         int index = (item.indexOf("$") == 0) ? item.indexOf("|", 1) : -1;
         String mask = (index > 0) ? item.substring(1, index) : FilterTypeEnum.EQUAL.getMask();
@@ -128,7 +134,7 @@ public enum DataTypeEnum {
         if (filterType == null)
             return;
 
-        Serializable filterValue = null;
+        Object filterValue = null;
         if (filterType.isValued()) {
             String value = (index > 0) ? item.substring(index + 1) : item;
             filterValue = converter.apply(value);
