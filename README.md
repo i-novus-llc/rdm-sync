@@ -224,8 +224,7 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
 - `integer`, `smallint`, `bigint`, `serial`, `bigserial` для числовых значений
 - `date` для даты 
 - `boolean` для логических значений
-- `integer[]`, `text[]` для типизированных массивов
-
+- `integer[]`, `text[]` для типизированных массивов(только для ФНСИ, в ФНСИ эти значения хранятся через ";")
 Пример:
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
