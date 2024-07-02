@@ -1,13 +1,17 @@
 package ru.i_novus.ms.rdm.sync.dao.builder;
 
+import org.springframework.jdbc.core.support.AbstractSqlTypeValue;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
@@ -27,7 +31,7 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
     public SqlValueFilterBuilder() {
     }
 
-    public SqlValueFilterBuilder(List<String> clauses, Map<String, Serializable> params) {
+    public SqlValueFilterBuilder(List<String> clauses, Map<String, Object> params) {
         super(clauses, params);
     }
 
@@ -69,50 +73,84 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
         }
     }
 
-    private void parseEqual(String field, String bindName, List<? extends Serializable> values) {
+    private void parseEqual(String field, String bindName, List<Object> values) {
 
-        if (values.size() == 1) {
+        List<Object> preparedValues = values.stream().map(value -> {
+            if(value == null)
+                return value;
+            if(value instanceof String[]) {
+                final String[] valueArr = (String[])value;
+                return new AbstractSqlTypeValue() {
+                    @Override
+                    protected Object createTypeValue(Connection con, int sqlType, String typeName) throws SQLException {
+                        return con.createArrayOf("text", valueArr);
+                    }
+                };
+            } else if (value instanceof Integer[]) {
+                final Integer[] valueArr = (Integer[]) value;
+                return new AbstractSqlTypeValue() {
+                    @Override
+                    protected Object createTypeValue(Connection con, int sqlType, String typeName) throws SQLException {
+                        return con.createArrayOf("integer", valueArr);
+                    }
+                };
+            }
+            return value;
+        }).collect(Collectors.toList());
+
+        if (preparedValues.size() == 1) {
             append(field + " = :" + bindName);
-            bind(bindName, values.get(0));
+            bind(bindName, preparedValues.get(0));
 
         } else {
             append(field + " IN (:" + bindName + ")");
-            bind(bindName, new ArrayList<>(values));
+            bind(bindName, new ArrayList<>(preparedValues));
         }
     }
 
-    private void parseLike(String field, DataTypeEnum type, String bindName, List<? extends Serializable> values) {
+    private void parseLike(String field, DataTypeEnum type, String bindName, List<Object> values) {
 
         parseLike(getStringFieldSubst(field, type), bindName, OPERATOR_LIKE, values);
     }
 
-    private void parseILike(String field, DataTypeEnum type, String bindName, List<? extends Serializable> values) {
+    private void parseILike(String field, DataTypeEnum type, String bindName, List<Object> values) {
 
         parseLike(getStringFieldSubst(field, type), bindName, OPERATOR_ILIKE, values);
     }
 
-    private void parseQLike(String field, DataTypeEnum type, String bindName, List<? extends Serializable> values) {
+    private void parseQLike(String field, DataTypeEnum type, String bindName, List<Object> values) {
 
         parseLike(getQuotesIgnoredFieldSubst(field, type), bindName, OPERATOR_LIKE, values);
     }
 
-    private void parseIQLike(String field, DataTypeEnum type, String bindName, List<? extends Serializable> values) {
+    private void parseIQLike(String field, DataTypeEnum type, String bindName, List<Object> values) {
 
         parseLike(getQuotesIgnoredFieldSubst(field, type), bindName, OPERATOR_ILIKE, values);
     }
 
     private void parseLike(String fieldSubst, String bindName, String operator,
-                           List<? extends Serializable> values) {
+                           List<Object> values) {
 
-        IntStream.range(0, values.size()).forEach(index -> {
+        List<Object> preparedValues = tryArrayToString(values);
 
-            Serializable value = values.get(index);
+        IntStream.range(0, preparedValues.size()).forEach(index -> {
+
+            Object value = preparedValues.get(index);
             String indexName = bindName + "_" + index;
             String valueName = (value instanceof String) ? indexName : indexName + "::text";
 
             append(fieldSubst + " " + operator + " '%' || :" + valueName + " || '%'");
-            bind(indexName, values.get(index));
+            bind(indexName, preparedValues.get(index));
         });
+    }
+
+    private List<Object> tryArrayToString(List<Object> values) {
+        return values.stream().map(value -> {
+            if(value instanceof String[] || value instanceof Integer[]) {
+                return ((Object[]) value)[0].toString();
+            }
+            return value;
+        }).collect(Collectors.toList());
     }
 
     private void parseIsNull(String field) {
@@ -132,8 +170,14 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
 
     /* Подстановка для строкового представления поля. */
     private String getStringFieldSubst(String field, DataTypeEnum type) {
-
-        return (type == DataTypeEnum.VARCHAR) ? field : field + "::text";
+        switch (type) {
+            case VARCHAR:
+                return field;
+            case STRING_ARRAY:
+                return "array_to_string(" + field + ", ',')";
+            default:
+                return field + "::text";
+        }
     }
 
     /* Строковое представление для поля. */

@@ -14,15 +14,15 @@ public class FieldValueFilter {
 
     private final FilterTypeEnum type;
 
-    private final List<? extends Serializable> values;
+    private final List<Object> values;
 
-    public FieldValueFilter(FilterTypeEnum type, List<? extends Serializable> values) {
+    public FieldValueFilter(FilterTypeEnum type, List<Object> values) {
 
         this.type = type;
         this.values = values;
     }
 
-    public FieldValueFilter(Map.Entry<FilterTypeEnum, List<Serializable>> entry) {
+    public FieldValueFilter(Map.Entry<FilterTypeEnum, List<Object>> entry) {
 
         this(entry.getKey(), entry.getValue());
     }
@@ -31,7 +31,7 @@ public class FieldValueFilter {
         return type;
     }
 
-    public List<? extends Serializable> getValues() {
+    public List<Object> getValues() {
         return values;
     }
 
