@@ -2,6 +2,10 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RangeTest {
@@ -43,4 +47,23 @@ class RangeTest {
         assertTrue(range.containsVersion("2.0"));
         assertFalse(range.containsVersion("2.5"));
     }
+
+    @Test
+    public void testRangeSorting() {
+        List<Range> ranges = new ArrayList<>();
+        ranges.add(new Range("1.0-2.0"));
+        ranges.add(new Range("*"));
+        ranges.add(new Range("2.1-3.0"));
+        ranges.add(new Range("0.5-1.5"));
+        ranges.add(new Range("3.1-*"));
+
+        Collections.sort(ranges);
+
+        assertEquals("0.5-1.5", ranges.get(0).getRange());
+        assertEquals("1.0-2.0", ranges.get(1).getRange());
+        assertEquals("2.1-3.0", ranges.get(2).getRange());
+        assertEquals("3.1-*", ranges.get(3).getRange());
+        assertEquals("*", ranges.get(4).getRange());
+    }
+
 }

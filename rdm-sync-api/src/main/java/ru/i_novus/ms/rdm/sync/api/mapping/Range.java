@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Range {
+public class Range implements Comparable<Range> {
 
     private String range;
 
@@ -34,5 +34,40 @@ public class Range {
         }
 
         return range.equals(version);
+    }
+
+    @Override
+    public int compareTo(Range other) {
+        // Сравнение для случаев "*"
+        if (this.range.equals("*") && other.range.equals("*")) {
+            return 0;
+        }
+        if (this.range.equals("*")) {
+            return 1;
+        }
+        if (other.range.equals("*")) {
+            return -1;
+        }
+
+        // Сравнение для диапазонов
+        if (this.range.contains("-") && other.range.contains("-")) {
+            String[] thisParts = this.range.split("-");
+            String thisStart = thisParts[0].trim();
+            String thisEnd = thisParts[1].trim();
+
+            String[] otherParts = other.range.split("-");
+            String otherStart = otherParts[0].trim();
+            String otherEnd = otherParts[1].trim();
+
+            int startComparison = thisStart.compareTo(otherStart);
+            if (startComparison != 0) {
+                return startComparison;
+            }
+
+            return thisEnd.compareTo(otherEnd);
+        }
+
+        // Сравнение для одиночных версий
+        return this.range.compareTo(other.range);
     }
 }
