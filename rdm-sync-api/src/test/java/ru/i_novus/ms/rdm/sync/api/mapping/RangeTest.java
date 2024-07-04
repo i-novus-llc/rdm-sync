@@ -49,21 +49,36 @@ class RangeTest {
     }
 
     @Test
+    void containsVersion_endWildcardLongNum() {
+        Range range = new Range("*-2.13");
+        assertTrue(range.containsVersion("1.0"));
+        assertTrue(range.containsVersion("2.0"));
+        assertFalse(range.containsVersion("2.15"));
+    }
+
+
+    @Test
     public void testRangeSorting() {
         List<Range> ranges = new ArrayList<>();
         ranges.add(new Range("1.0-2.0"));
+        ranges.add(new Range("*-0.4"));
         ranges.add(new Range("*"));
-        ranges.add(new Range("2.1-3.0"));
+        ranges.add(new Range("2.13"));
         ranges.add(new Range("0.5-1.5"));
+        ranges.add(new Range("2.2-2.3"));
+        ranges.add(new Range("2.14-2.15"));
         ranges.add(new Range("3.1-*"));
 
         Collections.sort(ranges);
 
-        assertEquals("0.5-1.5", ranges.get(0).getRange());
-        assertEquals("1.0-2.0", ranges.get(1).getRange());
-        assertEquals("2.1-3.0", ranges.get(2).getRange());
-        assertEquals("3.1-*", ranges.get(3).getRange());
-        assertEquals("*", ranges.get(4).getRange());
+        assertEquals("*-0.4", ranges.get(0).getRange());
+        assertEquals("0.5-1.5", ranges.get(1).getRange());
+        assertEquals("1.0-2.0", ranges.get(2).getRange());
+        assertEquals("2.2-2.3", ranges.get(3).getRange());
+        assertEquals("2.13", ranges.get(4).getRange());
+        assertEquals("2.14-2.15", ranges.get(5).getRange());
+        assertEquals("3.1-*", ranges.get(6).getRange());
+        assertEquals("*", ranges.get(7).getRange());
     }
 
 }
