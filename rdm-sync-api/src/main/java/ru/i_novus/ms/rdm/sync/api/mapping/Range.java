@@ -28,7 +28,7 @@ public class Range implements Comparable<Range> {
      * @param version Версия для проверки
      * @return true, если версия содержится в диапазоне, иначе false
      */
-    boolean containsVersion(String version) {
+    public boolean containsVersion(String version) {
         if (range.equals("*")) {
             return true;
         }
