@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
@@ -94,7 +95,7 @@ public class PropMappingSourceService implements MappingSourceService {
 
         return new VersionMapping(null, refbook.getCode(), refbook.getName(), null, schemaTable,
                 refbook.getSysPkColumn(), refbook.getSource(), uniqueSysField, isDeletedField, null,
-                DEFAULT_VERSION_FOR_PROPERTY_MAPPING, null, refbook.getType(), refbook.getRange(), true, false);
+                DEFAULT_VERSION_FOR_PROPERTY_MAPPING, null, refbook.getType(), new Range(refbook.getRange()), true, false);
     }
 
 

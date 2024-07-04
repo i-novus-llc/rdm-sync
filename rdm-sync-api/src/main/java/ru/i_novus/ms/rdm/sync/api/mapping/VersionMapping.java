@@ -30,11 +30,11 @@ public class VersionMapping implements Serializable {
     private int mappingVersion;
     private Integer mappingId;
     private SyncTypeEnum type;
-    private String range;
+    private Range range;
     private boolean matchCase = true;
     private boolean refreshableRange;
 
-    public String getRange() {
+    public Range getRange() {
         return range;
     }
 

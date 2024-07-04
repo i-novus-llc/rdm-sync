@@ -190,4 +190,6 @@ public interface RdmSyncDao {
     void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
 
     void dropTable(String tableName);
+
+    List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
 }

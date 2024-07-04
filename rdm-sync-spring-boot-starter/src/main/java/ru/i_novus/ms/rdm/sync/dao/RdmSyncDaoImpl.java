@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import com.sun.xml.bind.v2.TODO;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -105,7 +107,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(14),
+                        new Range(rs.getString(14)),
                         rs.getBoolean(15),
                         rs.getBoolean(16)
                 )
@@ -175,7 +177,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(14),
+                        new Range(rs.getString(14)),
                         rs.getBoolean(15),
                         rs.getBoolean(16)
                 )
@@ -522,7 +524,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type, range) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type, :range)  RETURNING id";
             String refBookName = versionMapping.getRefBookName();
             Map<String, String> params = new HashMap<>(Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()));
-            params.put("range", versionMapping.getRange());
+            params.put("range", versionMapping.getRange().getRange());
             refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
                     params,
                     Integer.class);
@@ -567,7 +569,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "source_code", versionMapping.getSource(),
                 "sync_type", versionMapping.getType().toString(),
                 "name", versionMapping.getRefBookName()));
-        updateParams.put("range", versionMapping.getRange());
+        updateParams.put("range", versionMapping.getRange().getRange());
         namedParameterJdbcTemplate.update(updateRefbook, updateParams);
     }
 
@@ -1191,6 +1193,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public void dropTable(String tableName) {
         getJdbcTemplate().execute("DROP TABLE IF EXISTS " + escapeName(tableName));
+    }
+
+    @Override
+    public List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode) {
+        //todo
+        return List.of();
     }
 
     private void createTable(String schema, String table,

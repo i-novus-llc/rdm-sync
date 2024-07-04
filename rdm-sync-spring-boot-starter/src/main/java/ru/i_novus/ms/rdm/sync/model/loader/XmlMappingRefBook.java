@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -38,7 +39,7 @@ public class XmlMappingRefBook {
 
     private String refBookVersion;
 
-    private String range;
+    private Range range;
 
     private boolean matchCase = true;
 
@@ -139,11 +140,11 @@ public class XmlMappingRefBook {
     }
 
     @XmlAttribute
-    public String getRange() {
+    public Range getRange() {
         return range;
     }
 
-    public void setRange(String range) {
+    public void setRange(Range range) {
         this.range = range;
     }
 

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -39,7 +40,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         SyncTypeEnum type = syncMapping.getVersionMapping().getType();
         String table = syncMapping.getVersionMapping().getTable();
         String sysPkColumn = syncMapping.getVersionMapping().getSysPkColumn();
-        String range = syncMapping.getVersionMapping().getRange();
+        Range range = syncMapping.getVersionMapping().getRange();
         String pk = syncMapping.getFieldMapping().get(0).getSysField();
         if(rdmSyncDao.existsLoadedVersion(refBookCode)) {
             logger.info("auto create for code {} was skipped", refBookCode);

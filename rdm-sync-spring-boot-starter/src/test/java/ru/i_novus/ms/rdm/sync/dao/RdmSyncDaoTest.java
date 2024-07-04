@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -348,7 +349,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
 
         //Проверка update'а таблицы rdm_sync.refbook
         versionMapping.setType(SyncTypeEnum.RDM_NOT_VERSIONED);
-        versionMapping.setRange("*");
+        versionMapping.setRange(new Range("*"));
         versionMapping.setRefBookName("Справочник 1-2");
 
         rdmSyncDao.updateCurrentMapping(versionMapping);
@@ -666,7 +667,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         return new VersionMapping(
                 1, null, "RDM", null, "rdm.ref_ek003", "id",
                 "RDM", "_sync_rec_id", "deleted_ts", null, 1,
-                1, SyncTypeEnum.NOT_VERSIONED, "", true, false);
+                1, SyncTypeEnum.NOT_VERSIONED, new Range(""), true, false);
     }
 }
 
