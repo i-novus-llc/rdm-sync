@@ -39,7 +39,7 @@ public class XmlMappingRefBook {
 
     private String refBookVersion;
 
-    private Range range;
+    private String range;
 
     private boolean matchCase = true;
 
@@ -140,11 +140,11 @@ public class XmlMappingRefBook {
     }
 
     @XmlAttribute
-    public Range getRange() {
+    public String getRange() {
         return range;
     }
 
-    public void setRange(Range range) {
+    public void setRange(String range) {
         this.range = range;
     }
 
@@ -186,7 +186,7 @@ public class XmlMappingRefBook {
     private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
         return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, range, matchCase, refreshableRange);
+                uniqueSysField, deletedField, null, mappingVersion, null, type, new Range(range), matchCase, refreshableRange);
     }
 
     private List<FieldMapping> generateFieldMappings() {
@@ -206,7 +206,7 @@ public class XmlMappingRefBook {
         result.setSysPkColumn(mapping.getSysPkColumn());
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
-        result.setRange(mapping.getRange());
+        result.setRange(mapping.getRange().getRange());
         if (!mapping.getRefBookVersion().equals("CURRENT")) {
             result.setRefBookVersion(mapping.getRefBookVersion());
         }

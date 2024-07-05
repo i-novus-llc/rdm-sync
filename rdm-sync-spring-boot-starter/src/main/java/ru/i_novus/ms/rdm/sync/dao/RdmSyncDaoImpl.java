@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
-import com.sun.xml.bind.v2.TODO;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -1197,7 +1196,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode) {
-        //todo
+        //todo`
         return List.of();
     }
 
