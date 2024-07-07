@@ -324,7 +324,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         assertMappingEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
-        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, null), syncRefBook);
+        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, Set.of("CURRENT")), syncRefBook);
 
         versionMapping.setDeletedField("is_deleted2");
         versionMapping.setTable("test_table2");

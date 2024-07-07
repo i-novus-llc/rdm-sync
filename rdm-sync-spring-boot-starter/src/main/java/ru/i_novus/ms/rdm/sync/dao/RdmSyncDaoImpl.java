@@ -1028,7 +1028,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                                 rs.getString("code"),
                                 SyncTypeEnum.valueOf(rs.getString("sync_type")),
                                 rs.getString("name"),
-                                rs.getString("range")
+                                getRangeData(rs.getInt("id"))
                         )
         );
         if (result.isEmpty())
@@ -1046,7 +1046,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                                 rs.getString("code"),
                                 SyncTypeEnum.valueOf(rs.getString("sync_type")),
                                 rs.getString("name"),
-                                rs.getString("range")
+                                getRangeData(rs.getInt("id"))
                         )
         );
     }
@@ -1251,5 +1251,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "FROM information_schema.columns\n" +
                 "where table_schema||'.'||table_name=:schemaTable and column_name= :colName)",
                 Map.of("schemaTable", schemaTable, "colName", columnName), Boolean.class);
+    }
+
+    private Set<String> getRangeData(int refId) {
+        List<String> rangeData = namedParameterJdbcTemplate.query("select version from rdm_sync.version where ref_id = :refId",
+                Map.of("refId", refId),
+                (rs, rowNum) -> rs.getString("version")
+        );
+
+        return new HashSet<>(rangeData);
     }
 }
