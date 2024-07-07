@@ -33,12 +33,8 @@ import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.BadRequestException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -715,7 +711,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria) {
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("  FROM %s %n WHERE 1=1 ", escapeName(localDataCriteria.getSchemaTable()));
         String selectSubQuery = null;
         if(columnExists(LOADED_VERSION_REF, localDataCriteria.getSchemaTable())) {
@@ -751,7 +747,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Page<Map<String, Object>> getSimpleVersionedData(VersionedLocalDataCriteria criteria) {
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
                 escapeName(criteria.getSchemaTable()));
 
@@ -772,7 +768,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria) {
 
-        Map<String, Serializable> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         String sql = String.format("%n  FROM %s %n WHERE 1=1 %n",
                 escapeName(localDataCriteria.getSchemaTable()));
 
@@ -849,7 +845,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     }
 
-    private Page<Map<String, Object>> getData0(String sql, Map<String, Serializable> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
+    private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
 
         SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
         if (filterBuilder != null) {
@@ -882,6 +878,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         String key = rs.getMetaData().getColumnName(i);
                         if (val instanceof Timestamp) {
                             val = ((Timestamp) val).toLocalDateTime();
+                        } else if( val instanceof Array) {
+                            val = Arrays.asList((Object[]) ((Array)val).getArray());
                         }
                         map.put(key, val);
                     }
@@ -1083,7 +1081,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 data.stream().map(map -> {
                     Object[] params = new Object[columns.size()];
                     for (int i = 0; i < columns.size(); i++) {
-                        params[i] = map.get(columns.get(i));
+                        if(map.get(columns.get(i)) instanceof List) {
+                            params[i] = createSqlArray((List<Integer>) map.get(columns.get(i)));
+                        } else {
+                            params[i] = map.get(columns.get(i));
+                        }
                     }
                     return params;
                 }).collect(Collectors.toList()));
@@ -1253,6 +1255,23 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Map.of("schemaTable", schemaTable, "colName", columnName), Boolean.class);
     }
 
+    private java.sql.Array createSqlArray(List<?> list) {
+        if (list.isEmpty())
+            return null;
+        if (list.get(0) instanceof Integer) {
+            Integer[] result = list.toArray(new Integer[0]);
+            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                    (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), result)
+            );
+        } else {
+            String[] result = list.toArray(new String[0]);
+            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                    (Connection c) -> c.createArrayOf(JDBCType.VARCHAR.getName(), result)
+            );
+        }
+
+    }
+
     private Set<String> getRangeData(int refId) {
         List<String> rangeData = namedParameterJdbcTemplate.query("select version from rdm_sync.version where ref_id = :refId",
                 Map.of("refId", refId),
@@ -1262,3 +1281,5 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return new HashSet<>(rangeData);
     }
 }
+
+

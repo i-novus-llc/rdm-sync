@@ -127,7 +127,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     /** Преобразование параметра запроса в фильтр по полю. */
     private FieldFilter paramToFilter(Map.Entry<String, List<String>> param, DataTypeEnum fieldType) {
 
-        Map<FilterTypeEnum, List<Serializable>> valueListMap = fieldType.toMap(param.getValue());
+        Map<FilterTypeEnum, List<Object>> valueListMap = fieldType.toMap(param.getValue());
         List<FieldValueFilter> valueFilters = valueListMap.entrySet().stream()
                 .filter(entry -> !isEmpty(entry.getValue()))
                 .map(FieldValueFilter::new)

@@ -1,8 +1,12 @@
 package ru.i_novus.ms.rdm.sync.dao.builder;
 
+import org.springframework.jdbc.core.support.AbstractSqlTypeValue;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -16,13 +20,13 @@ public class SqlClauseBuilder implements ClauseBuilder {
 
     private final List<String> clauses = new ArrayList<>();
 
-    private final Map<String, Serializable> params = new HashMap<>();
+    private final Map<String, Object> params = new HashMap<>();
 
     public SqlClauseBuilder() {
         
     }
 
-    public SqlClauseBuilder(List<String> clauses, Map<String, Serializable> params) {
+    public SqlClauseBuilder(List<String> clauses, Map<String, Object> params) {
 
         if (!isEmpty(clauses)) {
             this.clauses.addAll(clauses);
@@ -39,7 +43,7 @@ public class SqlClauseBuilder implements ClauseBuilder {
     }
 
     @Override
-    public Map<String, Serializable> getParams() {
+    public Map<String, Object> getParams() {
         return params;
     }
 
@@ -74,7 +78,7 @@ public class SqlClauseBuilder implements ClauseBuilder {
     }
 
     @Override
-    public SqlClauseBuilder bind(String name, Serializable value) {
+    public SqlClauseBuilder bind(String name, Object value) {
 
         if (!StringUtils.isEmpty(name) && value != null) {
             this.params.put(name, value);
@@ -83,14 +87,9 @@ public class SqlClauseBuilder implements ClauseBuilder {
         return this;
     }
 
-    @Override
-    public SqlClauseBuilder bind(Map.Entry<String, Serializable> param) {
-
-        return (param != null) ? bind(param.getKey(), param.getValue()) : this;
-    }
 
     @Override
-    public SqlClauseBuilder bind(Map<String, Serializable> params) {
+    public SqlClauseBuilder bind(Map<String, Object> params) {
 
         if (!isEmpty(params)) {
             this.params.putAll(params);
@@ -100,7 +99,7 @@ public class SqlClauseBuilder implements ClauseBuilder {
     }
 
     @Override
-    public void concat(String clause, Map<String, Serializable> params) {
+    public void concat(String clause, Map<String, Object> params) {
 
         append(clause);
         bind(params);

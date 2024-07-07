@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lgalimova
@@ -27,7 +30,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     @Override
     public Object map(AttributeTypeEnum attributeType, DataTypeEnum clientType, Object value) {
 
-        if (value == null) {
+        if (value == null || "".equals(value)) {
             return AttributeTypeEnum.BOOLEAN.equals(attributeType) ? mapBoolean(clientType, value) : null;
         }
 
@@ -51,9 +54,21 @@ public class RdmMappingServiceImpl implements RdmMappingService {
                 return value.toString();
             case REFERENCE:
                 return mapReference(clientType, value);
+            case INT_ARRAY:
+                return mapIntegerArray(value);
+            case STRING_ARRAY:
+                return mapTextArray(value);
         }
 
         return result;
+    }
+
+    private List<Integer> mapIntegerArray(Object value) {
+        return (List<Integer>)value;
+    }
+
+    private List<String> mapTextArray(Object value) {
+        return (List<String>)value;
     }
 
     private AttributeTypeEnum getAttributeType(DataTypeEnum clientType) {
