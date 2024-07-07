@@ -508,7 +508,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRange().getRange()));
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRange().getRange() == null ? "" : versionMapping.getRange().getRange()));
 
         return mappingId;
     }
@@ -1220,7 +1220,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
                 "code", code,
-                "version", range
+                "version", range == null ? "" : range
         ), (rs, rowNum) -> new VersionMapping(
                 rs.getInt(1),
                 rs.getString(2),
