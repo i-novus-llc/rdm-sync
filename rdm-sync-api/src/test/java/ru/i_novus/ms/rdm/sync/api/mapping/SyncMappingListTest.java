@@ -32,9 +32,7 @@ class SyncMappingListTest {
     }
 
     private VersionMapping createVersionMapping(){
-        return new VersionMapping(null, "EK003", "Справочник", null,
-                "rdm.ref_ek003", "_sync_rec_id", "RDM", "id", "deleted_ts",
-                null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
     }
 
 }
