@@ -20,7 +20,7 @@ public class SqlFilterBuilder extends SqlClauseBuilder {
     public SqlFilterBuilder() {
     }
 
-    public SqlFilterBuilder(List<String> clauses, Map<String, Serializable> params) {
+    public SqlFilterBuilder(List<String> clauses, Map<String, Object> params) {
         super(clauses, params);
     }
 

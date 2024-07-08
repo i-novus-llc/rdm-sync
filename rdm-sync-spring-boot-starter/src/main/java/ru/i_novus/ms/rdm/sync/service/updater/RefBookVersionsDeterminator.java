@@ -10,10 +10,7 @@ import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,6 +98,15 @@ public class RefBookVersionsDeterminator {
 
     private boolean isNewVersionPublished(RefBookVersionItem newVersion, LoadedVersion loadedVersion) {
         return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
+    }
+
+    private List<VersionsRange> getRanges(Set<String> ranges, List<RefBookVersionItem> versions) {
+        return ranges.stream()
+                .map(range -> getRanges(range, versions))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+
     }
 
     private List<VersionsRange> getRanges(String range, List<RefBookVersionItem> versions) {
