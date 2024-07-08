@@ -21,6 +21,7 @@ public class Range implements Comparable<Range> {
 
     private static final int MAX_PART = Integer.MAX_VALUE;
     private static final int MIN_PART = Integer.MIN_VALUE;
+    private final String MAX_VERSION = "999999999.999999999";
 
     /**
      * Проверяет, содержит ли диапазон указанную версию.
@@ -54,37 +55,38 @@ public class Range implements Comparable<Range> {
 
     @Override
     public int compareTo(Range other) {
-        if (this.range.equals("*") && other.range.equals("*")) {
-            return 0;
-        }
-        if (this.range.equals("*")) {
-            return 1;
-        }
-        if (other.range.equals("*")) {
-            return -1;
-        }
+        Range start = convertToEndVersion(new Range(range));
+        Range end = convertToEndVersion(other);
 
-        if (this.range.contains("-") && other.range.contains("-")) {
-            return compareRanges(this.range, other.range, true);
+        int[] parts1 = parseVersion(start.getRange());
+        int[] parts2 = parseVersion(end.getRange());
+
+        int length = Math.max(parts1.length, parts2.length);
+        for (int i = 0; i < length; i++) {
+            int part1 = i < parts1.length ? parts1[i] : 0;
+            int part2 = i < parts2.length ? parts2[i] : 0;
+            int comparison = Integer.compare(part1, part2);
+            if (comparison != 0) {
+                return comparison;
+            }
         }
-
-        if (this.range.contains("-")) {
-            String[] thisParts = this.range.split("-");
-            String thisStart = thisParts[0].trim();
-            thisStart = handleWildcard(thisStart, true);
-
-            return compareVersions(thisStart, other.range);
+        return 0;
+    }
+    /**
+     * Из диапазона версий берем его максимальное значение, с учетом знака "*"
+     *
+     * @param r Диапазон версий
+     * @return Конвертированный диапазон версий
+     */
+    private Range convertToEndVersion(Range r){
+        String[] rangeParts = r.getRange().split("-");
+        if (rangeParts.length > 1){
+            if (rangeParts[1].equals("*")){
+                rangeParts[1] = MAX_VERSION;
+            }
+            return new Range(rangeParts[1]);
         }
-
-        if (other.range.contains("-")) {
-            String[] otherParts = other.range.split("-");
-            String otherStart = otherParts[0].trim();
-            otherStart = handleWildcard(otherStart, true);
-
-            return compareVersions(this.range, otherStart);
-        }
-
-        return compareVersions(this.range, other.range);
+        return new Range(r.getRange());
     }
 
     /**
@@ -129,49 +131,5 @@ public class Range implements Comparable<Range> {
             }
         }
         return 0;
-    }
-
-    /**
-     * Обрабатывает символ * в версии.
-     *
-     * @param versionPart Часть версии
-     * @param isStart     Флаг, указывающий на начальную или конечную часть диапазона
-     * @return Преобразованная часть версии
-     */
-    private String handleWildcard(String versionPart, boolean isStart) {
-        if (versionPart.equals("*")) {
-            return isStart ? String.valueOf(MIN_PART) : String.valueOf(MAX_PART);
-        }
-        return versionPart;
-    }
-
-    /**
-     * Сравнивает два диапазона версий.
-     *
-     * @param thisRange  Первый диапазон
-     * @param otherRange Второй диапазон
-     * @param isStart    Флаг, указывающий на начальную или конечную часть диапазона
-     * @return Результат сравнения (-1 если thisRange < otherRange, 0 если thisRange == otherRange, 1 если thisRange > otherRange)
-     */
-    private int compareRanges(String thisRange, String otherRange, boolean isStart) {
-        String[] thisParts = thisRange.split("-");
-        String thisStart = thisParts[0].trim();
-        String thisEnd = thisParts.length > 1 ? thisParts[1].trim() : "";
-
-        String[] otherParts = otherRange.split("-");
-        String otherStart = otherParts[0].trim();
-        String otherEnd = otherParts.length > 1 ? otherParts[1].trim() : "";
-
-        thisStart = handleWildcard(thisStart, isStart);
-        thisEnd = handleWildcard(thisEnd, !isStart);
-        otherStart = handleWildcard(otherStart, isStart);
-        otherEnd = handleWildcard(otherEnd, !isStart);
-
-        int startComparison = compareVersions(thisStart, otherStart);
-        if (startComparison != 0) {
-            return startComparison;
-        }
-
-        return compareVersions(thisEnd, otherEnd);
     }
 }
