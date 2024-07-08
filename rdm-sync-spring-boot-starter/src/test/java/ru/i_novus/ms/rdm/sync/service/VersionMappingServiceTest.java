@@ -27,36 +27,144 @@ class VersionMappingServiceTest {
 
 
     /**
-     * Проверяем тот случай, когда версия маппинга не равна null
+     * Проверяем тот случай, когда по версии найден маппинг
      */
     @Test
     void whenVersionMappingNotNull() {
         //Данные для Справочника
         String someRefBookCode = "someRefBookCode";
         String someRefBookVersion = "2.0";
-        String anotherFailRefBookVersion = "5.0";
 
         //Диапазоны, для моков маппинга из БД
-        Range someRange1 = new Range("*-1.10");
-        Range someRange2 = new Range("2.0-4.0");
-        Range someRange3 = new Range("3.0");
+        String expectedRange = "2.0-4.0";
+        String someRange1 = "*-1.10";
+        String someRange2 = "3.0";
 
         //Создаем список маппингов, для мока данных из БД
+        VersionMapping expectedVersionMapping = generateVersionMappingWithSomeRange(expectedRange);
+        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(someRange1);
+        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange2);
+
         List<VersionMapping> mockMappingsFromDb = Arrays.asList(
-                new VersionMapping(null, "refBookCode", "refBookName", "", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, someRange1, true, false),
-                new VersionMapping(null, "refBookCode", "refBookName", "", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, someRange2, true, false),
-                new VersionMapping(null, "refBookCode", "refBookName", "", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, someRange3, true, false)
+                someVersionMapping1,
+                someVersionMapping2,
+                expectedVersionMapping
         );
 
         // Мокаем методы dao
         when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
 
-        //Запрашиваем получение диапазона версии маппинга
-        Range actualRange = versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion).getRange();
+        VersionMapping actualVersionMapping =
+                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
 
-        //Проверяем версии в диапазоне
-        assertTrue(actualRange.containsVersion(someRefBookVersion));
-        assertFalse(actualRange.containsVersion(anotherFailRefBookVersion));
+        assertEquals(expectedVersionMapping, actualVersionMapping);
+    }
+
+    /**
+     * Проверяем тот случай, когда версия равна null
+     */
+    @Test
+    void whenVersionMappingNull() {
+        //Данные для Справочника
+        String someRefBookCode = "someRefBookCode";
+        String someRefBookVersion = null;
+
+        //Диапазоны, для моков маппинга из БД
+        String expectedRange = "2.0-4.0";
+        String someRange1 = "*-1.10";
+        String someRange2 = "3.0";
+
+        //Создаем список маппингов, для мока данных из БД
+        VersionMapping expectedVersionMapping = generateVersionMappingWithSomeRange(expectedRange);
+        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(someRange1);
+        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange2);
+
+        List<VersionMapping> mockMappingsFromDb = Arrays.asList(
+                someVersionMapping1,
+                someVersionMapping2,
+                expectedVersionMapping
+        );
+
+        // Мокаем методы dao
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
+
+        VersionMapping actualVersionMapping =
+                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
+
+        assertEquals(expectedVersionMapping, actualVersionMapping);
+    }
+
+    /**
+     * Проверяем тот случай, когда один из диапазонов равен null
+     */
+    @Test
+    void whenRangeNull() {
+        //Данные для Справочника
+        String someRefBookCode = "someRefBookCode";
+        String someRefBookVersion = "2.0";
+
+        //Диапазоны, для моков маппинга из БД
+        String nullRange = null;
+        String expectedRange = "2.0-4.0";
+        String someRange1 = "3.0";
+
+
+        //Создаем список маппингов, для мока данных из БД
+        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(nullRange);
+        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange1);
+        VersionMapping expectedVersionMapping = generateVersionMappingWithSomeRange(expectedRange);
+
+        List<VersionMapping> mockMappingsFromDb = Arrays.asList(
+                someVersionMapping1,
+                someVersionMapping2,
+                expectedVersionMapping
+        );
+
+        // Мокаем методы dao
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
+
+        VersionMapping actualVersionMapping =
+                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
+
+        assertEquals(expectedVersionMapping, actualVersionMapping);
+    }
+
+    /**
+     * Не найден ни один маппинг и берем последний
+     */
+    @Test
+    void whenVersionMappingNotContainsVersion() {
+        //Данные для Справочника
+        String someRefBookCode = "someRefBookCode";
+        String someRefBookVersion = "5.0";
+
+        //Диапазоны, для моков маппинга из БД
+        String expectedRange = "2.0-4.0";
+        String someRange1 = "*-1.10";
+        String someRange2 = "3.0";
+
+        //Создаем список маппингов, для мока данных из БД
+        VersionMapping expectedVersionMapping = generateVersionMappingWithSomeRange(expectedRange);
+        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(someRange1);
+        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange2);
+
+        List<VersionMapping> mockMappingsFromDb = Arrays.asList(
+                someVersionMapping1,
+                someVersionMapping2,
+                expectedVersionMapping
+        );
+
+        // Мокаем методы dao
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
+
+        VersionMapping actualVersionMapping =
+                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
+
+        assertEquals(expectedVersionMapping, actualVersionMapping);
+    }
+
+    private VersionMapping generateVersionMappingWithSomeRange(String range){
+        return new VersionMapping(null, "refBookCode", "refBookName", "", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(range), true, false);
     }
 
 }

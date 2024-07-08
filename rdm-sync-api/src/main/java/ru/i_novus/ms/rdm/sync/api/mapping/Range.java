@@ -21,7 +21,8 @@ public class Range implements Comparable<Range> {
 
     private static final int MAX_PART = Integer.MAX_VALUE;
     private static final int MIN_PART = Integer.MIN_VALUE;
-    private final String MAX_VERSION = "999999999.999999999";
+    private static final String MAX_VERSION = "999999999.999999999";
+    private static final String MIN_VERSION = "-999999999.-999999999";
 
     /**
      * Проверяет, содержит ли диапазон указанную версию.
@@ -30,6 +31,11 @@ public class Range implements Comparable<Range> {
      * @return true, если версия содержится в диапазоне, иначе false
      */
     public boolean containsVersion(String version) {
+
+        if (range == null) {
+            return true;
+        }
+
         if (range.equals("*")) {
             return true;
         }
@@ -79,6 +85,11 @@ public class Range implements Comparable<Range> {
      * @return Конвертированный диапазон версий
      */
     private Range convertToEndVersion(Range r){
+
+        if (r.getRange() == null) {
+            return new Range(MIN_VERSION);
+        }
+
         String[] rangeParts = r.getRange().split("-");
         if (rangeParts.length > 1){
             if (rangeParts[1].equals("*")){

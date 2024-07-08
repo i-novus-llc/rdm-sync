@@ -23,18 +23,37 @@ public class VersionMappingServiceImpl implements VersionMappingService {
 
     @Override
     public VersionMapping getVersionMapping(String refBookCode, String version) {
-        List<VersionMapping> versionMappings =
-                rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode)
-                .stream().sorted(Comparator.comparing(VersionMapping::getRange))
+
+        List<VersionMapping> versionMappings = rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode);
+
+        //Сортируем
+        List<VersionMapping> sortedVersionMappings = versionMappings.stream()
+                .sorted(Comparator.comparing(VersionMapping::getRange))
                 .collect(Collectors.toList());
 
-        for (VersionMapping versionMapping : versionMappings) {
-            if (versionMapping.getRange().containsVersion(version)) {
-                return versionMapping;
+        if (version != null){
+            for (VersionMapping versionMapping : versionMappings) {
+                //один из диапазонов равен null - берем последний
+                if(versionMapping.getRange().getRange() == null){
+                    return getLastVersionMapping(sortedVersionMappings);
+                }
+                //по версии найден маппинг
+                if (versionMapping.getRange().containsVersion(version)) {
+                    return versionMapping;
+                }
             }
         }
-        //todo
-        return null;
+        //версия равна null - берем последний
+        if (version == null){
+            return getLastVersionMapping(sortedVersionMappings);
+        }
+        //не найден ни один маппинг - берем последний
+        return getLastVersionMapping(sortedVersionMappings);
 
+    }
+
+    private VersionMapping getLastVersionMapping(List<VersionMapping> sortedVersionMappings) {
+        int lastVersionMappingIndex = sortedVersionMappings.size() - 1;
+        return sortedVersionMappings.get(lastVersionMappingIndex);
     }
 }
