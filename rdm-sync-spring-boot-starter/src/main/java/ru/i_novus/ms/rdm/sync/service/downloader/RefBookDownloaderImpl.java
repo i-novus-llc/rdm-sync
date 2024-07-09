@@ -12,6 +12,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
@@ -39,28 +40,29 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
     private final RdmMappingService rdmMappingService;
 
+    private final VersionMappingService versionMappingService;
+
     public RefBookDownloaderImpl(SyncSourceService syncSourceService,
                                  RdmSyncDao rdmSyncDao,
                                  RdmMappingService rdmMappingService,
                                  @Value("${rdm-sync.load.retry.tries: 5}") int tries,
                                  @Value("${rdm-sync.load.retry.timeout: 30000}") int timeout,
-                                 @Value("${rdm-sync.load.size: 1000}") int maxSize) {
+                                 @Value("${rdm-sync.load.size: 1000}") int maxSize,
+                                 VersionMappingService versionMappingService) {
         this.syncSourceService = syncSourceService;
         this.rdmSyncDao = rdmSyncDao;
         this.rdmMappingService = rdmMappingService;
         this.tries = tries;
         this.timeout = timeout;
         this.maxSize = maxSize;
+        this.versionMappingService = versionMappingService;
     }
 
     @Override
     public DownloadResult download(String refCode, @Nullable String version) {
         String tempTableName = ("temp_" + refCode + "_" + version).replace(".", "_");
         rdmSyncDao.dropTable(tempTableName);
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(refCode, version);
-        if(versionMapping == null) {
-            versionMapping = rdmSyncDao.getVersionMapping(refCode, "CURRENT");
-        }
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refCode, version);
         List<FieldMapping> fieldMappings = rdmSyncDao.getFieldMappings(versionMapping.getId());
         RefBookVersion refBookVersion = getRefBookVersion(refCode, version);
         DownloadResult downloadResult;
