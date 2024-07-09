@@ -25,7 +25,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -127,14 +126,14 @@ class RefBookVersionsDeterminatorTest {
         List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getMappingLastUpdated()).thenReturn(now.plusDays(1));
-        when(versionMappingService.getVersionMapping(code, null)).thenReturn(versionMapping);
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(versionMapping);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, now.minusDays(1), null),
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, now, true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
         RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
-//        assertEquals(List.of("2"), determinator.getVersions());
+        assertEquals(List.of("2"), determinator.getVersions());
     }
 
     @Test
