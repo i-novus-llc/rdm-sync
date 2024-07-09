@@ -82,7 +82,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range, match_case, refreshable_range \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n";
@@ -102,9 +102,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(14)),
-                        rs.getBoolean(15),
-                        rs.getBoolean(16)
+                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        rs.getBoolean(14),
+                        rs.getBoolean(15)
                 )
         );
     }
@@ -150,7 +150,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public VersionMapping getVersionMapping(String refbookCode, String version) {
         final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range, match_case, refreshable_range \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
@@ -172,9 +172,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(14)),
-                        rs.getBoolean(15),
-                        rs.getBoolean(16)
+                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        rs.getBoolean(14),
+                        rs.getBoolean(15)
                 )
         );
         return !list.isEmpty() ? list.get(0) : null;
@@ -1201,7 +1201,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         final String sql = "SELECT m.id, code, name, version, \n" +
                 "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, range, match_case, refreshable_range \n" +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range \n" +
                 "  FROM rdm_sync.version v \n" +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
@@ -1222,9 +1222,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(14)),
-                        rs.getBoolean(15),
-                        rs.getBoolean(16)
+                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        rs.getBoolean(14),
+                        rs.getBoolean(15)
                 )
         );
     }
