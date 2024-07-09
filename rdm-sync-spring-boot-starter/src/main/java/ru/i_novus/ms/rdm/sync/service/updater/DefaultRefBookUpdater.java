@@ -9,6 +9,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
@@ -30,10 +31,13 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
     protected final PersisterService persisterService;
 
-    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService) {
+    protected  final VersionMappingService versionMappingService;
+
+    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService, VersionMappingService versionMappingService) {
         this.dao = dao;
         this.loggingService = loggingService;
         this.persisterService = persisterService;
+        this.versionMappingService = versionMappingService;
     }
 
     @Override
@@ -78,10 +82,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
     }
 
     private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
-        VersionMapping versionMapping = dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
-        if (versionMapping == null) {
-            versionMapping = dao.getVersionMapping(refBookVersion.getCode(), "CURRENT");
-        }
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
         if (versionMapping == null) {
             return null;
         }
