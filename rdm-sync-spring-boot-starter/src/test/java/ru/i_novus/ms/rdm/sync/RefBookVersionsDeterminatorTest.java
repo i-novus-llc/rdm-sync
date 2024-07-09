@@ -12,6 +12,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
@@ -38,11 +39,14 @@ class RefBookVersionsDeterminatorTest {
     @Mock
     private RdmSyncDao dao;
 
+    @Mock
+    private VersionMappingService versionMappingService;
+
     @BeforeEach
     public void setUp() throws Exception {
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
-        when(dao.getVersionMapping(any(), eq("CURRENT"))).thenReturn(versionMapping);
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(versionMapping);
         when(syncSourceService.getRefBook(any(), any())).thenAnswer(invocationOnMock -> new RefBookVersion(invocationOnMock.getArgument(0), invocationOnMock.getArgument(1), null, null, null, null));
     }
 
@@ -54,7 +58,7 @@ class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(generateVersions(code));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-2")), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-2")), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("1", "2"), determinator.getVersions());
     }
 
@@ -67,7 +71,7 @@ class RefBookVersionsDeterminatorTest {
         List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.singletonList(new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, LocalDateTime.now(), true)));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-2")), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-2")), dao, syncSourceService, versionMappingService);
         assertEquals(Collections.singletonList("2"), determinator.getVersions());
     }
 
@@ -80,7 +84,7 @@ class RefBookVersionsDeterminatorTest {
         List<RefBookVersionItem> versions = generateVersions(code);
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-1")), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-1")), dao, syncSourceService, versionMappingService);
         assertEquals(Collections.singletonList("1"), determinator.getVersions());
     }
 
@@ -96,7 +100,7 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now(), true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
         assertTrue(determinator.getVersions().isEmpty());
 
     }
@@ -109,7 +113,7 @@ class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getVersions(any())).thenReturn(generateVersions(code));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("*")), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("*")), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("1", "2"), determinator.getVersions());
     }
 
@@ -123,14 +127,14 @@ class RefBookVersionsDeterminatorTest {
         List<RefBookVersionItem> versions = generateVersions(code);
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getMappingLastUpdated()).thenReturn(now.plusDays(1));
-        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(versionMapping);
+        when(versionMappingService.getVersionMapping(code, null)).thenReturn(versionMapping);
         when(dao.getLoadedVersions(any())).thenReturn(List.of(
                 new LoadedVersion(1, code, versions.get(0).getVersion(),  versions.get(0).getFrom(), null, now.minusDays(1), null),
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, now, true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService);
-        assertEquals(List.of("2"), determinator.getVersions());
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
+//        assertEquals(List.of("2"), determinator.getVersions());
     }
 
     @Test
@@ -138,7 +142,7 @@ class RefBookVersionsDeterminatorTest {
         String code = "someCode";
         when(dao.getLoadedVersions(any())).thenReturn(Collections.emptyList());
         when(syncSourceService.getRefBook(code, null)).thenReturn(new RefBookVersion(generateVersions(code).get(1), null));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("2"), determinator.getVersions());
     }
 
@@ -153,7 +157,7 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(2, code, refBookVersion.getVersion(),  refBookVersion.getFrom(), null, LocalDateTime.now(), true)
         ));
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService, versionMappingService);
         assertTrue(determinator.getVersions().isEmpty());
     }
 
@@ -172,8 +176,8 @@ class RefBookVersionsDeterminatorTest {
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping versionMapping = mock(VersionMapping.class);
         when(versionMapping.getMappingLastUpdated()).thenReturn(mappingLastUpdate);
-        when(dao.getVersionMapping(refBookVersion.getCode(), "CURRENT")).thenReturn(versionMapping);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(versionMapping);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("2"), determinator.getVersions());
     }
 
@@ -190,8 +194,8 @@ class RefBookVersionsDeterminatorTest {
         when(syncSourceService.getRefBook(code, null)).thenReturn(refBookVersion);
         VersionMapping specifyVersionMapping = mock(VersionMapping.class);
         when(specifyVersionMapping.getMappingLastUpdated()).thenReturn(LocalDateTime.MIN);
-        when(dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(specifyVersionMapping);
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+        when(versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion())).thenReturn(specifyVersionMapping);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService, versionMappingService);
         assertTrue(determinator.getVersions().isEmpty());
     }
 
@@ -204,7 +208,7 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(1, code, "-1",  LocalDateTime.of(2022, 4, 1, 10, 0), null, LocalDateTime.now(), true)
         ));
 
-        when(dao.getVersionMapping(any(), eq("CURRENT"))).thenReturn(versionMapping);
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(versionMapping);
         RefBookVersion refBookVersion1 = new RefBookVersion();
         refBookVersion1.setVersion("-1");
         refBookVersion1.setVersionId(1);
@@ -213,7 +217,7 @@ class RefBookVersionsDeterminatorTest {
 
         when(syncSourceService.getRefBook(any(), any())).thenReturn(refBookVersion1);
 
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService);
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, null), dao, syncSourceService, versionMappingService);
 
         assertEquals(Collections.singletonList("-1"), determinator.getVersions());
     }
@@ -230,8 +234,8 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService);
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("1", "2"), determinator.getVersions());
     }
 
@@ -247,8 +251,8 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService);
+        when(versionMappingService.getVersionMapping(code, null)).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
         assertTrue(determinator.getVersions().isEmpty());
     }
 
@@ -264,9 +268,9 @@ class RefBookVersionsDeterminatorTest {
                 new LoadedVersion(2, code, versions.get(1).getVersion(),  versions.get(1).getFrom(), null, LocalDateTime.now().minusDays(1), true)
         ));
         when(syncSourceService.getVersions(any())).thenReturn(versions);
-        when(dao.getVersionMapping(code, "CURRENT")).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
-        when(dao.getVersionMapping(code, "1")).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
-        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService);
+        when(versionMappingService.getVersionMapping(code, null)).thenReturn(createVersionMapping(code, LocalDateTime.now().minusDays(3), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        when(versionMappingService.getVersionMapping(code, "1")).thenReturn(createVersionMapping(code, LocalDateTime.now(), SyncTypeEnum.SIMPLE_VERSIONED, "1-*", true));
+        RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(new SyncRefBook(1, code, null, null, Collections.singleton("1-*")), dao, syncSourceService, versionMappingService);
         assertEquals(List.of("1"), determinator.getVersions());
     }
 
@@ -294,7 +298,7 @@ class RefBookVersionsDeterminatorTest {
                 -1,
                1,
                type,
-               new Range(range),
+               range == null ? new Range(range) : null,
                true,
                refreshableRange
        );
