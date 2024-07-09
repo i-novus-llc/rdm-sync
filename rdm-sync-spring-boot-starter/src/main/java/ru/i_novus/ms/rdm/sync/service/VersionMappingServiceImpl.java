@@ -26,6 +26,10 @@ public class VersionMappingServiceImpl implements VersionMappingService {
 
         List<VersionMapping> versionMappings = rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode);
 
+        if (versionMappings.isEmpty()){
+            return null;
+        }
+
         //Сортируем
         List<VersionMapping> sortedVersionMappings = versionMappings.stream()
                 .sorted(Comparator.comparing(VersionMapping::getRange))
