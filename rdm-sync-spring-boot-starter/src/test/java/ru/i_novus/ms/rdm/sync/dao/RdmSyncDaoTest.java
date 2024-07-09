@@ -14,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
@@ -56,6 +57,9 @@ class RdmSyncDaoTest extends BaseDaoTest {
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
+
+    @Autowired
+    private VersionMappingService versionMappingService;
 
     @Test
     void testGetDataWithFilters() {
@@ -318,7 +322,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
-        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        VersionMapping actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(versionMapping.getCode(), actual.getCode());
         assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
         assertEquals(version, actual.getRefBookVersion());
@@ -332,7 +336,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         versionMapping.setMappingVersion(1);
         rdmSyncDao.updateCurrentMapping(versionMapping);
 
-        actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(version, versionMapping.getRefBookVersion());
         assertMappingEquals(versionMapping, actual);
     }
@@ -353,7 +357,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         versionMapping.setRefBookName("Справочник 1-2");
 
         rdmSyncDao.updateCurrentMapping(versionMapping);
-        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), refBookVersion);
+        VersionMapping actual = versionMappingService.getVersionMapping(versionMapping.getCode(), refBookVersion);
 
         assertEquals(SyncTypeEnum.RDM_NOT_VERSIONED, actual.getType());
         assertEquals("*", actual.getRange());

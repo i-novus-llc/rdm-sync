@@ -14,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.HashSet;
@@ -35,7 +36,7 @@ class NotVersionedLocalRefBookCreatorTest {
     private SyncSourceDao syncSourceDao;
 
     @Spy
-    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet = new HashSet<>();
+    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
     @Mock
     private SyncSourceServiceFactory syncSourceServiceFactory;
@@ -43,8 +44,12 @@ class NotVersionedLocalRefBookCreatorTest {
     @Mock
     private SyncSourceService syncSourceService;
 
+    @Mock
+    private VersionMappingService versionMappingService;
+
     @BeforeEach
     public void setUp() {
+        syncSourceServiceFactorySet = new HashSet<>();
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
     }
 
@@ -95,7 +100,7 @@ class NotVersionedLocalRefBookCreatorTest {
     @Test
     void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
-        when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(mock(VersionMapping.class));
         SyncMapping syncMapping = createVersionMapping(code);
         creator.create(syncMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());

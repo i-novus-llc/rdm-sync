@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
@@ -24,17 +25,19 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final RdmSyncDao dao;
 
+    protected final VersionMappingService versionMappingService;
 
     protected abstract void createTable(String refBookCode, VersionMapping mapping);
 
     protected BaseLocalRefBookCreator(String defaultSchema,
-                                   Boolean caseIgnore,
-                                   RdmSyncDao dao,
-                                   SyncSourceDao syncSourceDao) {
+                                      Boolean caseIgnore,
+                                      RdmSyncDao dao,
+                                      SyncSourceDao syncSourceDao, VersionMappingService versionMappingService) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
         this.syncSourceDao = syncSourceDao;
         this.dao = dao;
+        this.versionMappingService = versionMappingService;
     }
 
     @Transactional
@@ -42,7 +45,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     public void create(SyncMapping syncMapping) {
         String refBookCode = syncMapping.getVersionMapping().getCode();
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
 
         if (!dao.lockRefBookForUpdate(refBookCode, true))

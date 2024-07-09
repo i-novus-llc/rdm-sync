@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 /**
@@ -19,8 +20,9 @@ public class SimpleVersionedLocalRefBookCreator extends BaseLocalRefBookCreator 
     public SimpleVersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                               @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                               RdmSyncDao rdmSyncDao,
-                                              SyncSourceDao syncSourceDao) {
-        super(schema, caseIgnore, rdmSyncDao, syncSourceDao);
+                                              SyncSourceDao syncSourceDao,
+                                              VersionMappingService versionMappingService) {
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, versionMappingService);
 
     }
     @Override
