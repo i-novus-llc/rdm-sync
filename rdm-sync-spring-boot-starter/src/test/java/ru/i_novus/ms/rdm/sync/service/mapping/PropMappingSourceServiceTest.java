@@ -46,7 +46,7 @@ class PropMappingSourceServiceTest {
     private RdmSyncDao rdmSyncDao;
 
     @Spy
-    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet = new HashSet<>();
+    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
     @Mock
     private SyncSourceServiceFactory syncSourceServiceFactory;
@@ -66,6 +66,7 @@ class PropMappingSourceServiceTest {
     @BeforeEach
     public void setUp() throws Exception {
         when(syncSourceServiceFactory.isSatisfied(any())).thenReturn(true);
+        syncSourceServiceFactorySet = new HashSet<>();
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
         when(syncSourceServiceFactory.createService(any())).thenReturn(syncSourceService);
 
