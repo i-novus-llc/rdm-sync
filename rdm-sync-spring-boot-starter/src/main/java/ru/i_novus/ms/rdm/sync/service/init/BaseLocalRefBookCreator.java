@@ -47,7 +47,10 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
-
+        /*todo
+         В этом месте мы уже обратимся к БД и поймем,
+         есть ли пересечения в диапазонах
+         */
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 

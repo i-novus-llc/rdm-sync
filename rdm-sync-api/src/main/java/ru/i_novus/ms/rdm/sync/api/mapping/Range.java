@@ -143,4 +143,21 @@ public class Range implements Comparable<Range> {
         }
         return 0;
     }
+
+    public boolean overlapsWith(Range other) {
+        if (this.range == null || other.range == null) {
+            return false;
+        }
+
+        String[] thisParts = this.range.split("-");
+        String[] otherParts = other.range.split("-");
+
+        String thisStart = thisParts[0].trim();
+        String thisEnd = thisParts.length > 1 ? thisParts[1].trim() : thisStart;
+
+        String otherStart = otherParts[0].trim();
+        String otherEnd = otherParts.length > 1 ? otherParts[1].trim() : otherStart;
+
+        return compareVersions(thisStart, otherEnd) <= 0 && compareVersions(otherStart, thisEnd) <= 0;
+    }
 }

@@ -1211,6 +1211,11 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
     }
 
+    @Override
+    public void markIsDeletedVersionMapping(VersionMapping versionMapping) {
+        //todo
+    }
+
     private void createTable(String schema, String table,
                              List<FieldMapping> fieldMappings,
                              Map<String, String> additionalColumns) {
