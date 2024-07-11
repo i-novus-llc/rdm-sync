@@ -11,7 +11,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @EqualsAndHashCode
@@ -153,10 +152,6 @@ public class XmlMappingRefBook {
         return refBookVersion;
     }
 
-    public String getRefBookVersionIfNullReturnCurrent() {
-        return Objects.toString(getRefBookVersion(), "CURRENT");
-    }
-
     public void setRefBookVersion(String refBookVersion) {
         this.refBookVersion = refBookVersion;
     }
@@ -206,10 +201,8 @@ public class XmlMappingRefBook {
         result.setSysPkColumn(mapping.getSysPkColumn());
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
-        result.setRange(mapping.getRange().getRange());
-        if (!mapping.getRefBookVersion().equals("CURRENT")) {
-            result.setRefBookVersion(mapping.getRefBookVersion());
-        }
+        result.setRange(mapping.getRange() != null ? mapping.getRange().getRange() : null);
+        result.setRefBookVersion(mapping.getRefBookVersion());
         return result;
     }
 }

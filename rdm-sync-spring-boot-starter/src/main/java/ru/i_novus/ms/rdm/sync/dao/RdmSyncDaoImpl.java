@@ -181,22 +181,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public int getLastMappingVersion(String refbookCode) {
-
-        final String sql = "select m.mapping_version from rdm_sync.refbook r\n" +
-                "inner join rdm_sync.version v on v.ref_id = r.id and v.version = 'CURRENT'\n" +
-                "inner join rdm_sync.mapping m on m.id = v.mapping_id\n" +
-                "where r.code = :code";
-
-        List<Integer> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("code", refbookCode),
-                (rs, rowNum) -> rs.getInt(1)
-        );
-
-        return !list.isEmpty() ? list.get(0) : 0;
-    }
-
-    @Override
     public List<FieldMapping> getFieldMappings(String refbookCode) {
 
         final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
@@ -207,11 +191,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "        WHERE v.ref_id = ( \n" +
                 "              SELECT r.id FROM rdm_sync.refbook r WHERE r.code = :code \n" +
                 "              )" +
-                "          AND v.version = :version \n" +
                 "       ) \n";
 
         return namedParameterJdbcTemplate.query(sql,
-                Map.of("code", refbookCode, "version", "CURRENT"),
                 (rs, rowNum) -> new FieldMapping(
                         rs.getString(1),
                         rs.getString(2),
@@ -528,7 +510,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRefBookVersion() != null ? versionMapping.getRefBookVersion() : "CURRENT"));
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRefBookVersion()));
 
         return mappingId;
     }
@@ -572,7 +554,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Map<String, Object> result = new HashMap<>(6);
         result.put("code", versionMapping.getCode());
-        result.put("version", versionMapping.getRefBookVersion() != null ? versionMapping.getRefBookVersion() : "CURRENT");
+        result.put("version", versionMapping.getRefBookVersion());
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());

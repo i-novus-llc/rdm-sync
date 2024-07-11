@@ -387,12 +387,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
     }
 
     @Test
-    void testGetLastMappingVersion() {
-
-        assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
-    }
-
-    @Test
     void testCRUSimpleVersionedData() {
         List<FieldMapping> fieldMappings = generateFieldMappings();
         LocalDateTime publishDate = LocalDateTime.of(2022, 1, 1, 12, 0);

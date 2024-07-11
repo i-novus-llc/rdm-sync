@@ -51,7 +51,7 @@ public class VersionMapping implements Serializable {
     }
 
     public String getRefBookVersion() {
-        return Objects.toString(refBookVersion, "CURRENT");
+        return refBookVersion;
     }
 
     public String getTable() {
