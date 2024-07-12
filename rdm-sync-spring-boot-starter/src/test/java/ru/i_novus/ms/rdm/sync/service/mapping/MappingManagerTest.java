@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.Range;
+import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
@@ -14,7 +15,6 @@ import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -32,12 +32,13 @@ class MappingManagerTest {
     private MappingManagerImpl manager;
 
     /**
-     * Валидация xml маппинга на предмет того,
+     * Валидация маппинга на предмет того,
      * что диапазоны маппингов одно справочника не пересекаются.
      * Если есть пересечение, то ошибка.
      */
     @Test
     void testIfCrossRangeThenThrowExceptionAndBreak() {
+
         VersionMapping versionMapping1 = MappingCreator.createVersionMapping();
         VersionMapping versionMapping2 = MappingCreator.createVersionMapping();
         VersionMapping versionMapping3 = MappingCreator.createVersionMapping();
@@ -46,10 +47,14 @@ class MappingManagerTest {
         versionMapping2.setRange(new Range("1.15-2.0"));
         versionMapping3.setRange(new Range("3.0"));
 
-        List<VersionMapping> mappings = List.of(
-                versionMapping1,
-                versionMapping2,
-                versionMapping3
+        SyncMapping syncMapping1 = new SyncMapping(versionMapping1, null);
+        SyncMapping syncMapping2 = new SyncMapping(versionMapping2, null);
+        SyncMapping syncMapping3 = new SyncMapping(versionMapping3, null);
+
+        List<SyncMapping> mappings = List.of(
+                syncMapping1,
+                syncMapping2,
+                syncMapping3
         );
 
 
@@ -61,7 +66,7 @@ class MappingManagerTest {
 
     /**
      * Удаление маппинга,для конкретного справочника из БД,
-     * если нет такого в xml маппинге
+     * если нет такого в списке маппингов, для синхронизации
      */
     @Test
     void testDeleteVersionMapping() {
@@ -73,7 +78,6 @@ class MappingManagerTest {
         vmFromDb2.setRange(new Range("2.0"));
         vmFromDb3.setRange(new Range("3.0"));
 
-
         List<VersionMapping> mappingsFromDb = List.of(
                 vmFromDb1,
                 vmFromDb2,
@@ -84,12 +88,16 @@ class MappingManagerTest {
         VersionMapping vmFromSync2 = MappingCreator.createVersionMapping();
 
         vmFromSync1.setRange(new Range("1.0"));
+        vmFromSync1.setRange(new Range("1.0"));
         vmFromSync2.setRange(new Range("3.0"));
 
+        SyncMapping syncMapping1 = new SyncMapping(vmFromSync1, null);
+        SyncMapping syncMapping2 = new SyncMapping(vmFromSync2, null);
 
-        List<VersionMapping> mappingsFromSync = List.of(
-                vmFromSync1,
-                vmFromSync2
+
+        List<SyncMapping> mappingsFromSync = List.of(
+                syncMapping1,
+                syncMapping2
         );
 
 
@@ -108,7 +116,7 @@ class MappingManagerTest {
 
     /**
      * Добавление маппинга, для конкретного справочника в БД,
-     * если появился новый маппинг в xml
+     * если появился новый в списке маппингов для синхронизации
      */
     @Test
     void testAddNewVersionMapping() {
@@ -131,19 +139,23 @@ class MappingManagerTest {
         vmFromSync2.setRange(new Range("2.0"));
         vmFromSync3.setRange(new Range("3.0"));
 
-        List<VersionMapping> mappingsFromSync = List.of(
-                vmFromSync1,
-                vmFromSync2,
-                vmFromSync3
+        SyncMapping syncMapping1 = new SyncMapping(vmFromSync1, null);
+        SyncMapping syncMapping2 = new SyncMapping(vmFromSync2, null);
+        SyncMapping syncMapping3 = new SyncMapping(vmFromSync3, null);
+
+        List<SyncMapping> mappingsFromSync = List.of(
+                syncMapping1,
+                syncMapping2,
+                syncMapping3
         );
 
         when(dao.getVersionMappings()).thenReturn(mappingsFromDb);
 
-        List<VersionMapping> toUpdate = manager.validateAndGetMappingsToUpdate(mappingsFromSync);
+        List<SyncMapping> toUpdate = manager.validateAndGetMappingsToUpdate(mappingsFromSync);
 
         // Проверяем, что метод вернул правильный список маппингов для обновления
         assertEquals(1, toUpdate.size());
-        assertTrue(toUpdate.contains(vmFromSync3));
+        assertTrue(toUpdate.contains(syncMapping3));
     }
 
     /**
@@ -174,19 +186,22 @@ class MappingManagerTest {
         vmFromSync2.setRange(new Range("3.0")); // Изменился range
         vmFromSync2.setMappingVersion(2);
 
-        List<VersionMapping> mappingsFromSync = List.of(
-                vmFromSync1,
-                vmFromSync2
+        SyncMapping syncMapping1 = new SyncMapping(vmFromSync1, null);
+        SyncMapping syncMapping2 = new SyncMapping(vmFromSync2, null);
+
+        List<SyncMapping> mappingsFromSync = List.of(
+                syncMapping1,
+                syncMapping2
         );
 
         when(dao.getVersionMappings()).thenReturn(mappingsFromDb);
 
-        List<VersionMapping> toUpdate = manager.validateAndGetMappingsToUpdate(mappingsFromSync);
+        List<SyncMapping> toUpdate = manager.validateAndGetMappingsToUpdate(mappingsFromSync);
 
         // Проверяем, что метод вернул правильный список маппингов для обновления
         assertEquals(2, toUpdate.size());
-        assertTrue(toUpdate.contains(vmFromSync1));
-        assertTrue(toUpdate.contains(vmFromSync2));
+        assertTrue(toUpdate.contains(syncMapping1));
+        assertTrue(toUpdate.contains(syncMapping2));
 
         // Проверяем, что метод удаления был вызван для vmFromDb2
         verify(dao).markIsDeletedVersionMapping(vmFromDb2);

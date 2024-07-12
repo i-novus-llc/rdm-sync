@@ -21,7 +21,7 @@ public class MappingManagerImpl implements MappingManager {
     }
 
     @Override
-    public List<VersionMapping> validateAndGetMappingsToUpdate(List<SyncMapping> mappings) {
+    public List<SyncMapping> validateAndGetMappingsToUpdate(List<SyncMapping> mappings) {
         if (checkForOverlap(mappings.stream().map(m -> m.getVersionMapping().getRange()).collect(Collectors.toList()))) {
             throw new RdmException("Overlapping version ranges detected");
         }
@@ -52,7 +52,6 @@ public class MappingManagerImpl implements MappingManager {
                         return Stream.of(newMapping);
                     }
                 })
-                .map(SyncMapping::getVersionMapping)
                 .collect(Collectors.toList());
     }
 
