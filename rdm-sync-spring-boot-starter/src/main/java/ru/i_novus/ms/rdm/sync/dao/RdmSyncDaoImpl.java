@@ -1212,8 +1212,18 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void markIsDeletedVersionMapping(VersionMapping versionMapping) {
-        //todo
+    public void deleteVersionMapping(int mappingId) {
+        // Удаляем запись из таблицы rdm_sync.field_mapping по mapping_id
+        final String delFieldSql = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id = :mappingId";
+        namedParameterJdbcTemplate.update(delFieldSql, Map.of("mappingId", mappingId));
+
+        // Удаляем запись из таблицы rdm_sync.version по mapping_id
+        final String delVersionSql = "DELETE FROM rdm_sync.version WHERE mapping_id = :mappingId";
+        namedParameterJdbcTemplate.update(delVersionSql, Map.of("mappingId", mappingId));
+
+        // Удаляем запись из таблицы rdm_sync.mapping по id
+        final String delMappingSql = "DELETE FROM rdm_sync.mapping WHERE id = :mappingId";
+        namedParameterJdbcTemplate.update(delMappingSql, Map.of("mappingId", mappingId));
     }
 
     private void createTable(String schema, String table,

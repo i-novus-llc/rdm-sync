@@ -37,13 +37,14 @@ public class VersionMappingServiceImpl implements VersionMappingService {
 
         if (version != null){
             for (VersionMapping versionMapping : versionMappings) {
-                //один из диапазонов равен null - берем последний
-                if(versionMapping.getRange().getRange() == null){
-                    return getLastVersionMapping(sortedVersionMappings);
-                }
                 //по версии найден маппинг
                 if (versionMapping.getRange().containsVersion(version)) {
                     return versionMapping;
+                }
+
+                //один из диапазонов равен null - берем последний
+                if(versionMapping.getRange().getRange() == null){
+                    return getLastVersionMapping(sortedVersionMappings);
                 }
             }
         }

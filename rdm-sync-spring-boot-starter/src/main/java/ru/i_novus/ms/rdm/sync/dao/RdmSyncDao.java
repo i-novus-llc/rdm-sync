@@ -191,5 +191,5 @@ public interface RdmSyncDao {
 
     List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
 
-    void markIsDeletedVersionMapping(VersionMapping versionMapping);
+    void deleteVersionMapping(int mappingId);
 }

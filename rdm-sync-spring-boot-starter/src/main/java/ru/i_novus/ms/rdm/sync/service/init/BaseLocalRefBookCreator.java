@@ -47,10 +47,6 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
-        /*todo
-         В этом месте мы уже обратимся к БД и поймем,
-         есть ли пересечения в диапазонах
-         */
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
@@ -63,7 +59,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         String refBookCode = newVersionMapping.getCode();
         String refBookVersion = newVersionMapping.getRefBookVersion();
 
-        if (oldVersionMapping == null) {
+        if (oldVersionMapping == null || newVersionMapping.getRange().compareTo(oldVersionMapping.getRange()) > 0) {
             Integer mappingId = dao.insertVersionMapping(newVersionMapping);
             dao.insertFieldMapping(mappingId, fm);
             logger.info("mapping for code {} with version {} was added", refBookCode, refBookVersion);
