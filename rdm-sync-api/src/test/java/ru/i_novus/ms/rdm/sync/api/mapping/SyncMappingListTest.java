@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import org.junit.jupiter.api.Test;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.util.List;
@@ -27,9 +27,7 @@ class SyncMappingListTest {
                 new SyncMapping(versionMapping3, null)
         );
 
-        assertThrows(RdmException.class, () -> {
-            SyncMappingList.validate(mappings);
-        });
+        assertThrows(RdmSyncException.class, () -> SyncMappingList.validate(mappings));
 
     }
 
