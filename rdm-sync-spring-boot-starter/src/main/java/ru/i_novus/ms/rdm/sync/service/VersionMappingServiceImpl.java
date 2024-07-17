@@ -51,8 +51,8 @@ public class VersionMappingServiceImpl implements VersionMappingService {
         if (version == null){
             return getLastVersionMapping(sortedVersionMappings);
         }
-        //не найден ни один маппинг - берем последний
-        return getLastVersionMapping(sortedVersionMappings);
+        //не найден ни один маппинг - возвращаем null
+        return null;
 
     }
 

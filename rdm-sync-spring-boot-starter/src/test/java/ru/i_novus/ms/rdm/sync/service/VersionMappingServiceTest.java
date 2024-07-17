@@ -130,7 +130,7 @@ class VersionMappingServiceTest {
     }
 
     /**
-     * Не найден ни один маппинг и берем последний
+     * Не найден ни один маппинг вернется null
      */
     @Test
     void whenVersionMappingNotContainsVersion() {
@@ -160,7 +160,7 @@ class VersionMappingServiceTest {
         VersionMapping actualVersionMapping =
                 versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
 
-        assertEquals(expectedVersionMapping, actualVersionMapping);
+        assertNull(actualVersionMapping);
     }
 
     private VersionMapping generateVersionMappingWithSomeRange(String range){
