@@ -501,7 +501,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type, range) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type, :range)  RETURNING id";
             String refBookName = versionMapping.getRefBookName();
             Map<String, String> params = new HashMap<>(Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()));
-            params.put("range", versionMapping.getRange().getRange());
             refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
                     params,
                     Integer.class);
