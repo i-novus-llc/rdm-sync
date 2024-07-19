@@ -66,7 +66,6 @@ class RefBookDownloaderImplTest {
                                 1,
                                 "code",
                                 "some name",
-                                null,
                                 "ref_table",
                                 null,
                                 null,

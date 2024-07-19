@@ -1,10 +1,10 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
 import org.junit.jupiter.api.Test;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +41,6 @@ class SyncMappingComparatorTest {
                 null,
                 null,
                 null,
-                refBookVersion,
                 null,
                 null,
                 null,
@@ -51,7 +50,7 @@ class SyncMappingComparatorTest {
                 1,
                 null,
                 null,
-                null,
+                new Range(refBookVersion),
                 true,
                 false
         );

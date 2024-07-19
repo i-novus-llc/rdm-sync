@@ -44,8 +44,8 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     @Override
     public void create(SyncMapping syncMapping) {
         String refBookCode = syncMapping.getVersionMapping().getCode();
-
-        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
+        String version = syncMapping.getVersionMapping().getRange() != null ? syncMapping.getVersionMapping().getRange().getRange() : null;
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, version);
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
 
         if (!dao.lockRefBookForUpdate(refBookCode, true))
@@ -58,7 +58,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected void saveMapping(VersionMapping newVersionMapping, List<FieldMapping> fm, VersionMapping oldVersionMapping) {
         String refBookCode = newVersionMapping.getCode();
-        String refBookVersion = newVersionMapping.getRefBookVersion();
+        String refBookVersion = newVersionMapping.getRange() != null ? newVersionMapping.getRange().getRange() : null;
 
         if (oldVersionMapping == null) {
             Integer mappingId = dao.insertVersionMapping(newVersionMapping);

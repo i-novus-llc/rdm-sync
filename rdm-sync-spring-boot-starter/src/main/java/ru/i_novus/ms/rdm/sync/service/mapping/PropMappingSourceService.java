@@ -93,7 +93,7 @@ public class PropMappingSourceService implements MappingSourceService {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
         }
 
-        return new VersionMapping(null, refbook.getCode(), refbook.getName(), null, schemaTable,
+        return new VersionMapping(null, refbook.getCode(), refbook.getName(), schemaTable,
                 refbook.getSysPkColumn(), refbook.getSource(), uniqueSysField, isDeletedField, null,
                 DEFAULT_VERSION_FOR_PROPERTY_MAPPING, null, refbook.getType(), refbook.getRange() != null ? new Range(refbook.getRange()) : null, true, false);
     }

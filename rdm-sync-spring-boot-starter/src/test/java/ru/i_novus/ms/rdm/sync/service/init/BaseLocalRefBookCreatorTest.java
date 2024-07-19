@@ -81,7 +81,7 @@ class BaseLocalRefBookCreatorTest {
         when(versionMappingService.getVersionMapping(any(), any())).thenReturn(oldVersionMapping);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
-        creator.create(new SyncMapping( newVersionMapping, fieldMappings));
+        creator.create(new SyncMapping(newVersionMapping, fieldMappings));
         verify(dao).updateCurrentMapping(newVersionMapping);
         verify(dao).insertFieldMapping(oldVersionMapping.getMappingId(), fieldMappings);
         Assertions.assertTrue(createTableArgCaptor.isEmpty());

@@ -7,8 +7,9 @@ import java.util.Comparator;
 public class SyncMappingComparator implements Comparator<SyncMapping> {
     @Override
     public int compare(SyncMapping o1, SyncMapping o2) {
-        String version1 = o1.getVersionMapping().getRefBookVersion();
-        String version2 = o2.getVersionMapping().getRefBookVersion();
+        //todo
+        String version1 = o1.getVersionMapping().getRange().getRange();
+        String version2 = o2.getVersionMapping().getRange().getRange();
 
         if (version1 == null && version2 == null) {
             return 0; // Оба null, считаются равными
