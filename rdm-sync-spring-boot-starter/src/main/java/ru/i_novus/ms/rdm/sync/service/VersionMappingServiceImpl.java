@@ -53,6 +53,12 @@ public class VersionMappingServiceImpl implements VersionMappingService {
 
     }
 
+    @Override
+    public VersionMapping getVersionMappingByCodeAndRange(String referenceCode, String range) {
+        //todo
+        return null;
+    }
+
     private VersionMapping getLastVersionMapping(List<VersionMapping> sortedVersionMappings) {
         int lastVersionMappingIndex = sortedVersionMappings.size() - 1;
         return sortedVersionMappings.get(lastVersionMappingIndex);

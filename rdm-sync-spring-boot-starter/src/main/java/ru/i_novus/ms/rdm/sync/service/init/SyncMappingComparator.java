@@ -14,9 +14,9 @@ public class SyncMappingComparator implements Comparator<SyncMapping> {
         if (range1 == null && range2 == null) {
             return 0; // Оба null, считаются равными
         } else if (range1 == null) {
-            return -1; // range1 null, значит o1 < o2
+            return 1; // range1 null, значит o1 > o2
         } else if (range2 == null) {
-            return 1; // range2 null, значит o1 > o2
+            return -1; // range2 null, значит o1 < o2
         }
 
         // Используем метод compareTo из Range для сравнения

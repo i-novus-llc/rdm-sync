@@ -48,13 +48,6 @@ public class XmlMappingRefBook {
 
     private boolean refreshableRange;
 
-    //Это поле используем, для обратной совместимости, когда в маппинге указан refBookVersion
-    private Range versionRange;
-
-    private Range getVersionRange(){
-        return refBookVersion != null ? new Range(refBookVersion) : new Range(range);
-    }
-
     @XmlAttribute(name = "code", required = true)
     public String getCode() {
         return code;
@@ -198,7 +191,7 @@ public class XmlMappingRefBook {
         }
 
         return new VersionMapping(null, code, name, sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, versionRange, matchCase, refreshableRange);
+                uniqueSysField, deletedField, null, mappingVersion, null, type, refBookVersion != null ? new Range(refBookVersion) : new Range(range), matchCase, refreshableRange);
     }
 
     private List<FieldMapping> generateFieldMappings() {
