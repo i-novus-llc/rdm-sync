@@ -11,9 +11,11 @@ import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -126,6 +128,53 @@ class VersionMappingServiceTest {
                 versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
 
         assertNull(actualVersionMapping);
+    }
+
+    @Test
+    void testGetVersionMappingByCodeAndRange_NoMappingsFound() {
+        String referenceCode = "testCode";
+        String range = "testRange";
+
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(referenceCode)).thenReturn(Collections.emptyList());
+
+        VersionMapping result = versionMappingService.getVersionMappingByCodeAndRange(referenceCode, range);
+
+        assertNull(result);
+    }
+
+    @Test
+    void testGetVersionMappingByCodeAndRange_MatchingRangeFound() {
+        String referenceCode = "testCode";
+        String range = "testRange";
+        Range targetRange = new Range(range);
+
+        VersionMapping expectedMapping = mock(VersionMapping.class);
+        when(expectedMapping.getRange()).thenReturn(targetRange);
+
+        List<VersionMapping> versionMappings = List.of(expectedMapping);
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(referenceCode)).thenReturn(versionMappings);
+
+        VersionMapping result = versionMappingService.getVersionMappingByCodeAndRange(referenceCode, range);
+
+        assertNotNull(result);
+        assertEquals(expectedMapping, result);
+    }
+
+    @Test
+    void testGetVersionMappingByCodeAndRange_NoMatchingRangeFound() {
+        String referenceCode = "testCode";
+        String range = "testRange";
+        Range nonMatchingRange = new Range("nonMatchingRange");
+
+        VersionMapping nonMatchingMapping = mock(VersionMapping.class);
+        when(nonMatchingMapping.getRange()).thenReturn(nonMatchingRange);
+
+        List<VersionMapping> versionMappings = List.of(nonMatchingMapping);
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(referenceCode)).thenReturn(versionMappings);
+
+        VersionMapping result = versionMappingService.getVersionMappingByCodeAndRange(referenceCode, range);
+
+        assertNull(result);
     }
 
     private VersionMapping generateVersionMappingWithSomeRange(String range){

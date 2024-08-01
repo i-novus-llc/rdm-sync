@@ -24,7 +24,7 @@ public class VersionMappingServiceImpl implements VersionMappingService {
     @Override
     public VersionMapping getVersionMapping(String refBookCode, String version) {
 
-        List<VersionMapping> versionMappings = rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode);
+        List<VersionMapping> versionMappings = getVersionMappingsByRefBookCode(refBookCode);
 
         if (versionMappings.isEmpty()){
             return null;
@@ -55,12 +55,25 @@ public class VersionMappingServiceImpl implements VersionMappingService {
 
     @Override
     public VersionMapping getVersionMappingByCodeAndRange(String referenceCode, String range) {
-        //todo
-        return null;
+
+        List<VersionMapping> versionMappings = getVersionMappingsByRefBookCode(referenceCode);
+
+        if (versionMappings.isEmpty()) {
+            return null;
+        }
+
+        return versionMappings.stream()
+                .filter(versionMapping -> range.equals(versionMapping.getRange().getRange()))
+                .findFirst()
+                .orElse(null);
     }
 
     private VersionMapping getLastVersionMapping(List<VersionMapping> sortedVersionMappings) {
         int lastVersionMappingIndex = sortedVersionMappings.size() - 1;
         return sortedVersionMappings.get(lastVersionMappingIndex);
+    }
+
+    private List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode) {
+        return rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode);
     }
 }
