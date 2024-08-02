@@ -190,4 +190,6 @@ public interface RdmSyncDao {
     void dropTable(String tableName);
 
     List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
+
+    VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
 }

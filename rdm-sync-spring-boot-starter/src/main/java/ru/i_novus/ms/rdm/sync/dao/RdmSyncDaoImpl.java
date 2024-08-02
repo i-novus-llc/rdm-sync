@@ -1208,6 +1208,40 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
     }
 
+    @Override
+    public VersionMapping getVersionMappingByRefBookCodeAndRange(String code, String range) {
+        final String sql = "SELECT m.id, code, name, version, " +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, " +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range " +
+                "  FROM rdm_sync.version v " +
+                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
+                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
+                "WHERE code = :code AND version = :version;";
+
+        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
+                "code", code,
+                "version", range
+        ), (rs, rowNum) -> new VersionMapping(
+                rs.getInt(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(5),
+                rs.getString(6),
+                rs.getString(7),
+                rs.getString(8),
+                rs.getString(9),
+                toLocalDateTime(rs, 10, LocalDateTime.MIN),
+                rs.getInt(11),
+                rs.getInt(12),
+                SyncTypeEnum.valueOf(rs.getString(13)),
+                new Range(rs.getString(4)),
+                rs.getBoolean(14),
+                rs.getBoolean(15)
+        ));
+
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     private void createTable(String schema, String table,
                              List<FieldMapping> fieldMappings,
                              Map<String, String> additionalColumns) {
