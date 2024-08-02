@@ -65,20 +65,20 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
-
+        String range = versionMapping.getRange().getRange();
         try {//это надо перенести в RefBookVersionsDeterminator
             if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
                     || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
                 update(refBookVersion, versionMapping, downloadResult);
-                loggingService.logOk(refBookVersion.getCode(), loadedVersion.getVersion(), refBookVersion.getVersion());
+                loggingService.logOk(refBookVersion.getCode(), range, refBookVersion.getVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
             }
         } catch (final Exception e) {
             logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
-            throw new RefBookUpdaterException(e, loadedVersion.getVersion(), refBookVersion.getVersion());
+            throw new RefBookUpdaterException(e,range, refBookVersion.getVersion());
         }
     }
 
