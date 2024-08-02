@@ -3,15 +3,24 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SyncMappingList {
 
     public static void validate(List<SyncMapping> mappings){
-        //проверяем на пересечение
-        if (checkForOverlap(mappings.stream().map(m -> m.getVersionMapping().getRange()).collect(Collectors.toList()))) {
-            throw new RdmSyncException("Overlapping version ranges detected");
-        }
+        Map<String, List<SyncMapping>> groupedByRefBookCode = mappings.stream()
+                .collect(Collectors.groupingBy(m -> m.getVersionMapping().getCode()));
+
+        groupedByRefBookCode.forEach((refBookCode, mappingGroup) -> {
+            List<Range> ranges = mappingGroup.stream()
+                    .map(m -> m.getVersionMapping().getRange())
+                    .collect(Collectors.toList());
+
+            if (checkForOverlap(ranges)) {
+                throw new RdmSyncException("Overlapping version ranges detected for refBookCode: " + refBookCode);
+            }
+        });
     }
 
     private static boolean checkForOverlap(List<Range> ranges) {

@@ -149,6 +149,10 @@ public class Range implements Comparable<Range> {
             return false;
         }
 
+        if (this.range.equals("*") || other.range.equals("*")) {
+            return true;
+        }
+
         String[] thisParts = this.range.split("-");
         String[] otherParts = other.range.split("-");
 
