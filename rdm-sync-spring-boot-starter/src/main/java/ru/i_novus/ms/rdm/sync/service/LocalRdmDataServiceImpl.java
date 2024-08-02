@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
@@ -36,11 +37,14 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     @Autowired
     private RdmSyncDao dao;
 
+    @Autowired
+    private VersionMappingService versionMappingService;
+
     @Override
     public Page<Map<String, Object>> getData(String refBookCode, Boolean getDeleted,
                                              Integer page, Integer size, @Context UriInfo uriInfo) {
 
-        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, null);
         if (page == null) page = 0;
         if (size == null) size = 10;
 
@@ -57,10 +61,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Override
     public Page<Map<String, Object>> getVersionedData(String refBookCode, String version, Integer page, Integer size, UriInfo uriInfo) {
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, version);
-        if (versionMapping == null) {
-            versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
-        }
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, version);
         if (page == null) page = 0;
         if (size == null) size = 10;
 
@@ -75,7 +76,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     @Override
     public Map<String, Object> getSingle(String refBookCode, String primaryKey) {
 
-        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, null);
         FieldMapping fieldMapping = dao.getFieldMappings(versionMapping.getId()).stream()
                 .filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField()))
                 .findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
@@ -112,7 +113,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     @Override
     public Map<String, Object> getBySystemId(String refBookCode, Long recordId) {
 
-        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode);
+        VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, null);
 
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
                 versionMapping.getPrimaryField(), 1, 0, null);
@@ -135,9 +136,9 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         return !isEmpty(valueFilters) ? new FieldFilter(param.getKey(), fieldType, valueFilters) : null;
     }
 
-    private VersionMapping getVersionMappingOrThrowRefBookNotFound(String refBookCode) {
+    private VersionMapping getVersionMappingOrThrowRefBookNotFound(String refBookCode, String version) {
 
-        VersionMapping versionMapping = dao.getVersionMapping(refBookCode, "CURRENT");
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, version);
         if (versionMapping == null)
             throw new RdmException("RefBook with code '" + refBookCode + "' is not maintained in system.");
 

@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.init;
 
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 
 import java.util.Comparator;
@@ -7,13 +8,18 @@ import java.util.Comparator;
 public class SyncMappingComparator implements Comparator<SyncMapping> {
     @Override
     public int compare(SyncMapping o1, SyncMapping o2) {
-        if ((o1.getVersionMapping().getRefBookVersion() == null || "CURRENT".equals(o1.getVersionMapping().getRefBookVersion())) && o2.getVersionMapping().getRefBookVersion() != null) {
-            return -1; // o1 < o2
-        } else if (o1.getVersionMapping().getRefBookVersion() != null && o2.getVersionMapping().getRefBookVersion() == null) {
-            return 1; // o1 > o2
+        Range range1 = o1.getVersionMapping().getRange();
+        Range range2 = o2.getVersionMapping().getRange();
+
+        if (range1 == null && range2 == null) {
+            return 0; // Оба null, считаются равными
+        } else if (range1 == null) {
+            return 1; // range1 null, значит o1 > o2
+        } else if (range2 == null) {
+            return -1; // range2 null, значит o1 < o2
         }
 
-        // Сортировка по убыванию refBookVersion
-        return o2.getVersionMapping().getRefBookVersion().compareTo(o1.getVersionMapping().getRefBookVersion());
+        // Используем метод compareTo из Range для сравнения
+        return range1.compareTo(range2);
     }
 }

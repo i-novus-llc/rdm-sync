@@ -1,7 +1,10 @@
 package ru.i_novus.ms.rdm.sync.model.loader;
 
 import lombok.EqualsAndHashCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -10,11 +13,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 public class XmlMappingRefBook {
+
+    private static final Logger logger = LoggerFactory.getLogger(XmlMappingRefBook.class);
 
     private String code;
 
@@ -152,10 +156,6 @@ public class XmlMappingRefBook {
         return refBookVersion;
     }
 
-    public String getRefBookVersionIfNullReturnCurrent() {
-        return Objects.toString(getRefBookVersion(), "CURRENT");
-    }
-
     public void setRefBookVersion(String refBookVersion) {
         this.refBookVersion = refBookVersion;
     }
@@ -184,8 +184,14 @@ public class XmlMappingRefBook {
 
     private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
-        return new VersionMapping(null, code, name, getRefBookVersion(), sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, range, matchCase, refreshableRange);
+
+        if(refBookVersion != null){
+            logger.warn(String.format("В маппинге для справочника %s указан deprecated аттрибут refbook-version, " +
+                    "используйте вместо него range", code));
+        }
+
+        return new VersionMapping(null, code, name, sysTable, sysPkColumn, source,
+                uniqueSysField, deletedField, null, mappingVersion, null, type, refBookVersion != null ? new Range(refBookVersion) : new Range(range), matchCase, refreshableRange);
     }
 
     private List<FieldMapping> generateFieldMappings() {
@@ -205,10 +211,7 @@ public class XmlMappingRefBook {
         result.setSysPkColumn(mapping.getSysPkColumn());
         result.setSource(mapping.getSource());
         result.setType(mapping.getType());
-        result.setRange(mapping.getRange());
-        if (!mapping.getRefBookVersion().equals("CURRENT")) {
-            result.setRefBookVersion(mapping.getRefBookVersion());
-        }
+        result.setRange(mapping.getRange().getRange());
         return result;
     }
 }

@@ -9,10 +9,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.HashSet;
@@ -32,13 +34,17 @@ class VersionedLocalRefBookCreatorTest {
     private RdmSyncDao rdmSyncDao;
 
     @Spy
-    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet = new HashSet<>();
+    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
     @Mock
     private SyncSourceServiceFactory syncSourceServiceFactory;
 
+    @Mock
+    private VersionMappingService versionMappingService;
+
     @BeforeEach
     public void setUp() {
+        syncSourceServiceFactorySet = new HashSet<>();
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
     }
 
@@ -71,7 +77,7 @@ class VersionedLocalRefBookCreatorTest {
         List<FieldMapping> fieldMappings = createFieldMappings();
 
         SyncMapping syncMapping = createVersionAndFieldMappingByRefBookCode(testCode);
-        when(rdmSyncDao.getVersionMapping(testCode, "CURRENT")).thenReturn(syncMapping.getVersionMapping());
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(syncMapping.getVersionMapping());
         when(rdmSyncDao.getFieldMappings(syncMapping.getVersionMapping().getId())).thenReturn(fieldMappings);
 
         creator.create(syncMapping);
@@ -107,7 +113,7 @@ class VersionedLocalRefBookCreatorTest {
     }
 
     private VersionMapping createVersionMapping(String testCode) {
-        return new VersionMapping(1, testCode, null, "CURRENT", "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.SIMPLE_VERSIONED, null, true, false);
+        return new VersionMapping(1, testCode, null, "rdm.ref_test", "test_pk_field", "someSource", "id", null, null, -1, null, SyncTypeEnum.SIMPLE_VERSIONED, new Range("*"), true, false);
     }
 
     private List<FieldMapping> createFieldMappings() {

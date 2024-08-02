@@ -8,6 +8,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.*;
@@ -27,10 +28,13 @@ public class RefBookVersionsDeterminator {
 
     private final SyncSourceService syncSourceService;
 
-    public RefBookVersionsDeterminator(SyncRefBook refBook, RdmSyncDao rdmSyncDao, SyncSourceService syncSourceService) {
+    private final VersionMappingService versionMappingService;
+
+    public RefBookVersionsDeterminator(SyncRefBook refBook, RdmSyncDao rdmSyncDao, SyncSourceService syncSourceService, VersionMappingService versionMappingService) {
         this.refBook = refBook;
         this.rdmSyncDao = rdmSyncDao;
         this.syncSourceService = syncSourceService;
+        this.versionMappingService = versionMappingService;
     }
 
     public List<String> getVersions() throws RefBookUpdaterException {
@@ -69,10 +73,7 @@ public class RefBookVersionsDeterminator {
     }
 
     private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<LoadedVersion> loadedVersions, String actualVersion) {
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), refBookVersion.getVersion());
-        if(versionMapping == null) {
-            versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), "CURRENT");
-        }
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(this.refBook.getCode(), refBookVersion.getVersion());
         List<String> loadedVersionsStringValues = new ArrayList<>();
         LoadedVersion currentLoadedVersion = null;
         for (LoadedVersion loadedVersion : loadedVersions ) {

@@ -9,6 +9,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
@@ -30,10 +31,13 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
     protected final PersisterService persisterService;
 
-    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService) {
+    protected  final VersionMappingService versionMappingService;
+
+    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService, VersionMappingService versionMappingService) {
         this.dao = dao;
         this.loggingService = loggingService;
         this.persisterService = persisterService;
+        this.versionMappingService = versionMappingService;
     }
 
     @Override
@@ -61,27 +65,25 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
+
         try {//это надо перенести в RefBookVersionsDeterminator
             if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
                     || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
                 update(refBookVersion, versionMapping, downloadResult);
-                loggingService.logOk(refBookVersion.getCode(), versionMapping.getRefBookVersion(), refBookVersion.getVersion());
+                loggingService.logOk(refBookVersion.getCode(), loadedVersion.getVersion(), refBookVersion.getVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
             }
         } catch (final Exception e) {
             logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
-            throw new RefBookUpdaterException(e, versionMapping.getRefBookVersion(), refBookVersion.getVersion());
+            throw new RefBookUpdaterException(e, loadedVersion.getVersion(), refBookVersion.getVersion());
         }
     }
 
     private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
-        VersionMapping versionMapping = dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
-        if (versionMapping == null) {
-            versionMapping = dao.getVersionMapping(refBookVersion.getCode(), "CURRENT");
-        }
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
         if (versionMapping == null) {
             return null;
         }

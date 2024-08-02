@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 /**
@@ -24,8 +26,9 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     public VersionedLocalRefBookCreator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                         @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                         RdmSyncDao rdmSyncDao,
-                                        SyncSourceDao syncSourceDao) {
-        super(schema, caseIgnore, rdmSyncDao, syncSourceDao);
+                                        SyncSourceDao syncSourceDao,
+                                        VersionMappingService versionMappingService) {
+        super(schema, caseIgnore, rdmSyncDao, syncSourceDao, versionMappingService);
 
         this.rdmSyncDao = rdmSyncDao;
     }
@@ -39,7 +42,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         SyncTypeEnum type = syncMapping.getVersionMapping().getType();
         String table = syncMapping.getVersionMapping().getTable();
         String sysPkColumn = syncMapping.getVersionMapping().getSysPkColumn();
-        String range = syncMapping.getVersionMapping().getRange();
+        Range range = syncMapping.getVersionMapping().getRange();
         String pk = syncMapping.getFieldMapping().get(0).getSysField();
         if(rdmSyncDao.existsLoadedVersion(refBookCode)) {
             logger.info("auto create for code {} was skipped", refBookCode);
@@ -47,11 +50,11 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         }
 
         logger.info("starting auto create for code {}", refBookCode);
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(refBookCode, "CURRENT");
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, null);
         if (versionMapping == null) {
 
             String schemaTable = getTableNameWithSchema(refBookCode, table);
-            versionMapping = new VersionMapping(null, refBookCode, refBookName, "CURRENT",
+            versionMapping = new VersionMapping(null, refBookCode, refBookName,
                     schemaTable, sysPkColumn,source, pk, null,
                     null, -1, null, type,range, true, syncMapping.getVersionMapping().isRefreshableRange());
             versionMapping.setId(rdmSyncDao.insertVersionMapping(versionMapping));

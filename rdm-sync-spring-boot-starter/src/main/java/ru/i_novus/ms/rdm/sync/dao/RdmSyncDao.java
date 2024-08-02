@@ -40,8 +40,6 @@ public interface RdmSyncDao {
 
     VersionMapping getVersionMapping(String refbookCode, String version);
 
-    int getLastMappingVersion(String refbookCode);
-
     /**
      * Получить список маппинга полей справочников НСИ на поля клиента.
      *
@@ -190,4 +188,8 @@ public interface RdmSyncDao {
     void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
 
     void dropTable(String tableName);
+
+    List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
+
+    VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
 }

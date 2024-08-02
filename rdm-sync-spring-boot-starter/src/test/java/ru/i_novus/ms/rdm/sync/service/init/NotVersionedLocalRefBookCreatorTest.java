@@ -9,11 +9,13 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.HashSet;
@@ -35,7 +37,7 @@ class NotVersionedLocalRefBookCreatorTest {
     private SyncSourceDao syncSourceDao;
 
     @Spy
-    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet = new HashSet<>();
+    private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
     @Mock
     private SyncSourceServiceFactory syncSourceServiceFactory;
@@ -43,8 +45,12 @@ class NotVersionedLocalRefBookCreatorTest {
     @Mock
     private SyncSourceService syncSourceService;
 
+    @Mock
+    private VersionMappingService versionMappingService;
+
     @BeforeEach
     public void setUp() {
+        syncSourceServiceFactorySet = new HashSet<>();
         syncSourceServiceFactorySet.add(syncSourceServiceFactory);
     }
 
@@ -95,7 +101,7 @@ class NotVersionedLocalRefBookCreatorTest {
     @Test
     void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
-        when(rdmSyncDao.getVersionMapping(code, "CURRENT")).thenReturn(mock(VersionMapping.class));
+        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(mock(VersionMapping.class));
         SyncMapping syncMapping = createVersionMapping(code);
         creator.create(syncMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());
@@ -111,9 +117,9 @@ class NotVersionedLocalRefBookCreatorTest {
 
     private SyncMapping createVersionMapping(String testCode) {
         VersionMapping versionMapping = new VersionMapping(1, testCode, "test.name",
-                "CURRENT", "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
+                 "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
                 "id", "deleted_ts", null, -1, null,
-                SyncTypeEnum.NOT_VERSIONED, null, true, false);
+                SyncTypeEnum.NOT_VERSIONED, new Range("*"), true, false);
         return new SyncMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
     }
 
