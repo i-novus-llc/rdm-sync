@@ -192,4 +192,6 @@ public interface RdmSyncDao {
     List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
 
     void deleteVersionMapping(int mappingId);
+
+    VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
 }

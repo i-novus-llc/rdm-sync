@@ -95,42 +95,7 @@ class VersionMappingServiceTest {
     }
 
     /**
-     * Проверяем тот случай, когда один из диапазонов равен null
-     */
-    @Test
-    void whenRangeNull() {
-        //Данные для Справочника
-        String someRefBookCode = "someRefBookCode";
-        String someRefBookVersion = "2.0";
-
-        //Диапазоны, для моков маппинга из БД
-        String nullRange = null;
-        String expectedRange = "2.0-4.0";
-        String someRange1 = "3.0";
-
-
-        //Создаем список маппингов, для мока данных из БД
-        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(nullRange);
-        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange1);
-        VersionMapping expectedVersionMapping = generateVersionMappingWithSomeRange(expectedRange);
-
-        List<VersionMapping> mockMappingsFromDb = Arrays.asList(
-                someVersionMapping1,
-                someVersionMapping2,
-                expectedVersionMapping
-        );
-
-        // Мокаем методы dao
-        when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
-
-        VersionMapping actualVersionMapping =
-                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
-
-        assertEquals(expectedVersionMapping, actualVersionMapping);
-    }
-
-    /**
-     * Не найден ни один маппинг и берем последний
+     * Не найден ни один маппинг вернется null
      */
     @Test
     void whenVersionMappingNotContainsVersion() {
@@ -160,11 +125,11 @@ class VersionMappingServiceTest {
         VersionMapping actualVersionMapping =
                 versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
 
-        assertEquals(expectedVersionMapping, actualVersionMapping);
+        assertNull(actualVersionMapping);
     }
 
     private VersionMapping generateVersionMappingWithSomeRange(String range){
-        return new VersionMapping(null, "refBookCode", "refBookName", "", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(range), true, false);
+        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(range), true, false);
     }
 
 }

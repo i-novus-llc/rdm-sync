@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
@@ -47,7 +48,7 @@ class NotSimpleVersionedPersisterServiceTest {
     void testFirstTimeUpdate() {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null,  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null, true, false);
         List<FieldMapping> fieldMappings = createFieldMappings();
 
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
@@ -66,7 +67,7 @@ class NotSimpleVersionedPersisterServiceTest {
 
         RefBookVersion firstVersion = createFirstRdmVersion();
         RefBookVersion secondVersion = createSecondRdmVersion();
-        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, firstVersion.getVersion(),  "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+        VersionMapping versionMapping = new VersionMapping(1, "TEST", null, "test_table", "test_pk_field", "","id", "deleted_ts", null, -1, 1, SyncTypeEnum.NOT_VERSIONED, new Range(firstVersion.getVersion()), true, false);
         List<FieldMapping> fieldMappings = createFieldMappings();
 
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
@@ -80,7 +81,7 @@ class NotSimpleVersionedPersisterServiceTest {
         String testTable = "test_table";
         RefBookVersion firstRdmVersion = createFirstRdmVersion();
         List<FieldMapping> fieldMappings = createFieldMappings();
-        VersionMapping versionMapping = new VersionMapping(1, firstRdmVersion.getCode(), null,  firstRdmVersion.getVersion(), testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+        VersionMapping versionMapping = new VersionMapping(1, firstRdmVersion.getCode(), null, testTable, "test_pk_field","","id", "deleted_ts", LocalDateTime.now(), 2, null, SyncTypeEnum.NOT_VERSIONED, new Range(firstRdmVersion.getVersion()), true, false);
         when(dao.getFieldMappings(versionMapping.getId())).thenReturn(fieldMappings);
 
         persisterService.repeatVersion(firstRdmVersion, versionMapping, new DownloadResult("temp_tbl", DownloadResultType.VERSION));

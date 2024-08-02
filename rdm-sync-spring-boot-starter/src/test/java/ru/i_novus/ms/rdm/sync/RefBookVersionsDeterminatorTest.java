@@ -287,7 +287,6 @@ class RefBookVersionsDeterminatorTest {
                1,
                code,
                "someName",
-               "1",
                 "someTable",
                "id",
                "someSource",

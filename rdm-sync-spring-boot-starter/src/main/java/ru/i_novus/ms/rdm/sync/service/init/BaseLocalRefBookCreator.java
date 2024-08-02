@@ -44,8 +44,8 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     @Override
     public void create(SyncMapping syncMapping) {
         String refBookCode = syncMapping.getVersionMapping().getCode();
-
-        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, syncMapping.getVersionMapping().getRefBookVersion());
+        String range = syncMapping.getVersionMapping().getRange() != null ? syncMapping.getVersionMapping().getRange().getRange() : null;
+        VersionMapping versionMapping = versionMappingService.getVersionMappingByCodeAndRange(refBookCode, range);
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
@@ -57,18 +57,18 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected void saveMapping(VersionMapping newVersionMapping, List<FieldMapping> fm, VersionMapping oldVersionMapping) {
         String refBookCode = newVersionMapping.getCode();
-        String refBookVersion = newVersionMapping.getRefBookVersion();
+        String range = newVersionMapping.getRange() != null ? newVersionMapping.getRange().getRange() : null;
 
         if (oldVersionMapping == null || ((newVersionMapping.getRange()!= null && oldVersionMapping.getRange() != null) && newVersionMapping.getRange().compareTo(oldVersionMapping.getRange()) > 0)) {
             Integer mappingId = dao.insertVersionMapping(newVersionMapping);
             dao.insertFieldMapping(mappingId, fm);
-            logger.info("mapping for code {} with version {} was added", refBookCode, refBookVersion);
+            logger.info("mapping for code {} with range {} was added", refBookCode, range);
             newVersionMapping.setId(mappingId);
         } else if (newVersionMapping.getMappingVersion() > oldVersionMapping.getMappingVersion()) {
             logger.info("load {}", refBookCode);
             dao.updateCurrentMapping(newVersionMapping);
             dao.insertFieldMapping(oldVersionMapping.getMappingId(), fm);
-            logger.info("mapping for code {} with version {} was updated", refBookCode, newVersionMapping.getMappingVersion());
+            logger.info("mapping for code {} with range {} was updated", refBookCode, newVersionMapping.getMappingVersion());
         } else {
             logger.info("mapping for {} not changed", refBookCode);
         }

@@ -9,6 +9,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -116,9 +117,9 @@ class NotVersionedLocalRefBookCreatorTest {
 
     private SyncMapping createVersionMapping(String testCode) {
         VersionMapping versionMapping = new VersionMapping(1, testCode, "test.name",
-                "CURRENT", "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
+                 "rdm.ref_test_code", "_sync_rec_id", "TEST_SOURCE_CODE",
                 "id", "deleted_ts", null, -1, null,
-                SyncTypeEnum.NOT_VERSIONED, null, true, false);
+                SyncTypeEnum.NOT_VERSIONED, new Range("*"), true, false);
         return new SyncMapping(versionMapping, List.of(new FieldMapping("id", "integer", "id"), new FieldMapping("name", "varchar", "name")));
     }
 

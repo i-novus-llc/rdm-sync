@@ -92,7 +92,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
-                        rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
@@ -102,7 +101,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        new Range(rs.getString(4)),
                         rs.getBoolean(14),
                         rs.getBoolean(15)
                 )
@@ -162,7 +161,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
-                        rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
@@ -172,7 +170,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        new Range(rs.getString(4)),
                         rs.getBoolean(14),
                         rs.getBoolean(15)
                 )
@@ -510,7 +508,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         }
 
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRefBookVersion()));
+                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRange().getRange()));
 
         return mappingId;
     }
@@ -554,7 +552,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Map<String, Object> result = new HashMap<>(6);
         result.put("code", versionMapping.getCode());
-        result.put("version", versionMapping.getRefBookVersion());
+        result.put("version", versionMapping.getRange().getRange());
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());
@@ -1194,7 +1192,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
-                        rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
@@ -1204,11 +1201,45 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getInt(11),
                         rs.getInt(12),
                         SyncTypeEnum.valueOf(rs.getString(13)),
-                        rs.getString(4) != null ? new Range(rs.getString(4)) : null,
+                        new Range(rs.getString(4)),
                         rs.getBoolean(14),
                         rs.getBoolean(15)
                 )
         );
+    }
+
+    @Override
+    public VersionMapping getVersionMappingByRefBookCodeAndRange(String code, String range) {
+        final String sql = "SELECT m.id, code, name, version, " +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, " +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range " +
+                "  FROM rdm_sync.version v " +
+                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
+                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
+                "WHERE code = :code AND version = :version;";
+
+        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
+                "code", code,
+                "version", range
+        ), (rs, rowNum) -> new VersionMapping(
+                rs.getInt(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(5),
+                rs.getString(6),
+                rs.getString(7),
+                rs.getString(8),
+                rs.getString(9),
+                toLocalDateTime(rs, 10, LocalDateTime.MIN),
+                rs.getInt(11),
+                rs.getInt(12),
+                SyncTypeEnum.valueOf(rs.getString(13)),
+                new Range(rs.getString(4)),
+                rs.getBoolean(14),
+                rs.getBoolean(15)
+        ));
+
+        return results.isEmpty() ? null : results.get(0);
     }
 
     @Override

@@ -54,7 +54,7 @@ public class VersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
         if (versionMapping == null) {
 
             String schemaTable = getTableNameWithSchema(refBookCode, table);
-            versionMapping = new VersionMapping(null, refBookCode, refBookName, null,
+            versionMapping = new VersionMapping(null, refBookCode, refBookName,
                     schemaTable, sysPkColumn,source, pk, null,
                     null, -1, null, type,range, true, syncMapping.getVersionMapping().isRefreshableRange());
             versionMapping.setId(rdmSyncDao.insertVersionMapping(versionMapping));

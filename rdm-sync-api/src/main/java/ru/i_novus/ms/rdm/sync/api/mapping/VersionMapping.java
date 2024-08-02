@@ -20,7 +20,6 @@ public class VersionMapping implements Serializable {
     private Integer id;
     private String code;
     private String refBookName;
-    private String refBookVersion;
     private String table;
     private String sysPkColumn;
     private String source;
@@ -48,10 +47,6 @@ public class VersionMapping implements Serializable {
 
     public String getRefBookName() {
         return refBookName;
-    }
-
-    public String getRefBookVersion() {
-        return refBookVersion;
     }
 
     public String getTable() {

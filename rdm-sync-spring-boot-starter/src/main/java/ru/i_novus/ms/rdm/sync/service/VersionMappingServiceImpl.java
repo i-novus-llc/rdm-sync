@@ -38,29 +38,29 @@ public class VersionMappingServiceImpl implements VersionMappingService {
         if (version != null){
             for (VersionMapping versionMapping : versionMappings) {
 
-                //один из диапазонов равен null - берем последний
-                if(versionMapping.getRange().getRange() == null){
-                    return getLastVersionMapping(sortedVersionMappings);
-                }
-
                 //по версии найден маппинг
                 if (versionMapping.getRange().containsVersion(version)) {
                     return versionMapping;
                 }
-
             }
         }
         //версия равна null - берем последний
         if (version == null){
             return getLastVersionMapping(sortedVersionMappings);
         }
-        //не найден ни один маппинг - берем последний
-        return getLastVersionMapping(sortedVersionMappings);
+        //не найден ни один маппинг - возвращаем null
+        return null;
 
+    }
+
+    @Override
+    public VersionMapping getVersionMappingByCodeAndRange(String referenceCode, String range) {
+        return rdmSyncDao.getVersionMappingByRefBookCodeAndRange(referenceCode, range);
     }
 
     private VersionMapping getLastVersionMapping(List<VersionMapping> sortedVersionMappings) {
         int lastVersionMappingIndex = sortedVersionMappings.size() - 1;
         return sortedVersionMappings.get(lastVersionMappingIndex);
     }
+
 }

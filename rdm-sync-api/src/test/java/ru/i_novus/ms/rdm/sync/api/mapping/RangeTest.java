@@ -58,7 +58,7 @@ class RangeTest {
 
 
     @Test
-    public void testRangeSorting() {
+    void testRangeSorting() {
         List<Range> ranges = new ArrayList<>();
         ranges.add(new Range("*"));
         ranges.add(new Range("2.14-2.15"));

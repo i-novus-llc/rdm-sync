@@ -12,7 +12,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.service.mapping.utils.MappingCreator;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +39,6 @@ class XmlMappingSourceServiceTest {
                 null,
                 "EK003",
                 "Справочник",
-                null,
                 "rdm.ref_ek003",
                 "_sync_rec_id",
                 "RDM",
