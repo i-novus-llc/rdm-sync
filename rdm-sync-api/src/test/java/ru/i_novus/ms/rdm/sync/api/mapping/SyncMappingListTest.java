@@ -31,6 +31,26 @@ class SyncMappingListTest {
 
     }
 
+    @Test
+    public void testThrowExceptionIfCrossRangeWithAsterisk(){
+
+        VersionMapping versionMapping1 = createVersionMapping();
+        VersionMapping versionMapping2 = createVersionMapping();
+        VersionMapping versionMapping3 = createVersionMapping();
+
+        versionMapping1.setRange(new Range("1.11"));
+        versionMapping2.setRange(new Range("1.10-*"));
+
+        List<SyncMapping> mappings = List.of(
+                new SyncMapping(versionMapping1, null),
+                new SyncMapping(versionMapping2, null),
+                new SyncMapping(versionMapping3, null)
+        );
+
+        assertThrows(RdmSyncException.class, () -> SyncMappingList.validate(mappings));
+
+    }
+
     private VersionMapping createVersionMapping(){
         return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
     }
