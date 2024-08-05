@@ -162,6 +162,6 @@ public class Range implements Comparable<Range> {
         String otherStart = otherParts[0].trim();
         String otherEnd = otherParts.length > 1 ? otherParts[1].trim() : otherStart;
 
-        return compareVersions(thisStart, otherEnd) <= 0 && compareVersions(otherStart, thisEnd) <= 0;
+        return (compareVersions(thisStart, otherEnd) <= 0 || thisStart.equals("*")) && (compareVersions(otherStart, thisEnd) <= 0 || thisEnd.equals("*"));
     }
 }
