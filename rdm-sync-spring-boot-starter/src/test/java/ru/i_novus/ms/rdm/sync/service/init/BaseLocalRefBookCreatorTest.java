@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
@@ -59,7 +60,7 @@ class BaseLocalRefBookCreatorTest {
     void testNoCreate() {
         VersionMapping versionMapping = MappingCreator.createVersionMapping();
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
-        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(versionMapping);
+        when(versionMappingService.getVersionMappingByCodeAndRange(any(), any())).thenReturn(versionMapping);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
         creator.create(new SyncMapping( versionMapping, fieldMappings));
@@ -78,7 +79,7 @@ class BaseLocalRefBookCreatorTest {
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
         VersionMapping oldVersionMapping = MappingCreator.createVersionMapping();
         oldVersionMapping.setMappingId(55);
-        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(oldVersionMapping);
+        when(versionMappingService.getVersionMappingByCodeAndRange(eq(oldVersionMapping.getCode()), any())).thenReturn(oldVersionMapping);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
         creator.create(new SyncMapping(newVersionMapping, fieldMappings));

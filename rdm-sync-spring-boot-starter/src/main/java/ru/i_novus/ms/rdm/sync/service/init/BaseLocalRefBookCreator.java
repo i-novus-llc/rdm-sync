@@ -59,7 +59,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         String refBookCode = newVersionMapping.getCode();
         String range = newVersionMapping.getRange() != null ? newVersionMapping.getRange().getRange() : null;
 
-        if (oldVersionMapping == null || ((newVersionMapping.getRange()!= null && oldVersionMapping.getRange() != null) && newVersionMapping.getRange().compareTo(oldVersionMapping.getRange()) > 0)) {
+        if (oldVersionMapping == null) {
             Integer mappingId = dao.insertVersionMapping(newVersionMapping);
             dao.insertFieldMapping(mappingId, fm);
             logger.info("mapping for code {} with range {} was added", refBookCode, range);
