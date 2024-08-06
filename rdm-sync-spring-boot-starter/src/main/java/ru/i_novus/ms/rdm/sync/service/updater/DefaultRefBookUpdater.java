@@ -65,7 +65,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
-        String oldVersion = loadedVersion.getVersion() != null ? loadedVersion.getVersion() : null;
+        String oldVersion = loadedVersion != null ? loadedVersion.getVersion() : null;
         try {//это надо перенести в RefBookVersionsDeterminator
             if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
                     || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
