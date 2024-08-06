@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author lgalimova
@@ -37,8 +38,6 @@ public interface RdmSyncDao {
     LoadedVersion getActualLoadedVersion(String code);
 
     boolean existsLoadedVersion(String code);
-
-    VersionMapping getVersionMapping(String refbookCode, String version);
 
     /**
      * Получить список маппинга полей справочников НСИ на поля клиента.
@@ -191,7 +190,7 @@ public interface RdmSyncDao {
 
     List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
 
-    void deleteVersionMapping(int mappingId);
+    void deleteVersionMappings(Set<Integer> mappingIds);
 
     VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
 }

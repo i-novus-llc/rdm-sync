@@ -319,7 +319,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
 
 
     @Test
-    void testSaveVersionMapping() {
+    void testSaveAndDeleteVersionMapping() {
 
         String version = "*";
         String refBookCode = "test";
@@ -345,6 +345,10 @@ class RdmSyncDaoTest extends BaseDaoTest {
         actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(version, versionMapping.getRange().getRange());
         assertMappingEquals(versionMapping, actual);
+
+        rdmSyncDao.deleteVersionMappings(Set.of(actual.getMappingId()));
+        assertNotNull(rdmSyncDao.getVersionMappingByRefBookCodeAndRange(versionMapping.getCode(), version));
+
     }
 
     @Test

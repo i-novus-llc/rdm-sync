@@ -146,39 +146,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public VersionMapping getVersionMapping(String refbookCode, String version) {
-        final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range \n" +
-                "  FROM rdm_sync.version v \n" +
-                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
-                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
-                " WHERE code = :code and version = :version \n";
-
-        List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("code", refbookCode, "version", version),
-                (rs, rowNum) -> new VersionMapping(
-                        rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(5),
-                        rs.getString(6),
-                        rs.getString(7),
-                        rs.getString(8),
-                        rs.getString(9),
-                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
-                        rs.getInt(11),
-                        rs.getInt(12),
-                        SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(4)),
-                        rs.getBoolean(14),
-                        rs.getBoolean(15)
-                )
-        );
-        return !list.isEmpty() ? list.get(0) : null;
-    }
-
-    @Override
     public List<FieldMapping> getFieldMappings(String refbookCode) {
 
         final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
@@ -1243,18 +1210,16 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void deleteVersionMapping(int mappingId) {
+    public void deleteVersionMappings(Set<Integer> mappingIds) {
         // Удаляем запись из таблицы rdm_sync.field_mapping по mapping_id
-        final String delFieldSql = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id = :mappingId";
-        namedParameterJdbcTemplate.update(delFieldSql, Map.of("mappingId", mappingId));
+        final String delFieldSql = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id in :mappingIds;";
 
         // Удаляем запись из таблицы rdm_sync.version по mapping_id
-        final String delVersionSql = "DELETE FROM rdm_sync.version WHERE mapping_id = :mappingId";
-        namedParameterJdbcTemplate.update(delVersionSql, Map.of("mappingId", mappingId));
+        final String delVersionSql = "DELETE FROM rdm_sync.version WHERE mapping_id in :mappingIds;";
 
         // Удаляем запись из таблицы rdm_sync.mapping по id
-        final String delMappingSql = "DELETE FROM rdm_sync.mapping WHERE id = :mappingId";
-        namedParameterJdbcTemplate.update(delMappingSql, Map.of("mappingId", mappingId));
+        final String delMappingSql = "DELETE FROM rdm_sync.mapping WHERE id in :mappingIds;";
+        namedParameterJdbcTemplate.update(delFieldSql + delVersionSql + delMappingSql, Map.of("mappingId", mappingIds));
     }
 
     private void createTable(String schema, String table,

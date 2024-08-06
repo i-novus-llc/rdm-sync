@@ -44,8 +44,8 @@ public class RdmSyncInitializer {
 
         sourceLoaderServiceInit();
         List<SyncMapping> syncMappings = getSyncMappings();
-        deleteNotActualMappings(syncMappings);
         autoCreate(syncMappings);
+        deleteNotActualMappings(syncMappings);
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
             rdmSyncJobConfigurer.setupExportJob();
@@ -62,9 +62,11 @@ public class RdmSyncInitializer {
                 .map(SyncMapping::getVersionMapping)
                 .collect(Collectors.toSet());
 
-        vmFromDb.stream()
+        Set<Integer> mappingIdsToDelete = vmFromDb.stream()
                 .filter(versionMappingFromDb -> !versionMappingsForSync.contains(versionMappingFromDb))
-                .forEach(mapping -> rdmSyncDao.deleteVersionMapping(mapping.getMappingId()));
+                .map(VersionMapping::getMappingId).collect(Collectors.toSet());
+        logger.info("delete {} not actual mappings", mappingIdsToDelete.size());
+        rdmSyncDao.deleteVersionMappings(mappingIdsToDelete);
     }
 
     private void sourceLoaderServiceInit() {
