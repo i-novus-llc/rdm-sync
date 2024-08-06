@@ -15,6 +15,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Builder
 public class VersionMapping implements Serializable {
 
     private Integer id;
