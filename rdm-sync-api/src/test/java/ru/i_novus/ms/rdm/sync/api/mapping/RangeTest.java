@@ -86,4 +86,18 @@ class RangeTest {
 
     }
 
+    /**
+     * когда диапазон задан через запятую
+     */
+    @Test
+    void testContainsVersionInMultipleRange() {
+        Range range  = new Range("1.0-2.9,5.0-*");
+        assertTrue(range.containsVersion("1.1"));
+        assertTrue(range.containsVersion("2"));
+        assertTrue(range.containsVersion("5.0"));
+        assertTrue(range.containsVersion("7"));
+        assertFalse(range.containsVersion("3"));
+
+    }
+
 }

@@ -118,15 +118,15 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
-        List<String> versions = getVersions(refBookCode, syncRefBook);
+        List<String> versions = getVersions(refBookCode);
         for (String version : versions) {
             // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
         }
     }
 
-    private List<String> getVersions(String refBookCode, SyncRefBook syncRefBook) {
-        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService, versionMappingService);
+    private List<String> getVersions(String refBookCode) {
+        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(refBookCode, dao, syncSourceService, versionMappingService);
         List<String> versions;
         try {
             versions = determinator.getVersions();

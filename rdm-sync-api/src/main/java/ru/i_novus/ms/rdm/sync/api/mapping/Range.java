@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Arrays;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Range implements Comparable<Range> {
+public class Range implements Comparable<Range>, Serializable {
 
     /**
      * Строковое представление диапазона версий.
@@ -36,6 +37,9 @@ public class Range implements Comparable<Range> {
             return true;
         }
 
+        if (range.contains(",")) {
+            return Arrays.stream(range.split(",")).anyMatch(splitRange -> new Range(splitRange).containsVersion(version));
+        }
         if (range.equals("*")) {
             return true;
         }
