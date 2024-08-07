@@ -87,7 +87,7 @@ class RangeTest {
     }
 
     /**
-     * когда диапазон задан через запятую
+     * проверка принадлежности версии когда диапазон задан через запятую
      */
     @Test
     void testContainsVersionInMultipleRange() {
@@ -98,6 +98,16 @@ class RangeTest {
         assertTrue(range.containsVersion("7"));
         assertFalse(range.containsVersion("3"));
 
+    }
+
+    /**
+     * проверка пересечения диапазонов когда диапазоны заданы через запятую
+     */
+    @Test
+    void testOverlapsRangesInMultipleRange() {
+        Range range1  = new Range("1.0-2.9,5.0-*");
+        Range range2 = new Range("3.0-3.9,6.0-*");
+        assertTrue(range1.overlapsWith(range2));
     }
 
 }
