@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.MappingOverlapsValidator;
+import ru.i_novus.ms.rdm.sync.api.mapping.MappingRangeValidator;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
@@ -74,7 +74,7 @@ public class RdmSyncInitializer {
     }
 
     private void autoCreate(List<SyncMapping> syncMappings) {
-        MappingOverlapsValidator.validate(syncMappings);
+        MappingRangeValidator.validate(syncMappings);
         syncMappings.stream()
                 .sorted(new SyncMappingComparator())
                 .forEach(syncMapping ->

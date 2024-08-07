@@ -2,13 +2,14 @@ package ru.i_novus.ms.rdm.sync.api.mapping;
 
 import org.junit.jupiter.api.Test;
 import ru.i_novus.ms.rdm.sync.api.exception.MappingOverlapsException;
+import ru.i_novus.ms.rdm.sync.api.exception.NoUniqueDefaultMappingException;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MappingOverlapsValidatorTest {
+class MappingRangeValidatorTest {
 
     @Test
     void testThrowExceptionIfCrossRange(){
@@ -27,7 +28,7 @@ class MappingOverlapsValidatorTest {
                 new SyncMapping(versionMapping3, null)
         );
 
-        MappingOverlapsException mappingOverlapsException = assertThrows(MappingOverlapsException.class, () -> MappingOverlapsValidator.validate(mappings));
+        MappingOverlapsException mappingOverlapsException = assertThrows(MappingOverlapsException.class, () -> MappingRangeValidator.validate(mappings));
         assertEquals("refBookCode", mappingOverlapsException.getRefBookCode());
         assertEquals("1.10", mappingOverlapsException.getOverlappingRange1());
         assertEquals("1.10-3.0", mappingOverlapsException.getOverlappingRange2());
@@ -50,7 +51,7 @@ class MappingOverlapsValidatorTest {
                 new SyncMapping(versionMapping3, null)
         );
 
-        MappingOverlapsException mappingOverlapsException = assertThrows(MappingOverlapsException.class, () -> MappingOverlapsValidator.validate(mappings));
+        MappingOverlapsException mappingOverlapsException = assertThrows(MappingOverlapsException.class, () -> MappingRangeValidator.validate(mappings));
         assertEquals("refBookCode", mappingOverlapsException.getRefBookCode());
         assertEquals("1.11", mappingOverlapsException.getOverlappingRange1());
         assertEquals("1.10-*", mappingOverlapsException.getOverlappingRange2());
@@ -69,7 +70,45 @@ class MappingOverlapsValidatorTest {
                 new SyncMapping(versionMapping1, null),
                 new SyncMapping(versionMapping2, null)
         );
-        assertAll(() -> MappingOverlapsValidator.validate(mappings));
+        assertAll(() -> MappingRangeValidator.validate(mappings));
+    }
+
+    /**
+     * Дефолтный маппинг, тот у которого range = null, должен игнорироваться при валидации пересечений
+     */
+    @Test
+    void testDefaultMappingValidation() {
+        VersionMapping versionMapping1 = createVersionMapping();
+        VersionMapping versionMapping2 = createVersionMapping();
+
+        versionMapping1.setRange(null);
+        versionMapping2.setRange(new Range("2.10-3.0"));
+
+        List<SyncMapping> mappings = List.of(
+                new SyncMapping(versionMapping1, null),
+                new SyncMapping(versionMapping2, null)
+        );
+        assertAll(() -> MappingRangeValidator.validate(mappings));
+
+    }
+
+    /**
+     * Не должно быть несколько дефолтных маппингов, тот у которого range = null
+     */
+    @Test
+    void testSingleDefaultMapping() {
+        VersionMapping versionMapping1 = createVersionMapping();
+        VersionMapping versionMapping2 = createVersionMapping();
+
+        versionMapping1.setRange(null);
+        versionMapping2.setRange(null);
+
+        List<SyncMapping> mappings = List.of(
+                new SyncMapping(versionMapping1, null),
+                new SyncMapping(versionMapping2, null)
+        );
+
+        assertThrows(NoUniqueDefaultMappingException.class, () -> MappingRangeValidator.validate(mappings));
     }
 
     private VersionMapping createVersionMapping(){
