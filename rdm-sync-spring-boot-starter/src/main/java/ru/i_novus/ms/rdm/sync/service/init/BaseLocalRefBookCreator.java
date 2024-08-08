@@ -11,6 +11,7 @@ import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
@@ -27,7 +28,7 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final VersionMappingService versionMappingService;
 
-    protected abstract void createTable(String refBookCode, VersionMapping mapping);
+    protected abstract void createTable(String schemaName, String tableName, VersionMapping mapping, List<FieldMapping> fieldMappings);
 
     protected BaseLocalRefBookCreator(String defaultSchema,
                                       Boolean caseIgnore,
@@ -50,8 +51,13 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
         if (!dao.lockRefBookForUpdate(refBookCode, true))
             return;
 
-        if (versionMapping == null) {
-            createTable(refBookCode, syncMapping.getVersionMapping());
+        String[] split = getTableNameWithSchema(refBookCode, syncMapping.getVersionMapping().getTable()).split("\\.");
+        String schemaName = split[0];
+        String tableName = split[1];
+        if (!dao.tableExists(schemaName, tableName)) {
+            createTable(schemaName, tableName, syncMapping.getVersionMapping(), syncMapping.getFieldMapping());
+        } else {
+            refreshTable(schemaName, tableName, syncMapping.getFieldMapping());
         }
     }
 
@@ -76,5 +82,11 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
 
     public String getTableNameWithSchema(String refBookCode, String refBookTable) {
         return RdmSyncInitUtils.buildTableNameWithSchema(refBookCode, refBookTable, defaultSchema, caseIgnore);
+    }
+
+    protected void refreshTable(String schemaName, String tableName, List<FieldMapping> fieldMappings) {
+        List<String> columns = dao.getColumns(schemaName, tableName);
+        List<FieldMapping> newFieldMappings = fieldMappings.stream().filter(fieldMapping -> !columns.contains(fieldMapping.getSysField())).collect(Collectors.toList());
+        dao.refreshTable(schemaName, tableName, newFieldMappings);
     }
 }

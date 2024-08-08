@@ -50,7 +50,10 @@ class BaseLocalRefBookCreatorTest {
         creator.create(new SyncMapping(versionMapping, fieldMappings));
         verify(dao).insertVersionMapping(versionMapping);
         verify(dao).insertFieldMapping(anyInt(), eq(fieldMappings));
-        Assertions.assertEquals(versionMapping, createTableArgCaptor.get(1));
+        Assertions.assertEquals("rdm", createTableArgCaptor.get(0));
+        Assertions.assertEquals("ref_ek003", createTableArgCaptor.get(1));
+        Assertions.assertEquals(versionMapping, createTableArgCaptor.get(2));
+        Assertions.assertEquals(fieldMappings, createTableArgCaptor.get(3));
     }
 
     /**
@@ -61,6 +64,7 @@ class BaseLocalRefBookCreatorTest {
         VersionMapping versionMapping = MappingCreator.createVersionMapping();
         List<FieldMapping> fieldMappings = MappingCreator.createFieldMapping();
         when(versionMappingService.getVersionMappingByCodeAndRange(any(), any())).thenReturn(versionMapping);
+        when(dao.tableExists(anyString(), anyString())).thenReturn(true);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
         creator.create(new SyncMapping( versionMapping, fieldMappings));
@@ -80,6 +84,7 @@ class BaseLocalRefBookCreatorTest {
         VersionMapping oldVersionMapping = MappingCreator.createVersionMapping();
         oldVersionMapping.setMappingId(55);
         when(versionMappingService.getVersionMappingByCodeAndRange(eq(oldVersionMapping.getCode()), any())).thenReturn(oldVersionMapping);
+        when(dao.tableExists(anyString(), anyString())).thenReturn(true);
         List<Object> createTableArgCaptor = new ArrayList<>();
         BaseLocalRefBookCreator creator = getCreator(createTableArgCaptor);
         creator.create(new SyncMapping(newVersionMapping, fieldMappings));
@@ -91,9 +96,11 @@ class BaseLocalRefBookCreatorTest {
     private BaseLocalRefBookCreator getCreator(List<Object> createTableArgCaptor){
         return  new BaseLocalRefBookCreator("rdm", true, dao, syncSourceDao, versionMappingService) {
             @Override
-            protected void createTable(String refBookCode, VersionMapping mapping) {
-                createTableArgCaptor.add(refBookCode);
+            protected void createTable(String schemaName, String tableName, VersionMapping mapping, List<FieldMapping> fieldMappings) {
+                createTableArgCaptor.add(schemaName);
+                createTableArgCaptor.add(tableName);
                 createTableArgCaptor.add(mapping);
+                createTableArgCaptor.add(fieldMappings);
             }
         };
     }

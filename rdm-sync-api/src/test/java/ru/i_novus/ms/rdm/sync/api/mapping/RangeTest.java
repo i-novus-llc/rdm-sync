@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RangeTest {
 
@@ -84,6 +85,25 @@ class RangeTest {
         assertEquals("3.1-*", ranges.get(8).getRange());
         assertEquals("*", ranges.get(9).getRange());
 
+    }
+
+    /**
+     * Если заданы несколько диапазонов через запятую, то при сравнении берем наибольший
+     */
+    @Test
+    void testCompareMultipleRange() {
+        List<Range> ranges = new ArrayList<>();
+        ranges.add(new Range("*"));
+        ranges.add(new Range("1.0-1.99, 5.22-5.23"));
+        ranges.add(new Range("3.0-3.99, 6.0"));
+        ranges.add(new Range("2.2-2.3"));
+
+        Collections.sort(ranges);
+
+        assertEquals("2.2-2.3", ranges.get(0).getRange());
+        assertEquals("1.0-1.99, 5.22-5.23", ranges.get(1).getRange());
+        assertEquals("3.0-3.99, 6.0", ranges.get(2).getRange());
+        assertEquals("*", ranges.get(3).getRange());
     }
 
     /**

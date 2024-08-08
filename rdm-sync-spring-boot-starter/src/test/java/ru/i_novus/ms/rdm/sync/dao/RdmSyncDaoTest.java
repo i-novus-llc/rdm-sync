@@ -347,7 +347,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         assertMappingEquals(versionMapping, actual);
 
         rdmSyncDao.deleteVersionMappings(Set.of(actual.getMappingId()));
-        assertNotNull(rdmSyncDao.getVersionMappingByRefBookCodeAndRange(versionMapping.getCode(), version));
+        assertNull(rdmSyncDao.getVersionMappingByRefBookCodeAndRange(versionMapping.getCode(), version));
 
     }
 

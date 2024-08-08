@@ -193,4 +193,16 @@ public interface RdmSyncDao {
     void deleteVersionMappings(Set<Integer> mappingIds);
 
     VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
+
+    List<String> getColumns(String schema, String table);
+
+    Boolean tableExists(String schema, String table);
+
+    /**
+     *
+     * @param schema
+     * @param table
+     * @param newFieldMappings - FieldMapping-и новых колонк
+     */
+    void refreshTable(String schema, String table, List<FieldMapping> newFieldMappings);
 }

@@ -90,18 +90,24 @@ public class Range implements Comparable<Range>, Serializable {
      */
     private Range convertToEndVersion(Range r){
 
-        if (r.getRange() == null) {
+        String rangeVal = r.getRange();
+        if (rangeVal == null) {
             return new Range(MIN_VERSION);
         }
 
-        String[] rangeParts = r.getRange().split("-");
+        if(rangeVal.contains(",")){
+            String[] split = rangeVal.split(",");
+            return convertToEndVersion(Arrays.stream(split).map(rangeAsStr -> new Range(rangeAsStr.trim())).max(Range::compareTo).get());
+        }
+
+        String[] rangeParts = rangeVal.split("-");
         if (rangeParts.length > 1){
             if (rangeParts[1].equals("*")){
                 rangeParts[1] = MAX_VERSION;
             }
             return new Range(rangeParts[1]);
         }
-        return new Range(r.getRange());
+        return new Range(rangeVal);
     }
 
     /**
