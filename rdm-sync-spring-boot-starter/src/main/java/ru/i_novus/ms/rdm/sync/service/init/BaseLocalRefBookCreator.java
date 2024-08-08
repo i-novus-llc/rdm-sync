@@ -87,6 +87,9 @@ public abstract class BaseLocalRefBookCreator implements LocalRefBookCreator {
     protected void refreshTable(String schemaName, String tableName, List<FieldMapping> fieldMappings) {
         List<String> columns = dao.getColumns(schemaName, tableName);
         List<FieldMapping> newFieldMappings = fieldMappings.stream().filter(fieldMapping -> !columns.contains(fieldMapping.getSysField())).collect(Collectors.toList());
-        dao.refreshTable(schemaName, tableName, newFieldMappings);
+        if (!newFieldMappings.isEmpty()) {
+            logger.info("change structure of table {}.{}", schemaName, tableName);
+            dao.refreshTable(schemaName, tableName, newFieldMappings);
+        }
     }
 }
