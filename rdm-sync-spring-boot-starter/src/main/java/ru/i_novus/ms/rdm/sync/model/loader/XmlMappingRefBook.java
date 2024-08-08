@@ -57,7 +57,7 @@ public class XmlMappingRefBook {
         this.code = code;
     }
 
-    @XmlAttribute(name = "name", required = false)
+    @XmlAttribute(name = "name")
     public String getName() {
         return name;
     }
@@ -185,13 +185,18 @@ public class XmlMappingRefBook {
     private VersionMapping generateVersionMapping() {
         if (type.equals(SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK)) sysPkColumn = uniqueSysField;
 
+        Range resultRange = null;
         if(refBookVersion != null){
-            logger.warn(String.format("В маппинге для справочника %s указан deprecated аттрибут refbook-version, " +
-                    "используйте вместо него range", code));
+            logger.warn("В маппинге для справочника {} указан deprecated аттрибут refbook-version, " +
+                    "используйте вместо него range.Атрибут range не будет использоваться если есть аттрибут refbook-version", code);
+            resultRange = new Range(refBookVersion);
+        } else if(range != null)  {
+            resultRange = new Range(range);
         }
 
+
         return new VersionMapping(null, code, name, sysTable, sysPkColumn, source,
-                uniqueSysField, deletedField, null, mappingVersion, null, type, refBookVersion != null ? new Range(refBookVersion) : new Range(range), matchCase, refreshableRange);
+                uniqueSysField, deletedField, null, mappingVersion, null, type, resultRange, matchCase, refreshableRange);
     }
 
     private List<FieldMapping> generateFieldMappings() {
