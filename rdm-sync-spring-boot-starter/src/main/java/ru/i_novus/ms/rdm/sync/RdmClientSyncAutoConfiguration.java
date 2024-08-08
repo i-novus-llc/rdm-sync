@@ -65,6 +65,10 @@ public class RdmClientSyncAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmClientSyncAutoConfiguration.class);
 
+    @Autowired
+    @Qualifier("cxfObjectMapper")
+    private ObjectMapper objectMapper;
+
     @Bean
     @ConditionalOnMissingBean
     public RdmClientSyncConfig rdmClientSyncConfig(RdmClientSyncProperties properties) {
@@ -147,7 +151,7 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @Conditional(MissingGenericBean.class)
-    public TypedParamConverter<AttributeFilter> attributeFilterConverter( @Qualifier("cxfObjectMapper")ObjectMapper objectMapper) {
+    public TypedParamConverter<AttributeFilter> attributeFilterConverter() {
         return new AttributeFilterConverter(objectMapper);
     }
 
