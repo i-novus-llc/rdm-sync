@@ -97,5 +97,11 @@ public class VersionMapping implements Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
+
+    public boolean equalsByRange(VersionMapping other) {
+        return Objects.equals(this.code, other.code) && Objects.equals( this.range, other.range);
+    }
+
+
 }
 

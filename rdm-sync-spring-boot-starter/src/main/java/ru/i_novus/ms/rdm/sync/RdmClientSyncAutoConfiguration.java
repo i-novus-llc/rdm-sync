@@ -65,10 +65,6 @@ public class RdmClientSyncAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmClientSyncAutoConfiguration.class);
 
-    @Autowired
-    @Qualifier("cxfObjectMapper")
-    private ObjectMapper objectMapper;
-
     @Bean
     @ConditionalOnMissingBean
     public RdmClientSyncConfig rdmClientSyncConfig(RdmClientSyncProperties properties) {
@@ -151,7 +147,7 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @Conditional(MissingGenericBean.class)
-    public TypedParamConverter<AttributeFilter> attributeFilterConverter() {
+    public TypedParamConverter<AttributeFilter> attributeFilterConverter( @Qualifier("cxfObjectMapper")ObjectMapper objectMapper) {
         return new AttributeFilterConverter(objectMapper);
     }
 
@@ -296,7 +292,6 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
-                                                                 @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
                                                                  @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(

@@ -63,10 +63,12 @@ public class RdmSyncInitializer {
                 .collect(Collectors.toSet());
 
         Set<Integer> mappingIdsToDelete = vmFromDb.stream()
-                .filter(versionMappingFromDb -> !versionMappingsForSync.contains(versionMappingFromDb))
+                .filter(versionMappingFromDb -> versionMappingsForSync.stream().noneMatch(versionMappingFromDb::equalsByRange))
                 .map(VersionMapping::getMappingId).collect(Collectors.toSet());
         logger.info("delete {} not actual mappings", mappingIdsToDelete.size());
-        rdmSyncDao.deleteVersionMappings(mappingIdsToDelete);
+        if (!mappingIdsToDelete.isEmpty()) {
+            rdmSyncDao.deleteVersionMappings(mappingIdsToDelete);
+        }
     }
 
     private void sourceLoaderServiceInit() {

@@ -7,7 +7,6 @@ import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.util.VersionMappingComparator;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,20 +36,22 @@ public class VersionMappingServiceImpl implements VersionMappingService {
                 .collect(Collectors.toList());
 
         if (version != null){
+            VersionMapping defaultMapping = null;
             for (VersionMapping versionMapping : versionMappings) {
 
                 //по версии найден маппинг
-                if (versionMapping.getRange().containsVersion(version)) {
+                if (versionMapping.getRange()!= null && versionMapping.getRange().containsVersion(version)) {
                     return versionMapping;
                 }
+                if(versionMapping.getRange() == null) {
+                    defaultMapping = versionMapping;
+                }
             }
+            return defaultMapping;
         }
         //версия равна null - берем последний
-        if (version == null){
-            return getLastVersionMapping(sortedVersionMappings);
-        }
-        //не найден ни один маппинг - возвращаем null
-        return null;
+        return getLastVersionMapping(sortedVersionMappings);
+
 
     }
 

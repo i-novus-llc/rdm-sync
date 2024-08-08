@@ -159,7 +159,7 @@ class VersionMappingServiceTest {
     }
 
     private VersionMapping generateVersionMappingWithSomeRange(String range){
-        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(range), true, false);
+        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, range != null ? new Range(range) : null, true, false);
     }
 
 }
