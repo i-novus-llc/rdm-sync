@@ -38,7 +38,7 @@ public class Range implements Comparable<Range>, Serializable {
         }
 
         if (range.contains(",")) {
-            return Arrays.stream(range.split(",")).anyMatch(splitRange -> new Range(splitRange).containsVersion(version));
+            return Arrays.stream(range.split(",")).anyMatch(splitRange -> new Range(splitRange.trim()).containsVersion(version));
         }
         if (range.equals("*")) {
             return true;
@@ -90,18 +90,24 @@ public class Range implements Comparable<Range>, Serializable {
      */
     private Range convertToEndVersion(Range r){
 
-        if (r.getRange() == null) {
+        String rangeVal = r.getRange();
+        if (rangeVal == null) {
             return new Range(MIN_VERSION);
         }
 
-        String[] rangeParts = r.getRange().split("-");
+        if(rangeVal.contains(",")){
+            String[] split = rangeVal.split(",");
+            return convertToEndVersion(Arrays.stream(split).map(rangeAsStr -> new Range(rangeAsStr.trim())).max(Range::compareTo).get());
+        }
+
+        String[] rangeParts = rangeVal.split("-");
         if (rangeParts.length > 1){
             if (rangeParts[1].equals("*")){
                 rangeParts[1] = MAX_VERSION;
             }
             return new Range(rangeParts[1]);
         }
-        return new Range(r.getRange());
+        return new Range(rangeVal);
     }
 
     /**
@@ -113,7 +119,7 @@ public class Range implements Comparable<Range>, Serializable {
     private int[] parseVersion(String version) {
         return Arrays.stream(version.split("\\."))
                 .mapToInt(part -> {
-                    if (part.equals("*")) {
+                    if (part.trim().equals("*")) {
                         return MAX_PART;
                     }
                     try {
@@ -146,5 +152,34 @@ public class Range implements Comparable<Range>, Serializable {
             }
         }
         return 0;
+    }
+
+    public boolean overlapsWith(Range other) {
+        if (this.range == null || other.range == null) {
+            return false;
+        }
+
+        if(this.range.contains(",")) {
+            return Arrays.stream(this.range.split(",")).anyMatch(splitRange -> new Range(splitRange.trim()).overlapsWith(other));
+        }
+
+        if(other.range.contains(",")) {
+            return Arrays.stream(other.range.split(",")).anyMatch(splitRange -> this.overlapsWith(new Range(splitRange.trim())));
+        }
+
+        if (this.range.equals("*") || other.range.equals("*")) {
+            return true;
+        }
+
+        String[] thisParts = this.range.split("-");
+        String[] otherParts = other.range.split("-");
+
+        String thisStart = thisParts[0].trim();
+        String thisEnd = thisParts.length > 1 ? thisParts[1].trim() : thisStart;
+
+        String otherStart = otherParts[0].trim();
+        String otherEnd = otherParts.length > 1 ? otherParts[1].trim() : otherStart;
+
+        return (compareVersions(thisStart, otherEnd) <= 0 || thisStart.equals("*")) && (compareVersions(otherStart, thisEnd) <= 0 || thisEnd.equals("*"));
     }
 }

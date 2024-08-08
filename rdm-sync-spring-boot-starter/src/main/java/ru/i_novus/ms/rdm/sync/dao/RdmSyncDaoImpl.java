@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -74,6 +75,24 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     private static final String LOADED_VERSION_REF = "version_id";
     private static final String HASH_SYS_COL = "_hash";
 
+    private final RowMapper versionMappingRowMapper = (rs, rowNum) -> new VersionMapping(
+            rs.getInt(1),
+            rs.getString(2),
+            rs.getString(3),
+            rs.getString(5),
+            rs.getString(6),
+            rs.getString(7),
+            rs.getString(8),
+            rs.getString(9),
+            toLocalDateTime(rs, 10, LocalDateTime.MIN),
+            rs.getInt(11),
+            rs.getInt(12),
+            SyncTypeEnum.valueOf(rs.getString(13)),
+            rs.getString(4) == null ? null : new Range(rs.getString(4)),
+            rs.getBoolean(14),
+            rs.getBoolean(15)
+    );
+
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -87,25 +106,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n";
 
-        return namedParameterJdbcTemplate.query(sql,
-                (rs, rowNum) -> new VersionMapping(
-                        rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(5),
-                        rs.getString(6),
-                        rs.getString(7),
-                        rs.getString(8),
-                        rs.getString(9),
-                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
-                        rs.getInt(11),
-                        rs.getInt(12),
-                        SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(4)),
-                        rs.getBoolean(14),
-                        rs.getBoolean(15)
-                )
-        );
+        return namedParameterJdbcTemplate.query(sql, versionMappingRowMapper);
     }
 
     @Override
@@ -143,39 +144,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         return namedParameterJdbcTemplate
                 .queryForObject("select exists(select 1 from rdm_sync.loaded_version where code = :code)",
                         Map.of("code", code), Boolean.class);
-    }
-
-    @Override
-    public VersionMapping getVersionMapping(String refbookCode, String version) {
-        final String sql = "SELECT m.id, code, name, version, \n" +
-                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, \n" +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range \n" +
-                "  FROM rdm_sync.version v \n" +
-                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id \n" +
-                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
-                " WHERE code = :code and version = :version \n";
-
-        List<VersionMapping> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("code", refbookCode, "version", version),
-                (rs, rowNum) -> new VersionMapping(
-                        rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(5),
-                        rs.getString(6),
-                        rs.getString(7),
-                        rs.getString(8),
-                        rs.getString(9),
-                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
-                        rs.getInt(11),
-                        rs.getInt(12),
-                        SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(4)),
-                        rs.getBoolean(14),
-                        rs.getBoolean(15)
-                )
-        );
-        return !list.isEmpty() ? list.get(0) : null;
     }
 
     @Override
@@ -499,7 +467,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             final String insRefSql = "insert into rdm_sync.refbook(code, name, source_id, sync_type, range) values(:code, :name, (SELECT id FROM rdm_sync.source WHERE code=:source_code), :type, :range)  RETURNING id";
             String refBookName = versionMapping.getRefBookName();
             Map<String, String> params = new HashMap<>(Map.of("code", versionMapping.getCode(), "name", refBookName != null ? refBookName : versionMapping.getCode(), "source_code", versionMapping.getSource(), "type", versionMapping.getType().name()));
-            params.put("range", versionMapping.getRange().getRange());
+            params.put("range", versionMapping.getRange() != null ? versionMapping.getRange().getRange() : null);
             refBookId = namedParameterJdbcTemplate.queryForObject(insRefSql,
                     params,
                     Integer.class);
@@ -507,8 +475,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             refBookId = syncRefBook.getId();
         }
 
+        Map<String, String> params = new HashMap(Map.of("refId", refBookId, "mappingId", mappingId));
+        params.put("version", versionMapping.getRange() == null ? null : versionMapping.getRange().getRange());
         namedParameterJdbcTemplate.update("insert into rdm_sync.version(ref_id, mapping_id, version) values(:refId, :mappingId, :version)",
-                Map.of("refId", refBookId, "mappingId", mappingId, "version", versionMapping.getRange().getRange()));
+                params);
 
         return mappingId;
     }
@@ -1187,25 +1157,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
                 "WHERE code = :code;";
 
-        return namedParameterJdbcTemplate.query(sql,Map.of("code",refBookCode),
-                (rs, rowNum) -> new VersionMapping(
-                        rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(5),
-                        rs.getString(6),
-                        rs.getString(7),
-                        rs.getString(8),
-                        rs.getString(9),
-                        toLocalDateTime(rs, 10, LocalDateTime.MIN),
-                        rs.getInt(11),
-                        rs.getInt(12),
-                        SyncTypeEnum.valueOf(rs.getString(13)),
-                        new Range(rs.getString(4)),
-                        rs.getBoolean(14),
-                        rs.getBoolean(15)
-                )
-        );
+        return namedParameterJdbcTemplate.query(sql,Map.of("code",refBookCode), versionMappingRowMapper);
     }
 
     @Override
@@ -1216,30 +1168,55 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "  FROM rdm_sync.version v " +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
-                "WHERE code = :code AND version = :version;";
+                "WHERE code = :code AND (:range IS NULL OR version = :range);";
 
         List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
                 "code", code,
-                "version", range
-        ), (rs, rowNum) -> new VersionMapping(
-                rs.getInt(1),
-                rs.getString(2),
-                rs.getString(3),
-                rs.getString(5),
-                rs.getString(6),
-                rs.getString(7),
-                rs.getString(8),
-                rs.getString(9),
-                toLocalDateTime(rs, 10, LocalDateTime.MIN),
-                rs.getInt(11),
-                rs.getInt(12),
-                SyncTypeEnum.valueOf(rs.getString(13)),
-                new Range(rs.getString(4)),
-                rs.getBoolean(14),
-                rs.getBoolean(15)
-        ));
+                "range", range == null ? "" : range
+        ), versionMappingRowMapper);
 
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public void deleteVersionMappings(Set<Integer> mappingIds) {
+        // Удаляем запись из таблицы rdm_sync.field_mapping по mapping_id
+        final String delFieldSql = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id in (:mappingIds);";
+
+        // Удаляем запись из таблицы rdm_sync.version по mapping_id
+        final String delVersionSql = "DELETE FROM rdm_sync.version WHERE mapping_id in (:mappingIds);";
+
+        // Удаляем запись из таблицы rdm_sync.mapping по id
+        final String delMappingSql = "DELETE FROM rdm_sync.mapping WHERE id in (:mappingIds);";
+        namedParameterJdbcTemplate.update(delFieldSql + delVersionSql + delMappingSql, Map.of("mappingIds", mappingIds));
+    }
+
+    @Override
+    public List<String> getColumns(String schema, String table) {
+        return namedParameterJdbcTemplate.queryForList(
+                "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name   = :table",
+                Map.of("schema", schema, "table", table),
+                String.class);
+    }
+
+    @Override
+    public Boolean tableExists(String schema, String table) {
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT EXISTS (SELECT * FROM information_schema.tables  WHERE table_schema = :schema AND table_name = :table)",
+                Map.of("schema", schema, "table", table),
+                Boolean.class);
+    }
+
+
+    @Override
+    public void refreshTable(String schema, String table, List<FieldMapping> newFieldMappings) {
+        StringBuilder ddl = new StringBuilder(String.format("ALTER TABLE %s.%s ", escapeName(schema), escapeName(table)));
+
+        ddl.append(newFieldMappings.stream()
+                .map(mapping -> String.format(" ADD COLUMN %s %s", escapeName(mapping.getSysField()), mapping.getSysDataType()))
+                .collect(Collectors.joining(", ")));
+
+        getJdbcTemplate().execute(ddl.toString());
     }
 
     private void createTable(String schema, String table,

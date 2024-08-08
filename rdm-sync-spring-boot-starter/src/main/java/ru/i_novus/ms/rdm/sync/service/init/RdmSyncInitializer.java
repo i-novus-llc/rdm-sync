@@ -6,14 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.MappingRangeValidator;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
+import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.service.mapping.MappingSourceService;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @DependsOn("liquibaseRdm")
@@ -33,11 +37,15 @@ public class RdmSyncInitializer {
     @Autowired
     private LocalRefBookCreatorLocator localRefBookCreatorLocator;
 
+    @Autowired
+    private RdmSyncDao rdmSyncDao;
+
     public void init() {
 
         sourceLoaderServiceInit();
-        autoCreate(getSyncMappings());
-
+        List<SyncMapping> syncMappings = getSyncMappings();
+        autoCreate(syncMappings);
+        deleteNotActualMappings(syncMappings);
         if (rdmSyncJobConfigurer != null) {
             rdmSyncJobConfigurer.setupImportJob();
             rdmSyncJobConfigurer.setupExportJob();
@@ -48,11 +56,27 @@ public class RdmSyncInitializer {
 
     }
 
+    private void deleteNotActualMappings(List<SyncMapping> syncMappings) {
+        List<VersionMapping> vmFromDb = rdmSyncDao.getVersionMappings();
+        Set<VersionMapping> versionMappingsForSync = syncMappings.stream()
+                .map(SyncMapping::getVersionMapping)
+                .collect(Collectors.toSet());
+
+        Set<Integer> mappingIdsToDelete = vmFromDb.stream()
+                .filter(versionMappingFromDb -> versionMappingsForSync.stream().noneMatch(versionMappingFromDb::equalsByRange))
+                .map(VersionMapping::getMappingId).collect(Collectors.toSet());
+        logger.info("delete {} not actual mappings", mappingIdsToDelete.size());
+        if (!mappingIdsToDelete.isEmpty()) {
+            rdmSyncDao.deleteVersionMappings(mappingIdsToDelete);
+        }
+    }
+
     private void sourceLoaderServiceInit() {
         sourceLoaderServiceList.forEach(SourceLoaderService::load);
     }
 
     private void autoCreate(List<SyncMapping> syncMappings) {
+        MappingRangeValidator.validate(syncMappings);
         syncMappings.stream()
                 .sorted(new SyncMappingComparator())
                 .forEach(syncMapping ->

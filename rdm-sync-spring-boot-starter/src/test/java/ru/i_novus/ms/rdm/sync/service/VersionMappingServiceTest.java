@@ -128,8 +128,38 @@ class VersionMappingServiceTest {
         assertNull(actualVersionMapping);
     }
 
+    @Test
+    void whenUseDefaultMapping() {
+        //Данные для Справочника
+        String someRefBookCode = "someRefBookCode";
+        String someRefBookVersion = "5.0";
+
+        //Диапазоны, для моков маппинга из БД
+        String someRange1 = "1.0";
+        String someRange2 = "2.0";
+
+        //Создаем список маппингов, для мока данных из БД
+        VersionMapping defaultMapping = generateVersionMappingWithSomeRange(null);
+        VersionMapping someVersionMapping1 = generateVersionMappingWithSomeRange(someRange1);
+        VersionMapping someVersionMapping2 = generateVersionMappingWithSomeRange(someRange2);
+
+        List<VersionMapping> mockMappingsFromDb = Arrays.asList(
+                someVersionMapping1,
+                someVersionMapping2,
+                defaultMapping
+        );
+
+        // Мокаем методы dao
+        when(rdmSyncDao.getVersionMappingsByRefBookCode(someRefBookCode)).thenReturn(mockMappingsFromDb);
+
+        VersionMapping actualVersionMapping =
+                versionMappingService.getVersionMapping(someRefBookCode, someRefBookVersion);
+
+        assertEquals(defaultMapping, actualVersionMapping);
+    }
+
     private VersionMapping generateVersionMappingWithSomeRange(String range){
-        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(range), true, false);
+        return new VersionMapping(null, "refBookCode", "refBookName", "test_table", "pkSysColumn", "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, range != null ? new Range(range) : null, true, false);
     }
 
 }

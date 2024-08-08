@@ -64,7 +64,6 @@ class NotVersionedLocalRefBookCreatorTest {
 
         when(rdmSyncDao.lockRefBookForUpdate(code, true)).thenReturn(true);
         when(rdmSyncDao.insertVersionMapping(any())).thenReturn(mappingId);
-        when(rdmSyncDao.getFieldMappings(mappingId)).thenReturn(expectedFieldMappingList);
 
         creator.create(createVersionMapping(code));
 
@@ -101,7 +100,7 @@ class NotVersionedLocalRefBookCreatorTest {
     @Test
     void testIgnoreCreateWhenRefBookWasLoaded() {
         String code = "testCode";
-        when(versionMappingService.getVersionMapping(any(), any())).thenReturn(mock(VersionMapping.class));
+        when(versionMappingService.getVersionMappingByCodeAndRange(any(), any())).thenReturn(mock(VersionMapping.class));
         SyncMapping syncMapping = createVersionMapping(code);
         creator.create(syncMapping);
         verify(rdmSyncDao, never()).insertVersionMapping(any());

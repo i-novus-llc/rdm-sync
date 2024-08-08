@@ -50,6 +50,7 @@ public class RefBookVersionsDeterminator {
                     actualLoadedVersion = loadedVersion.getVersion();
                 }
             }
+            //sort by
             Stream<RefBookVersionItem> refBookVersionStream = versionMappings.stream().sorted(new VersionMappingComparator()).flatMap(this::versionMappingToRefBookVersion);
 
             final String finalActualVersion = actualLoadedVersion;

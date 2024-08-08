@@ -5,9 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+
+import java.util.List;
 
 @Component
 public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
@@ -25,14 +28,10 @@ public class NotVersionedLocalRefBookCreator extends BaseLocalRefBookCreator {
     }
 
     @Override
-    protected void createTable(String refBookCode, VersionMapping mapping) {
-
-        String[] split = getTableNameWithSchema(refBookCode, mapping.getTable()).split("\\.");
-        String schemaName = split[0];
-        String tableName = split[1];
+    protected void createTable(String schemaName, String tableName, VersionMapping mapping, List<FieldMapping> fieldMappings) {
 
         dao.createSchemaIfNotExists(schemaName);
-        dao.createNotVersionedTableIfNotExists(schemaName, tableName, dao.getFieldMappings(mapping.getId()), mapping.getDeletedField(), mapping.getSysPkColumn(), mapping.getPrimaryField());
+        dao.createNotVersionedTableIfNotExists(schemaName, tableName, fieldMappings, mapping.getDeletedField(), mapping.getSysPkColumn(), mapping.getPrimaryField());
 
         logger.info("Preparing table {} in schema {}.", tableName, schemaName);
 
