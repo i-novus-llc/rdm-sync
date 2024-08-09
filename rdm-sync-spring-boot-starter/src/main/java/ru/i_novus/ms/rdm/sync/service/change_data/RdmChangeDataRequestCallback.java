@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils;
@@ -21,6 +22,9 @@ import java.util.List;
 public abstract class RdmChangeDataRequestCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmChangeDataRequestCallback.class);
+
+    @Autowired
+    private VersionMappingService versionMappingService;
 
     @Autowired
     private RdmSyncDao dao;
@@ -54,7 +58,7 @@ public abstract class RdmChangeDataRequestCallback {
     protected abstract <T extends Serializable> void onError0(String refBookCode, List<? extends T> addUpdate, List<? extends T> delete, Exception ex);
 
     private <T extends Serializable> void casState(String refBookCode, List<? extends T> addUpdate, RdmSyncLocalRowState state) {
-        VersionMapping vm = dao.getVersionMapping(refBookCode, "CURRENT");
+        VersionMapping vm = versionMappingService.getVersionMapping(refBookCode, null);
         if (vm == null)
             return;
 

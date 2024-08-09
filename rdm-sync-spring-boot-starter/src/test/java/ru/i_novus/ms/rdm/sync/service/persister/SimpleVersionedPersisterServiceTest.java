@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
@@ -98,7 +99,6 @@ class SimpleVersionedPersisterServiceTest {
                 1,
                 refBookVersion.getCode(),
                 "test",
-                refBookVersion.getVersion(),
                 schemaTable,
                 "sys_pk",
                 null,
@@ -108,7 +108,7 @@ class SimpleVersionedPersisterServiceTest {
                 -1,
                 null,
                 SyncTypeEnum.SIMPLE_VERSIONED,
-                null,
+                new Range(refBookVersion.getVersion()),
                 true,
                 false);
     }

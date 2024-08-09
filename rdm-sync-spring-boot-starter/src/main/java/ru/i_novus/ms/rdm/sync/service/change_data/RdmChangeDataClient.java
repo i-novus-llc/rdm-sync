@@ -10,6 +10,7 @@ import ru.i_novus.ms.rdm.api.model.refdata.RdmChangeDataRequest;
 import ru.i_novus.ms.rdm.api.model.refdata.Row;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
@@ -26,6 +27,9 @@ import static ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils.*;
 public abstract class RdmChangeDataClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmChangeDataClient.class);
+
+    @Autowired
+    protected VersionMappingService versionMappingService;
 
     @Autowired
     protected RdmSyncDao dao;
@@ -75,7 +79,7 @@ public abstract class RdmChangeDataClient {
                                                     List<? extends T> addUpdate, List<? extends T> delete,
                                                     Function<? super T, Map<String, Object>> map) {
 
-        VersionMapping mapping = dao.getVersionMapping(refBookCode, "CURRENT");
+        VersionMapping mapping = versionMappingService.getVersionMapping(refBookCode, null);
         if (mapping == null || (addUpdate.isEmpty() && delete.isEmpty())) {
             return;
         }

@@ -1,9 +1,7 @@
 package ru.i_novus.ms.rdm.sync.api.mapping;
 
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 

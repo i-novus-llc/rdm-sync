@@ -15,12 +15,12 @@ import java.util.Objects;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Builder
 public class VersionMapping implements Serializable {
 
     private Integer id;
     private String code;
     private String refBookName;
-    private String refBookVersion;
     private String table;
     private String sysPkColumn;
     private String source;
@@ -30,11 +30,11 @@ public class VersionMapping implements Serializable {
     private int mappingVersion;
     private Integer mappingId;
     private SyncTypeEnum type;
-    private String range;
+    private Range range;
     private boolean matchCase = true;
     private boolean refreshableRange;
 
-    public String getRange() {
+    public Range getRange() {
         return range;
     }
 
@@ -48,10 +48,6 @@ public class VersionMapping implements Serializable {
 
     public String getRefBookName() {
         return refBookName;
-    }
-
-    public String getRefBookVersion() {
-        return Objects.toString(refBookVersion, "CURRENT");
     }
 
     public String getTable() {
@@ -101,5 +97,11 @@ public class VersionMapping implements Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
+
+    public boolean equalsByRange(VersionMapping other) {
+        return Objects.equals(this.code, other.code) && Objects.equals( this.range, other.range);
+    }
+
+
 }
 

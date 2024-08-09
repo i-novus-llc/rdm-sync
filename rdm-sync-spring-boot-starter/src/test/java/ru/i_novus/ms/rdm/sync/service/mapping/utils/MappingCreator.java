@@ -11,7 +11,7 @@ import java.util.List;
  */
 public final class MappingCreator {
     public static VersionMapping createVersionMapping(){
-        return new VersionMapping(null, "EK003", "Справочник", null,
+        return new VersionMapping(null, "EK003", "Справочник",
                 "rdm.ref_ek003", "_sync_rec_id", "RDM", "id", "deleted_ts",
                 null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
     }

@@ -10,9 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.test.context.jdbc.Sql;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
+import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
@@ -22,6 +24,7 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
+import ru.i_novus.ms.rdm.sync.service.VersionMappingServiceImpl;
 
 import javax.ws.rs.BadRequestException;
 import java.sql.Date;
@@ -51,10 +54,18 @@ class RdmSyncDaoTest extends BaseDaoTest {
         public RdmMappingService rdmMappingService() {
             return new RdmMappingServiceImpl();
         }
+
+        @Bean
+        public VersionMappingService versionMappingService() {
+            return new VersionMappingServiceImpl(rdmSyncDao());
+        }
     }
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
+
+    @Autowired
+    private VersionMappingService versionMappingService;
 
     @Test
     void testGetDataWithFilters() {
@@ -308,54 +319,58 @@ class RdmSyncDaoTest extends BaseDaoTest {
 
 
     @Test
-    void testSaveVersionMapping() {
+    void testSaveAndDeleteVersionMapping() {
 
-        String version = "CURRENT";
+        String version = "*";
         String refBookCode = "test";
         String refBookName = "test Name";
         String pkSysColumn = "test_pk_field";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, version, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(version), true, false);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
-        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
+        VersionMapping actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
         assertEquals(versionMapping.getCode(), actual.getCode());
         assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
-        assertEquals(version, actual.getRefBookVersion());
+        assertEquals(version, actual.getRange().getRange());
         assertMappingEquals(versionMapping, actual);
 
         SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
-        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, null), syncRefBook);
+        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, Set.of("*")), syncRefBook);
 
         versionMapping.setDeletedField("is_deleted2");
         versionMapping.setTable("test_table2");
         versionMapping.setMappingVersion(1);
         rdmSyncDao.updateCurrentMapping(versionMapping);
 
-        actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), version);
-        assertEquals(version, versionMapping.getRefBookVersion());
+        actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
+        assertEquals(version, versionMapping.getRange().getRange());
         assertMappingEquals(versionMapping, actual);
+
+        rdmSyncDao.deleteVersionMappings(Set.of(actual.getMappingId()));
+        assertNull(rdmSyncDao.getVersionMappingByRefBookCodeAndRange(versionMapping.getCode(), version));
+
     }
 
     @Test
     void testUpdateVersionMappingAndChangeRefbookTable(){
         String refBookCode = "EK001";
         String refBookName = "Справочник 1";
-        String refBookVersion = "CURRENT";
+        String refBookVersion = "*";
         VersionMapping versionMapping = new
-                VersionMapping(null, refBookCode, refBookName, refBookVersion, "test_table", "id","CODE-1", "id",
-                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, null, true, false);
+                VersionMapping(null, refBookCode, refBookName,  "test_table", "id","CODE-1", "id",
+                        "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(refBookVersion), true, false);
         rdmSyncDao.insertVersionMapping(versionMapping);
 
         //Проверка update'а таблицы rdm_sync.refbook
         versionMapping.setType(SyncTypeEnum.RDM_NOT_VERSIONED);
-        versionMapping.setRange("*");
+        versionMapping.setRange(new Range("*"));
         versionMapping.setRefBookName("Справочник 1-2");
 
         rdmSyncDao.updateCurrentMapping(versionMapping);
-        VersionMapping actual = rdmSyncDao.getVersionMapping(versionMapping.getCode(), refBookVersion);
+        VersionMapping actual = versionMappingService.getVersionMapping(versionMapping.getCode(), refBookVersion);
 
         assertEquals(SyncTypeEnum.RDM_NOT_VERSIONED, actual.getType());
-        assertEquals("*", actual.getRange());
+        assertEquals("*", actual.getRange().getRange());
         assertEquals("Справочник 1-2", actual.getRefBookName());
     }
 
@@ -379,12 +394,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
                 Map.of("ID", 1, "name", "name1", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
                 Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
         );
-    }
-
-    @Test
-    void testGetLastMappingVersion() {
-
-        assertEquals(-1, rdmSyncDao.getLastMappingVersion("testCode"));
     }
 
     @Test
@@ -664,9 +673,9 @@ class RdmSyncDaoTest extends BaseDaoTest {
 
     private VersionMapping generateVersionMapping() {
         return new VersionMapping(
-                1, null, "RDM", null, "rdm.ref_ek003", "id",
+                1, null, "RDM",  "rdm.ref_ek003", "id",
                 "RDM", "_sync_rec_id", "deleted_ts", null, 1,
-                1, SyncTypeEnum.NOT_VERSIONED, "", true, false);
+                1, SyncTypeEnum.NOT_VERSIONED, new Range("*"), true, false);
     }
 }
 

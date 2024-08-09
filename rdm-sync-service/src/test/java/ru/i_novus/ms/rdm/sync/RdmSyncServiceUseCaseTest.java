@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
@@ -225,7 +226,8 @@ public class RdmSyncServiceUseCaseTest {
         assertEquals(204, startResponse.getStatusCodeValue());
 
 
-        for (int i = 0; i<MAX_TIMEOUT && !"3.0".equals(rdmSyncDao.getLoadedVersion(refBookCode, "3.0").getVersion()); i++) {
+        LoadedVersion loadedVersion;
+        for (int i = 0; i<MAX_TIMEOUT && ((loadedVersion = rdmSyncDao.getLoadedVersion(refBookCode, "3.0")) == null || !"3.0".equals(loadedVersion.getVersion())); i++) {
             Thread.sleep(1000);
         }
         Map<String, Object> result = getVersionedData(refBookCode, "3.0");
