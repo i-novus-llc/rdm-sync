@@ -15,6 +15,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 
@@ -23,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -37,11 +37,14 @@ class RefBookDownloaderImplTest {
     private RdmSyncDao dao;
 
     @Mock
+    private VersionMappingService versionMappingService;
+
+    @Mock
     private SyncSourceService syncSourceService;
 
     @BeforeEach
     public void setUp() throws Exception {
-        refBookDownloader = new RefBookDownloaderImpl(syncSourceService, dao, new RdmMappingServiceImpl(), 1, 0, 2);
+        refBookDownloader = new RefBookDownloaderImpl(syncSourceService, dao, new RdmMappingServiceImpl(), 1, 0, 2, versionMappingService);
 
         when(dao.getFieldMappings(anyInt())).thenReturn(List.of(
                 new FieldMapping("ID", "integer", "ID"),
@@ -57,13 +60,12 @@ class RefBookDownloaderImplTest {
             return refBookVersion;
         });
 
-        when(dao.getVersionMapping(anyString(), anyString()))
+        when(versionMappingService.getVersionMapping(anyString(), anyString()))
                 .thenReturn(
                         new VersionMapping(
                                 1,
                                 "code",
                                 "some name",
-                                null,
                                 "ref_table",
                                 null,
                                 null,

@@ -14,6 +14,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
@@ -69,6 +70,8 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     @Autowired
     private RefBookDownloader refBookDownloader;
 
+    @Autowired
+    private VersionMappingService versionMappingService;
 
     private ExecutorService executorService;
 
@@ -115,15 +118,15 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
             return;
         }
-        List<String> versions = getVersions(refBookCode, syncRefBook);
+        List<String> versions = getVersions(refBookCode);
         for (String version : versions) {
             // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
         }
     }
 
-    private List<String> getVersions(String refBookCode, SyncRefBook syncRefBook) {
-        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook, dao, syncSourceService);
+    private List<String> getVersions(String refBookCode) {
+        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(refBookCode, dao, syncSourceService, versionMappingService);
         List<String> versions;
         try {
             versions = determinator.getVersions();

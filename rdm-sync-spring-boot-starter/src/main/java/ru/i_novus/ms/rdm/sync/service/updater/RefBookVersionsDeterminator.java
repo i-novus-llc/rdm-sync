@@ -5,15 +5,14 @@ import org.slf4j.LoggerFactory;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
-import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.util.VersionMappingComparator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,21 +23,25 @@ public class RefBookVersionsDeterminator {
 
     private static final Logger logger = LoggerFactory.getLogger(RefBookVersionsDeterminator.class);
 
-    private final SyncRefBook refBook;
+    private final String refBookCode;
 
     private final RdmSyncDao rdmSyncDao;
 
     private final SyncSourceService syncSourceService;
 
-    public RefBookVersionsDeterminator(SyncRefBook refBook, RdmSyncDao rdmSyncDao, SyncSourceService syncSourceService) {
-        this.refBook = refBook;
+    private final VersionMappingService versionMappingService;
+
+    public RefBookVersionsDeterminator(String refBookCode, RdmSyncDao rdmSyncDao, SyncSourceService syncSourceService, VersionMappingService versionMappingService) {
+        this.refBookCode = refBookCode;
         this.rdmSyncDao = rdmSyncDao;
         this.syncSourceService = syncSourceService;
+        this.versionMappingService = versionMappingService;
     }
 
     public List<String> getVersions() throws RefBookUpdaterException {
 
-        List<LoadedVersion> loadedVersions = rdmSyncDao.getLoadedVersions(refBook.getCode());
+        List<LoadedVersion> loadedVersions = rdmSyncDao.getLoadedVersions(refBookCode);
+        List<VersionMapping> versionMappings = rdmSyncDao.getVersionMappingsByRefBookCode(refBookCode);
 
         String actualLoadedVersion = null;
         try {
@@ -47,22 +50,16 @@ public class RefBookVersionsDeterminator {
                     actualLoadedVersion = loadedVersion.getVersion();
                 }
             }
-            Stream<RefBookVersionItem> refBookVersionStream;
-            if(refBook.getRange() == null) {
-                refBookVersionStream = Stream.of(syncSourceService.getRefBook(this.refBook.getCode(), null));
-            } else {
-                List<RefBookVersionItem> allVersions = syncSourceService.getVersions(refBook.getCode());
-                List<VersionsRange> ranges = getRanges(refBook.getRange(), allVersions);
-                refBookVersionStream =  allVersions.stream()
-                        .filter(refBookVersion -> ranges.stream().anyMatch(range -> range.contains(refBookVersion)));
-            }
+            //sort by
+            Stream<RefBookVersionItem> refBookVersionStream = versionMappings.stream().sorted(new VersionMappingComparator()).flatMap(this::versionMappingToRefBookVersion);
+
             final String finalActualVersion = actualLoadedVersion;
             List<String> versions = refBookVersionStream
                     .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersions, finalActualVersion))
                     .map(RefBookVersionItem::getVersion)
                     .collect(Collectors.toList());
             if(versions.isEmpty()) {
-                logger.info("there are no downloadable versions for refbook {}", refBook.getCode());
+                logger.info("there are no downloadable versions for refbook {}", refBookCode);
             }
             return versions;
         } catch (RuntimeException e) {
@@ -71,11 +68,19 @@ public class RefBookVersionsDeterminator {
         }
     }
 
-    private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<LoadedVersion> loadedVersions, String actualVersion) {
-        VersionMapping versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), refBookVersion.getVersion());
-        if(versionMapping == null) {
-            versionMapping = rdmSyncDao.getVersionMapping(this.refBook.getCode(), "CURRENT");
+    private Stream<? extends RefBookVersionItem> versionMappingToRefBookVersion(VersionMapping versionMapping) {
+        if(versionMapping.getRange() == null || versionMapping.getRange().getRange() == null) {
+            return Stream.of(syncSourceService.getRefBook(this.refBookCode, null));
+        } else {
+            List<RefBookVersionItem> allVersions = syncSourceService.getVersions(refBookCode);
+            return allVersions.stream()
+                    .filter(refBookVersion -> versionMapping.getRange().containsVersion(refBookVersion.getVersion()));
         }
+    }
+
+
+    private boolean isNeedToLoad(RefBookVersionItem refBookVersion, List<LoadedVersion> loadedVersions, String actualVersion) {
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(this.refBookCode, refBookVersion.getVersion());
         List<String> loadedVersionsStringValues = new ArrayList<>();
         LoadedVersion currentLoadedVersion = null;
         for (LoadedVersion loadedVersion : loadedVersions ) {
@@ -87,7 +92,7 @@ public class RefBookVersionsDeterminator {
         boolean isNewVersion = !loadedVersionsStringValues.contains(refBookVersion.getVersion());
         boolean isMappingChanged = currentLoadedVersion != null && !versionMapping.getMappingLastUpdated().isBefore(currentLoadedVersion.getLastSync());
         if(isMappingChanged && versionMapping.isRefreshableRange()) {
-            logger.info("refresh refbook {} version {} because mapping is changed", refBook.getCode(), refBookVersion.getVersion());
+            logger.info("refresh refbook {} version {} because mapping is changed", refBookCode, refBookVersion.getVersion());
             return true;
         }
         // изменился неверсионный справочник в rdm
@@ -101,62 +106,6 @@ public class RefBookVersionsDeterminator {
 
     private boolean isNewVersionPublished(RefBookVersionItem newVersion, LoadedVersion loadedVersion) {
         return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
-    }
-
-    private List<VersionsRange> getRanges(String range, List<RefBookVersionItem> versions) {
-        List<VersionsRange> result = new ArrayList<>();
-        if (range.contains(",")) {
-            Arrays.stream(range.split(",")).forEach(splitRange -> result.addAll(getRanges(splitRange, versions)));
-        } else if (range.contains("-")) {
-            RefBookVersionItem left = null;
-            RefBookVersionItem right = null;
-            String[] splitRange = range.split("-");
-            if (splitRange.length != 2) {
-                throw new IllegalArgumentException("cannot parse " + range);
-            }
-
-            for (RefBookVersionItem version : versions) {
-                if (version.getVersion().equals(splitRange[0]))
-                    left = version;
-
-                if (version.getVersion().equals(splitRange[1]))
-                    right = version;
-            }
-
-            if (left != null || right != null) {
-                result.add(new VersionsRange(left, right));
-            }
-
-        } else if (range.equals("*")) {
-            result.add(new VersionsRange(null, null));
-        } else {
-            Optional<RefBookVersionItem> refBookVersion = versions.stream()
-                    .filter(version -> version.getVersion().equals(range))
-                    .findAny();
-            refBookVersion.ifPresent(version -> result.add(new VersionsRange(version, version)));
-        }
-
-        return result;
-    }
-
-    private static class VersionsRange {
-
-        private final RefBookVersionItem left;
-
-        private final RefBookVersionItem right;
-
-        VersionsRange(RefBookVersionItem left, RefBookVersionItem right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        boolean contains(RefBookVersionItem refBookVersion) {
-            return
-                    (left == null || !left.getFrom().isAfter(refBookVersion.getFrom()))
-                            &&
-                            (right == null || !right.getFrom().isBefore(refBookVersion.getFrom()));
-        }
-
     }
 
 }

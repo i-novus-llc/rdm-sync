@@ -30,6 +30,7 @@ import ru.i_novus.ms.rdm.api.service.RefBookService;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
@@ -256,25 +257,28 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public RefBookUpdater notVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
                                                      @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                     RdmLoggingService rdmLoggingService
+                                                     RdmLoggingService rdmLoggingService,
+                                                     VersionMappingService versionMappingService
                                                      ) {
-        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
     @Bean
     public RefBookUpdater rdmNotVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
                                                         @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService
+                                                        RdmLoggingService rdmLoggingService,
+                                                        VersionMappingService versionMappingService
     ) {
-        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
     @Bean
     public RefBookUpdater simpleVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
                                                         @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService
+                                                        RdmLoggingService rdmLoggingService,
+                                                        VersionMappingService versionMappingService
     ) {
-        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService);
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
 
@@ -292,7 +296,6 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
-                                                                 @Qualifier("versionedLocalRefBookCreator") LocalRefBookCreator versionedLocalRefBookCreator,
                                                                  @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
         return new LocalRefBookCreatorLocator(Map.of(

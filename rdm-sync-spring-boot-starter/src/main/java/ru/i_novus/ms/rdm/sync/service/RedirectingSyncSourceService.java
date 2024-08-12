@@ -10,6 +10,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.Collections;
@@ -26,11 +27,14 @@ public class RedirectingSyncSourceService implements SyncSourceService {
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
 
+    private final VersionMappingService versionMappingService;
+
     @Autowired
-    public RedirectingSyncSourceService(SyncSourceDao syncSourceDao, RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet) {
+    public RedirectingSyncSourceService(SyncSourceDao syncSourceDao, RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet, VersionMappingService versionMappingService) {
         this.syncSourceDao = syncSourceDao;
         this.syncDao = syncDao;
         this.syncSourceServiceFactorySet = syncSourceServiceFactorySet;
+        this.versionMappingService = versionMappingService;
     }
 
     @Override
@@ -69,16 +73,13 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     }
 
     private SyncSource getSource(String refBookCode) {
-        VersionMapping versionMapping = syncDao.getVersionMapping(refBookCode, "CURRENT");
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, null);
         return syncSourceDao.findByCode(versionMapping.getSource());
     }
 
     //todo убрать когда в фнси появится отдельный тип данных для массива значений
     private List<FieldMapping> getFieldMapping(String code, String version) {
-        VersionMapping versionMapping = syncDao.getVersionMapping(code, version);
-        if (versionMapping == null) {
-            versionMapping = syncDao.getVersionMapping(code, "CURRENT");
-        }
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(code,version);
         if (versionMapping == null) {
             return Collections.emptyList();
         }

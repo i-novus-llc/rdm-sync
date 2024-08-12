@@ -3,12 +3,14 @@ package ru.i_novus.ms.rdm.sync.service.updater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import ru.i_novus.ms.rdm.sync.api.exception.MappingNotFoundException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
+import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
@@ -30,10 +32,13 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
     protected final PersisterService persisterService;
 
-    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService) {
+    protected  final VersionMappingService versionMappingService;
+
+    public DefaultRefBookUpdater(RdmSyncDao dao, RdmLoggingService loggingService, PersisterService persisterService, VersionMappingService versionMappingService) {
         this.dao = dao;
         this.loggingService = loggingService;
         this.persisterService = persisterService;
+        this.versionMappingService = versionMappingService;
     }
 
     @Override
@@ -49,41 +54,39 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         VersionMapping versionMapping;
         try {
             versionMapping = getVersionMapping(refBookVersion);
+            logger.info("using version mapping with range: {} for refbook {} with version {}",
+                    versionMapping.getRange(),
+                    refBookVersion.getCode(),
+                    refBookVersion.getVersion());
 
         } catch (Exception e) {
             logger.error("Error while fetching mapping for new version with code '{}'.", refBookVersion.getCode(), e);
             return;
         }
 
-        if (versionMapping == null) {
-            logger.error("No version mapping found for reference book with code '{}'.", refBookVersion.getCode());
-            return;
-        }
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
+        String oldVersion = loadedVersion != null ? loadedVersion.getVersion() : null;
         try {//это надо перенести в RefBookVersionsDeterminator
             if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
                     || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
                 update(refBookVersion, versionMapping, downloadResult);
-                loggingService.logOk(refBookVersion.getCode(), versionMapping.getRefBookVersion(), refBookVersion.getVersion());
+                loggingService.logOk(refBookVersion.getCode(), oldVersion, refBookVersion.getVersion());
 
             } else {
                 logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
             }
         } catch (final Exception e) {
             logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
-            throw new RefBookUpdaterException(e, versionMapping.getRefBookVersion(), refBookVersion.getVersion());
+            throw new RefBookUpdaterException(e, oldVersion, refBookVersion.getVersion());
         }
     }
 
     private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
-        VersionMapping versionMapping = dao.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
         if (versionMapping == null) {
-            versionMapping = dao.getVersionMapping(refBookVersion.getCode(), "CURRENT");
-        }
-        if (versionMapping == null) {
-            return null;
+            throw new MappingNotFoundException(refBookVersion.getCode(), refBookVersion.getCode());
         }
         List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
 

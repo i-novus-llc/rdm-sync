@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+
+    <changeSet id="202407031610_move_range_col" author="tnurdinov"  dbms="postgresql">
+        <sql>
+            ALTER TABLE rdm_sync.version ALTER COLUMN version DROP NOT NULL;
+
+            COMMENT ON COLUMN rdm_sync.refbook.range IS 'Deprecated';
+
+            UPDATE rdm_sync.version SET version = (SELECT range FROM rdm_sync.refbook WHERE id = ref_id)
+            WHERE version is NULL or version = 'CURRENT';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
