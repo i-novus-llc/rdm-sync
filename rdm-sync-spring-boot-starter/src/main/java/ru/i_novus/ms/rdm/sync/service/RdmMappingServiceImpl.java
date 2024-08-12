@@ -12,10 +12,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author lgalimova
@@ -91,6 +89,10 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     }
 
     private Object mapInteger(DataTypeEnum clientType, Object value) {
+        if (value == null || "".equals(value)) {
+            return null;
+        }
+
         switch (clientType) {
             case INTEGER:
                 return new BigInteger(value.toString());
@@ -104,6 +106,11 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     }
 
     private Object mapVarchar(DataTypeEnum clientType, Object value) {
+
+        if (value == null || "".equals(value)) {
+            return null; // Преобразуем пустую строку в null
+        }
+
         String valueStr = value.toString();
         switch (clientType) {
             case VARCHAR:
