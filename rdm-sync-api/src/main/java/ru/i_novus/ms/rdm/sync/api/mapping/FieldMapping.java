@@ -18,6 +18,7 @@ public class FieldMapping {
     private String rdmField;
     private boolean ignoreIfNotExists;
     private String defaultValue;
+    private String transformExpression;
 
     public FieldMapping(String sysField, String sysDataType, String rdmField) {
         this.sysField = sysField;

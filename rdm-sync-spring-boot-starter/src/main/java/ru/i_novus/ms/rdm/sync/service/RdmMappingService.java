@@ -16,5 +16,5 @@ public interface RdmMappingService {
      * @param value        значение для преобразования
      * @return преобразованное значение
      */
-    Object map(AttributeTypeEnum attributeType, DataTypeEnum sysType, Object value);
+    Object map(AttributeTypeEnum attributeType, DataTypeEnum sysType, Object value, String  transformExpr);
 }

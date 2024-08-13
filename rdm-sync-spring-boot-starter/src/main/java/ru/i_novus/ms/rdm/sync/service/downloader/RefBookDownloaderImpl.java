@@ -215,7 +215,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         DataTypeEnum clientType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
 
         Map<String, Object> mappedValue = new HashMap<>();
-        mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, clientType, value));
+        mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, clientType, value, fieldMapping.getTransformExpression()));
 
         return mappedValue;
     }

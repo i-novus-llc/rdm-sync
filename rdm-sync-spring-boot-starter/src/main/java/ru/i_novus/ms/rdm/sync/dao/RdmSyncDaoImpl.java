@@ -149,7 +149,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     @Override
     public List<FieldMapping> getFieldMappings(String refbookCode) {
 
-        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value, m.transform_expr\n" +
                 "  FROM rdm_sync.field_mapping m \n" +
                 " WHERE m.mapping_id = ( \n" +
                 "       SELECT v.mapping_id \n" +
@@ -165,14 +165,15 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(2),
                         rs.getString(3),
                         rs.getBoolean(4),
-                        rs.getString(5)
+                        rs.getString(5),
+                        rs.getString(6)
                 )
         );
     }
 
     @Override
     public List<FieldMapping> getFieldMappings(Integer mappingId) {
-        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value \n" +
+        final String sql = "SELECT m.sys_field, m.sys_data_type, m.rdm_field, m.ignore_if_not_exists, m.default_value, m.transform_expr \n" +
                 "  FROM rdm_sync.field_mapping m \n" +
                 " WHERE m.mapping_id = :mappingId";
 
@@ -183,7 +184,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                         rs.getString(2),
                         rs.getString(3),
                         rs.getBoolean(4),
-                        rs.getString(5)
+                        rs.getString(5),
+                        rs.getString(6)
                 )
         );
     }

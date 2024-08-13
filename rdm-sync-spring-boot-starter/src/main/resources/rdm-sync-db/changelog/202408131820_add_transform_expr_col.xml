@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202408131820_add_transform_expr_col" author="shgaripov"  dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists schemaName="rdm_sync" tableName="field_mapping" columnName="transform_expr"/>
+            </not>
+        </preConditions>
+        <comment>Добавление колонки, для хранения описания ключа, для получения SpEL выражения</comment>
+        <sql>
+            ALTER TABLE rdm_sync.field_mapping ADD COLUMN transform_expr VARCHAR;
+            COMMENT ON COLUMN rdm_sync.mapping.refreshable_range IS 'описания ключа, для получения SpEL выражения';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
