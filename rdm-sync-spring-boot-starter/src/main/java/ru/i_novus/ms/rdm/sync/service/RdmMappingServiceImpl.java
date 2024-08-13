@@ -258,8 +258,10 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             throw new IllegalArgumentException("Expression not found for key: " + key);
         }
 
-        SimpleEvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().withRootObject(input).build();
-
+        SimpleEvaluationContext context = SimpleEvaluationContext
+                .forReadOnlyDataBinding()
+                .withRootObject(input)
+                .build();
 
         Expression expression = parser.parseExpression(expressionString);
         return expression.getValue(context, returnType);
