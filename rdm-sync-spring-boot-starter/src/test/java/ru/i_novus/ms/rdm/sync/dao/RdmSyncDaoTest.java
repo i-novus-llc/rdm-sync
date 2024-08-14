@@ -25,6 +25,7 @@ import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.VersionMappingServiceImpl;
+import ru.i_novus.ms.rdm.sync.util.MappingDataTransformer;
 
 import javax.ws.rs.BadRequestException;
 import java.sql.Date;
@@ -59,6 +60,9 @@ class RdmSyncDaoTest extends BaseDaoTest {
         public VersionMappingService versionMappingService() {
             return new VersionMappingServiceImpl(rdmSyncDao());
         }
+
+        @Bean
+        public MappingDataTransformer mappingDataTransformer() {return new MappingDataTransformer();}
     }
 
     @Autowired
