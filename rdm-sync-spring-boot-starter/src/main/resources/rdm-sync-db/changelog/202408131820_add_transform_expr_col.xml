@@ -12,7 +12,7 @@
         </preConditions>
         <comment>Добавление колонки, для хранения описания ключа, для получения SpEL выражения</comment>
         <sql>
-            ALTER TABLE rdm_sync.field_mapping ADD COLUMN transform_expr VARCHAR(30);
+            ALTER TABLE rdm_sync.field_mapping ADD COLUMN transform_expr VARCHAR(1000);
             COMMENT ON COLUMN rdm_sync.field_mapping.transform_expr IS 'Описание ключа, для получения SpEL выражения';
         </sql>
     </changeSet>
