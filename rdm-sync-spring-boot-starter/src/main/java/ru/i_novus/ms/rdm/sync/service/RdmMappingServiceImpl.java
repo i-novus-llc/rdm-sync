@@ -42,7 +42,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         }
 
         if (transformExpr != null) {
-            return dataTransformer.evaluateExpression(transformExpr, value, determineReturnType(attributeType));
+            return dataTransformer.evaluateExpression(transformExpr, value, determineReturnType(clientType));
         }
 
         Object result = null;
@@ -70,7 +70,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         return result;
     }
 
-    private Class<?> determineReturnType(AttributeTypeEnum attributeType) {
+    private Class<?> determineReturnType(DataTypeEnum attributeType) {
         switch (attributeType) {
             case BOOLEAN:
                 return Boolean.class;
@@ -80,10 +80,8 @@ public class RdmMappingServiceImpl implements RdmMappingService {
                 return Float.class;
             case DATE:
                 return LocalDate.class;
-            case STRING:
+            case VARCHAR:
                 return String.class;
-            case REFERENCE:
-                return String.class; // или другой подходящий тип
             default:
                 return Object.class;
         }
