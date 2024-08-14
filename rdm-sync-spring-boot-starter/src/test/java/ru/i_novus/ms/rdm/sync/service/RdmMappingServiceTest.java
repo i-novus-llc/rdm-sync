@@ -3,8 +3,10 @@ package ru.i_novus.ms.rdm.sync.service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
+import ru.i_novus.ms.rdm.sync.util.MappingDataTransformer;
 import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
 import java.math.BigInteger;
@@ -12,6 +14,8 @@ import java.time.LocalDate;
 import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static ru.i_novus.ms.rdm.sync.model.DataTypeEnum.*;
 
 /**
@@ -20,6 +24,9 @@ import static ru.i_novus.ms.rdm.sync.model.DataTypeEnum.*;
  */
 @ExtendWith(MockitoExtension.class)
 class RdmMappingServiceTest {
+
+    @Mock
+    private MappingDataTransformer dataTransformer;
 
     @InjectMocks
     private RdmMappingServiceImpl rdmMappingService;
@@ -138,15 +145,21 @@ class RdmMappingServiceTest {
 
     @Test
     void testSpELTransformation() {
+
+        when(dataTransformer.evaluateExpression(any(), any(), any())).thenReturn(true);
         Object result = rdmMappingService.map(AttributeTypeEnum.BOOLEAN, BOOLEAN, 1, "interpretBoolean");
         assertTrue((result instanceof Boolean) && (Boolean) result);
 
+        when(dataTransformer.evaluateExpression(any(), any(), any())).thenReturn(false);
         result = rdmMappingService.map(AttributeTypeEnum.BOOLEAN, BOOLEAN, 0, "interpretBoolean");
         assertFalse((result instanceof Boolean) && (Boolean) result);
 
+        when(dataTransformer.evaluateExpression("unknownExpression", 1, Boolean.class))
+                .thenThrow(new IllegalArgumentException("Expression not found for key: unknownExpression"));
+
         // Тестирование неизвестного выражения
         try {
-            rdmMappingService.map(AttributeTypeEnum.BOOLEAN, BOOLEAN, 1, "unknownExpression");
+        rdmMappingService.map(AttributeTypeEnum.BOOLEAN, BOOLEAN, 1, "unknownExpression");
             fail("Ожидается IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertEquals("Expression not found for key: unknownExpression", e.getMessage());
