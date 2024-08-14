@@ -23,7 +23,11 @@ public class MappingDataTransformer {
 
     static {
         // Инициализация карты выражений. Пример: интерпретация boolean значения.
-        expressionMap.put("interpretBoolean", "#root == 1 ? true : false");
+        expressionMap.put("interpretBoolean",
+                "#root == null ? null : \n" +
+                "(#root == 1 || #root == 'истина') ? true : \n" +
+                "(#root == 0 || #root == 'ложь') ? false : \n" +
+                "false\n");
     }
 
     /**
