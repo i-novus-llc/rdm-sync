@@ -10,10 +10,10 @@
                 <columnExists schemaName="rdm_sync" tableName="field_mapping" columnName="transform_expr"/>
             </not>
         </preConditions>
-        <comment>Добавление колонки, для хранения описания ключа, для получения SpEL выражения</comment>
+        <comment>Добавление колонки, для хранения SpEL выражения, для конвертации данных при синхронизации</comment>
         <sql>
-            ALTER TABLE rdm_sync.field_mapping ADD COLUMN transform_expr VARCHAR(1000);
-            COMMENT ON COLUMN rdm_sync.field_mapping.transform_expr IS 'Описание ключа, для получения SpEL выражения';
+            ALTER TABLE rdm_sync.field_mapping ADD COLUMN transform_expr TEXT;
+            COMMENT ON COLUMN rdm_sync.field_mapping.transform_expr IS 'SpEL выражение, для конвертации данных при синхронизации';
         </sql>
     </changeSet>
 

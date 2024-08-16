@@ -1,10 +1,12 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.ms.rdm.sync.util.MappingDataTransformer;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
 import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
@@ -27,12 +29,10 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     private static final DateTimeFormatter ISO_DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final DateTimeFormatter EU_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    @Autowired
-    private MappingDataTransformer dataTransformer;
-
     @Override
-    public Object map(AttributeTypeEnum attributeType, DataTypeEnum clientType, Object value, String transformExpr) {
-
+    public Object map(AttributeTypeEnum attributeType, FieldMapping fieldMapping, Object value) {
+        DataTypeEnum clientType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
+        String transformExpr = fieldMapping.getTransformExpression();
         if (value == null || "".equals(value)) {
             return AttributeTypeEnum.BOOLEAN.equals(attributeType) ? mapBoolean(clientType, value) : null;
         }
@@ -42,7 +42,8 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         }
 
         if (transformExpr != null) {
-            return dataTransformer.evaluateExpression(transformExpr, value, determineReturnType(clientType));
+            Class<?> type = getAttributeType(clientType).getDeclaringClass().getDeclaringClass();
+            return evaluateExpression(transformExpr, value, type);
         }
 
         Object result = null;
@@ -69,25 +70,6 @@ public class RdmMappingServiceImpl implements RdmMappingService {
 
         return result;
     }
-
-    private Class<?> determineReturnType(DataTypeEnum attributeType) {
-        switch (attributeType) {
-            case BOOLEAN:
-                return Boolean.class;
-            case INTEGER:
-                return BigInteger.class;
-            case FLOAT:
-                return Float.class;
-            case DATE:
-                return LocalDate.class;
-            case VARCHAR:
-                return String.class;
-            default:
-                return Object.class;
-        }
-    }
-
-
     private List<Integer> mapIntegerArray(Object value) {
         return (List<Integer>)value;
     }
@@ -239,6 +221,19 @@ public class RdmMappingServiceImpl implements RdmMappingService {
 
     private String getClassCastError(FieldType rdmType, DataTypeEnum clientType, Object value) {
         return String.format("Error while casting %s to %s. Value: %s", rdmType, clientType, value);
+    }
+
+    private Object evaluateExpression(String expr, Object input, Class<?> returnType) {
+
+        // Создание контекста для оценки SpEL выражения
+        SimpleEvaluationContext context = SimpleEvaluationContext
+                .forReadOnlyDataBinding()
+                .withRootObject(input)
+                .build();
+
+        ExpressionParser parser = new SpelExpressionParser();
+
+        return parser.parseExpression(expr).getValue(context, returnType);
     }
 
 }
