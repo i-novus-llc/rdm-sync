@@ -1,10 +1,7 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
