@@ -164,11 +164,12 @@ class RdmMappingServiceTest {
     @Test
     void testSpELTransformation() {
         FieldMapping fm = new FieldMapping("name", "jsonb", "name");
+
+        //SpEL-expression, который преобразует текстовое представление в логическое значение boolean
         fm.setTransformExpression("#root == null ? null : " +
         "(#root == 1 || #root == 'истина') ? true : " +
         "(#root == 0 || #root == 'ложь') ? false : " +
         "false");
-
 
         Object result = rdmMappingService.map(AttributeTypeEnum.BOOLEAN, fm, 1);
         assertTrue((result instanceof Boolean) && (Boolean) result);
@@ -181,5 +182,21 @@ class RdmMappingServiceTest {
 
         result = rdmMappingService.map(AttributeTypeEnum.BOOLEAN, fm, "ложь");
         assertFalse((result instanceof Boolean) && (Boolean) result);
+
+        //SpEL-expression, который преобразует текстовое представление в число
+        fm.setTransformExpression(
+                "#root == 'один' ? 1 : " +
+                "#root == 'два' ? 2 : " +
+                "#root == 'три' ? 3 : " +
+                "0");
+        fm.setSysDataType("varchar");
+        result = rdmMappingService.map(AttributeTypeEnum.STRING, fm, "один");
+        assertEquals(1, result);
+
+        //SpEL-expression, который находит в строке первое четное число
+        fm.setTransformExpression("#root.split(',').![T(Integer).parseInt(#this)].?[#this % 2 == 0][0]");
+        fm.setSysDataType("integer");
+        result = rdmMappingService.map(AttributeTypeEnum.STRING, fm, "1,3,3,7,5,3,34,4");
+        assertEquals(34, result);
     }
 }

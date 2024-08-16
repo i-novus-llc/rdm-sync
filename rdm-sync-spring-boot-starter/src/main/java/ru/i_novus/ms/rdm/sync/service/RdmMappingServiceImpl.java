@@ -1,9 +1,11 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -224,16 +226,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     }
 
     private Object evaluateExpression(String expr, Object input, Class<?> returnType) {
-
-        // Создание контекста для оценки SpEL выражения
-        SimpleEvaluationContext context = SimpleEvaluationContext
-                .forReadOnlyDataBinding()
-                .withRootObject(input)
-                .build();
-
-        ExpressionParser parser = new SpelExpressionParser();
-
-        return parser.parseExpression(expr).getValue(context, returnType);
+        return new SpelExpressionParser().parseExpression(expr).getValue(new StandardEvaluationContext(), input, returnType);
     }
 
 }
