@@ -231,7 +231,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
                 .withRootObject(input)
                 .build();
 
-        return parser.parseExpression(expr).getValue(context, input, returnType.getJavaClass());
+        return parser.parseExpression(expr).getValue(context, input, returnType.getClazz());
     }
 
 }
