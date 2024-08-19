@@ -20,6 +20,8 @@ public class XmlMappingField {
 
     private String defaultValue;
 
+    private String transformExpression;
+
     @XmlAttribute(name = "rdm-field", required = true)
     public String getRdmField() {
         return rdmField;
@@ -61,6 +63,11 @@ public class XmlMappingField {
         return defaultValue;
     }
 
+    @XmlAttribute(name = "transform-expr")
+    public void setTransformExpression(String transformExpression) {
+        this.transformExpression = transformExpression;
+    }
+
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
@@ -74,11 +81,12 @@ public class XmlMappingField {
         result.setRdmField(mapping.getRdmField());
         result.setIgnoreIfNotExists(mapping.getIgnoreIfNotExists());
         result.setDefaultValue(mapping.getDefaultValue());
+        result.setTransformExpression(mapping.getTransformExpression());
 
         return result;
     }
 
     public FieldMapping convertToFieldMapping() {
-        return new FieldMapping(sysField, sysDataType, rdmField, ignoreIfNotExists, defaultValue);
+        return new FieldMapping(sysField, sysDataType, rdmField, ignoreIfNotExists, defaultValue, transformExpression);
     }
 }

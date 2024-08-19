@@ -14,7 +14,6 @@ import ru.i_novus.ms.rdm.sync.api.model.*;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.persister.RetryingPageIterator;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
@@ -212,10 +211,9 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             return null; // Поле не ведётся в системе
 
         AttributeTypeEnum attributeType = newVersion.getStructure().getAttributesAndTypes().get(rdmField);
-        DataTypeEnum clientType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
 
         Map<String, Object> mappedValue = new HashMap<>();
-        mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, clientType, value));
+        mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, fieldMapping, value));
 
         return mappedValue;
     }

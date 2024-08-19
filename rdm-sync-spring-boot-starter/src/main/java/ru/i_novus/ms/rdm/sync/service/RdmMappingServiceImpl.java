@@ -1,6 +1,10 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
@@ -26,14 +30,19 @@ public class RdmMappingServiceImpl implements RdmMappingService {
     private static final DateTimeFormatter EU_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Override
-    public Object map(AttributeTypeEnum attributeType, DataTypeEnum clientType, Object value) {
-
+    public Object map(AttributeTypeEnum attributeType, FieldMapping fieldMapping, Object value) {
+        DataTypeEnum clientType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
+        String transformExpr = fieldMapping.getTransformExpression();
         if (value == null || "".equals(value)) {
             return AttributeTypeEnum.BOOLEAN.equals(attributeType) ? mapBoolean(clientType, value) : null;
         }
 
         if(attributeType == null) {
             attributeType = getAttributeType(clientType);
+        }
+
+        if (transformExpr != null) {
+            return evaluateExpression(transformExpr, value, clientType);
         }
 
         Object result = null;
@@ -60,7 +69,6 @@ public class RdmMappingServiceImpl implements RdmMappingService {
 
         return result;
     }
-
     private List<Integer> mapIntegerArray(Object value) {
         return (List<Integer>)value;
     }
@@ -212,6 +220,18 @@ public class RdmMappingServiceImpl implements RdmMappingService {
 
     private String getClassCastError(FieldType rdmType, DataTypeEnum clientType, Object value) {
         return String.format("Error while casting %s to %s. Value: %s", rdmType, clientType, value);
+    }
+
+    private Object evaluateExpression(String expr, Object input, DataTypeEnum returnType) {
+        ExpressionParser parser = new SpelExpressionParser();
+
+        // Создание контекста для оценки SpEL выражения
+        SimpleEvaluationContext context = SimpleEvaluationContext
+                .forReadOnlyDataBinding()
+                .withRootObject(input)
+                .build();
+
+        return parser.parseExpression(expr).getValue(context, input, returnType.getClazz());
     }
 
 }
