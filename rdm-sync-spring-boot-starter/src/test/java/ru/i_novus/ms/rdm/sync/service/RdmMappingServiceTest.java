@@ -191,12 +191,6 @@ class RdmMappingServiceTest {
                 "0");
         fm.setSysDataType("varchar");
         result = rdmMappingService.map(AttributeTypeEnum.STRING, fm, "один");
-        assertEquals(1, result);
-
-        //SpEL-expression, который находит в строке первое четное число
-        fm.setTransformExpression("#root.split(',').![T(Integer).parseInt(#this)].?[#this % 2 == 0][0]");
-        fm.setSysDataType("integer");
-        result = rdmMappingService.map(AttributeTypeEnum.STRING, fm, "1,3,3,7,5,3,34,4");
-        assertEquals(34, result);
+        assertEquals(1, Integer.parseInt(result.toString()));
     }
 }

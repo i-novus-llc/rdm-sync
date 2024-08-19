@@ -9,6 +9,7 @@ import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
@@ -168,6 +169,29 @@ public enum DataTypeEnum {
                 return BOOLEAN;
             default:
                 throw new RdmException(String.format("Attribute type '%s' is not supported", type));
+        }
+    }
+
+    public Class<?> getJavaClass() {
+        switch (this) {
+            case BOOLEAN:
+                return Boolean.class;
+            case INTEGER:
+                return BigInteger.class;
+            case FLOAT:
+                return BigDecimal.class;
+            case DATE:
+                return LocalDate.class;
+            case VARCHAR:
+                return String.class;
+            case INTEGER_ARRAY:
+                return Integer[].class;
+            case STRING_ARRAY:
+                return String[].class;
+            case JSONB:
+                return Object.class;
+            default:
+                throw new IllegalArgumentException("Unknown data type: " + this);
         }
     }
 }

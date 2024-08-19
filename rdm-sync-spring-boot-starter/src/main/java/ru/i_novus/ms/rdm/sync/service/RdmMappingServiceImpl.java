@@ -1,8 +1,9 @@
 package ru.i_novus.ms.rdm.sync.service;
 
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
@@ -41,8 +42,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         }
 
         if (transformExpr != null) {
-            Class<?> type = getAttributeType(clientType).getDeclaringClass().getDeclaringClass();
-            return evaluateExpression(transformExpr, value, type);
+            return evaluateExpression(transformExpr, value, clientType);
         }
 
         Object result = null;
@@ -222,8 +222,16 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         return String.format("Error while casting %s to %s. Value: %s", rdmType, clientType, value);
     }
 
-    private Object evaluateExpression(String expr, Object input, Class<?> returnType) {
-        return new SpelExpressionParser().parseExpression(expr).getValue(new StandardEvaluationContext(), input, returnType);
+    private Object evaluateExpression(String expr, Object input, DataTypeEnum returnType) {
+        ExpressionParser parser = new SpelExpressionParser();
+
+        // Создание контекста для оценки SpEL выражения
+        SimpleEvaluationContext context = SimpleEvaluationContext
+                .forReadOnlyDataBinding()
+                .withRootObject(input)
+                .build();
+
+        return parser.parseExpression(expr).getValue(context, input, returnType.getJavaClass());
     }
 
 }
