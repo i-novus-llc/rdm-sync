@@ -42,7 +42,6 @@ import ru.i_novus.ms.rdm.sync.service.updater.DefaultRefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 
-import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -168,43 +167,6 @@ public class RdmClientSyncAutoConfiguration {
         return new ExportFileProvider();
     }
 
-    @Bean(name = "publishDictionaryTopicMessageListenerContainerFactory")
-    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
-    @ConditionalOnClass(name = "org.apache.activemq.ActiveMQConnectionFactory")
-    public DefaultJmsListenerContainerFactory unsharedPublishContainerFactory(ConnectionFactory connectionFactory) {
-
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setPubSubDomain(true);
-        factory.setSubscriptionShared(false);
-
-        return factory;
-    }
-
-    @Bean(name = "publishDictionaryTopicMessageListenerContainerFactory")
-    @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
-    @ConditionalOnClass(name = "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory")
-    public DefaultJmsListenerContainerFactory sharedPublishContainerFactory(ConnectionFactory connectionFactory) {
-
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setPubSubDomain(true);
-        factory.setSubscriptionShared(true);
-
-        return factory;
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
-    public DefaultJmsListenerContainerFactory rdmChangeDataQueueMessageListenerContainerFactory(ConnectionFactory connectionFactory) {
-
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setSessionTransacted(true);
-
-        return factory;
-    }
-
     @Bean
     @ConditionalOnProperty(name = "rdm-sync.publish.listener.enable", havingValue = "true")
     public PublishListener publishListener(RdmSyncService rdmSyncService) {
@@ -226,10 +188,9 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
-    public RdmChangeDataClient asyncRdmChangeDataClient(JmsTemplate jmsTemplate,
-                                                        @Value("${rdm-sync.change_data.queue:rdmChangeData}")
+    public RdmChangeDataClient asyncRdmChangeDataClient(@Value("${rdm-sync.change_data.queue:rdmChangeData}")
                                                                 String rdmChangeDataQueue) {
-        return new AsyncRdmChangeDataClient(jmsTemplate, rdmChangeDataQueue);
+        return new AsyncRdmChangeDataClient(rdmChangeDataQueue);
     }
 
     @Bean

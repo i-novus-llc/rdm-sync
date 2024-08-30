@@ -18,7 +18,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.persister.RetryingPageIterator;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 

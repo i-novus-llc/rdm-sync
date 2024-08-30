@@ -7,8 +7,7 @@ import lombok.Setter;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.springframework.data.domain.Sort;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,6 @@ public class LogCriteria extends RestCriteria {
 
     @ApiModelProperty("Дата записи журнала")
     @QueryParam("date")
-    @NotNull
     private LocalDate date;
 
     protected List<Sort.Order> getDefaultOrders() {

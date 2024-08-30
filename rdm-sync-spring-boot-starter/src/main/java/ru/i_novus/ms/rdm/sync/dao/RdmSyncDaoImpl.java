@@ -33,8 +33,8 @@ import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import javax.annotation.Nonnull;
-import javax.ws.rs.BadRequestException;
+import jakarta.annotation.Nonnull;
+import jakarta.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Clock;

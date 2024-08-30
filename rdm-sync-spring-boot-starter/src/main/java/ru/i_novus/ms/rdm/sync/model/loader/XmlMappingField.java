@@ -4,7 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlAttribute;
 
 @EqualsAndHashCode
 @ToString

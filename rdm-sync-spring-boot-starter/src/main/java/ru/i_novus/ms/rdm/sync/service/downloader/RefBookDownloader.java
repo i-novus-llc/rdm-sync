@@ -1,6 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.downloader;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public interface RefBookDownloader {
 
