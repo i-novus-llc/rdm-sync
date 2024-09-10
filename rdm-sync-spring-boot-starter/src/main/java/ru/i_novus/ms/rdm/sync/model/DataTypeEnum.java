@@ -1,6 +1,6 @@
 package ru.i_novus.ms.rdm.sync.model;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import ru.i_novus.ms.rdm.api.exception.RdmException;
 import ru.i_novus.ms.rdm.api.util.TimeUtils;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
@@ -17,6 +17,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Тип поля с соответствующими ему типами данных в БД.
+ */
 public enum DataTypeEnum {
 
     VARCHAR(asList("varchar", "text", "character varying"), String.class),
@@ -29,7 +32,6 @@ public enum DataTypeEnum {
     JSONB(singletonList("jsonb"), Object.class);
 
     private static final Map<String, DataTypeEnum> DATA_TYPE_MAP = new HashMap<>();
-
     static {
         for (DataTypeEnum type : DataTypeEnum.values()) {
             for (String dataType : type.dataTypes) {

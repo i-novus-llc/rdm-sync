@@ -23,8 +23,12 @@ public class RdmSourceLoaderService implements SourceLoaderService {
 
     @Override
     public void load() {
-        SyncSource source = new SyncSource("RDM", "RDM", url, RdmSyncSourceServiceFactory.class.getSimpleName());
+
+        final SyncSource source = new SyncSource("RDM", "RDM", url, RdmSyncSourceServiceFactory.class.getSimpleName());
+
         dao.save(source);
-        logger.info("load source with\n name: {} \n code: {} \n init_values: {} \n service: {}", source.getName(),source.getCode(),source.getInitValues(),source.getFactoryName());
+
+        logger.info("Load source with\n name: {} \n code: {} \n init_values: {} \n service: {}",
+                source.getName(),source.getCode(),source.getInitValues(),source.getFactoryName());
     }
 }

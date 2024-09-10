@@ -11,9 +11,12 @@ public class DataCriteria extends RestCriteria {
 
     private String code;
     private String version;
+    private Integer versionId;
+
     private Set<String> fields;
+
     /**
-     * Чтобы каждый раз не запрашивать структуру из НСИ, кэшируем ее при первом обращении
+     * Чтобы каждый раз не запрашивать структуру из НСИ, кэшируем её при первом обращении.
      */
     private RefBookStructure refBookStructure;
 
@@ -36,6 +39,14 @@ public class DataCriteria extends RestCriteria {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Integer getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Integer versionId) {
+        this.versionId = versionId;
     }
 
     public Set<String> getFields() {

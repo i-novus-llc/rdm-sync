@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum.*;
 
@@ -50,11 +52,12 @@ class FnsiSyncSourceServiceTest {
 
     @Test
     void testGetRefBook() throws URISyntaxException {
+
         String oid = "1.2.643.5.1.13.13.99.2.308";
         String version = "3.13";
-        RefBookStructure expectedStructure = new RefBookStructure(
+        final RefBookStructure expectedStructure = new RefBookStructure(
                 null,
-                Collections.singletonList("ID"),
+                singletonList("ID"),
                 Map.of(
                         "ID", INTEGER,
                         "SMOCOD", STRING,
@@ -62,10 +65,12 @@ class FnsiSyncSourceServiceTest {
                         "ADDRESS", STRING,
                         "PHONE", STRING,
                         "DATEEND", DATE,
-                        "DATEBEG", DATE));
+                        "DATEBEG", DATE
+                ));
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
-        RefBookVersion refBook = syncSourceService.getRefBook(oid, null);
+
+        final RefBookVersion refBook = syncSourceService.getRefBook(oid, null);
         assertEquals(oid, refBook.getCode());
         assertEquals("3.13", refBook.getVersion());
         assertEquals(LocalDateTime.of(2019, 10, 4, 17, 42), refBook.getFrom());
@@ -77,7 +82,8 @@ class FnsiSyncSourceServiceTest {
      */
     @Test
     void testGetNotExistingRefBook() throws URISyntaxException {
-        String identifier = "not_exists_id";
+
+        final String identifier = "not_exists_id";
         searchRefBookMockServer(identifier, new ClassPathResource("/fnsi_test_responses/not-found-ref.json"));
         assertNull(syncSourceService.getRefBook(identifier, null));
 
@@ -86,6 +92,7 @@ class FnsiSyncSourceServiceTest {
 
     @Test
     void testGetData() throws URISyntaxException {
+
         String oid = "1.2.643.5.1.13.13.99.2.359";
         int pageSize = 170;
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.359_refbook.json"));
@@ -94,12 +101,13 @@ class FnsiSyncSourceServiceTest {
         dataMockServer(oid, 2, pageSize, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.359_data_page_2.json"));
         dataMockServer(oid, 3, pageSize, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.359_data_page_3.json"));
 
-        DataCriteria dataCriteria = new DataCriteria();
+        final DataCriteria dataCriteria = new DataCriteria();
         dataCriteria.setCode(oid);
         dataCriteria.setPageSize(pageSize);
-        Set<String> fields = Set.of("ID", "NAME", "CODE", "RAZDEL", "DATE_BEGIN");
+        final Set<String> fields = Set.of("ID", "NAME", "CODE", "RAZDEL", "DATE_BEGIN");
         dataCriteria.setFields(fields);
-        dataCriteria.setRefBookStructure(new RefBookStructure(Collections.emptyList(), List.of("ID"), Map.of("ID", INTEGER, "NAME", STRING, "CODE", STRING, "RAZDEL", INTEGER, "DATE_BEGIN", DATE, "DATE_END", DATE)));
+        dataCriteria.setRefBookStructure(new RefBookStructure(
+                emptyList(), List.of("ID"), Map.of("ID", INTEGER, "NAME", STRING, "CODE", STRING, "RAZDEL", INTEGER, "DATE_BEGIN", DATE, "DATE_END", DATE)));
         Page<Map<String, Object>> data = syncSourceService.getData(dataCriteria);
 
         assertEquals(174, data.getTotalElements());
@@ -177,7 +185,8 @@ class FnsiSyncSourceServiceTest {
 
     @Test
     void testGetDiff() throws URISyntaxException {
-        RowDiff expected = new RowDiff(
+
+        final RowDiff expected = new RowDiff(
                 RowDiffStatusEnum.UPDATED,
                 Map.of(
                         "ID", 1,
@@ -186,8 +195,7 @@ class FnsiSyncSourceServiceTest {
                         "ADDRESS", "Республика Адыгея, г. Майкоп, ул. Советская, 185",
                         "PHONE", "(8772) 59-32-00",
                         "DATEBEG", LocalDate.of(2017, 11, 21)
-                )
-        );
+                ));
         String oid = "1.2.643.5.1.13.13.99.2.308";
 
         compareMockServer(
@@ -199,17 +207,26 @@ class FnsiSyncSourceServiceTest {
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_versions.json"));
         passportMockServer(oid, "3.13", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
 
-
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(
+        final VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(
                 oid,
                 "3.13",
                 "3.12",
                 Set.of("ID", "SMOCOD", "CODPVP", "ADDRESS", "PHONE", "DATEBEG"),
-                new RefBookStructure(Collections.emptyList(), List.of("ID"), Map.of("ID", INTEGER, "SMOCOD", STRING, "CODPVP", STRING, "ADDRESS", STRING, "PHONE", STRING, "DATEBEG", DATE, "DATEEND", DATE))
+                new RefBookStructure(
+                        emptyList(),
+                        List.of("ID"),
+                        Map.of(
+                                "ID", INTEGER,
+                                "SMOCOD", STRING,
+                                "CODPVP", STRING,
+                                "ADDRESS", STRING,
+                                "PHONE", STRING,
+                                "DATEBEG", DATE,
+                                "DATEEND", DATE
+                        ))
         );
         versionsDiffCriteria.setPageSize(200);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
-
 
         List<RowDiff> diffContent = diff.getRows().getContent();
 
@@ -217,9 +234,25 @@ class FnsiSyncSourceServiceTest {
         assertEquals(expected, diffContent.get(0));
         assertFalse(diff.isStructureChanged());
 
-        //проверка что используется только поля из критерия
-        VersionsDiffCriteria versionsDiffCriteria2 = new VersionsDiffCriteria(oid, "3.13", "3.12", Set.of("ID"),
-                new RefBookStructure(Collections.emptyList(), List.of("ID"), Map.of("ID", INTEGER, "SMOCOD", STRING, "CODPVP", STRING, "ADDRESS", STRING, "PHONE", STRING, "DATEBEG", DATE, "DATEEND", DATE)));
+        // Проверка использования только полей из критерия
+        final VersionsDiffCriteria versionsDiffCriteria2 = new VersionsDiffCriteria(
+                oid,
+                "3.13",
+                "3.12",
+                Set.of("ID"),
+                new RefBookStructure(
+                        emptyList(),
+                        List.of("ID"),
+                        Map.of(
+                                "ID", INTEGER,
+                                "SMOCOD", STRING,
+                                "CODPVP", STRING,
+                                "ADDRESS", STRING,
+                                "PHONE", STRING,
+                                "DATEBEG", DATE,
+                                "DATEEND", DATE
+                        ))
+        );
         versionsDiffCriteria2.setPageSize(200);
         assertEquals(Set.of("ID"), syncSourceService.getDiff(versionsDiffCriteria2).getRows().getContent().get(0).getRow().keySet());
 
@@ -227,6 +260,7 @@ class FnsiSyncSourceServiceTest {
 
     @Test
     void testGetDiffWithChangedStructure() throws URISyntaxException {
+
         String oid = "1.2.643.5.1.13.2.1.1.56";
         compareMockServer(
                 oid,
@@ -235,8 +269,14 @@ class FnsiSyncSourceServiceTest {
                 new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_v1.5_v1.6_diff.json")
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.6", "1.5", Set.of("ID", "CODE", "NAME"),
-                new RefBookStructure());
+
+        final VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(
+                oid,
+                "1.6",
+                "1.5",
+                Set.of("ID", "CODE", "NAME"),
+                new RefBookStructure()
+        );
         versionsDiffCriteria.setPageSize(200);
         assertTrue(syncSourceService.getDiff(versionsDiffCriteria).isStructureChanged());
     }
@@ -251,23 +291,32 @@ class FnsiSyncSourceServiceTest {
                 new ClassPathResource("/fnsi_test_responses/empty_diff.json")
         );
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.56_versions.json"));
-        VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(oid, "1.7", "1.6", Set.of("ID", "CODE", "NAME"), new RefBookStructure());
+
+        final VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(
+                oid,
+                "1.7",
+                "1.6",
+                Set.of("ID", "CODE", "NAME"),
+                new RefBookStructure()
+        );
         versionsDiffCriteria.setPageSize(200);
-        VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
+
+        final VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
         assertFalse(diff.isStructureChanged());
         assertTrue(diff.getRows().isEmpty());
     }
 
     @Test
     void testGetVersions() throws URISyntaxException {
+
         String oid = "1.2.643.5.1.13.2.1.1.725";
         versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_versions.json"));
         passportMockServer(oid, "1.7", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.7.json"));
         passportMockServer(oid, "1.8", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.8.json"));
         passportMockServer(oid, "1.9", new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.2.1.1.725_passport_v1.9.json"));
-        List<RefBookVersionItem> versions = syncSourceService.getVersions(oid);
+        final List<RefBookVersionItem> versions = syncSourceService.getVersions(oid);
 
-        List<RefBookVersionItem> expected = List.of(
+        final List<RefBookVersionItem> expected = List.of(
                 new RefBookVersionItem(
                         oid,
                         "1.7",
@@ -300,7 +349,7 @@ class FnsiSyncSourceServiceTest {
     }
 
     private void compareMockServer(String identifier, LocalDateTime fromDate, LocalDateTime toDate, Resource body) throws URISyntaxException {
-        DateTimeFormatter dtf =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         Map<String, String> params = Map.of("identifier", identifier, "date1", encode(dtf.format(fromDate)), "date2", encode(dtf.format(toDate)), "page", "1", "size", "200");
         fnsiApiMockServer("/rest/compare", params, body);
     }

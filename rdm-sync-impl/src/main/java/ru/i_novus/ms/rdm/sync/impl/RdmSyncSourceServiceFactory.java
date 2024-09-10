@@ -6,11 +6,15 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 
 public class RdmSyncSourceServiceFactory implements SyncSourceServiceFactory {
 
-    public RdmSyncSourceServiceFactory() {}
+    private final String url;
+
+    public RdmSyncSourceServiceFactory(String url) {
+        this.url = url;
+    }
 
     @Override
     public SyncSourceService createService(SyncSource source) {
-        return new RdmSyncSourceService();
+        return new RdmSyncSourceService(url);
     }
 
     @Override

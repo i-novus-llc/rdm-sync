@@ -19,7 +19,7 @@ public class RefBookStructure {
     private List<String> primaries;
 
     /**
-     * Ключ код атрибута, значение его тип
+     * Ключ код атрибута, значение - тип (значений) атрибута
      */
     private Map<String, AttributeTypeEnum> attributesAndTypes;
 
