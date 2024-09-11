@@ -19,9 +19,6 @@ import static ru.i_novus.ms.rdm.sync.impl.util.RdmMapper.*;
 @Slf4j
 public class RdmSyncSourceService implements SyncSourceService {
 
-    private static final String SEVERAL_REFBOOKS_WITH_CODE_FOUND =
-            "Several reference books with code '%s' found.";
-
     private final RestClient restClient;
 
     public RdmSyncSourceService(String url) {
@@ -57,7 +54,7 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            log.error(String.format("Error get version %s of refBook [%s]", version, code), e);
+            log.error("Error get version {} of refBook [{}]", version, code, e);
             throw new RuntimeException("Failed to get refBook", e);
         }
     }
@@ -72,7 +69,7 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            log.error(String.format("Error get last published version of refBook [%s]", code), e);
+            log.error("Error get last published version of refBook [{}]", code, e);
             throw new RuntimeException("Failed to get refBook", e);
         }
     }
@@ -101,7 +98,7 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            log.error(String.format("Error get versions of refBook [%s]", code), e);
+            log.error("Error get versions of refBook [{}]", code, e);
             throw new RuntimeException("Failed to get versions", e);
         }
     }
@@ -146,11 +143,8 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            final String errorMessage = String.format(
-                    "Error get data of version id=%d of rebook [%s]: ",
-                    criteria.getVersionId(), criteria.getCode()
-            );
-            log.error(errorMessage, e);
+            log.error("Error get data of version id={} of rebook [{}]: ",
+                    criteria.getVersionId(), criteria.getCode(), e);
             throw new RuntimeException("Failed to get data", e);
         }
     }
@@ -195,11 +189,7 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            final String errorMessage = String.format(
-                    "Error get structure compare between versions: old id=%d, new id=%d",
-                    oldVersionId, newVersionId
-            );
-            log.error(errorMessage, e);
+            log.error("Error get structure compare for versions: old id={}, new id={}", oldVersionId, newVersionId, e);
             throw new RuntimeException("Failed to get structure compare", e);
         }
     }
@@ -222,11 +212,7 @@ public class RdmSyncSourceService implements SyncSourceService {
                     .body(new ParameterizedTypeReference<>() {});
 
         } catch (Exception e) {
-            final String errorMessage = String.format(
-                    "Error get data compare between versions: old id=%d, new id=%d",
-                    oldVersionId, newVersionId
-            );
-            log.error(errorMessage, e);
+            log.error("Error get data compare for versions: old id={}, new id={}", oldVersionId, newVersionId, e);
             throw new RuntimeException("Failed to get data compare", e);
         }
     }

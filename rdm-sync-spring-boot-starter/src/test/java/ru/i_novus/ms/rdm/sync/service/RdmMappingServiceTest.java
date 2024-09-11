@@ -6,11 +6,11 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
-import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -148,8 +148,11 @@ class RdmMappingServiceTest {
     void testReference() {
         FieldMapping fm = new FieldMapping("name", "jsonb", "name");
 
-        Reference reference = new Reference("1", "Moscow");
-        Object result = rdmMappingService.map(AttributeTypeEnum.REFERENCE, fm, new Reference("1", "Moscow"));
+        final Map<String, Object> reference = Map.of(
+                "value", "1",
+                "displayValue", "Moscow"
+        );
+        Object result = rdmMappingService.map(AttributeTypeEnum.REFERENCE, fm, reference);
         assertEquals(reference, result);
 
         try {

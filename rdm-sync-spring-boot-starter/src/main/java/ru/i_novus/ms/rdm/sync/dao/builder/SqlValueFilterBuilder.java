@@ -1,11 +1,10 @@
 package ru.i_novus.ms.rdm.sync.dao.builder;
 
 import org.springframework.jdbc.core.support.AbstractSqlTypeValue;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
+import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,9 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
-import static org.springframework.util.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.springframework.util.StringUtils.replace;
-import static ru.i_novus.ms.rdm.api.util.StringUtils.addDoubleQuotes;
+import static ru.i_novus.ms.rdm.sync.util.StringUtils.addDoubleQuotes;
 
 /**
  * Построитель условий по фильтру значений поля.
@@ -69,7 +68,7 @@ public class SqlValueFilterBuilder extends SqlClauseBuilder {
                 parseIsNotNull(fieldName);
                 break;
             default:
-                throw new RdmException("Unknown type '" + filter.getType() + "' of field value filter");
+                throw new RdmSyncException("Unknown type '" + filter.getType() + "' of field value filter");
         }
     }
 

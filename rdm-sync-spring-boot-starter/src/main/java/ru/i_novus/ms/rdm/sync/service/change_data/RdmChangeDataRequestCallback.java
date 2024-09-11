@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -75,7 +75,7 @@ public abstract class RdmChangeDataRequestCallback {
             boolean stateChanged = dao.setLocalRecordsState(table, pk, pks, RdmSyncLocalRowState.PENDING, state);
             if (!stateChanged) {
                 logger.info("State change did not pass. Skipping callback on {}.", refBookCode);
-                throw new RdmException();
+                throw new RdmSyncException();
             }
         } finally {
             if (haveTrigger) {

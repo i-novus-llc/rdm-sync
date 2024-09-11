@@ -7,8 +7,6 @@ import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
-import ru.i_novus.platform.datastorage.temporal.enums.FieldType;
-import ru.i_novus.platform.datastorage.temporal.model.Reference;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -18,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lgalimova
@@ -109,7 +108,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             case FLOAT:
                 return Float.parseFloat(value.toString());
             default:
-                throw new ClassCastException(getClassCastError(FieldType.INTEGER, clientType, value));
+                throw new ClassCastException(getClassCastError(AttributeTypeEnum.INTEGER, clientType, value));
         }
     }
 
@@ -139,7 +138,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
                 return LocalDate.parse(valueStr, dateTimeFormatter);
             }
             default:
-                throw new ClassCastException(getClassCastError(FieldType.STRING, clientType, value));
+                throw new ClassCastException(getClassCastError(AttributeTypeEnum.STRING, clientType, value));
         }
     }
 
@@ -160,10 +159,10 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             } else if (value instanceof LocalDate || value instanceof LocalDateTime) {
                 return ISO_DATE_FORMATTER.format((Temporal) value);
             } else {
-                throw new ClassCastException(getClassCastError(FieldType.DATE, clientType, value));
+                throw new ClassCastException(getClassCastError(AttributeTypeEnum.DATE, clientType, value));
             }
         } else {
-            throw new ClassCastException(getClassCastError(FieldType.DATE, clientType, value));
+            throw new ClassCastException(getClassCastError(AttributeTypeEnum.DATE, clientType, value));
         }
     }
 
@@ -175,7 +174,7 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         } else if (clientType.equals(DataTypeEnum.BOOLEAN)) {
             return Boolean.parseBoolean(value.toString());
         } else {
-            throw new ClassCastException(getClassCastError(FieldType.BOOLEAN, clientType, value));
+            throw new ClassCastException(getClassCastError(AttributeTypeEnum.BOOLEAN, clientType, value));
         }
     }
 
@@ -185,21 +184,23 @@ public class RdmMappingServiceImpl implements RdmMappingService {
         } else if (clientType.equals(DataTypeEnum.FLOAT)) {
             return Float.parseFloat(value.toString());
         } else {
-            throw new ClassCastException(getClassCastError(FieldType.FLOAT, clientType, value));
+            throw new ClassCastException(getClassCastError(AttributeTypeEnum.FLOAT, clientType, value));
         }
     }
 
     private Object mapReference(DataTypeEnum clientType, Object value) {
+
         String refValue;
-        Reference reference = null;
-        if (value instanceof Reference) {
-            reference = (Reference) value;
-            refValue = reference.getValue();
+        Map<String, Object> reference = null; // ru.i_novus.platform.datastorage.temporal.model.Reference
+        if (value instanceof Map) {
+            reference = (Map<String, Object>) value;
+            refValue = (String) reference.get("value");
         } else {
             if (value == null)
                 return null;
             refValue = value.toString();
         }
+
         switch (clientType) {
             case VARCHAR:
                 return refValue;
@@ -214,11 +215,11 @@ public class RdmMappingServiceImpl implements RdmMappingService {
             case JSONB:
                 return reference == null ? refValue : reference;
             default:
-                throw new ClassCastException(getClassCastError(FieldType.REFERENCE, clientType, value));
+                throw new ClassCastException(getClassCastError(AttributeTypeEnum.REFERENCE, clientType, value));
         }
     }
 
-    private String getClassCastError(FieldType rdmType, DataTypeEnum clientType, Object value) {
+    private String getClassCastError(AttributeTypeEnum rdmType, DataTypeEnum clientType, Object value) {
         return String.format("Error while casting %s to %s. Value: %s", rdmType, clientType, value);
     }
 

@@ -1,5 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import jakarta.annotation.Nonnull;
+import jakarta.ws.rs.BadRequestException;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -17,13 +19,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.model.AbstractCriteria;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
@@ -33,8 +35,6 @@ import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import jakarta.annotation.Nonnull;
-import jakarta.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Clock;
@@ -47,8 +47,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static ru.i_novus.ms.rdm.api.util.StringUtils.addDoubleQuotes;
 import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.*;
+import static ru.i_novus.ms.rdm.sync.util.StringUtils.addDoubleQuotes;
 
 /**
  * @author lgalimova
@@ -211,7 +211,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         if (list.isEmpty())
-            throw new RdmException("No table '" + table + "' in schema '" + schema + "'.");
+            throw new RdmSyncException("No table '" + table + "' in schema '" + schema + "'.");
 
         return list;
     }
@@ -841,7 +841,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                     return map;
                 });
 
-        RestCriteria restCriteria = new AbstractCriteria();
+        final RestCriteria restCriteria = new DataCriteria();
         restCriteria.setPageNumber(dataCriteria.getOffset() / limit);
         restCriteria.setPageSize(limit);
         restCriteria.setOrders(Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(toList()));
@@ -885,7 +885,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String query = String.format("SELECT %s FROM %s WHERE %s = :pv", addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), schemaTable, addDoubleQuotes(pk));
         List<String> list = namedParameterJdbcTemplate.query(query, Map.of("pv", pv), (rs, rowNum) -> rs.getString(1));
         if (list.size() > 1)
-            throw new RdmException("Cannot identify record by " + pk);
+            throw new RdmSyncException("Cannot identify record by " + pk);
 
         return list.stream().findAny().map(RdmSyncLocalRowState::valueOf).orElse(null);
     }

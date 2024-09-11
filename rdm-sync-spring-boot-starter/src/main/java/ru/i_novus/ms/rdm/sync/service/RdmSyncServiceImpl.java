@@ -1,12 +1,19 @@
 package ru.i_novus.ms.rdm.sync.service;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
@@ -26,13 +33,6 @@ import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -219,7 +219,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                 out.flush();
 
             } catch (JAXBException e) {
-                throw new RdmException(e); // Не выбросится
+                throw new RdmSyncException(e); // Не выбросится
             }
         };
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();

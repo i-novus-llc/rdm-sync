@@ -1,10 +1,10 @@
 package ru.i_novus.ms.rdm.sync.model;
 
 import org.apache.commons.lang3.StringUtils;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.util.TimeUtils;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
+import ru.i_novus.ms.rdm.sync.util.TimeUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -56,6 +56,12 @@ public enum DataTypeEnum {
         return clazz;
     }
 
+    /**
+     * Преобразование списка строк в список значений соответствующего типа.
+     *
+     * @param list список строк со значениями
+     * @return Список значений
+     */
     public List<Serializable> toValues(List<String> list) {
         switch (this) {
             case BOOLEAN:
@@ -69,15 +75,28 @@ public enum DataTypeEnum {
             case VARCHAR:
                 return new ArrayList<>(list);
             default:
-                throw new RdmException("Cast from string to " + this.name() + " not supported.");
+                throw new RdmSyncException("Cast from string to " + this.name() + " not supported.");
         }
     }
 
+    /**
+     * Преобразование строки в значение соответствующего типа.
+     *
+     * @param s строка со значением
+     * @return Значение
+     */
     public Serializable toValue(String s) {
         return toValues(singletonList(s)).get(0);
     }
 
+    /**
+     * Преобразование списка строк в набор значений с соответствующими фильтрами.
+     *
+     * @param list список строк
+     * @return Набор значений
+     */
     public Map<FilterTypeEnum, List<Object>> toMap(List<String> list) {
+
         Map<FilterTypeEnum, List<Object>> result = new HashMap<>(FilterTypeEnum.size());
         FilterTypeEnum.list().forEach(type -> result.put(type, new ArrayList<>(list.size())));
 
@@ -104,7 +123,7 @@ public enum DataTypeEnum {
                 addListValues(list, rawString -> Arrays.stream(rawString.trim().split(";")).map(Integer::valueOf).collect(toList()).toArray(new Integer[0]), result);
                 break;
             default:
-                throw new RdmException("Cast from string to " + this.name() + " not supported.");
+                throw new RdmSyncException("Cast from string to " + this.name() + " not supported.");
         }
 
         return result;
@@ -114,13 +133,32 @@ public enum DataTypeEnum {
         return StringUtils.isEmpty(value) ? null : value;
     }
 
-    private void addListValues(List<String> list, Function<String, Object> converter, Map<FilterTypeEnum, List<Object>> result) {
+    /**
+     * Преобразование списка строк в значения и добавление этих значений в набор.
+     *
+     * @param list      список строк
+     * @param converter функция преобразования
+     * @param result    набор значений
+     */
+    private void addListValues(List<String> list,
+                               Function<String, Object> converter,
+                               Map<FilterTypeEnum, List<Object>> result) {
         list.stream()
                 .filter(item -> !StringUtils.isEmpty(item))
                 .forEach(item -> addItemValue(item, converter, result));
     }
 
-    private void addItemValue(String item, Function<String, Object> converter, Map<FilterTypeEnum, List<Object>> result) {
+    /**
+     * Преобразование строки в значение и добавление этого значения в набор.
+     *
+     * @param item      строка
+     * @param converter функция преобразования
+     * @param result    набор значений
+     */
+    private void addItemValue(String item,
+                              Function<String, Object> converter,
+                              Map<FilterTypeEnum, List<Object>> result) {
+
         int index = (item.indexOf("$") == 0) ? item.indexOf("|", 1) : -1;
         String mask = (index > 0) ? item.substring(1, index) : FilterTypeEnum.EQUAL.getMask();
         FilterTypeEnum filterType = FilterTypeEnum.fromMask(mask);
@@ -155,7 +193,7 @@ public enum DataTypeEnum {
             case BOOLEAN:
                 return BOOLEAN;
             default:
-                throw new RdmException(String.format("Attribute type '%s' is not supported", type));
+                throw new RdmSyncException(String.format("Attribute type '%s' is not supported", type));
         }
     }
 }

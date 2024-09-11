@@ -1,12 +1,12 @@
 package ru.i_novus.ms.rdm.sync.model.loader;
 
-import lombok.EqualsAndHashCode;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
-
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.EqualsAndHashCode;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class XmlMapping {
             JAXB_CONTEXT = JAXBContext.newInstance(XmlMapping.class);
         } catch (JAXBException e) {
 //          Не выбросится
-            throw new RdmException(e);
+            throw new RdmSyncException(e);
         }
     }
 
