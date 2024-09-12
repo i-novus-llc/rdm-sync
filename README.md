@@ -269,8 +269,8 @@ rdm-sync.auto-create.refbooks[2].type=RDM_NOT_VERSIONED
             name="Реестр страховых медицинских организаций (ФОМС)"
             range="*-1.42">
       <field sys-field="id" sys-data-type="integer" rdm-field="ID"/>
-     <field sys-field="age" sys-data-type="integer" rdm-field="S_AGE" transform_expr="root == 'один' ? 1 :  #root == 'два' ? 2 :  #root == 'три' ? 3 : 0"/>
-      <field sys-field="is_work" sys-data-type="booleean" rdm-field="IS_WORK" transform_expr="#root == null ? null : (#root == 1 || #root == 'истина') ? true : (#root == 0 || #root == 'ложь') ? false : false"/>
+     <field sys-field="age" sys-data-type="integer" rdm-field="S_AGE" transform-expr="root == 'один' ? 1 :  #root == 'два' ? 2 :  #root == 'три' ? 3 : 0"/>
+      <field sys-field="is_work" sys-data-type="boolean" rdm-field="IS_WORK" transform-expr="#root == null ? null : (#root == 1 || #root == 'истина') ? true : (#root == 0 || #root == 'ложь') ? false : false"/>
    </refbook>
 </mapping>
 ``````
