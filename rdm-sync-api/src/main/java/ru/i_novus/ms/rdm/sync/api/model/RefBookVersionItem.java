@@ -19,6 +19,7 @@ public class RefBookVersionItem implements Serializable {
     private Integer versionId;
 
     public RefBookVersionItem() {
+        // Nothing to do.
     }
 
     public RefBookVersionItem(String code, String version, LocalDateTime from, LocalDateTime to, Integer versionId) {

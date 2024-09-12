@@ -26,7 +26,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.RdmMappingServiceImpl;
 import ru.i_novus.ms.rdm.sync.service.VersionMappingServiceImpl;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

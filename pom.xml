@@ -23,12 +23,10 @@
         </license>
     </licenses>
 
-
-
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform-parent</artifactId>
-        <version>5.3.3</version>
+        <version>6.1.1</version>
     </parent>
 
     <scm>
@@ -42,7 +40,6 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <encoding>UTF-8</encoding>
 
-        <rdm.version>4.24.1</rdm.version>
         <n2o.version>7.23.0</n2o.version>
 
         <lombok.version>1.18.24</lombok.version>
@@ -52,7 +49,6 @@
         <commons.text.version>1.6</commons.text.version>
 
         <jaxws.version>2.3.2</jaxws.version>
-        <javax.activation.version>1.1.1</javax.activation.version>
 
         <xmlunit.version>1.6</xmlunit.version>
     </properties>
@@ -99,12 +95,6 @@
             </dependency>
 
             <dependency>
-                <groupId>ru.i-novus.ms.rdm</groupId>
-                <artifactId>rdm-api</artifactId>
-                <version>${rdm.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>net.n2oapp.framework</groupId>
                 <artifactId>n2o-spring-boot-starter</artifactId>
                 <version>${n2o.version}</version>
@@ -117,9 +107,8 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.activation</groupId>
+                <groupId>jakarta.activation</groupId>
                 <artifactId>activation</artifactId>
-                <version>${javax.activation.version}</version>
             </dependency>
 
             <dependency>

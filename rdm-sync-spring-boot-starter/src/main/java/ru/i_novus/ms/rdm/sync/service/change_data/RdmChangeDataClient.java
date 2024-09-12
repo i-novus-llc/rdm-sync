@@ -5,9 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
-import ru.i_novus.ms.rdm.api.model.refdata.RdmChangeDataRequest;
-import ru.i_novus.ms.rdm.api.model.refdata.Row;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
@@ -103,7 +101,7 @@ public abstract class RdmChangeDataClient {
                         list, RdmSyncLocalRowState.DIRTY, RdmSyncLocalRowState.PENDING);
                 if (!stateChanged) {
                     logger.info("State change did not pass. Skipping request on {}.", refBookCode);
-                    throw new RdmException();
+                    throw new RdmSyncException();
                 }
             } finally {
                 if (haveTrigger) {
@@ -167,7 +165,7 @@ public abstract class RdmChangeDataClient {
             Map<String, Object> map = toMap.apply(t);
             Object primaryValue = map.get(primaryField);
             if (primaryValue == null)
-                throw new RdmException("No primary key found. Primary field: " + primaryField);
+                throw new RdmSyncException("No primary key found. Primary field: " + primaryField);
 
             if (!dao.isIdExists(localTable, primaryField, primaryValue))
 
@@ -193,18 +191,58 @@ public abstract class RdmChangeDataClient {
 
         return dao.getVersionMappings().stream()
                 .filter(vm -> vm.getTable().equals(table))
-                .findAny().orElseThrow(() -> new RdmException("No table " + table + " found."));
+                .findAny().orElseThrow(() -> new RdmSyncException("No table " + table + " found."));
     }
 
-    static <T extends Serializable> RdmChangeDataRequest toRdmChangeDataRequest(
-            String refBookCode, List<? extends T> addUpdate, List<? extends T> delete,
-            Function<? super T, Map<String, Object>> toMap) {
+    /**
+     * Формирование запроса на изменение записей справочника в RDM.
+     * <p>
+     * Возвращаемое значение должно соответствовать ru.i_novus.ms.rdm.api.model.refdata.RdmChangeDataRequest.
+     *
+     * @param refBookCode код справочника
+     * @param addUpdate   добавляемые/обновляемые записи
+     * @param delete      удаляемые записи
+     * @param toMap       конвертер в формат записей RDM
+     * @return Запрос на изменение
+     */
+    public static <T extends Serializable> Map<String, Object> toRdmChangeDataRequest(
+            String refBookCode,
+            List<? extends T> addUpdate,
+            List<? extends T> delete,
+            Function<? super T, Map<String, Object>> toMap
+    ) {
+        final List<Map<String, Object>> toAddUpdateRows = new ArrayList<>();
+        final List<Map<String, Object>> toDeleteRows = new ArrayList<>();
+        for (T t : addUpdate) toAddUpdateRows.add(toRdmRequestRow(toMap.apply(t)));
+        for (T t : delete) toDeleteRows.add(toRdmRequestRow(toMap.apply(t)));
 
-        List<Row> addUpdateRows = new ArrayList<>();
-        List<Row> toDeleteRows = new ArrayList<>();
-        for (T t : addUpdate) addUpdateRows.add(new Row(toMap.apply(t)));
-        for (T t : delete) toDeleteRows.add(new Row(toMap.apply(t)));
-
-        return new RdmChangeDataRequest(refBookCode, addUpdateRows, toDeleteRows);
+        return toRdmChangeDataRequest(refBookCode, toAddUpdateRows, toDeleteRows);
     }
+
+    /**
+     * Формирование записи для изменения в RDM.
+     * <p>
+     * Возвращаемое значение должно соответствовать ru.i_novus.ms.rdm.api.model.refdata.Row.
+     *
+     * @param data данные для записи
+     * @return Запись
+     */
+    private static Map<String, Object> toRdmRequestRow(final Map<String, Object> data) {
+        return Map.of(
+                "data", data
+        );
+    }
+
+    private static Map<String, Object> toRdmChangeDataRequest(
+            final String refBookCode,
+            final List<Map<String, Object>> toAddUpdateRows,
+            final List<Map<String, Object>> toDeleteRows
+    ) {
+        return Map.of(
+                "refBookCode", refBookCode,
+                "rowsToAddOrUpdate", toAddUpdateRows,
+                "rowsToDelete", toDeleteRows
+        );
+    }
+
 }

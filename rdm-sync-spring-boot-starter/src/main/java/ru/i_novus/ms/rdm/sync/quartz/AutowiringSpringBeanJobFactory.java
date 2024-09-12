@@ -5,7 +5,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 public class AutowiringSpringBeanJobFactory extends SpringBeanJobFactory {
 

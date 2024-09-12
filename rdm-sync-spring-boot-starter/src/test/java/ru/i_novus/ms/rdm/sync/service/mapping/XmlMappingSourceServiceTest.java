@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -87,7 +87,7 @@ class XmlMappingSourceServiceTest {
     @Test
     void testXmlMappingLoadError() {
         xmlMappingSourceService.setRdmMappingXmlPath("");
-        Assertions.assertThrows(RdmException.class, () -> xmlMappingSourceService.getMappings());
+        Assertions.assertThrows(RdmSyncException.class, () -> xmlMappingSourceService.getMappings());
     }
 
 }

@@ -4,9 +4,9 @@ import io.swagger.annotations.*;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 /**

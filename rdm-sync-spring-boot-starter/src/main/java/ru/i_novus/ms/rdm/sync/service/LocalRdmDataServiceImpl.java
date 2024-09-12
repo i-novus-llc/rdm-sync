@@ -3,7 +3,7 @@ package ru.i_novus.ms.rdm.sync.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
@@ -17,10 +17,10 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriInfo;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +79,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, null);
         FieldMapping fieldMapping = dao.getFieldMappings(versionMapping.getId()).stream()
                 .filter(fm -> fm.getSysField().equals(versionMapping.getPrimaryField()))
-                .findFirst().orElseThrow(() -> new RdmException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
+                .findFirst().orElseThrow(() -> new RdmSyncException(versionMapping.getPrimaryField() + " not found in RefBook with code " + refBookCode));
         DataTypeEnum fieldType = DataTypeEnum.getByDataType(fieldMapping.getSysDataType());
 
         Serializable primaryValue = fieldType.toValue(primaryKey);
@@ -140,7 +140,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, version);
         if (versionMapping == null)
-            throw new RdmException("RefBook with code '" + refBookCode + "' is not maintained in system.");
+            throw new RdmSyncException("RefBook with code '" + refBookCode + "' is not maintained in system.");
 
         return versionMapping;
     }

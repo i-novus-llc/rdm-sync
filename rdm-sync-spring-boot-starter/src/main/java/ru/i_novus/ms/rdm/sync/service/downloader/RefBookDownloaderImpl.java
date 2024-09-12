@@ -18,7 +18,7 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.persister.RetryingPageIterator;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,20 +79,26 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
     }
 
     private DownloadResult downloadVersion(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
+
         rdmSyncDao.createVersionTempDataTbl(tempTableName, versionMapping.getTable(), versionMapping.getSysPkColumn(), versionMapping.getPrimaryField());
-        DataCriteria dataCriteria = new DataCriteria();
-        dataCriteria.setFields(getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase()));
-        dataCriteria.setVersion(refBookVersion.getVersion());
+
+        final DataCriteria dataCriteria = new DataCriteria();
         dataCriteria.setCode(refBookVersion.getCode());
+        dataCriteria.setVersion(refBookVersion.getVersion());
+        dataCriteria.setVersionId(refBookVersion.getVersionId());
+
+        dataCriteria.setFields(getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase()));
         dataCriteria.setPageSize(maxSize);
         dataCriteria.setRefBookStructure(refBookVersion.getStructure());
 
-        RetryingPageIterator<Map<String, Object>> iter = new RetryingPageIterator<>(new PageIterator<>
-                (syncSourceService::getData, dataCriteria, true),
-                tries, timeout);
-        Map<String, Object> defaultValues = getDefaultValues(refBookVersion, fieldMappings);
+        final RetryingPageIterator<Map<String, Object>> iter = new RetryingPageIterator<>(
+                new PageIterator<>(syncSourceService::getData, dataCriteria, true),
+                tries,
+                timeout
+        );
+        final Map<String, Object> defaultValues = getDefaultValues(refBookVersion, fieldMappings);
         while (iter.hasNext()) {
-            Page<Map<String, Object>> nextPage = iter.next();
+            final Page<Map<String, Object>> nextPage = iter.next();
             rdmSyncDao.insertVersionAsTempData(tempTableName, nextPage.getContent().stream().map(row -> {
                 if (!CollectionUtils.isEmpty(defaultValues)) {
                     row = new LinkedHashMap<>(row);
@@ -100,33 +106,45 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
                 }
                 return mapRow(row, refBookVersion, fieldMappings, versionMapping.isMatchCase());
             }).collect(Collectors.toList()));
+
             logProgress(refBookVersion.getCode(), dataCriteria, nextPage);
         }
         return new DownloadResult(tempTableName, DownloadResultType.VERSION);
     }
 
     private Map<String, Object> getDefaultValues(RefBookVersion refBookVersion, List<FieldMapping> fieldMappings) {
-        return fieldMappings
-                .stream()
+
+        return fieldMappings.stream()
                 .filter(fieldMapping -> fieldMapping.getDefaultValue() != null && !refBookVersion.getStructure().getAttributesAndTypes().keySet().contains(fieldMapping.getRdmField()))
                 .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getDefaultValue));
     }
 
     private DownloadResult downloadDiff(RefBookVersion refBookVersion, String tempTableName, VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
-        LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(refBookVersion.getCode());
-        Set<String> usesRefBookFields = getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase());
-        VersionsDiffCriteria criteria = new VersionsDiffCriteria(refBookVersion.getCode(), refBookVersion.getVersion(), actualLoadedVersion.getVersion(), usesRefBookFields, refBookVersion.getStructure());
+
+        final LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(refBookVersion.getCode());
+        final Set<String> usesRefBookFields = getUsesRefBookFields(fieldMappings, refBookVersion.getStructure(), versionMapping.isMatchCase());
+
+        final VersionsDiffCriteria criteria = new VersionsDiffCriteria(
+                refBookVersion.getCode(),
+                refBookVersion.getVersion(),
+                actualLoadedVersion.getVersion(),
+                usesRefBookFields,
+                refBookVersion.getStructure()
+        );
         criteria.setPageSize(maxSize);
+
         if(syncSourceService.getDiff(criteria).isStructureChanged()) {
             logger.info("structure refbook {} version {} was changed, downloading full version", refBookVersion.getCode(), refBookVersion.getVersion());
             return downloadVersion(refBookVersion,  tempTableName, versionMapping, fieldMappings);
         }
+
         rdmSyncDao.createDiffTempDataTbl(tempTableName, versionMapping.getTable());
-        RetryingPageIterator<RowDiff> iter = new RetryingPageIterator<>(new PageIterator<>
+
+        final RetryingPageIterator<RowDiff> iter = new RetryingPageIterator<>(new PageIterator<>
                 (diffCriteria -> syncSourceService.getDiff(diffCriteria).getRows(), criteria, true),
                 tries, timeout);
         while (iter.hasNext()) {
-            Page<? extends RowDiff> page = iter.next();
+            final Page<? extends RowDiff> page = iter.next();
             List<Map<String, Object>> newRows = new ArrayList<>();
             List<Map<String, Object>> editedRows = new ArrayList<>();
             List<Map<String, Object>> deletedRows = new ArrayList<>();
@@ -143,7 +161,9 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
                         break;
                 }
             });
+
             rdmSyncDao.insertDiffAsTempData(tempTableName, newRows, editedRows, deletedRows);
+
             logProgress(refBookVersion.getCode(), criteria, page);
         }
         return new DownloadResult(tempTableName, DownloadResultType.DIFF);

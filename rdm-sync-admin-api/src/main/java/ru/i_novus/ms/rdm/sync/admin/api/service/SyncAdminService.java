@@ -7,8 +7,8 @@ import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceRefBook;
 import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceRefBookCriteria;
 import ru.i_novus.ms.rdm.sync.admin.api.model.source.SyncSourceVersionCriteria;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * Сервис настройки синхронизации справочников.

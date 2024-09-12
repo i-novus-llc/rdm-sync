@@ -1,17 +1,17 @@
 package ru.i_novus.ms.rdm.sync.service.mapping;
 
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.i_novus.ms.rdm.api.exception.RdmException;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
 import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.init.RdmSyncInitializer;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class XmlMappingSourceService implements MappingSourceService {
 
         } catch (IOException | JAXBException e) {
             logger.error("xml mapping load error ", e);
-            throw new RdmException(e);
+            throw new RdmSyncException(e);
         }
     }
 

@@ -1,6 +1,6 @@
 package ru.i_novus.ms.rdm.sync.api.exception;
 
-public class MappingOverlapsException extends RuntimeException {
+public class MappingOverlapsException extends RdmSyncException {
 
     private static final String MESSAGE = "Overlapping version ranges: %s and %s detected for refBookCode: %s";
 

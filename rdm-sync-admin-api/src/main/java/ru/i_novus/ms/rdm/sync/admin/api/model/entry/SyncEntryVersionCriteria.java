@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.i_novus.ms.rdm.sync.admin.api.model.AbstractCriteria;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 import java.util.Objects;
 
 /**

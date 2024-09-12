@@ -1,6 +1,6 @@
 package ru.i_novus.ms.rdm.sync.api.exception;
 
-public class NoUniqueDefaultMappingException extends RuntimeException {
+public class NoUniqueDefaultMappingException extends RdmSyncException {
 
     private static final String MESSAGE = "The default mapping, the one with range=null, should be unique. See refBook %s";
 
