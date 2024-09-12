@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.MappingRangeValidator;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@DependsOn("liquibaseRdm")
 public class RdmSyncInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializer.class);
