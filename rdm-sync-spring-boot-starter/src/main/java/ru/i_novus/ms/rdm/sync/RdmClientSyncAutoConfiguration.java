@@ -1,7 +1,6 @@
 package ru.i_novus.ms.rdm.sync;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.jms.ConnectionFactory;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +18,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -133,17 +131,6 @@ public class RdmClientSyncAutoConfiguration {
     @ConditionalOnMissingBean
     public RdmSyncDao rdmSyncDao() {
         return new RdmSyncDaoImpl();
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
-    public DefaultJmsListenerContainerFactory rdmChangeDataQueueMessageListenerContainerFactory(ConnectionFactory connectionFactory) {
-
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setSessionTransacted(true);
-
-        return factory;
     }
 
     @Bean
