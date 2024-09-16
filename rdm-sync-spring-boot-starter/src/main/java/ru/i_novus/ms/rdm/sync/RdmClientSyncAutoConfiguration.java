@@ -17,7 +17,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jms.annotation.EnableJms;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -47,7 +46,6 @@ import java.util.Map;
 @ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncLiquibaseParameters.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
-@EnableJms
 @Slf4j
 public class RdmClientSyncAutoConfiguration {
 
