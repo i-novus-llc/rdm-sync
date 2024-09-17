@@ -9,28 +9,6 @@
         <field sys-field="ref" rdm-field="ref" sys-data-type="varchar"/>
     </refbook>
 
-    <refbook code="1.2.643.5.1.13.2.1.1.726" unique-sys-field="ID" deleted-field="deleted_ts" mapping-version="1"
-             type="NOT_VERSIONED" source="FNSI">
-        <field sys-field="ID" rdm-field="ID" sys-data-type="integer"/>
-        <field sys-field="MNN_ID" rdm-field="MNN_ID" sys-data-type="integer"/>
-        <field sys-field="DRUG_FORM_ID" rdm-field="DRUG_FORM_ID" sys-data-type="integer"/>
-        <field sys-field="DOSE_ID" rdm-field="DOSE_ID" sys-data-type="integer" ignore-if-not-exists="true"/>
-        <field sys-field="IGNORED_FIELD" rdm-field="IGNORED_FIELD" sys-data-type="integer" ignore-if-not-exists="true"/>
-    </refbook>
-
-    <refbook code="1.2.643.5.1.13.13.11.1040"
-             unique-sys-field="name"
-             type="SIMPLE_VERSIONED"
-             sys-table="reference.gender"
-             source="FNSI"
-             name="Пол пациента"
-             mapping-version="2"
-             range="*">
-        <field sys-field="src_id" sys-data-type="integer" rdm-field="ID" default-value="-1"/>
-        <field sys-field="name" sys-data-type="varchar" rdm-field="NAME"/>
-        <field sys-field="code" sys-data-type="varchar" rdm-field="CODE" ignore-if-not-exists="true"/>
-    </refbook>
-
     <refbook code="XMLEK003" unique-sys-field="id" deleted-field="deleted_ts" mapping-version="1"
              type="SIMPLE_VERSIONED" source="RDM">
         <field sys-field="id" rdm-field="id" sys-data-type="integer"/>
