@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "id": 110,
+      "optLockValue": 1,
+      "refBookId": 11,
+      "code": "A_REF",
+      "type": "DEFAULT",
+      "version": "1.0",
+      "fromDate": "2022-04-05T06:07:08",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Простой справочник",
+        "shortName": "Справочник"
+      },
+      "editDate": "2022-04-05T06:07:07",
+      "removable": false,
+      "lastPublishedVersionId": 111,
+      "lastPublishedVersion": "1.1",
+      "lastPublishedVersionFromDate": "2023-04-05T06:07:08",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    },
+    {
+      "id": 111,
+      "optLockValue": 1,
+      "refBookId": 11,
+      "code": "A_REF",
+      "type": "DEFAULT",
+      "version": "1.1",
+      "fromDate": "2023-04-05T06:07:08",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Простой справочник",
+        "shortName": "Справочник"
+      },
+      "editDate": "2023-04-05T06:07:07",
+      "removable": false,
+      "lastPublishedVersionId": 111,
+      "lastPublishedVersion": "1.1",
+      "lastPublishedVersionFromDate": "2023-04-05T06:07:08",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    }
+  ]
+}
