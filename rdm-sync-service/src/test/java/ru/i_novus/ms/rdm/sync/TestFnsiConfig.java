@@ -11,7 +11,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
@@ -26,7 +25,6 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,15 +34,10 @@ import java.util.Map;
 @TestConfiguration
 public class TestFnsiConfig {
 
-    public static final String FNSI_URL = "https://fnsi.mock.ru/port";
-
     public static final String OID ="1.2.643.5.1.13.2.1.1.725";
     public static final String XML_OID ="1.2.643.5.1.13.2.1.1.726";
 
     private final FnsiSourceProperty property;
-
-    //@Autowired
-    //private ObjectMapper objectMapper;
 
     @Autowired
     private RdmSyncDao rdmSyncDao;
@@ -67,7 +60,7 @@ public class TestFnsiConfig {
 
         final RestTemplate restTemplate = fnsiRestTemplate();
 
-        MockRestServiceServer mockServer = MockRestServiceServer
+        final MockRestServiceServer mockServer = MockRestServiceServer
                 .bindTo(restTemplate)
                 .ignoreExpectOrder(true)
                 .build();

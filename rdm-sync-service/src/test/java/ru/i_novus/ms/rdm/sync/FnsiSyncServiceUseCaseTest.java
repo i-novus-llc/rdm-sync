@@ -201,12 +201,14 @@ public class FnsiSyncServiceUseCaseTest {
     }
 
     private ResponseEntity<String> startSync(String refCode) {
-        HttpHeaders headers = new HttpHeaders();
+
+        final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return restTemplate.postForEntity(baseUrl + "/update/" + refCode, new HttpEntity<>("{}", headers), String.class);
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getVersionedData(String refCode, String version) {
-        return restTemplate.getForEntity(baseUrl + "/data/" + refCode +"/version/"+version, Map.class).getBody();
+        return restTemplate.getForEntity(baseUrl + "/data/" + refCode + "/version/" + version, Map.class).getBody();
     }
 }

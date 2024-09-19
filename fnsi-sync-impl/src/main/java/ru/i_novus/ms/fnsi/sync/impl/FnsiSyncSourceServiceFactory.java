@@ -11,30 +11,34 @@ import java.util.Map;
 
 public class FnsiSyncSourceServiceFactory implements SyncSourceServiceFactory {
 
-
     private final RestTemplate restTemplate;
 
     private final ObjectMapper mapper;
 
     public FnsiSyncSourceServiceFactory(RestTemplate restTemplate) {
+
         this.restTemplate = restTemplate;
         this.mapper = new ObjectMapper();
     }
 
-
     @Override
     public SyncSourceService createService(SyncSource source) {
 
-        Map<String, String> initValues = null;
+        final Map<String, String> initValues = getInitValues(source);
+        final String fnsiUrl = initValues.get("url");
+        final String userKey = initValues.get("userKey");
+
+        return new FnsiSyncSourceService(restTemplate, fnsiUrl, userKey);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getInitValues(SyncSource source) {
         try {
-            initValues = mapper.readValue(source.getInitValues(), Map.class);
+            return mapper.readValue(source.getInitValues(), Map.class);
+
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
-        String userKey = initValues.get("userKey");
-        String fnsiUrl = initValues.get("url");
-
-        return new FnsiSyncSourceService(restTemplate, fnsiUrl, userKey);
     }
 
     @Override
