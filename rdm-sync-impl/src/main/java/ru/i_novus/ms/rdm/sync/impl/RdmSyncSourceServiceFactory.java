@@ -1,20 +1,21 @@
 package ru.i_novus.ms.rdm.sync.impl;
 
+import org.springframework.web.client.RestClient;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 
 public class RdmSyncSourceServiceFactory implements SyncSourceServiceFactory {
 
-    private final String url;
+    private final RestClient.Builder builder;
 
-    public RdmSyncSourceServiceFactory(String url) {
-        this.url = url;
+    public RdmSyncSourceServiceFactory(RestClient.Builder builder) {
+        this.builder = builder;
     }
 
     @Override
     public SyncSourceService createService(SyncSource source) {
-        return new RdmSyncSourceService(url);
+        return new RdmSyncSourceService(builder.build());
     }
 
     @Override

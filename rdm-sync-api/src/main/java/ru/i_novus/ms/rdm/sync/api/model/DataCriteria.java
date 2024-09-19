@@ -11,12 +11,19 @@ public class DataCriteria extends RestCriteria {
 
     private String code;
     private String version;
+
+    /**
+     * Кэширование id версии для исключения лишних запросов id.
+     */
     private Integer versionId;
 
+    /**
+     * Множество полей, по которым нужны значения.
+     */
     private Set<String> fields;
 
     /**
-     * Чтобы каждый раз не запрашивать структуру из НСИ, кэшируем её при первом обращении.
+     * Кэширование структуры версии для исключения лишних запросов структуры.
      */
     private RefBookStructure refBookStructure;
 
@@ -63,5 +70,11 @@ public class DataCriteria extends RestCriteria {
 
     public void setRefBookStructure(RefBookStructure refBookStructure) {
         this.refBookStructure = refBookStructure;
+    }
+
+    public void setAbsentVersionId(Integer versionId) {
+        if (this.versionId == null) {
+            this.versionId = versionId;
+        }
     }
 }

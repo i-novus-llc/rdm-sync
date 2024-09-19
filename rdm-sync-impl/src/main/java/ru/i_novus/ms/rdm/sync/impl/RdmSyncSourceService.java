@@ -21,8 +21,8 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     private final RestClient restClient;
 
-    public RdmSyncSourceService(String url) {
-        this.restClient = RestClient.create(url);
+    public RdmSyncSourceService(RestClient restClient) {
+        this.restClient = restClient;
     }
 
     @Override
@@ -46,10 +46,10 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     private Map<String, Object> getRefBookByVersion(String code, String version) {
 
-        final String uri = String.format("/version/%s/refbook/%s", version, code);
+        final String uri = "/version/{version}/refbook/{code}";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri, version, code)
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -61,10 +61,10 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     private Map<String, Object> getRefBookByCode(String code) {
 
-        final String uri = String.format("/version/refBook/%s/last", code);
+        final String uri = "/version/refBook/{code}/last";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri, code)
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -90,10 +90,10 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     private Map<String, Object> getRefBookVersionsByCode(String code) {
 
-        final String uri = String.format("/version/versions?refBookCode=%s", code);
+        final String uri = "/version/versions?refBookCode={code}";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri, code)
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -108,18 +108,12 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         final String code = dataCriteria.getCode();
 
-        if (dataCriteria.getVersionId() == null) {
-            final String version = dataCriteria.getVersion();
-            final Integer versionId = getRefBookVersionId(code, version);
-            if (versionId == null) {
-                throw new RuntimeException(String.format("Failed to get id for version %s of refBook [%s]", version, code));
-            }
-            dataCriteria.setVersionId(versionId);
-        }
+        final Integer versionId = getAbsentVersionId(dataCriteria.getVersion(), code, dataCriteria.getVersionId());
+        dataCriteria.setAbsentVersionId(versionId);
 
         final Map<String, Object> map = getRefBookVersionData(dataCriteria);
         if (CollectionUtils.isEmpty(map)) {
-            log.warn("Cannot find data of version id={} of refBook [{}]", dataCriteria.getVersionId(), code);
+            log.warn("Cannot find data of version id={} of refBook [{}]", versionId, code);
             return new PageImpl<>(emptyList(), dataCriteria, 0);
         }
 
@@ -130,15 +124,13 @@ public class RdmSyncSourceService implements SyncSourceService {
 
     private Map<String, Object> getRefBookVersionData(DataCriteria criteria) {
 
-        final String uri = String.format(
-                "/version/%d/data?page=%d&size=%d",
-                criteria.getVersionId(),
-                criteria.getPageNumber(),
-                criteria.getPageSize()
-        );
+        final String uri = "/version/{versionId}/data?page={page}&size={size}";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri,
+                            criteria.getVersionId(),
+                            criteria.getPageNumber(),
+                            criteria.getPageSize())
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -153,8 +145,12 @@ public class RdmSyncSourceService implements SyncSourceService {
     public VersionsDiff getDiff(VersionsDiffCriteria criteria) {
 
         final String code = criteria.getRefBookCode();
-        final Integer oldVersionId = getRefBookVersionId(code, criteria.getOldVersion());
-        final Integer newVersionId = getRefBookVersionId(code, criteria.getNewVersion());
+
+        final Integer oldVersionId = getAbsentVersionId(code, criteria.getOldVersion(), criteria.getOldVersionId());
+        criteria.setAbsentOldVersionId(oldVersionId);
+
+        final Integer newVersionId = getAbsentVersionId(code, criteria.getNewVersion(), criteria.getNewVersionId());
+        criteria.setAbsentNewVersionId(newVersionId);
 
         final Map<String, Object> structureDiff = compareRefBookVersionStructures(oldVersionId, newVersionId);
         if (isStructureChanged(structureDiff)) {
@@ -181,10 +177,10 @@ public class RdmSyncSourceService implements SyncSourceService {
     private Map<String, Object> compareRefBookVersionStructures(Integer oldVersionId,
                                                                 Integer newVersionId) {
 
-        final String uri = String.format("/compare/structures/%d-%d", oldVersionId, newVersionId);
+        final String uri = "/compare/structures/{oldVersionId}-{newVersionId}";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri, oldVersionId, newVersionId)
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -198,16 +194,15 @@ public class RdmSyncSourceService implements SyncSourceService {
                                                           Integer newVersionId,
                                                           VersionsDiffCriteria criteria) {
 
-        final String uri = String.format(
-                "/compare/data?oldVersionId=%d&newVersionId=%d&page=%d&size=%d",
-                oldVersionId,
-                newVersionId,
-                criteria.getPageNumber(),
-                criteria.getPageSize()
-        );
+        final String uri = "/compare/data?oldVersionId={oldVersionId}&newVersionId={newVersionId}" +
+                "&page={page}&size={size}";
         try {
             return restClient.get()
-                    .uri(uri)
+                    .uri(uri,
+                            oldVersionId,
+                            newVersionId,
+                            criteria.getPageNumber(),
+                            criteria.getPageSize())
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
@@ -225,6 +220,18 @@ public class RdmSyncSourceService implements SyncSourceService {
         }
 
         return (Integer) map.get(VERSION_ID_FIELD);
+    }
+
+    private Integer getAbsentVersionId(String version, String code, Integer versionId) {
+
+        if (versionId != null)
+            return versionId;
+
+        final Integer result = getRefBookVersionId(code, version);
+        if (result == null) {
+            throw new RuntimeException(String.format("Failed to get id for version %s of refBook [%s]", version, code));
+        }
+        return result;
     }
 
 }
