@@ -1,11 +1,11 @@
-package ru.i_novus.ms.rdm.sync;
+package ru.i_novus.ms.rdm.sync.fnsi;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -15,12 +15,12 @@ import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.i_novus.ms.fnsi.sync.impl.FnsiSourceProperty;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("classpath:application-fnsi-test.properties")
-@Import(TestFnsiConfig.class)
 @Testcontainers
 public class FnsiSyncServiceUseCaseTest {
 
@@ -44,6 +43,16 @@ public class FnsiSyncServiceUseCaseTest {
     private static final int MAX_TIMEOUT = 70;
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @TestConfiguration
+    static class TestConfig extends TestFnsiConfig {
+
+        public TestConfig(FnsiSourceProperty property) {
+            super(property);
+        }
+    }
 
     @Container
     public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>
@@ -72,10 +81,8 @@ public class FnsiSyncServiceUseCaseTest {
 
     @BeforeEach
     public void setUp() {
-        baseUrl = "http://localhost:" + port + "/api/rdm";
+        this.baseUrl = "http://localhost:" + port + "/api/rdm";
     }
-
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @Test
     void testFnsiSync() throws InterruptedException {
@@ -104,7 +111,7 @@ public class FnsiSyncServiceUseCaseTest {
         assertEquals(3, getTotalElements(result));
 
         List<Map<String, Object>> resultRows = getResultRows(result);
-        resultRows.forEach( row -> Assertions.assertEquals("-1", row.get("src_id").toString()));
+        resultRows.forEach(row -> Assertions.assertEquals("-1", row.get("src_id").toString()));
 
         // версия 2.1
         final String v21Url = baseUrl + "/data/" + oid + "/version/2.1" + "?getDeleted=false";
