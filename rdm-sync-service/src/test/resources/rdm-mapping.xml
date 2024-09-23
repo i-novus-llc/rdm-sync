@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapping>
     <refbook code="XMLEK002" unique-sys-field="id" deleted-field="deleted_ts" mapping-version="1"
-             type="NOT_VERSIONED" source="RDM">
+             type="NOT_VERSIONED" source="MOCK_RDM">
         <field sys-field="id" rdm-field="id" sys-data-type="integer"/>
         <field sys-field="is_cold" rdm-field="is_cold" sys-data-type="boolean"/>
         <field sys-field="code_en" rdm-field="code_en" sys-data-type="varchar"/>
@@ -10,7 +10,7 @@
     </refbook>
 
     <refbook code="XMLEK003" unique-sys-field="id" deleted-field="deleted_ts" mapping-version="1"
-             type="SIMPLE_VERSIONED" source="RDM">
+             type="SIMPLE_VERSIONED" source="MOCK_RDM">
         <field sys-field="id" rdm-field="id" sys-data-type="integer"/>
         <field sys-field="name" rdm-field="name" sys-data-type="varchar"/>
     </refbook>

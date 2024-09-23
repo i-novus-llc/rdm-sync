@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.mapping;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ import static java.lang.Boolean.TRUE;
 import static ru.i_novus.ms.rdm.sync.service.init.RdmSyncInitUtils.buildTableNameWithSchema;
 
 @Component
+@Slf4j
 public class PropMappingSourceService implements MappingSourceService {
 
     private static final int DEFAULT_VERSION_FOR_PROPERTY_MAPPING = -2;
@@ -113,14 +115,20 @@ public class PropMappingSourceService implements MappingSourceService {
     }
 
     private SyncSourceService getSyncSourceService(String sourceCode) {
-        SyncSource source = syncSourceDao.findByCode(sourceCode);
-        return syncSourceServiceFactories
-                .stream()
+
+        final SyncSource source = syncSourceDao.findByCode(sourceCode);
+
+        if (log.isInfoEnabled()) {
+            log.info("Factory count: {}", syncSourceServiceFactories.size());
+            syncSourceServiceFactories.forEach(factory -> log.info("Factory: {}", factory.getClass().getSimpleName()));
+        }
+
+        return syncSourceServiceFactories.stream()
                 .filter(factory -> factory.isSatisfied(source))
+                .peek(factory -> log.info("Found factory: {}", factory.getClass().getSimpleName()))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("cannot find factory by " + source.getFactoryName()))
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find factory by " + source.getFactoryName()))
                 .createService(source);
     }
-
 
 }
