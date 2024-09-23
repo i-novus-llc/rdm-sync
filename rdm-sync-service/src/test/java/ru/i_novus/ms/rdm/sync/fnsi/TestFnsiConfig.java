@@ -158,41 +158,6 @@ public class TestFnsiConfig {
 
     }
 
-    private void mockApi(
-            MockRestServiceServer mockServer,
-            RequestMatcher additionalMatcher,
-            String methodUrl,
-            Map<String, String> params,
-            String fileName
-    ) throws URISyntaxException {
-
-        ResponseActions responseActions = mockServer
-                .expect(
-                        ExpectedCount.manyTimes(),
-                        MockRestRequestMatchers.requestTo(
-                                Matchers.containsString(SERVICE_URL + methodUrl)
-                        ))
-                .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
-                .andExpect(MockRestRequestMatchers.queryParam("userKey", MOCK_USER_KEY));
-
-        for(Map.Entry<String, String> entry : params.entrySet()) {
-            responseActions = responseActions
-                    .andExpect(MockRestRequestMatchers.queryParam(entry.getKey(), entry.getValue()));
-        }
-
-        if (additionalMatcher != null) {
-            responseActions.andExpect(additionalMatcher);
-        }
-
-        final ClassPathResource body = new ClassPathResource("/fnsi_responses/" + fileName);
-        responseActions.andRespond(
-                MockRestResponseCreators.withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(body)
-        );
-
-    }
-
     private void mockGetVersions(
             MockRestServiceServer mockServer,
             String identifier,
@@ -219,8 +184,8 @@ public class TestFnsiConfig {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         final Map<String, String> params = Map.of(
                 "identifier", identifier,
-                "date1", encode(dtf.format(fromDate)),
-                "date2", encode(dtf.format(toDate)),
+                "date1", valueToUri(dtf.format(fromDate)),
+                "date2", valueToUri(dtf.format(toDate)),
                 "page", "" + page,
                 "size", "100"
         );
@@ -272,7 +237,42 @@ public class TestFnsiConfig {
         mockApi(mockServer, requestMatcher, "/rest/data", params, fileName);
     }
 
-    private String encode(String value) {
+    private void mockApi(
+            MockRestServiceServer mockServer,
+            RequestMatcher additionalMatcher,
+            String methodUrl,
+            Map<String, String> params,
+            String fileName
+    ) throws URISyntaxException {
+
+        ResponseActions responseActions = mockServer
+                .expect(
+                        ExpectedCount.manyTimes(),
+                        MockRestRequestMatchers.requestTo(
+                                Matchers.containsString(SERVICE_URL + methodUrl)
+                        ))
+                .andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
+                .andExpect(MockRestRequestMatchers.queryParam("userKey", MOCK_USER_KEY));
+
+        for(Map.Entry<String, String> entry : params.entrySet()) {
+            responseActions = responseActions
+                    .andExpect(MockRestRequestMatchers.queryParam(entry.getKey(), entry.getValue()));
+        }
+
+        if (additionalMatcher != null) {
+            responseActions.andExpect(additionalMatcher);
+        }
+
+        final ClassPathResource body = new ClassPathResource("/fnsi_responses/" + fileName);
+        responseActions.andRespond(
+                MockRestResponseCreators.withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)
+        );
+
+    }
+
+    private static String valueToUri(String value) {
         return UriComponentsBuilder.fromPath((value)).toUriString();
     }
 
