@@ -47,7 +47,7 @@ public class FnsiSyncServiceUseCaseTest {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @TestConfiguration
-    static class TestConfig extends TestFnsiConfig {
+    private static class TestConfig extends TestFnsiConfig {
 
         public TestConfig(FnsiSourceProperty property) {
             super(property);
