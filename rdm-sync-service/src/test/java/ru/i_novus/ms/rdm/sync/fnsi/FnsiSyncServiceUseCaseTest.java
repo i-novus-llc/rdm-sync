@@ -1,22 +1,16 @@
 package ru.i_novus.ms.rdm.sync.fnsi;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.i_novus.ms.fnsi.sync.impl.FnsiSourceProperty;
-import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.BaseSyncServiceUseCaseTest;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 
 import java.util.List;
 import java.util.Map;
@@ -25,197 +19,136 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static ru.i_novus.ms.rdm.sync.fnsi.TestFnsiConfig.OID;
+import static ru.i_novus.ms.rdm.sync.fnsi.TestFnsiConfig.XML_OID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("classpath:application-fnsi-test.properties")
 @Testcontainers
-public class FnsiSyncServiceUseCaseTest {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private RdmSyncDao rdmSyncDao;
-
-    private String baseUrl;
-
-    private static final int MAX_TIMEOUT = 70;
-
-    private static final String RECORD_SYS_COL = "_sync_rec_id";
-
-    private final RestTemplate restTemplate = new RestTemplate();
+public class FnsiSyncServiceUseCaseTest extends BaseSyncServiceUseCaseTest {
 
     @TestConfiguration
     private static class TestConfig extends TestFnsiConfig {
 
-        public TestConfig(FnsiSourceProperty property) {
-            super(property);
+        public TestConfig() {
+            super();
         }
-    }
-
-    @Container
-    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>
-            ("postgres:15")
-            .withDatabaseName("rdm_sync")
-            .withUsername("postgres")
-            .withPassword("postgres");
-
-    @BeforeAll
-    static void beforeAll() {
-        postgres.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        postgres.stop();
-    }
-
-    @DynamicPropertySource
-    static void registerProperties(final DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
-    }
-
-    @BeforeEach
-    public void setUp() {
-        this.baseUrl = "http://localhost:" + port + "/api/rdm";
     }
 
     @Test
     void testFnsiSync() throws InterruptedException {
-        testFnsiSync(TestFnsiConfig.OID);
+        testFnsiSync(OID);
     }
 
     @Test
     void testFnsiSyncAutoCreatedOnXml() throws InterruptedException {
-        testFnsiSync(TestFnsiConfig.XML_OID);
+        testFnsiSync(XML_OID);
+    }
+
+    private void testFnsiSync(String oid) throws InterruptedException {
+
+        final String dataUrl = baseUrl + "/data/" + oid;
+
+        // Загрузка начальной версии.
+        final String startVersion = "1.2";
+        final ResponseEntity<String> startResponse = performRefBookSync(oid);
+        assertSyncResponse(startResponse);
+        waitVersionLoaded(oid, startVersion);
+
+        final LoadedVersion actualLoadedVersion = rdmSyncDao.getActualLoadedVersion(oid);
+        assertNotNull(actualLoadedVersion);
+        assertEquals(startVersion, actualLoadedVersion.getVersion());
+
+        // Проверка записей начальной версии.
+        final Map<String, Object> firstData = getDataByUrl(dataUrl + "?getDeleted=false");
+        assertEquals(103, getTotalElements(firstData));
+
+        final Map<String, Object> startRow1 = getDataByUrl(dataUrl + "/55");
+        prepareRowToAssert(startRow1);
+        assertEquals(
+                Map.of("ID", 55, "MNN_ID", 18, "DRUG_FORM_ID", 23, "DOSE_ID", 20),
+                startRow1
+        );
+
+        final Map<String, Object> startRow2 = getDataByUrl(dataUrl + "/103");
+        prepareRowToAssert(startRow2);
+        assertEquals(
+                Map.of("ID", 103, "MNN_ID", 24, "DRUG_FORM_ID", 16, "DOSE_ID", 103),
+                startRow2
+        );
+
+        // Загрузка следующей версии.
+        final String nextVersion = "1.8";
+        final ResponseEntity<String> nextResponse = performRefBookSync(oid);
+        assertSyncResponse(nextResponse);
+        waitVersionLoaded(oid, nextVersion);
+
+        // Проверка записей следующей версии.
+        final Map<String, Object> nextData = getDataByUrl(dataUrl + "?getDeleted=false");
+        assertEquals(65, getTotalElements(nextData));
+
+        final Map<String, Object> deletedData = getDataByUrl(dataUrl + "?getDeleted=true");
+        assertEquals(47, getTotalElements(deletedData));
+
+        // Удалённая запись.
+        final Map<String, Object> deletedRow = getDataByUrl(dataUrl + "/103");
+        prepareRowToAssert(deletedRow);
+        assertEquals(
+                Map.of("ID", 103, "MNN_ID", 24, "DRUG_FORM_ID", 16, "DOSE_ID", 103,
+                        "deleted_ts", "2018-08-28T15:48:00"),
+                deletedRow
+        );
+
+        // Изменённая запись.
+        final Map<String, Object> changedRow = getDataByUrl(dataUrl + "/12");
+        prepareRowToAssert(changedRow);
+        assertEquals(
+                Map.of("ID", 12, "MNN_ID", 7, "DRUG_FORM_ID", 1, "DOSE_ID", 12),
+                changedRow
+        );
+
+        // Созданная запись.
+        final Map<String, Object> createdRow = getDataByUrl(dataUrl + "/106");
+        prepareRowToAssert(createdRow);
+        assertEquals(
+                Map.of("ID", 106, "MNN_ID", 25, "DRUG_FORM_ID", 16, "DOSE_ID", 30),
+                createdRow
+        );
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void testDefaultValue() throws InterruptedException {
 
         final String oid = "1.2.643.5.1.13.13.11.1040";
-        ResponseEntity<String> startResponse = startSync(oid);
-        assertStatusCodeIs204(startResponse);
+        final String dataUrl = baseUrl + "/data/" + oid;
 
-        for (int i = 0; i < MAX_TIMEOUT && rdmSyncDao.getLoadedVersion(oid, "1.0") == null; i++) {
-            Thread.sleep(1000);
-        }
+        // Загрузка начальной версии.
+        final String startVersion = "1.0";
+        ResponseEntity<String> startResponse = performRefBookSync(oid);
+        assertSyncResponse(startResponse);
+        waitVersionLoaded(oid, startVersion);
 
-        final String v10Url = baseUrl + "/data/" + oid + "/version/1.0" + "?getDeleted=false";
-        Map<String, Object> result = restTemplate.getForEntity(v10Url, Map.class).getBody();
-        assertEquals(3, getTotalElements(result));
+        final String v10Url = dataUrl + "/version/" + startVersion + "?getDeleted=false";
+        final Map<String, Object> firstData = getDataByUrl(v10Url);
+        assertEquals(3, getTotalElements(firstData));
 
-        List<Map<String, Object>> resultRows = getResultRows(result);
-        resultRows.forEach(row -> Assertions.assertEquals("-1", row.get("src_id").toString()));
+        final List<Map<String, Object>> firstRows = getResultRows(firstData);
+        firstRows.forEach(row -> Assertions.assertEquals("-1", row.get("src_id").toString()));
 
-        // версия 2.1
-        final String v21Url = baseUrl + "/data/" + oid + "/version/2.1" + "?getDeleted=false";
-        result = restTemplate.getForEntity(v21Url, Map.class).getBody();
-        assertEquals(3, getTotalElements(result));
+        // Загрузка следующей версии.
+        final String nextVersion = "2.1";
+        waitVersionLoaded(oid, nextVersion);
 
-        resultRows = getResultRows(result);
-        assertNotNull(resultRows);
+        final String v21Url = dataUrl + "/version/" + nextVersion + "?getDeleted=false";
+        final Map<String, Object> nextData = getDataByUrl(v21Url);
+        assertEquals(3, getTotalElements(nextData));
 
-        final Set<String> srcIds = resultRows.stream().map(row -> row.get("src_id").toString()).collect(toSet());
+        final List<Map<String, Object>> nextRows = getResultRows(nextData);
+        assertNotNull(nextRows);
+
+        final Set<String> srcIds = nextRows.stream().map(row -> row.get("src_id").toString()).collect(toSet());
         Assertions.assertEquals(Set.of("1", "2", "3"), srcIds);
     }
 
-    @SuppressWarnings("unchecked")
-    private void testFnsiSync(String oid) throws InterruptedException {
-
-        final ResponseEntity<String> startResponse = startSync(oid);
-        assertStatusCodeIs204(startResponse);
-
-        for (int i = 0; i < MAX_TIMEOUT && !"1.2".equals(rdmSyncDao.getActualLoadedVersion(oid).getVersion()); i++) {
-            Thread.sleep(1000);
-        }
-        Map<String, Object> result = restTemplate.getForEntity(baseUrl + "/data/" + oid + "?getDeleted=false", Map.class).getBody();
-        assertEquals(103, getTotalElements(result));
-
-        Map<String, Object> resultByPk = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/55", Map.class).getBody();
-        prepareRowToAssert(resultByPk);
-        assertEquals(Map.of("ID", 55, "MNN_ID", 18, "DRUG_FORM_ID", 23, "DOSE_ID", 20),resultByPk);
-
-        resultByPk = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/103", Map.class).getBody();
-        prepareRowToAssert(resultByPk);
-        assertEquals(Map.of("ID", 103, "MNN_ID", 24, "DRUG_FORM_ID", 16, "DOSE_ID", 103),resultByPk);
-
-        //загрузка след версии
-        final ResponseEntity<String> nextResponse = startSync(oid);
-        assertStatusCodeIs204(nextResponse);
-
-        for (int i = 0; i<MAX_TIMEOUT && !"1.8".equals(rdmSyncDao.getLoadedVersion(oid, "1.8").getVersion()); i++) {
-            Thread.sleep(1000);
-        }
-        result = restTemplate.getForEntity(baseUrl + "/data/" + oid + "?getDeleted=false", Map.class).getBody();
-        assertEquals(65, getTotalElements(result));
-
-        Map<String, Object> deletedResult = restTemplate.getForEntity(baseUrl + "/data/" + oid + "?getDeleted=true", Map.class).getBody();
-        assertEquals(47, getTotalElements(deletedResult));
-
-        //удаленная
-        resultByPk = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/103", Map.class).getBody();
-        prepareRowToAssert(resultByPk);
-        assertEquals(Map.of("ID", 103, "MNN_ID", 24, "DRUG_FORM_ID", 16, "DOSE_ID", 103, "deleted_ts", "2018-08-28T15:48:00"),resultByPk);
-
-        //измененная
-        resultByPk = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/12", Map.class).getBody();
-        prepareRowToAssert(resultByPk);
-        assertEquals(Map.of("ID", 12, "MNN_ID", 7, "DRUG_FORM_ID", 1, "DOSE_ID", 12),resultByPk);
-
-        //новая
-        resultByPk = restTemplate.getForEntity(baseUrl + "/data/" + oid + "/106", Map.class).getBody();
-        prepareRowToAssert(resultByPk);
-        assertEquals(Map.of("ID", 106, "MNN_ID", 25, "DRUG_FORM_ID", 16, "DOSE_ID", 30),resultByPk);
-
-        assertEquals(47, getTotalElements(deletedResult));
-    }
-
-    private static void assertStatusCodeIs204(ResponseEntity<String> response) {
-
-        assertNotNull(response);
-
-        final HttpStatusCode statusCode = response.getStatusCode();
-        assertNotNull(statusCode);
-        assertEquals(204, statusCode.value());
-    }
-
-    private void prepareRowToAssert(Map<String, Object> row) {
-
-        assertNotNull(row);
-
-        row.remove(RECORD_SYS_COL);
-    }
-
-    private int getTotalElements(Map<String, Object> result) {
-
-        assertNotNull(result);
-
-        return (int) result.get("totalElements");
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> getResultRows(Map<String, Object> result) {
-
-        assertNotNull(result);
-
-        return (List<Map<String, Object>>) result.get("content");
-    }
-
-    private ResponseEntity<String> startSync(String refCode) {
-
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return restTemplate.postForEntity(baseUrl + "/update/" + refCode, new HttpEntity<>("{}", headers), String.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getVersionedData(String refCode, String version) {
-        return restTemplate.getForEntity(baseUrl + "/data/" + refCode + "/version/" + version, Map.class).getBody();
-    }
 }
