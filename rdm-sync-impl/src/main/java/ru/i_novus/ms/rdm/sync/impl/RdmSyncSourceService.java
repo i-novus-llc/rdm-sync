@@ -108,7 +108,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         final String code = dataCriteria.getCode();
 
-        final Integer versionId = getAbsentVersionId(dataCriteria.getVersion(), code, dataCriteria.getVersionId());
+        final Integer versionId = getAbsentVersionId(code, dataCriteria.getVersion(), dataCriteria.getVersionId());
         dataCriteria.setAbsentVersionId(versionId);
 
         final Map<String, Object> map = getRefBookVersionData(dataCriteria);
@@ -222,7 +222,7 @@ public class RdmSyncSourceService implements SyncSourceService {
         return (Integer) map.get(VERSION_ID_FIELD);
     }
 
-    private Integer getAbsentVersionId(String version, String code, Integer versionId) {
+    private Integer getAbsentVersionId(String code, String version, Integer versionId) {
 
         if (versionId != null)
             return versionId;
