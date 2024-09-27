@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.impl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +55,11 @@ class RdmSyncSourceServiceTest {
                 .build();
 
         service = new RdmSyncSourceService(builder.build());
+    }
+
+    @AfterEach
+    public void done() {
+        mockServer.reset();
     }
 
     @Test
@@ -179,9 +185,7 @@ class RdmSyncSourceServiceTest {
 
     private ResponseActions mockRdmGet(String uri, Object... uriVars) {
         return mockServer
-                .expect(MockRestRequestMatchers.requestToUriTemplate(
-                        baseUrl + uri, uriVars
-                ))
+                .expect(MockRestRequestMatchers.requestToUriTemplate(baseUrl + uri, uriVars))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET));
     }
 
