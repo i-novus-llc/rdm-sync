@@ -1,36 +1,49 @@
 package ru.i_novus.ms.rdm.sync.rdm;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
+import org.springframework.test.web.client.ResponseActions;
+import org.springframework.test.web.client.match.MockRestRequestMatchers;
+import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestClient;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.TestBaseConfig;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
-import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.fnsi.MockFnsiSourceLoaderService;
-import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
+import ru.i_novus.ms.rdm.sync.util.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
-public class TestRdmConfig {
+public class TestRdmConfig extends TestBaseConfig {
 
     public static final String EK002 = "EK002";
-    public static final String XML_EK002 = "XMLEK002";
+    public static final String XML_EK002 = "XML_EK002";
+    public static final String EK002_START_VERSION = "1";
+    public static final String EK002_NEXT_VERSION = "2";
+    public static final int EK002_START_VERSION_ID = 199;
+    public static final int EK002_NEXT_VERSION_ID = 286;
+
     public static final String EK003 = "EK003";
-    public static final String XML_EK003 = "XMLEK003";
+    public static final String XML_EK003 = "XML_EK003";
+    public static final String EK003_START_VERSION = "3.0";
+    public static final String EK003_NEXT_VERSION = "3.1";
+    public static final int EK003_START_VERSION_ID = 206;
+    public static final int EK003_NEXT_VERSION_ID = 293;
 
     public static final String SERVICE_URL = "http://mock.rdm.api";
-
-    @Autowired
-    private RdmSyncDao rdmSyncDao;
-
-    @Autowired
-    private SyncSourceDao syncSourceDao;
-
-    @Autowired
-    private RdmLoggingService loggingService;
+    private static final int MAX_DATA_SIZE = 100;
 
     public TestRdmConfig() {
         // Nothing to do.
@@ -48,200 +61,181 @@ public class TestRdmConfig {
     }
 
     @Bean
-    public SyncSourceServiceFactory mockRdmSyncSourceServiceFactory() throws URISyntaxException {
-
-        final RestClient.Builder builder = rdmRestClientBuilder();
+    public SyncSourceServiceFactory mockRdmSyncSourceServiceFactory(
+            RestClient.Builder rdmRestClientBuilder
+    ) throws URISyntaxException {
 
         final MockRestServiceServer mockServer = MockRestServiceServer
-                .bindTo(builder)
+                .bindTo(rdmRestClientBuilder)
                 .ignoreExpectOrder(true)
                 .build();
 
-        mockRdm(mockServer, EK002);
+        mockRdm(mockServer);
 
-        return new MockRdmSyncSourceServiceFactory(builder);
+        return new MockRdmSyncSourceServiceFactory(rdmRestClientBuilder);
     }
 
-    private void mockRdm(MockRestServiceServer mockServer, String refBookCode) {
+    private void mockRdm(MockRestServiceServer mockServer) {
+
+        // EK002.
+        mockByCodeAndVersion(mockServer, EK002, EK002_START_VERSION, "EK002_version_1.json", null);
+        mockByCodeAndVersion(mockServer, EK002, EK002_NEXT_VERSION, "EK002_version_2.json", null);
+
+        mockLastVersionByCode(mockServer, checkNoneLoaded(EK002),
+                EK002, "EK002_version_1.json", null);
+        mockLastVersionByCode(mockServer, checkGivenLoaded(EK002, EK002_START_VERSION),
+                EK002, "EK002_version_2.json", null);
+
+        mockData(mockServer, EK002_START_VERSION_ID, "EK002_version_1_data.json");
+        mockData(mockServer, EK002_NEXT_VERSION_ID, "EK002_version_2_data.json");
+
+        mockStructureDiff(mockServer, EK002_START_VERSION_ID, EK002_NEXT_VERSION_ID);
+        mockDataDiff(mockServer, EK002_START_VERSION_ID, EK002_NEXT_VERSION_ID, "EK002_versions_data_diff.json");
+
+        // XML_EK002.
+        mockByCodeAndVersion(mockServer, XML_EK002, EK002_START_VERSION, "EK002_version_1.json", EK002);
+        mockByCodeAndVersion(mockServer, XML_EK002, EK002_NEXT_VERSION, "EK002_version_2.json", EK002);
+
+        mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK002),
+                XML_EK002, "EK002_version_1.json", EK002);
+        mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK002, EK002_START_VERSION),
+                XML_EK002, "EK002_version_2.json", EK002);
+
+        // EK003.
+        mockByCodeAndVersion(mockServer, EK003, EK003_START_VERSION, "EK003_version_3.0.json", null);
+        mockByCodeAndVersion(mockServer, EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", null);
+
+        mockLastVersionByCode(mockServer, checkNoneLoaded(EK003),
+                EK003, "EK003_version_3.0.json", null);
+        mockLastVersionByCode(mockServer, checkGivenLoaded(EK003, EK003_START_VERSION),
+                EK003, "EK003_version_3.1.json", null);
+
+        mockData(mockServer, EK003_START_VERSION_ID, "EK003_version_3.0_data.json");
+        mockData(mockServer, EK003_NEXT_VERSION_ID, "EK003_version_3.1_data.json");
+
+        //mockStructureDiff(mockServer, EK003_START_VERSION_ID, EK003_NEXT_VERSION_ID);
+        //mockDataDiff(mockServer, EK003_START_VERSION_ID, EK003_NEXT_VERSION_ID, "EK003_versions_data_diff.json");
+
+        // XML_EK003.
+        mockByCodeAndVersion(mockServer, XML_EK003, EK003_START_VERSION, "EK003_version_3.0.json", EK003);
+        mockByCodeAndVersion(mockServer, XML_EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", EK003);
+
+        mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK003),
+                XML_EK003, "EK003_version_3.0.json", EK003);
+        mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK003, EK003_START_VERSION),
+                XML_EK003, "EK003_version_3.1.json", EK003);
 
     }
 
-    //@PostConstruct
-    //public void  init() {
-    //    objectMapper.addMixIn(RowValue.class, TestRowValueMixin.class);
-    //}
+    private void mockByCodeAndVersion(MockRestServiceServer mockServer,
+                                      String refBookCode, String version,
+                                      String fileName, String replacedCode) {
 
-    //@Bean
-    //public RefBookService refBookService() throws IOException {
-    //    RefBookService refBookService = mock(RefBookService.class);
-    //    RefBook ek002Ver1 = getRefBook("/EK002_version1.json");
-    //    RefBook ek002Ver2 = getRefBook("/EK002_version2.json");
-    //    RefBook xmlek002Ver1 = getRefBook("/EK002_version1.json", EK002, XML_EK002);
-    //    RefBook xmlek002Ver2 = getRefBook("/EK002_version2.json", EK002, XML_EK002);
-    //
-    //    RefBook ek003Ver3_0 = getRefBook("/rdm_responses/EK003_version_3.0.json");
-    //    RefBook ek003Ver3_1 = getRefBook("/rdm_responses/EK003_version_3.1.json");
-    //    RefBook xmlek003Ver3_0 = getRefBook("/rdm_responses/EK003_version_3.0.json", EK003, XML_EK003);
-    //    RefBook xmlek003Ver3_1 = getRefBook("/rdm_responses/EK003_version_3.1.json", EK003, XML_EK003);
-    //
-    //    when(refBookService.search(argThat(refBookCriteria -> refBookCriteria!=null && Set.of(EK002, XML_EK002).contains(refBookCriteria.getCodeExact()))))
-    //            .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
-    //                RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
-    //                if (refBookCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                boolean ver1IsLoaded = versionIsLoaded(refBookCriteria.getCodeExact(), "1");
-    //                if(!ver1IsLoaded) {
-    //                    return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK002) ? ek002Ver1 : xmlek002Ver1));
-    //                } else
-    //                    return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK002) ? ek002Ver2 : xmlek002Ver2));
-    //            });
-    //    when(refBookService.search(argThat(refBookCriteria -> Set.of(EK003, XML_EK003).contains(refBookCriteria.getCodeExact()))))
-    //            .thenAnswer((Answer<Page<RefBook>>) invocationOnMock -> {
-    //                RefBookCriteria refBookCriteria = invocationOnMock.getArgument(0, RefBookCriteria.class);
-    //                if (refBookCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                boolean ver3_0IsLoaded = versionIsLoaded(refBookCriteria.getCodeExact(), "3.0");
-    //                if(!ver3_0IsLoaded  ) {
-    //                    return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK003) ? ek003Ver3_0 : xmlek003Ver3_0));
-    //                } else
-    //                    return new RestPage<>(Collections.singletonList(refBookCriteria.getCodeExact().equals(EK003) ? ek003Ver3_1 : xmlek003Ver3_1));
-    //
-    //            });
-    //    return refBookService;
-    //}
-    //
-    //@Bean
-    //public VersionRestService versionService() throws IOException {
-    //    RefBookRowValue[] ek002v1Rows = getVersionRows("/EK002-data_version1.json");
-    //    RefBookRowValue[] ek002v2Rows = getVersionRows("/EK002-data_version2.json");
-    //    RefBookRowValue[] ek003v3_0Rows = getVersionRows("/rdm_responses/EK003_data_version_3.0.json");
-    //    RefBookRowValue[] ek003v3_1Rows = getVersionRows("/rdm_responses/EK003_data_version_3.1.json");
-    //
-    //    VersionRestService versionService = mock(VersionRestService.class);
-    //
-    //    RefBookVersion ek002Version1 = getRefBookVersion("/EK002_version1.json");
-    //    RefBookVersion ek002Version2 = getRefBookVersion("/EK002_version2.json");
-    //    RefBookVersion xmlEk002Version2 = getRefBookVersion("/EK002_version2.json");
-    //    xmlEk002Version2.setCode(XML_EK002);
-    //    RefBookVersion xmlEk002Version1 = getRefBookVersion("/EK002_version1.json");
-    //    xmlEk002Version1.setCode(XML_EK002);
-    //    when(versionService.getVersion(eq("1"), eq(EK002))).thenReturn(ek002Version1);
-    //    when(versionService.getVersion(eq("2"), eq(EK002))).thenReturn(ek002Version2);
-    //    when(versionService.getVersion(eq("1"), eq(XML_EK002))).thenReturn(xmlEk002Version1);
-    //    when(versionService.getVersion(eq("2"), eq(XML_EK002))).thenReturn(xmlEk002Version2);
-    //    RefBookVersion ek003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
-    //    RefBookVersion ek003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
-    //    RefBookVersion xmlEk003Version3_0 = getRefBookVersion("/rdm_responses/EK003_version_3.0.json");
-    //    xmlEk003Version3_0.setCode(XML_EK003);
-    //    RefBookVersion xmlEk003Version3_1 = getRefBookVersion("/rdm_responses/EK003_version_3.1.json");
-    //    xmlEk003Version3_1.setCode(XML_EK003);
-    //    when(versionService.getVersion(eq("3.0"), eq(EK003))).thenReturn(ek003Version3_0);
-    //    when(versionService.getVersion(eq("3.1"), eq(EK003))).thenReturn(ek003Version3_1);
-    //    when(versionService.getVersion(eq("3.0"), eq(XML_EK003))).thenReturn(xmlEk003Version3_0);
-    //    when(versionService.getVersion(eq("3.1"), eq(XML_EK003))).thenReturn(xmlEk003Version3_1);
-    //    when(versionService.search(eq(ek002Version1.getId()), any(SearchDataCriteria.class))).thenAnswer(
-    //            (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-    //                SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-    //                if (searchDataCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                 if (searchDataCriteria.getPageNumber() == 0 )
-    //                    return new RestPage<>(Arrays.asList(ek002v1Rows));
-    //
-    //                return new RestPage<>(Collections.emptyList());
-    //            });
-    //
-    //    when(versionService.search(eq(ek002Version2.getId()), any(SearchDataCriteria.class))).thenAnswer(
-    //            (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-    //                SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-    //                if (searchDataCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                if (searchDataCriteria.getPageNumber() == 0)
-    //                    return new RestPage<>(Arrays.asList(ek002v2Rows));
-    //
-    //                return new RestPage<>(Collections.emptyList());
-    //            });
-    //
-    //
-    //
-    //    when(versionService.search(eq(ek003Version3_0.getId()), any(SearchDataCriteria.class))).thenAnswer(
-    //            (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-    //                SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-    //                if (searchDataCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                if (searchDataCriteria.getPageNumber() == 0)
-    //                    return new RestPage<>(Arrays.asList(ek003v3_0Rows));
-    //
-    //                return new RestPage<>(Collections.emptyList());
-    //            });
-    //
-    //    when(versionService.search(eq(ek003Version3_1.getId()), any(SearchDataCriteria.class))).thenAnswer(
-    //            (Answer<Page<RefBookRowValue>>) invocationOnMock -> {
-    //                SearchDataCriteria searchDataCriteria = invocationOnMock.getArgument(1, SearchDataCriteria.class);
-    //                if (searchDataCriteria.getPageNumber() >= 1) {
-    //                    return new RestPage<>(Collections.emptyList());
-    //                }
-    //                if (searchDataCriteria.getPageNumber() == 0)
-    //                    return new RestPage<>(Arrays.asList(ek003v3_1Rows));
-    //
-    //                return new RestPage<>(Collections.emptyList());
-    //            });
-    //
-    //
-    //
-    //
-    //    return versionService;
-    //}
-    //
-    //@Bean
-    //public CompareService compareService(){
-    //    CompareService compareService = mock(CompareService.class);
-    //
-    //    when(compareService.compareData(any(CompareDataCriteria.class))).thenAnswer(
-    //            (Answer<RefBookDataDiff>) invocationOnMock -> {
-    //                CompareDataCriteria criteria = invocationOnMock.getArgument(0, CompareDataCriteria.class);
-    //                if(criteria.getPageNumber() == 0 && Integer.valueOf(199).equals(criteria.getOldVersionId()) && Integer.valueOf(286).equals(criteria.getNewVersionId())) {
-    //                    return getRefBookDataDiff("/EK002_diff_v1_v2.json");
-    //                } else if (criteria.getPageNumber() == 0 && Integer.valueOf(206).equals(criteria.getOldVersionId()) && Integer.valueOf(293).equals(criteria.getNewVersionId())) {
-    //                    return getRefBookDataDiff("/rdm_responses/EK003_diff_v3.0_v3.1.json");
-    //                }
-    //                return new RefBookDataDiff();
-    //
-    //            });
-    //
-    //    when(compareService.compareStructures(anyInt(), anyInt())).thenReturn(new StructureDiff());
-    //
-    //    return compareService;
-    //
-    //}
-    //
-    //private RefBookDataDiff getRefBookDataDiff(String path) throws IOException {
-    //    return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBookDataDiff.class);
-    //}
+        final String uri = "/version/{version}/refbook/{code}";
+        final ResponseActions responseActions = mockRdmGet(mockServer, uri, version, refBookCode);
+        mockRdmRespond(responseActions, fileName, refBookCode, replacedCode);
+    }
 
-    //private RefBook getRefBook(String path) throws IOException {
-    //    return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBook.class);
-    //}
-    //
+    private void mockLastVersionByCode(MockRestServiceServer mockServer,
+                                       RequestMatcher requestMatcher,
+                                       String refBookCode,
+                                       String fileName, String replacedCode) {
+
+        final String uri = "/version/refBook/{code}/last";
+        final ResponseActions responseActions = mockRdmGet(mockServer, uri, refBookCode);
+        if (requestMatcher != null) {
+            responseActions.andExpect(requestMatcher);
+        }
+        mockRdmRespond(responseActions, fileName, refBookCode, replacedCode);
+    }
+
+    private void mockData(MockRestServiceServer mockServer,
+                          int versionId, String fileName) {
+
+        final String uri = "/version/{versionId}/data?page={page}&size={size}";
+        final ResponseActions responseActions1 = mockRdmGet(mockServer, uri, versionId, 0, MAX_DATA_SIZE);
+        mockRdmRespond(responseActions1, fileName, null, null);
+
+        final ResponseActions responseActions2 = mockRdmGet(mockServer, uri, versionId, 1, MAX_DATA_SIZE);
+        mockRdmRespond(responseActions2, "empty_data.json", null, null);
+    }
+
+    private void mockStructureDiff(MockRestServiceServer mockServer,
+                                   int oldVersionId, int newVersionId) {
+
+        final String uri = "/compare/structures/{oldVersionId}-{newVersionId}";
+        final ResponseActions responseActions = mockRdmGet(mockServer, uri, oldVersionId, newVersionId);
+        mockRdmRespond(responseActions, "empty_structure_diff.json", null, null);
+    }
+
+    private void mockDataDiff(MockRestServiceServer mockServer,
+                              int oldVersionId, int newVersionId, String fileName) {
+
+        final String uri = "/compare/data?oldVersionId={oldVersionId}&newVersionId={newVersionId}" +
+                "&page={page}&size={size}";
+        final ResponseActions responseActions1 = mockRdmGet(mockServer, uri, oldVersionId, newVersionId, 0, MAX_DATA_SIZE);
+        mockRdmRespond(responseActions1, fileName, null, null);
+
+        final ResponseActions responseActions2 = mockRdmGet(mockServer, uri, oldVersionId, newVersionId, 1, MAX_DATA_SIZE);
+        mockRdmRespond(responseActions2, "empty_data_diff.json", null, null);
+    }
+
     //private RefBookVersion getRefBookVersion(String path) throws IOException {
-    //    return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBookVersion.class);
-    //}
-    //
-    //private RefBook getRefBook(String path, String replacedCode, String code) throws IOException {
-    //    String version = IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8").replaceAll(replacedCode, code);
-    //    return objectMapper.readValue(version, RefBook.class);
+    //    return objectMapper.readValue(IOUtils.toString(TestRdmConfig.class.getResourceAsStream(path), "UTF-8"), RefBookVersion.class);
     //}
     //
     //private RefBookRowValue[] getVersionRows(String path) throws IOException {
-    //    return objectMapper.readValue(IOUtils.toString(TestConfig.class.getResourceAsStream(path), "UTF-8"), RefBookRowValue[].class);
+    //    return objectMapper.readValue(IOUtils.toString(TestRdmConfig.class.getResourceAsStream(path), "UTF-8"), RefBookRowValue[].class);
     //}
 
     //private String encode(String value) {
     //    return UriComponentsBuilder.fromPath((value)).toUriString();
     //}
+
+    private ResponseActions mockRdmGet(MockRestServiceServer mockServer, String uri, Object... uriVars) {
+        return mockServer
+                .expect(ExpectedCount.manyTimes(),
+                        MockRestRequestMatchers.requestToUriTemplate(SERVICE_URL + uri, uriVars))
+                .andExpect(MockRestRequestMatchers.method(HttpMethod.GET));
+    }
+
+    private void mockRdmRespond(ResponseActions responseActions, String fileName,
+                                String refBookCode, String replacedCode) {
+
+        final String filePath = "/rdm_responses/" + fileName;
+        final Resource body = replacedCode == null
+                ? new ClassPathResource(filePath)
+                : new ByteArrayResource(
+                        toCodeChangedBody(filePath, replacedCode, refBookCode).getBytes()
+                );
+        mockRdmRespond(responseActions, body);
+    }
+
+    private String toCodeChangedBody(String filePath, String refBookCode, String requiredCode) {
+
+        if (StringUtils.isEmpty(filePath))
+            throw new RuntimeException("A file path not specified");
+
+        try {
+            final InputStream stream = TestRdmConfig.class.getResourceAsStream(filePath);
+            if (stream == null)
+                throw new RuntimeException("A resource with file path '" + filePath + "' not specified");
+
+            final String body = IOUtils.toString(stream, StandardCharsets.UTF_8);
+            return body.replaceAll(refBookCode,requiredCode);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void mockRdmRespond(ResponseActions responseActions, Resource body) {
+
+        responseActions.andRespond(
+                MockRestResponseCreators.withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)
+        );
+    }
 
 }

@@ -17,7 +17,6 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-ms</artifactId>
@@ -49,6 +48,7 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
+        <!-- test -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -75,9 +75,12 @@
             <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- / test -->
-
     </dependencies>
 
     <build>
