@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.ms.rdm.sync</groupId>
     <artifactId>rdm-sync</artifactId>
-    <version>1.46.0</version>
+    <version>1.46.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>rdm-sync</name>
