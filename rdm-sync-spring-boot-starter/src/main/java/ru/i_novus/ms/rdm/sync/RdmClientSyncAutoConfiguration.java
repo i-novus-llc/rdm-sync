@@ -15,6 +15,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -229,5 +232,12 @@ public class RdmClientSyncAutoConfiguration {
                 SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator,
                 SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator));
+    }
+
+    @Bean(name = "applicationEventMulticaster")
+    public ApplicationEventMulticaster simpleApplicationEventMulticaster() {
+        SimpleApplicationEventMulticaster eventMulticaster = new SimpleApplicationEventMulticaster();
+        eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        return eventMulticaster;
     }
 }
