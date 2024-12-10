@@ -3,6 +3,7 @@ package ru.i_novus.ms.rdm.sync.service.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.mapping.MappingRangeValidator;
@@ -11,6 +12,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.event.RdmSyncInitCompleteEvent;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 import ru.i_novus.ms.rdm.sync.service.mapping.MappingSourceService;
 
@@ -40,6 +42,9 @@ public class RdmSyncInitializer {
     @Autowired
     private RdmSyncDao rdmSyncDao;
 
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     public void init() {
 
         sourceLoaderServiceInit();
@@ -53,7 +58,7 @@ public class RdmSyncInitializer {
             logger.warn("Quartz scheduler is not configured. All records in the {} state will remain in it. " +
                     "Please, configure Quartz scheduler in clustered mode.", RdmSyncLocalRowState.DIRTY);
         }
-
+        publisher.publishEvent(new RdmSyncInitCompleteEvent(this));
     }
 
     private void deleteNotActualMappings(List<SyncMapping> syncMappings) {
