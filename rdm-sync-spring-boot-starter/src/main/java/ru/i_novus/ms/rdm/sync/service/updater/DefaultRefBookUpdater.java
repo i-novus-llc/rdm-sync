@@ -43,7 +43,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
     @Override
     @Transactional
-    public void update(RefBookVersion refBookVersion, DownloadResult downloadResult) throws RefBookUpdaterException {
+    public void update(RefBookVersion refBookVersion, DownloadResult downloadResult) {
         logger.info("try to load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
 
         if (!refBookVersion.getStructure().hasPrimary()) {
@@ -67,19 +67,15 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
         LoadedVersion loadedVersion = dao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
         String oldVersion = loadedVersion != null ? loadedVersion.getVersion() : null;
-        try {//это надо перенести в RefBookVersionsDeterminator
-            if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
-                    || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
+        //это надо перенести в RefBookVersionsDeterminator
+        if (!dao.existsLoadedVersion(refBookVersion.getCode()) || loadedVersion == null || isMappingChanged(versionMapping, loadedVersion)
+                || (isNewVersionPublished(refBookVersion, loadedVersion)) && versionMapping.getType().equals(SyncTypeEnum.RDM_NOT_VERSIONED)) {
 
-                update(refBookVersion, versionMapping, downloadResult);
-                loggingService.logOk(refBookVersion.getCode(), oldVersion, refBookVersion.getVersion());
+            update(refBookVersion, versionMapping, downloadResult);
+            loggingService.logOk(refBookVersion.getCode(), oldVersion, refBookVersion.getVersion());
 
-            } else {
-                logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
-            }
-        } catch (final Exception e) {
-            logger.error("cannot load {} version: {}", refBookVersion.getCode(), refBookVersion.getVersion());
-            throw new RefBookUpdaterException(e, oldVersion, refBookVersion.getVersion());
+        } else {
+            logger.info("Skipping update on '{}'. No changes.", refBookVersion.getCode());
         }
     }
 
