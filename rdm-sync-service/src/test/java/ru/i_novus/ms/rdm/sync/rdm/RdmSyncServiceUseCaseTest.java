@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -20,18 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static ru.i_novus.ms.rdm.sync.rdm.TestRdmConfig.*;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestRdmSyncApplication.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Import(TestRdmConfig.class)
 @TestPropertySource("classpath:application-rdm-test.properties")
 @Testcontainers
 public class RdmSyncServiceUseCaseTest extends BaseSyncServiceUseCaseTest {
-
-    @TestConfiguration
-    private static class TestConfig extends TestRdmConfig {
-
-        public TestConfig() {
-            super();
-        }
-    }
 
     @Test
     void testLoadAndReadRefBookAutoCreatedOnProperties() throws InterruptedException, JsonProcessingException {

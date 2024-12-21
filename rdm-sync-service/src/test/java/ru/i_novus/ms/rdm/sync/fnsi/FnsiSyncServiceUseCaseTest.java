@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -23,18 +23,11 @@ import static ru.i_novus.ms.rdm.sync.fnsi.TestFnsiConfig.OID;
 import static ru.i_novus.ms.rdm.sync.fnsi.TestFnsiConfig.XML_OID;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestFnsiSyncApplication.class)
+@Import(TestFnsiConfig.class)
 @TestPropertySource("classpath:application-fnsi-test.properties")
 @Testcontainers
 public class FnsiSyncServiceUseCaseTest extends BaseSyncServiceUseCaseTest {
-
-    @TestConfiguration
-    private static class TestConfig extends TestFnsiConfig {
-
-        public TestConfig() {
-            super();
-        }
-    }
 
     @Test
     void testFnsiSync() throws InterruptedException {

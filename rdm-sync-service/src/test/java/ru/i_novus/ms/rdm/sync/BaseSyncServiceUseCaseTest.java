@@ -24,16 +24,19 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BaseSyncServiceUseCaseTest {
+abstract public class BaseSyncServiceUseCaseTest {
 
     protected static final int STATUS_CODE_NO_CONTENT = Response.Status.NO_CONTENT.getStatusCode();
 
     // Ожидание загрузки справочника:
-    private static final int WAIT_SLEEP_TIME = 1000; // Длительность спящего режима потока (мс)
-    protected static final int WAIT_LOAD_CHECK_COUNT = 70; // Количество попыток проверки загрузки
+    private static final int WAIT_LOAD_CHECK_SLEEP_TIME = 2000; // Длительность спящего режима потока (мс)
+    //protected static final int WAIT_LOAD_CHECK_COUNT = 20; // Количество попыток проверки загруженности
+    // Debug only
+    protected static final int WAIT_LOAD_CHECK_COUNT = 3; // Количество попыток проверки загруженности
 
     protected static final String RECORD_SYS_COL = "_sync_rec_id";
 
@@ -123,8 +126,11 @@ public class BaseSyncServiceUseCaseTest {
     protected void waitVersionLoaded(String code, String version) throws InterruptedException {
 
         for (int i = 0; i < WAIT_LOAD_CHECK_COUNT && !isVersionLoaded(code, version); i++) {
-            Thread.sleep(WAIT_SLEEP_TIME);
+            Thread.sleep(WAIT_LOAD_CHECK_SLEEP_TIME);
         }
+
+        boolean versionLoaded = isVersionLoaded(code, version);
+        assertTrue(versionLoaded);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -179,7 +185,7 @@ public class BaseSyncServiceUseCaseTest {
      * @return Функция проверки
      */
     protected RequestMatcher checkNoneLoaded(String code) {
-        return clientHttpRequest -> Assert.assertTrue(isNoneLoaded(code));
+        return clientHttpRequest -> assertTrue(isNoneLoaded(code));
     }
 
     private boolean isNoneLoaded(String code) {
@@ -194,7 +200,7 @@ public class BaseSyncServiceUseCaseTest {
      * @return Функция проверки
      */
     protected RequestMatcher checkGivenLoaded(String code, String version) {
-        return clientHttpRequest -> Assert.assertTrue(isGivenLoaded(code, version));
+        return clientHttpRequest -> assertTrue(isGivenLoaded(code, version));
     }
 
     private boolean isGivenLoaded(String code, String version) {

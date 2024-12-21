@@ -1,16 +1,16 @@
 package ru.i_novus.ms.rdm.sync.fnsi;
 
 import org.hamcrest.Matchers;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.web.client.MockServerRestTemplateCustomizer;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.RequestMatcher;
-import org.springframework.test.web.client.ResponseActions;
+import org.springframework.test.web.client.*;
 import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestTemplate;
@@ -36,9 +36,16 @@ public class TestFnsiConfig extends TestBaseConfig {
     }
 
     @Bean
+    private static MockServerRestTemplateCustomizer mockServerRestTemplateCustomizer() {
+        return new MockServerRestTemplateCustomizer(UnorderedRequestExpectationManager.class);
+    }
+
+    @Bean
     @Primary
-    public RestTemplate fnsiRestTemplate() {
-        return new RestTemplate();
+    public RestTemplate mockFnsiRestTemplate(
+            @Qualifier("mockServerRestTemplateCustomizer") MockServerRestTemplateCustomizer customizer
+    ) {
+        return new RestTemplateBuilder(customizer).build();
     }
 
     @Bean
@@ -48,19 +55,17 @@ public class TestFnsiConfig extends TestBaseConfig {
 
     @Bean
     public SyncSourceServiceFactory mockFnsiSyncSourceServiceFactory(
-            RestTemplate fnsiRestTemplate
+            @Qualifier("mockFnsiRestTemplate") RestTemplate restTemplate,
+            @Qualifier("mockServerRestTemplateCustomizer") MockServerRestTemplateCustomizer customizer
     ) {
-        final MockRestServiceServer mockServer = MockRestServiceServer
-                .bindTo(fnsiRestTemplate)
-                .ignoreExpectOrder(true)
-                .build();
+        final MockRestServiceServer mockServer = customizer.getServer(restTemplate);
 
         mockFnsi(mockServer, OID);
         mockFnsi(mockServer, XML_OID);
 
         mockDefaultValue(mockServer);
 
-        return new MockFnsiSyncSourceServiceFactory(fnsiRestTemplate);
+        return new MockFnsiSyncSourceServiceFactory(restTemplate);
     }
 
     private void mockFnsi(MockRestServiceServer mockServer, String oid) {

@@ -1,6 +1,8 @@
 package ru.i_novus.ms.rdm.sync.rdm;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.web.client.MockServerRestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ByteArrayResource;
@@ -9,10 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.RequestMatcher;
-import org.springframework.test.web.client.ResponseActions;
+import org.springframework.test.web.client.*;
 import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestClient;
@@ -50,9 +49,19 @@ public class TestRdmConfig extends TestBaseConfig {
     }
 
     @Bean
+    private static MockServerRestClientCustomizer mockServerRestClientCustomizer() {
+        return new MockServerRestClientCustomizer(UnorderedRequestExpectationManager.class);
+    }
+
+    @Bean
     @Primary
-    public RestClient.Builder rdmRestClientBuilder() {
-        return RestClient.builder().baseUrl(SERVICE_URL);
+    public RestClient.Builder mockRdmRestClientBuilder(
+            @Qualifier("mockServerRestClientCustomizer") MockServerRestClientCustomizer customizer
+    ) {
+        final RestClient.Builder builder = RestClient.builder();
+        customizer.customize(builder);
+
+        return builder.baseUrl(SERVICE_URL);
     }
 
     @Bean
@@ -62,17 +71,14 @@ public class TestRdmConfig extends TestBaseConfig {
 
     @Bean
     public SyncSourceServiceFactory mockRdmSyncSourceServiceFactory(
-            RestClient.Builder rdmRestClientBuilder
-    ) throws URISyntaxException {
-
-        final MockRestServiceServer mockServer = MockRestServiceServer
-                .bindTo(rdmRestClientBuilder)
-                .ignoreExpectOrder(true)
-                .build();
+            @Qualifier("mockRdmRestClientBuilder") RestClient.Builder restClientBuilder,
+            @Qualifier("mockServerRestClientCustomizer") MockServerRestClientCustomizer customizer
+    ) {
+        final MockRestServiceServer mockServer = customizer.getServer(restClientBuilder);
 
         mockRdm(mockServer);
 
-        return new MockRdmSyncSourceServiceFactory(rdmRestClientBuilder);
+        return new MockRdmSyncSourceServiceFactory(restClientBuilder);
     }
 
     private void mockRdm(MockRestServiceServer mockServer) {
@@ -80,6 +86,8 @@ public class TestRdmConfig extends TestBaseConfig {
         // EK002.
         mockByCodeAndVersion(mockServer, EK002, EK002_START_VERSION, "EK002_version_1.json", null);
         mockByCodeAndVersion(mockServer, EK002, EK002_NEXT_VERSION, "EK002_version_2.json", null);
+
+        //mockVersions(mockServer, EK002, "EK002_versions.json", null);
 
         mockLastVersionByCode(mockServer, checkNoneLoaded(EK002),
                 EK002, "EK002_version_1.json", null);
@@ -96,6 +104,8 @@ public class TestRdmConfig extends TestBaseConfig {
         mockByCodeAndVersion(mockServer, XML_EK002, EK002_START_VERSION, "EK002_version_1.json", EK002);
         mockByCodeAndVersion(mockServer, XML_EK002, EK002_NEXT_VERSION, "EK002_version_2.json", EK002);
 
+        //mockVersions(mockServer, XML_EK002, "EK002_versions.json", EK002);
+
         mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK002),
                 XML_EK002, "EK002_version_1.json", EK002);
         mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK002, EK002_START_VERSION),
@@ -104,6 +114,8 @@ public class TestRdmConfig extends TestBaseConfig {
         // EK003.
         mockByCodeAndVersion(mockServer, EK003, EK003_START_VERSION, "EK003_version_3.0.json", null);
         mockByCodeAndVersion(mockServer, EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", null);
+
+        //mockVersions(mockServer, EK003, "EK003_versions.json", null);
 
         mockLastVersionByCode(mockServer, checkNoneLoaded(EK003),
                 EK003, "EK003_version_3.0.json", null);
@@ -120,11 +132,22 @@ public class TestRdmConfig extends TestBaseConfig {
         mockByCodeAndVersion(mockServer, XML_EK003, EK003_START_VERSION, "EK003_version_3.0.json", EK003);
         mockByCodeAndVersion(mockServer, XML_EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", EK003);
 
+        //mockVersions(mockServer, XML_EK003, "EK003_versions.json", EK003);
+
         mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK003),
                 XML_EK003, "EK003_version_3.0.json", EK003);
         mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK003, EK003_START_VERSION),
                 XML_EK003, "EK003_version_3.1.json", EK003);
 
+    }
+
+    private void mockVersions(MockRestServiceServer mockServer,
+                              String refBookCode,
+                              String fileName, String replacedCode) {
+
+        final String uri = "/version/versions?refBookCode={code}";
+        final ResponseActions responseActions = mockRdmGet(mockServer, uri, refBookCode);
+        mockRdmRespond(responseActions, fileName, refBookCode, replacedCode);
     }
 
     private void mockByCodeAndVersion(MockRestServiceServer mockServer,
@@ -169,7 +192,8 @@ public class TestRdmConfig extends TestBaseConfig {
     }
 
     private void mockDataDiff(MockRestServiceServer mockServer,
-                              int oldVersionId, int newVersionId, String fileName) {
+                              int oldVersionId, int newVersionId,
+                              String fileName) {
 
         final String uri = "/compare/data?oldVersionId={oldVersionId}&newVersionId={newVersionId}" +
                 "&page={page}&size={size}";
@@ -199,7 +223,8 @@ public class TestRdmConfig extends TestBaseConfig {
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.GET));
     }
 
-    private void mockRdmRespond(ResponseActions responseActions, String fileName,
+    private void mockRdmRespond(ResponseActions responseActions,
+                                String fileName,
                                 String refBookCode, String replacedCode) {
 
         final String filePath = "/rdm_responses/" + fileName;
