@@ -43,7 +43,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
@@ -55,6 +54,7 @@ import static ru.i_novus.ms.rdm.sync.util.StringUtils.addDoubleQuotes;
  * @author lgalimova
  * @since 22.02.2019
  */
+@SuppressWarnings("java:S1192")
 public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncDaoImpl.class);
@@ -1044,12 +1044,12 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 + " (" + columnsJoiner + ")"
                 + " VALUES(" + valuesJoiner + ")";
 
-        final Function<Map<String, Object>, Object[]> toValuesArray = (map) -> {
+        final Function<Map<String, Object>, Object[]> toValuesArray = map -> {
 
             final Object[] params = new Object[columns.size()];
             for (int i = 0; i < columns.size(); i++) {
                 if (map.get(columns.get(i)) instanceof List) {
-                    // todo: Добавить проверку типа значения: Integer или String
+                    // to-do: Добавить проверку типа значения: Integer или String
                     params[i] = createSqlArray((List<Integer>) map.get(columns.get(i)));
                 } else {
                     params[i] = map.get(columns.get(i));
@@ -1058,7 +1058,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return params;
         };
 
-        batchUpdate(sql, data.stream().map(toValuesArray).collect(toList()));
+        batchUpdate(sql, data.stream().map(toValuesArray).toList());
     }
 
     @Override
@@ -1101,9 +1101,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return params;
         };
 
-        batchUpdate(sql, insertedData.stream().map(map -> toValuesArray.apply(map, "I")).collect(toList()));
-        batchUpdate(sql, updatedData.stream().map(map -> toValuesArray.apply(map, "U")).collect(toList()));
-        batchUpdate(sql, deletedData.stream().map(map -> toValuesArray.apply(map, "D")).collect(toList()));
+        batchUpdate(sql, insertedData.stream().map(map -> toValuesArray.apply(map, "I")).toList());
+        batchUpdate(sql, updatedData.stream().map(map -> toValuesArray.apply(map, "U")).toList());
+        batchUpdate(sql, deletedData.stream().map(map -> toValuesArray.apply(map, "D")).toList());
     }
 
     @Override

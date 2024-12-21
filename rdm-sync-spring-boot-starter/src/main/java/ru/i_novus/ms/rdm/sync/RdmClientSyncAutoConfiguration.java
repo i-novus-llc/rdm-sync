@@ -52,6 +52,7 @@ import java.util.Map;
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
 @Slf4j
+@SuppressWarnings("I-novus:MethodNameWordCountRule")
 public class RdmClientSyncAutoConfiguration {
 
     @Autowired
