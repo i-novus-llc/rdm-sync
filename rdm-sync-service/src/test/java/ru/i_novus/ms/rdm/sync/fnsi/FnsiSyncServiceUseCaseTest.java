@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -25,6 +26,7 @@ import static ru.i_novus.ms.rdm.sync.fnsi.TestFnsiConfig.XML_OID;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestFnsiSyncApplication.class)
 @Import(TestFnsiConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource("classpath:application-fnsi-test.properties")
 @Testcontainers
 public class FnsiSyncServiceUseCaseTest extends BaseSyncServiceUseCaseTest {

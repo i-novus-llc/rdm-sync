@@ -180,9 +180,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <includes>
-                        <include>**/*UseCaseTest.java</include>
-                    </includes>
                 </configuration>
             </plugin>
         </plugins>

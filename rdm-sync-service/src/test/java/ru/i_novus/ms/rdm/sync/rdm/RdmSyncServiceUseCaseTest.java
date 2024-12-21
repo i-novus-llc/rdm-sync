@@ -22,8 +22,8 @@ import static ru.i_novus.ms.rdm.sync.rdm.TestRdmConfig.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestRdmSyncApplication.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Import(TestRdmConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestPropertySource("classpath:application-rdm-test.properties")
 @Testcontainers
 public class RdmSyncServiceUseCaseTest extends BaseSyncServiceUseCaseTest {
