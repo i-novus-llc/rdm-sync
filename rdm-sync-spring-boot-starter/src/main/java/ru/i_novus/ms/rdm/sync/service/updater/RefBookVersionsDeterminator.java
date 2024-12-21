@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Определяет список версий подлежащих синхронизации
+ * Определитель списка версий, подлежащих синхронизации.
  */
 public class RefBookVersionsDeterminator {
 
@@ -31,7 +31,12 @@ public class RefBookVersionsDeterminator {
 
     private final VersionMappingService versionMappingService;
 
-    public RefBookVersionsDeterminator(String refBookCode, RdmSyncDao rdmSyncDao, SyncSourceService syncSourceService, VersionMappingService versionMappingService) {
+    public RefBookVersionsDeterminator(
+            String refBookCode,
+            RdmSyncDao rdmSyncDao,
+            SyncSourceService syncSourceService,
+            VersionMappingService versionMappingService
+    ) {
         this.refBookCode = refBookCode;
         this.rdmSyncDao = rdmSyncDao;
         this.syncSourceService = syncSourceService;
@@ -46,22 +51,27 @@ public class RefBookVersionsDeterminator {
         String actualLoadedVersion = null;
         try {
             for (LoadedVersion loadedVersion : loadedVersions ) {
-                if(Boolean.TRUE.equals(loadedVersion.getActual())) {
+                if (Boolean.TRUE.equals(loadedVersion.getActual())) {
                     actualLoadedVersion = loadedVersion.getVersion();
                 }
             }
             //sort by
-            Stream<RefBookVersionItem> refBookVersionStream = versionMappings.stream().sorted(new VersionMappingComparator()).flatMap(this::versionMappingToRefBookVersion);
+            final Stream<RefBookVersionItem> refBookVersionStream = versionMappings.stream()
+                    .sorted(new VersionMappingComparator())
+                    .flatMap(this::versionMappingToRefBookVersion);
 
             final String finalActualVersion = actualLoadedVersion;
-            List<String> versions = refBookVersionStream
+            final List<String> versions = refBookVersionStream
                     .filter(refBookVersion -> isNeedToLoad(refBookVersion, loadedVersions, finalActualVersion))
                     .map(RefBookVersionItem::getVersion)
                     .collect(Collectors.toList());
+
             if(versions.isEmpty()) {
-                logger.info("there are no downloadable versions for refbook {}", refBookCode);
+                logger.info("There are no downloadable versions for refbook {}", refBookCode);
             }
+
             return versions;
+
         } catch (RuntimeException e) {
             logger.error("cannot get versions", e);
             throw new RefBookUpdaterException(e, actualLoadedVersion, null);
@@ -69,8 +79,14 @@ public class RefBookVersionsDeterminator {
     }
 
     private Stream<? extends RefBookVersionItem> versionMappingToRefBookVersion(VersionMapping versionMapping) {
-        if(versionMapping.getRange() == null || versionMapping.getRange().getRange() == null) {
+
+        if (logger.isInfoEnabled()) {
+            logger.info("versionMappingToRefBookVersion for:\n{}", versionMapping);
+        }
+
+        if (versionMapping.getRange() == null || versionMapping.getRange().getRange() == null) {
             return Stream.of(syncSourceService.getRefBook(this.refBookCode, null));
+
         } else {
             List<RefBookVersionItem> allVersions = syncSourceService.getVersions(refBookCode);
             return allVersions.stream()

@@ -154,12 +154,13 @@ public interface RdmSyncDao {
 
     /**
      *
-     * @return Список справочников для которых настроен маппинг
+     * @return Список справочников, для которых настроен маппинг
      */
     List<SyncRefBook> getActualSyncRefBooks();
 
     /**
      * Создает временную таблицу для версионных данных на основе таблицы, где лежат данные справочника
+     * <p>
      * @param tempTableName наименование для временной таблицы
      * @param refTableName наименование таблицы, где лежат данные справочника
      * @param sysPkColumn системный первичный ключ таблицы если есть
@@ -169,6 +170,7 @@ public interface RdmSyncDao {
 
     /**
      * Создает временную таблицу для разницы данных на основе таблицы, где лежат данные справочника
+     * <p>
      * @param tempTableName наименование для временной таблицы
      * @param refTableName наименование таблицы, где лежат данные справочника
      */
@@ -176,7 +178,10 @@ public interface RdmSyncDao {
 
     void insertVersionAsTempData(String tableName, List<Map<String, Object>> data);
 
-    void insertDiffAsTempData(String tableName, List<Map<String, Object>> newData, List<Map<String, Object>> updatedData, List<Map<String, Object>> deletedData);
+    void insertDiffAsTempData(String tableName,
+                              List<Map<String, Object>> insertedData,
+                              List<Map<String, Object>> updatedData,
+                              List<Map<String, Object>> deletedData);
 
     void migrateNotVersionedTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime);
 

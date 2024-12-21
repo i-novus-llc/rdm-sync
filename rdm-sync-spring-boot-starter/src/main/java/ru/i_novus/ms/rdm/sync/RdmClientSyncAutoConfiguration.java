@@ -183,37 +183,42 @@ public class RdmClientSyncAutoConfiguration {
 
 
     @Bean
-    public RefBookUpdater notVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                     @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                     RdmLoggingService rdmLoggingService,
-                                                     VersionMappingService versionMappingService
-                                                     ) {
-        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
-    }
-
-    @Bean
-    public RefBookUpdater rdmNotVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService,
-                                                        VersionMappingService versionMappingService
+    public RefBookUpdater notVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
     ) {
         return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
     @Bean
-    public RefBookUpdater simpleVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService,
-                                                        VersionMappingService versionMappingService
+    public RefBookUpdater rdmNotVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
+    ) {
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
+    }
+
+    @Bean
+    public RefBookUpdater simpleVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
     ) {
         return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
 
     @Bean
-    public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
-                                                       @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
-                                                       @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater) {
+    public RefBookUpdaterLocator refBookUpdaterLocator(
+            @Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
+            @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
+            @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater
+    ) {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
@@ -223,9 +228,11 @@ public class RdmClientSyncAutoConfiguration {
     }
 
     @Bean
-    public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
-                                                                 @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
-                                                                 @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator) {
+    public LocalRefBookCreatorLocator localRefBookCreatorLocator(
+            @Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
+            @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
+            @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator
+    ) {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,

@@ -38,7 +38,9 @@ public class Range implements Comparable<Range>, Serializable {
         }
 
         if (range.contains(",")) {
-            return Arrays.stream(range.split(",")).anyMatch(splitRange -> new Range(splitRange.trim()).containsVersion(version));
+            return Arrays.stream(range.split(",")).anyMatch(
+                    splitRange -> new Range(splitRange.trim()).containsVersion(version)
+            );
         }
         if (range.equals("*")) {
             return true;
@@ -88,7 +90,7 @@ public class Range implements Comparable<Range>, Serializable {
      * @param r Диапазон версий
      * @return Конвертированный диапазон версий
      */
-    private Range convertToEndVersion(Range r){
+    private Range convertToEndVersion(Range r) {
 
         String rangeVal = r.getRange();
         if (rangeVal == null) {
@@ -97,11 +99,13 @@ public class Range implements Comparable<Range>, Serializable {
 
         if(rangeVal.contains(",")){
             String[] split = rangeVal.split(",");
-            return convertToEndVersion(Arrays.stream(split).map(rangeAsStr -> new Range(rangeAsStr.trim())).max(Range::compareTo).get());
+            return convertToEndVersion(Arrays.stream(split).map(
+                    rangeAsStr -> new Range(rangeAsStr.trim())).max(Range::compareTo).get()
+            );
         }
 
         String[] rangeParts = rangeVal.split("-");
-        if (rangeParts.length > 1){
+        if (rangeParts.length > 1) {
             if (rangeParts[1].equals("*")){
                 rangeParts[1] = MAX_VERSION;
             }
@@ -160,11 +164,15 @@ public class Range implements Comparable<Range>, Serializable {
         }
 
         if(this.range.contains(",")) {
-            return Arrays.stream(this.range.split(",")).anyMatch(splitRange -> new Range(splitRange.trim()).overlapsWith(other));
+            return Arrays.stream(this.range.split(",")).anyMatch(
+                    splitRange -> new Range(splitRange.trim()).overlapsWith(other)
+            );
         }
 
         if(other.range.contains(",")) {
-            return Arrays.stream(other.range.split(",")).anyMatch(splitRange -> this.overlapsWith(new Range(splitRange.trim())));
+            return Arrays.stream(other.range.split(",")).anyMatch(
+                    splitRange -> this.overlapsWith(new Range(splitRange.trim()))
+            );
         }
 
         if (this.range.equals("*") || other.range.equals("*")) {
@@ -180,6 +188,7 @@ public class Range implements Comparable<Range>, Serializable {
         String otherStart = otherParts[0].trim();
         String otherEnd = otherParts.length > 1 ? otherParts[1].trim() : otherStart;
 
-        return (compareVersions(thisStart, otherEnd) <= 0 || thisStart.equals("*")) && (compareVersions(otherStart, thisEnd) <= 0 || thisEnd.equals("*"));
+        return (compareVersions(thisStart, otherEnd) <= 0 || thisStart.equals("*")) &&
+                (compareVersions(otherStart, thisEnd) <= 0 || thisEnd.equals("*"));
     }
 }

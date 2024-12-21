@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -991,7 +992,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public List<SyncRefBook> getActualSyncRefBooks() {
-        return namedParameterJdbcTemplate.query("select * from rdm_sync.refbook where exists(select 1 from rdm_sync.version where ref_id = rdm_sync.refbook .id) ",
+        return namedParameterJdbcTemplate.query("select * from rdm_sync.refbook where exists(select 1 from rdm_sync.version where ref_id = rdm_sync.refbook.id) ",
                 (rs, rowNum) ->
                         new SyncRefBook(
                                 rs.getInt("id"),
@@ -1025,56 +1026,84 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void insertVersionAsTempData(String tableName, List<Map<String, Object>> data) {
-        if(data.isEmpty()) {
+
+        if (data.isEmpty()) {
             return;
         }
-        List<String> columns = data.stream().flatMap(map -> map.keySet().stream()).distinct().collect(toList());
-        String paramsExpression = columns.stream().map(column -> "?").collect(Collectors.joining(","));
-        getJdbcTemplate().batchUpdate(
-                "INSERT INTO " + escapeName(tableName) + "(" + columns.stream().map(this::escapeName).collect(joining(",")) + ")  VALUES(" + paramsExpression + ") ",
-                data.stream().map(map -> {
-                    Object[] params = new Object[columns.size()];
-                    for (int i = 0; i < columns.size(); i++) {
-                        if(map.get(columns.get(i)) instanceof List) {
-                            params[i] = createSqlArray((List<Integer>) map.get(columns.get(i)));
-                        } else {
-                            params[i] = map.get(columns.get(i));
-                        }
-                    }
-                    return params;
-                }).collect(Collectors.toList()));
-    }
 
-    @Override
-    public void insertDiffAsTempData(String tableName, List<Map<String, Object>> newData, List<Map<String, Object>> updatedData, List<Map<String, Object>> deletedData) {
-        String escapedTable = escapeName(tableName);
-        List<String> columns = Stream.of(newData, updatedData, deletedData)
-                .flatMap(Collection::stream)
-                .flatMap(map -> map.keySet().stream())
-                .distinct()
-                .collect(Collectors.toUnmodifiableList());
-        StringJoiner valuesJoiner = new StringJoiner(",");
-        StringJoiner columnsJoiner = new StringJoiner(",");
+        final List<String> columns = data.stream().flatMap(map -> map.keySet().stream()).distinct().toList();
+
+        final StringJoiner valuesJoiner = new StringJoiner(",");
+        final StringJoiner columnsJoiner = new StringJoiner(",");
         columns.forEach(column -> {
             valuesJoiner.add("?");
             columnsJoiner.add(escapeName(column));
         });
-        String queryTemplate = "INSERT INTO {tempTbl}({columns}, diff_type) VALUES({values}, ?) ";
 
-        String query = StringSubstitutor.replace(queryTemplate, Map.of("tempTbl", escapedTable, "columns", columnsJoiner.toString(), "values", valuesJoiner.toString()), "{", "}");
+        final String sql = "INSERT INTO " + escapeName(tableName)
+                + " (" + columnsJoiner + ")"
+                + " VALUES(" + valuesJoiner + ")";
 
-        BiFunction<Map<String, Object>, String, Object[]> toValuesArr = (map, diffType) -> {
-            Object[] params = new Object[columns.size()+1];
+        final Function<Map<String, Object>, Object[]> toValuesArray = (map) -> {
 
+            final Object[] params = new Object[columns.size()];
             for (int i = 0; i < columns.size(); i++) {
+                if (map.get(columns.get(i)) instanceof List) {
+                    // todo: Добавить проверку типа значения: Integer или String
+                    params[i] = createSqlArray((List<Integer>) map.get(columns.get(i)));
+                } else {
+                    params[i] = map.get(columns.get(i));
+                }
+            }
+            return params;
+        };
+
+        batchUpdate(sql, data.stream().map(toValuesArray).collect(toList()));
+    }
+
+    @Override
+    public void insertDiffAsTempData(String tableName,
+                                     List<Map<String, Object>> insertedData,
+                                     List<Map<String, Object>> updatedData,
+                                     List<Map<String, Object>> deletedData) {
+
+        if (insertedData.isEmpty() && updatedData.isEmpty() && deletedData.isEmpty()) {
+            return;
+        }
+
+        final List<String> columns = Stream.of(insertedData, updatedData, deletedData)
+                .flatMap(Collection::stream)
+                .flatMap(map -> map.keySet().stream())
+                .distinct().toList();
+
+        final StringJoiner valuesJoiner = new StringJoiner(",");
+        final StringJoiner columnsJoiner = new StringJoiner(",");
+        columns.forEach(column -> {
+            valuesJoiner.add("?");
+            columnsJoiner.add(escapeName(column));
+        });
+        valuesJoiner.add("?");
+        columnsJoiner.add("diff_type");
+
+        final String sql = "INSERT INTO " + escapeName(tableName)
+                + " (" + columnsJoiner + ")"
+                + " VALUES(" + valuesJoiner + ")";
+
+        final BiFunction<Map<String, Object>, String, Object[]> toValuesArray = (map, diffType) -> {
+
+            final Object[] params = new Object[columns.size() + 1];
+            for (int i = 0; i < columns.size(); i++) {
+                // todo: Нужно ли добавить проверку типа значения: Integer или String
                 params[i] = map.get(columns.get(i));
             }
             params[columns.size()] = diffType;
+
             return params;
         };
-        getJdbcTemplate().batchUpdate(query, newData.stream().map(map -> toValuesArr.apply(map, "I")).collect(Collectors.toList()));
-        getJdbcTemplate().batchUpdate(query, updatedData.stream().map(map -> toValuesArr.apply(map, "U")).collect(Collectors.toList()));
-        getJdbcTemplate().batchUpdate(query, deletedData.stream().map(map -> toValuesArr.apply(map, "D")).collect(Collectors.toList()));
+
+        batchUpdate(sql, insertedData.stream().map(map -> toValuesArray.apply(map, "I")).collect(toList()));
+        batchUpdate(sql, updatedData.stream().map(map -> toValuesArray.apply(map, "U")).collect(toList()));
+        batchUpdate(sql, deletedData.stream().map(map -> toValuesArray.apply(map, "D")).collect(toList()));
     }
 
     @Override
@@ -1086,7 +1115,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String updateEditRowsQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
         String markDeletedQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
-        String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        String columns = fields.stream().map(this::escapeName).collect(joining(","));
 
         String query = StringSubstitutor.replace(revertDeletedRowsQueryTemplate + addNewRowsQueryTemplate + updateEditRowsQueryTemplate + markDeletedQueryTemplate,
                 Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
@@ -1102,7 +1131,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'U' AND {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
         String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'D' AND {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
-        String columns = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        String columns = fields.stream().map(this::escapeName).collect(joining(","));
 
         String query = StringSubstitutor.replace(updateQueryTemplate + revertDeletedRowsQueryTemplate + insertQueryTemplate +  deleteQueryTemplate,
                 Map.of("tempTbl", escapeName(tempTable), "columns", columns, "refTbl", escapeName(refTable), "pk", escapeName(pkField), "deletedField", escapeName(deletedField)), "{", "}");
@@ -1112,7 +1141,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void migrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
-        String columnsExpression =  fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        String columnsExpression =  fields.stream().map(this::escapeName).collect(joining(","));
         namedParameterJdbcTemplate.update("INSERT INTO " + escapeName(refTable) + "(" + columnsExpression + ", version_id) " +
                 "(SELECT "+ columnsExpression + ", :versionId FROM " + escapeName(tempTable) + ")", Map.of("versionId", versionId));
     }
@@ -1121,7 +1150,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
         String escapedRefTbl = escapeName(refTable);
         String escapedPk = escapeName(pkField);
-        String columnsExpression = fields.stream().map(this::escapeName).collect(Collectors.joining(","));
+        String columnsExpression = fields.stream().map(this::escapeName).collect(joining(","));
         String escapedTempTbl = escapeName(tempTable);
         Map<String, String> queryPlaceholders = Map.of("refTbl", escapedRefTbl, "columns", columnsExpression, "tempTbl", escapedTempTbl, "pk", escapedPk);
 
@@ -1160,7 +1189,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id \n" +
                 "WHERE code = :code;";
 
-        return namedParameterJdbcTemplate.query(sql,Map.of("code",refBookCode), versionMappingRowMapper);
+        return namedParameterJdbcTemplate.query(sql, Map.of("code",refBookCode), versionMappingRowMapper);
     }
 
     @Override
@@ -1204,10 +1233,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public Boolean tableExists(String schema, String table) {
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT EXISTS (SELECT * FROM information_schema.tables  WHERE table_schema = :schema AND table_name = :table)",
+
+        return namedParameterJdbcTemplate.queryForObject("""
+                SELECT EXISTS (SELECT * FROM information_schema.tables
+                                WHERE table_schema = :schema AND table_name = :table)""",
                 Map.of("schema", schema, "table", table),
-                Boolean.class);
+                Boolean.class
+        );
     }
 
 
@@ -1217,7 +1249,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         ddl.append(newFieldMappings.stream()
                 .map(mapping -> String.format(" ADD COLUMN %s %s", escapeName(mapping.getSysField()), mapping.getSysDataType()))
-                .collect(Collectors.joining(", ")));
+                .collect(joining(", ")));
 
         getJdbcTemplate().execute(ddl.toString());
     }
@@ -1230,7 +1262,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         ddl.append(fieldMappings.stream()
                 .map(mapping -> String.format("%s %s", escapeName(mapping.getSysField()), mapping.getSysDataType()))
-                .collect(Collectors.joining(", ")));
+                .collect(joining(", ")));
         for (Map.Entry<String, String> entry : additionalColumns.entrySet()) {
             ddl.append(String.format(", %s %s", escapeName(entry.getKey()), entry.getValue()));
         }
@@ -1283,20 +1315,25 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     private java.sql.Array createSqlArray(List<?> list) {
+
         if (list.isEmpty())
             return null;
+
         if (list.get(0) instanceof Integer) {
-            Integer[] result = list.toArray(new Integer[0]);
-            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+            final Integer[] result = list.toArray(new Integer[0]);
+            return getJdbcTemplate().execute(
                     (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), result)
             );
         } else {
-            String[] result = list.toArray(new String[0]);
-            return namedParameterJdbcTemplate.getJdbcTemplate().execute(
+            final String[] result = list.toArray(new String[0]);
+            return getJdbcTemplate().execute(
                     (Connection c) -> c.createArrayOf(JDBCType.VARCHAR.getName(), result)
             );
         }
+    }
 
+    private void batchUpdate(String sql, List<Object[]> batchArgs) {
+        getJdbcTemplate().batchUpdate(sql, batchArgs);
     }
 
     private Set<String> getRangeData(int refId) {

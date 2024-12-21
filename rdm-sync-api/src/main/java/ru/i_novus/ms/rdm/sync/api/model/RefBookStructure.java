@@ -32,6 +32,7 @@ public class RefBookStructure {
         this.attributesAndTypes = attributesAndTypes;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasPrimary() {
         return primaries != null && !primaries.isEmpty();
     }
