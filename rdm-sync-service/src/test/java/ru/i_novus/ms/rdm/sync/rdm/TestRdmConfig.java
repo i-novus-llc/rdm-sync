@@ -22,7 +22,6 @@ import ru.i_novus.ms.rdm.sync.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 public class TestRdmConfig extends TestBaseConfig {
@@ -87,8 +86,6 @@ public class TestRdmConfig extends TestBaseConfig {
         mockByCodeAndVersion(mockServer, EK002, EK002_START_VERSION, "EK002_version_1.json", null);
         mockByCodeAndVersion(mockServer, EK002, EK002_NEXT_VERSION, "EK002_version_2.json", null);
 
-        //mockVersions(mockServer, EK002, "EK002_versions.json", null);
-
         mockLastVersionByCode(mockServer, checkNoneLoaded(EK002),
                 EK002, "EK002_version_1.json", null);
         mockLastVersionByCode(mockServer, checkGivenLoaded(EK002, EK002_START_VERSION),
@@ -104,8 +101,6 @@ public class TestRdmConfig extends TestBaseConfig {
         mockByCodeAndVersion(mockServer, XML_EK002, EK002_START_VERSION, "EK002_version_1.json", EK002);
         mockByCodeAndVersion(mockServer, XML_EK002, EK002_NEXT_VERSION, "EK002_version_2.json", EK002);
 
-        //mockVersions(mockServer, XML_EK002, "EK002_versions.json", EK002);
-
         mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK002),
                 XML_EK002, "EK002_version_1.json", EK002);
         mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK002, EK002_START_VERSION),
@@ -114,8 +109,6 @@ public class TestRdmConfig extends TestBaseConfig {
         // EK003.
         mockByCodeAndVersion(mockServer, EK003, EK003_START_VERSION, "EK003_version_3.0.json", null);
         mockByCodeAndVersion(mockServer, EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", null);
-
-        //mockVersions(mockServer, EK003, "EK003_versions.json", null);
 
         mockLastVersionByCode(mockServer, checkNoneLoaded(EK003),
                 EK003, "EK003_version_3.0.json", null);
@@ -132,22 +125,11 @@ public class TestRdmConfig extends TestBaseConfig {
         mockByCodeAndVersion(mockServer, XML_EK003, EK003_START_VERSION, "EK003_version_3.0.json", EK003);
         mockByCodeAndVersion(mockServer, XML_EK003, EK003_NEXT_VERSION, "EK003_version_3.1.json", EK003);
 
-        //mockVersions(mockServer, XML_EK003, "EK003_versions.json", EK003);
-
         mockLastVersionByCode(mockServer, checkNoneLoaded(XML_EK003),
                 XML_EK003, "EK003_version_3.0.json", EK003);
         mockLastVersionByCode(mockServer, checkGivenLoaded(XML_EK003, EK003_START_VERSION),
                 XML_EK003, "EK003_version_3.1.json", EK003);
 
-    }
-
-    private void mockVersions(MockRestServiceServer mockServer,
-                              String refBookCode,
-                              String fileName, String replacedCode) {
-
-        final String uri = "/version/versions?refBookCode={code}";
-        final ResponseActions responseActions = mockRdmGet(mockServer, uri, refBookCode);
-        mockRdmRespond(responseActions, fileName, refBookCode, replacedCode);
     }
 
     private void mockByCodeAndVersion(MockRestServiceServer mockServer,

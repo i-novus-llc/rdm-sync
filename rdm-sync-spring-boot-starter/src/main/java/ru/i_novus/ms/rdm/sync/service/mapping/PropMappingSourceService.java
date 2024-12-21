@@ -124,11 +124,19 @@ public class PropMappingSourceService implements MappingSourceService {
         }
 
         return syncSourceServiceFactories.stream()
-                .filter(factory -> factory.isSatisfied(source))
-                .peek(factory -> log.info("Found factory: {}", factory.getClass().getSimpleName()))
+                .filter(factory -> isSatisfied(factory, source))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find factory by " + source.getFactoryName()))
                 .createService(source);
+    }
+
+    private static boolean isSatisfied(SyncSourceServiceFactory factory, SyncSource source) {
+
+        final boolean isSatisfied = factory.isSatisfied(source);
+        if (isSatisfied && log.isInfoEnabled()) {
+            log.info("Found factory: {}", factory.getClass().getSimpleName());
+        }
+        return isSatisfied;
     }
 
 }

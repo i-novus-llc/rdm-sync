@@ -55,7 +55,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         } catch (Exception e) {
             log.error("Error get version {} of refBook [{}]", version, code, e);
-            throw new RuntimeException("Failed to get refBook", e);
+            throw new RdmErrorException("Failed to get refBook", e);
         }
     }
 
@@ -70,7 +70,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         } catch (Exception e) {
             log.error("Error get last published version of refBook [{}]", code, e);
-            throw new RuntimeException("Failed to get refBook", e);
+            throw new RdmErrorException("Failed to get refBook", e);
         }
     }
 
@@ -99,7 +99,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         } catch (Exception e) {
             log.error("Error get versions of refBook [{}]", code, e);
-            throw new RuntimeException("Failed to get versions", e);
+            throw new RdmErrorException("Failed to get versions", e);
         }
     }
 
@@ -137,7 +137,7 @@ public class RdmSyncSourceService implements SyncSourceService {
         } catch (Exception e) {
             log.error("Error get data of version id={} of rebook [{}]: ",
                     criteria.getVersionId(), criteria.getCode(), e);
-            throw new RuntimeException("Failed to get data", e);
+            throw new RdmErrorException("Failed to get data", e);
         }
     }
 
@@ -186,7 +186,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         } catch (Exception e) {
             log.error("Error get structure compare for versions: old id={}, new id={}", oldVersionId, newVersionId, e);
-            throw new RuntimeException("Failed to get structure compare", e);
+            throw new RdmErrorException("Failed to get structure compare", e);
         }
     }
 
@@ -208,7 +208,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         } catch (Exception e) {
             log.error("Error get data compare for versions: old id={}, new id={}", oldVersionId, newVersionId, e);
-            throw new RuntimeException("Failed to get data compare", e);
+            throw new RdmErrorException("Failed to get data compare", e);
         }
     }
 
@@ -229,7 +229,7 @@ public class RdmSyncSourceService implements SyncSourceService {
 
         final Integer result = getRefBookVersionId(code, version);
         if (result == null) {
-            throw new RuntimeException(String.format("Failed to get id for version %s of refBook [%s]", version, code));
+            throw new RdmErrorException(String.format("Failed to get id for version %s of refBook [%s]", version, code));
         }
         return result;
     }
