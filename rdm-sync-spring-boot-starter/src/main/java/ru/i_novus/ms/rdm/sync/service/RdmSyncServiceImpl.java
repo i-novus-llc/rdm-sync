@@ -36,6 +36,7 @@ import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -145,10 +146,11 @@ public class RdmSyncServiceImpl implements RdmSyncService {
     }
 
     private boolean syncVersion(String refBookCode, SyncRefBook syncRefBook, String version) {
+        DownloadResult downloadResult = null;
         try {
             RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
 
-            DownloadResult downloadResult = refBookDownloader.download(refBookCode, version);
+            downloadResult = refBookDownloader.download(refBookCode, version);
             refBookUpdater.update(syncSourceService.getRefBook(refBookCode, version), downloadResult);
         } catch (final RefBookUpdaterException e) {
             final Throwable cause = e.getCause();
@@ -178,6 +180,9 @@ public class RdmSyncServiceImpl implements RdmSyncService {
                     ExceptionUtils.getStackTrace(e)
             );
             return false;
+        } finally {
+            if (Objects.nonNull(downloadResult) && Objects.nonNull(downloadResult.getTableName()))
+                dao.dropTable(downloadResult.getTableName());
         }
         return true;
     }
