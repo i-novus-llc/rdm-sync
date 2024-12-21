@@ -1093,7 +1093,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
             final Object[] params = new Object[columns.size() + 1];
             for (int i = 0; i < columns.size(); i++) {
-                // todo: Нужно ли добавить проверку типа значения: Integer или String
+                // to-do: Нужно ли добавить проверку типа значения: Integer или String
                 params[i] = map.get(columns.get(i));
             }
             params[columns.size()] = diffType;

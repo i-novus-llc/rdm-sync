@@ -11,7 +11,7 @@
 
     <properties>
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/*Config.java, **/*SourceServiceFactory.java, **/*Exception</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/*Config.java, **/*SourceServiceFactory.java, **/*Exception.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
