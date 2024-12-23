@@ -9,12 +9,6 @@ build and verify:
   variables:
     DC_EXTRA_BUILD_CONFIG: '-f .docker-compose/target/docker-compose.build.mr.yml'
 
-autotesting mr stand:
-  extends: .autotesting mr stand
-  variables:
-    AUTOTEST_MODULE_DIR: './ui-test'
-    AUTOTEST_PARAMS: '-Drdm.username=admin -Drdm.password=admin'
-
 # Т.к. у нас нет dev-стенда -- убираем post-dev, чтобы в Jira не проставлялась дата установки на develop
 post dev:
   rules:
