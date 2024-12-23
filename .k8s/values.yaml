@@ -1,0 +1,48 @@
+global:
+  observability:
+    enabled: false
+  ## Current build tag for images of this project.
+  imageTag: "${docker.image.tag}"
+  ## Global values for all spring services.
+  spring:
+    ## Global environment variables injected in every spring service.
+    env:
+      SPRING_CLOUD_CONSUL_CONFIG_PREFIX: "rdm-sync"
+      JAVA_OPTS: "-XX:MaxRAMPercentage=66"
+
+
+springServices:
+  rdm-sync-service:
+    imageName: rdm-sync/rdm-sync-service
+    resources:
+      limits:
+        memory: 1000M
+    overrideDbName: rdm
+
+genericServices:
+  activemq:
+    enabled: false
+    port: 61616
+    imageName: rmohr/activemq
+    imageTag: 5.15.9
+    resources:
+      limits:
+        memory: 512M
+    replicaCount: 1
+
+  postgresql:
+    enabled: false
+    port: 5432
+    imageName: rdm-sync/db
+    useGlobalRegistry: true
+    resources:
+      limits:
+        memory: 512M
+    replicaCount: 1
+    volumes:
+      - name: rdm-sync-db-data
+        persistentVolumeClaim:
+          claimName: rdm-sync-db-data
+    volumeMounts:
+      - mountPath: /pg/12
+        name: rdm-sync-db-data
