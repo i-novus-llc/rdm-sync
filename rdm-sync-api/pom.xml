@@ -12,7 +12,10 @@
 
     <properties>
         <jacoco.skip>false</jacoco.skip>
-        <sonar.coverage.exclusions>**/mapping/*.java, **/log/*.java, **/*Enum.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>
+            **/exception/*.java, **/log/*.java,
+            **/model/*.java, **/mapping/*.java
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
