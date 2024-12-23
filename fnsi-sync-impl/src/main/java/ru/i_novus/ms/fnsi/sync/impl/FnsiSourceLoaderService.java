@@ -23,21 +23,24 @@ public class FnsiSourceLoaderService implements SourceLoaderService {
 
     @Override
     public void load() {
-        if (property.getValues() == null) {
-            logger.info("No any properties source for load");
-        } else {
-            property.getValues().forEach(fnsiSourcePropertyValue ->{
 
-                        dao.save(new SyncSource(
-                                fnsiSourcePropertyValue.getName(),
-                                fnsiSourcePropertyValue.getCode(),
-                                String.format("{\"userKey\":\"%s\", \"url\":\"%s\"}",
-                                        fnsiSourcePropertyValue.getUserKey(), fnsiSourcePropertyValue.getUrl()),
-                                FnsiSyncSourceServiceFactory.class.getSimpleName()
-                        ));
-                        logger.info("source property for refbook {} loaded", fnsiSourcePropertyValue.getName());
-                    }
-            );
+        if (property.getValues() == null) {
+            logger.info("No source properties to load");
+            return;
         }
+
+        property.getValues().forEach(propertyValue ->{
+
+                    dao.save(new SyncSource(
+                            propertyValue.getName(),
+                            propertyValue.getCode(),
+                            String.format("{\"userKey\":\"%s\", \"url\":\"%s\"}",
+                                    propertyValue.getUserKey(), propertyValue.getUrl()),
+                            FnsiSyncSourceServiceFactory.class.getSimpleName()
+                    ));
+
+                    logger.info("Source property for refbook {} loaded", propertyValue.getName());
+                }
+        );
     }
 }

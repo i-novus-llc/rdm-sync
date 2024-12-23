@@ -29,6 +29,6 @@ public class RdmSourceLoaderService implements SourceLoaderService {
         dao.save(source);
 
         logger.info("Load source with\n name: {} \n code: {} \n init_values: {} \n service: {}",
-                source.getName(),source.getCode(),source.getInitValues(),source.getFactoryName());
+                source.getName(), source.getCode(), source.getInitValues(), source.getFactoryName());
     }
 }

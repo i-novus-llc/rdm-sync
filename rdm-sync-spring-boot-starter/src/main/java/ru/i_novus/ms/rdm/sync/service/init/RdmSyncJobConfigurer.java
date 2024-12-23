@@ -18,7 +18,7 @@ import java.util.Date;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
-import static org.springframework.util.StringUtils.isEmpty;
+import static ru.i_novus.ms.rdm.sync.util.StringUtils.isEmpty;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
