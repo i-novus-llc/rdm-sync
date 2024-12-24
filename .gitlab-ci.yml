@@ -8,7 +8,6 @@ include:
 build and verify:
   variables:
     MAVEN_GOAL: verify
-    DC_EXTRA_BUILD_CONFIG: '-f .docker-compose/target/docker-compose.build.mr.yml'
 
 # Т.к. у нас нет dev-стенда -- убираем post-dev, чтобы в Jira не проставлялась дата установки на develop
 post dev:
