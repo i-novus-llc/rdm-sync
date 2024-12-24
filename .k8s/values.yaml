@@ -17,7 +17,7 @@ springServices:
     resources:
       limits:
         memory: 1000M
-    overrideDbName: rdm-sync
+    overrideDbName: rdm_sync
 
 genericServices:
   activemq:
