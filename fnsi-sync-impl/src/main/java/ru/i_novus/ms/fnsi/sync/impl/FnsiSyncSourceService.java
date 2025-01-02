@@ -25,6 +25,8 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
     private static final Logger logger = LoggerFactory.getLogger(FnsiSyncSourceService.class);
 
+    private static final String PRIMARY_KEY_TYPE = "PRIMARY";
+
     private final RestTemplate restTemplate;
 
     private final String fnsiUrl;
@@ -55,8 +57,9 @@ public class FnsiSyncSourceService implements SyncSourceService {
             RefBookStructure refBookStructure = getRefBookStructure(code, refBook.getVersion());
             refBook.setStructure(refBookStructure);
             return refBook;
+
         } else {
-            //получаю все версии чтобы заполнить дату закрытия версии
+            // Нужны все версии, чтобы заполнить дату закрытия версии
             return getVersions(code).stream()
                     .filter(refBookVersion -> version.equals(refBookVersion.getVersion()))
                     .findAny()
@@ -258,19 +261,33 @@ public class FnsiSyncSourceService implements SyncSourceService {
     }
 
     private RefBookStructure getRefBookStructure(String code, String lastVersion) {
+
         JsonNode structureNode = requestStructure(code, lastVersion);
-        RefBookStructure refBookStructure = new RefBookStructure();
-        refBookStructure.setPrimaries(
-                structureNode.findValues("keys")
-                        .stream()
-                        .map(jsonnode -> jsonnode.get(0).get("field").asText())
-                        .collect(Collectors.toList()));
-        Iterator<JsonNode> fields = structureNode.get("fields").elements();
+        final RefBookStructure refBookStructure = new RefBookStructure();
+        refBookStructure.setPrimaries(findPrimaries(structureNode));
+
+        final Iterator<JsonNode> fields = structureNode.get("fields").elements();
         Map<String, AttributeTypeEnum> attributesAndTypes = new HashMap<>();
-        fields.forEachRemaining(jsonNode -> attributesAndTypes.put(jsonNode.get("field").asText(), getAttrType(jsonNode.get("dataType").asText())));
+        fields.forEachRemaining(jsonNode ->
+                attributesAndTypes.put(jsonNode.get("field").asText(), getAttrType(jsonNode.get("dataType").asText()))
+        );
         refBookStructure.setAttributesAndTypes(attributesAndTypes);
         refBookStructure.setReferences(Collections.emptyList());
+
         return refBookStructure;
+    }
+
+    private static List<String> findPrimaries(JsonNode structureNode) {
+
+        final Iterator<JsonNode> keys = structureNode.get("keys").elements();
+        List<String> result = new ArrayList<>();
+        while (keys.hasNext()) {
+            final JsonNode node = keys.next();
+            if (node.get("type") != null && PRIMARY_KEY_TYPE.equals(node.get("type").asText())) {
+                result.add(node.get("field").asText());
+            }
+        }
+        return result;
     }
 
 
