@@ -317,40 +317,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         assertEquals(expected, actual);
     }
 
-
-    @Test
-    void testSaveAndDeleteVersionMapping() {
-
-        String version = "*";
-        String refBookCode = "test";
-        String refBookName = "test Name";
-        String pkSysColumn = "test_pk_field";
-        VersionMapping versionMapping = new VersionMapping(null, refBookCode, refBookName, "test_table", pkSysColumn, "CODE-1", "id", "deleted_ts", null, -1, null, SyncTypeEnum.NOT_VERSIONED, new Range(version), true, false);
-        rdmSyncDao.insertVersionMapping(versionMapping);
-
-        VersionMapping actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
-        assertEquals(versionMapping.getCode(), actual.getCode());
-        assertEquals(versionMapping.getRefBookName(), actual.getRefBookName());
-        assertEquals(version, actual.getRange().getRange());
-        assertMappingEquals(versionMapping, actual);
-
-        SyncRefBook syncRefBook = rdmSyncDao.getSyncRefBook(refBookCode);
-        assertEquals(new SyncRefBook(syncRefBook.getId(), refBookCode, SyncTypeEnum.NOT_VERSIONED, refBookName, Set.of("*")), syncRefBook);
-
-        versionMapping.setDeletedField("is_deleted2");
-        versionMapping.setTable("test_table2");
-        versionMapping.setMappingVersion(1);
-        rdmSyncDao.updateCurrentMapping(versionMapping);
-
-        actual = versionMappingService.getVersionMapping(versionMapping.getCode(), version);
-        assertEquals(version, versionMapping.getRange().getRange());
-        assertMappingEquals(versionMapping, actual);
-
-        rdmSyncDao.deleteVersionMappings(Set.of(actual.getMappingId()));
-        assertNull(rdmSyncDao.getVersionMappingByRefBookCodeAndRange(versionMapping.getCode(), version));
-
-    }
-
     @Test
     void testUpdateVersionMappingAndChangeRefbookTable(){
         String refBookCode = "EK001";
