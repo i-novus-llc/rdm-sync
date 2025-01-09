@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <includeAll path="classpath*:/rdm-sync-db/changelog/" resourceComparator="ru.i_novus.ms.rdm.sync.init.liquibase.LiquibaseChangelogComparator"/>
+    <includeAll path="classpath*:/rdm-sync-db/quartz/" resourceComparator="ru.i_novus.ms.rdm.sync.init.liquibase.LiquibaseChangelogComparator"/>
+</databaseChangeLog>
