@@ -24,9 +24,9 @@ public enum AttributeTypeEnum {
     STRING_ARRAY(toStringArray());
 
     private static final ZoneId LOCAL_DATE_ZONE_ID = ZoneId.of("Europe/Moscow");
-    private static final String DATE_ITEM_ISO_SEPARATOR = "-";
+    private static final int MILLIS_DATE_LENGTH = 13;
     private static final String DATE_ITEM_EUROPEAN_SEPARATOR = ".";
-    public static final String DATE_EUROPEAN_PATTERN = "dd.MM.yyyy";
+    private static final String DATE_EUROPEAN_PATTERN = "dd.MM.yyyy";
     private static final String ITEM_SEPARATOR_REGEX = ";";
 
     private static final Map<String, AttributeTypeEnum> TYPE_MAP = new HashMap<>();
@@ -67,7 +67,7 @@ public enum AttributeTypeEnum {
 
     private static LocalDate toLocalDate(String value) {
 
-        if (value.length() == 13) {
+        if (value.length() == MILLIS_DATE_LENGTH) {
             return LocalDate.ofInstant(Instant.ofEpochMilli(Long.parseLong(value)), LOCAL_DATE_ZONE_ID);
         }
 
