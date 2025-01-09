@@ -18,14 +18,14 @@ import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMappingField;
+import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMapping;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingField;
-import ru.i_novus.ms.rdm.sync.model.loader.XmlMappingRefBook;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.RefBookDownloader;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
@@ -48,16 +48,12 @@ import static java.util.stream.Collectors.toList;
  * @since 20.02.2019
  */
 
-@SuppressWarnings({"java:S3740", "I-novus:MethodNameWordCountRule"})
 public class RdmSyncServiceImpl implements RdmSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncServiceImpl.class);
 
     @Value("${rdm-sync.threads.count:3}")
     private int threadsCount = 3;
-
-    private static final String LOG_NO_MAPPING_FOR_REFBOOK =
-            "No mapping found for reference book with code '{}'.";
 
     @Autowired
     private RdmLoggingService loggingService;
@@ -106,8 +102,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.info("Interrupted, sync stopping");
-            executorService.shutdownNow();
+            logger.info("Interrupted, sync stopping", e);
         }
     }
 
@@ -116,7 +111,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
         SyncRefBook syncRefBook = dao.getSyncRefBook(refBookCode);
         if (syncRefBook == null) {
-            logger.error(LOG_NO_MAPPING_FOR_REFBOOK, refBookCode);
+            logger.error( "No mapping found for reference book with code '{}'.", refBookCode);
             return;
         }
         List<String> versions = getVersions(refBookCode);

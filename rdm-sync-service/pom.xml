@@ -27,6 +27,10 @@
             <artifactId>rdm-sync-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.i-novus.ms.rdm.sync</groupId>
+            <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
@@ -85,6 +89,18 @@
 
     <build>
         <finalName>rdm-sync-service</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <executable>false</executable>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
@@ -96,18 +112,6 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <configuration>
-                            <executable>true</executable>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 

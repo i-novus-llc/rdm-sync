@@ -1211,19 +1211,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void deleteVersionMappings(Set<Integer> mappingIds) {
-        // Удаляем запись из таблицы rdm_sync.field_mapping по mapping_id
-        final String delFieldSql = "DELETE FROM rdm_sync.field_mapping WHERE mapping_id in (:mappingIds);";
-
-        // Удаляем запись из таблицы rdm_sync.version по mapping_id
-        final String delVersionSql = "DELETE FROM rdm_sync.version WHERE mapping_id in (:mappingIds);";
-
-        // Удаляем запись из таблицы rdm_sync.mapping по id
-        final String delMappingSql = "DELETE FROM rdm_sync.mapping WHERE id in (:mappingIds);";
-        namedParameterJdbcTemplate.update(delFieldSql + delVersionSql + delMappingSql, Map.of("mappingIds", mappingIds));
-    }
-
-    @Override
     public List<String> getColumns(String schema, String table) {
         return namedParameterJdbcTemplate.queryForList(
                 "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name   = :table",
@@ -1240,18 +1227,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 Map.of("schema", schema, "table", table),
                 Boolean.class
         );
-    }
-
-
-    @Override
-    public void refreshTable(String schema, String table, List<FieldMapping> newFieldMappings) {
-        StringBuilder ddl = new StringBuilder(String.format("ALTER TABLE %s.%s ", escapeName(schema), escapeName(table)));
-
-        ddl.append(newFieldMappings.stream()
-                .map(mapping -> String.format(" ADD COLUMN %s %s", escapeName(mapping.getSysField()), mapping.getSysDataType()))
-                .collect(joining(", ")));
-
-        getJdbcTemplate().execute(ddl.toString());
     }
 
     private void createTable(String schema, String table,

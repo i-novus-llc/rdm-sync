@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
-import ru.i_novus.ms.rdm.sync.util.VersionMappingComparator;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMappingComparator;
 
 import java.util.List;
 import java.util.stream.Collectors;

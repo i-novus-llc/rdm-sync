@@ -26,7 +26,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform-parent</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.4</version>
     </parent>
 
     <scm>
@@ -66,6 +66,7 @@
         <module>rdm-sync-spring-boot-starter</module>
         <module>rdm-sync-service</module>
         <module>fnsi-sync-impl</module>
+        <module>rdm-sync-init-spring-boot-starter</module>
     </modules>
 
     <dependencies>
@@ -90,6 +91,12 @@
             <dependency>
                 <groupId>ru.i-novus.ms.rdm.sync</groupId>
                 <artifactId>rdm-sync-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ru.i-novus.ms.rdm.sync</groupId>
+                <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -182,6 +189,16 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>process-docker-config</id>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -191,35 +208,6 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>copy-resources</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.basedir}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/docker-config</directory>
-                                            <filtering>true</filtering>
-                                            <includes>
-                                                <include>*.yml</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <!-- Activate using the release property: mvn clean install -Prelease -->
         <profile>

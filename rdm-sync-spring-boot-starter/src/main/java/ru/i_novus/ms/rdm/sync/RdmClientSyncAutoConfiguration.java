@@ -1,12 +1,10 @@
 package ru.i_novus.ms.rdm.sync;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,16 +26,12 @@ import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
-import ru.i_novus.ms.rdm.sync.service.change_data.*;
-import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreator;
-import ru.i_novus.ms.rdm.sync.service.init.LocalRefBookCreatorLocator;
+import ru.i_novus.ms.rdm.sync.service.change_data.RdmChangeDataRequestCallback;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.updater.DefaultRefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 
-import javax.sql.DataSource;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,7 +42,7 @@ import java.util.Map;
 @ConditionalOnClass(RdmSyncServiceImpl.class)
 @ConditionalOnProperty(value = "rdm-sync.enabled", matchIfMissing = true)
 @ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
-@EnableConfigurationProperties({RdmClientSyncProperties.class, RdmClientSyncLiquibaseParameters.class})
+@EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 @EnableJms
 @Slf4j
@@ -72,37 +66,6 @@ public class RdmClientSyncAutoConfiguration {
         return config;
     }
 
-    /**
-     * Liquibase для rdm-sync.
-     *
-     * @param dataSource источник данных
-     * @param parameters параметры liquibase
-     * @return Экземпляр Liquibase
-     */
-    @Bean
-    @DependsOn("liquibase")
-    public SpringLiquibase liquibaseRdm(DataSource dataSource,
-                                        RdmClientSyncLiquibaseParameters parameters) {
-
-        final SpringLiquibase liquibase = new SpringLiquibase();
-        liquibase.setDataSource(dataSource);
-        liquibase.setDatabaseChangeLogLockTable("databasechangeloglock_rdms");
-        if(!parameters.isQuartzEnabled()) {
-            log.info("disabled quartz schemas initialization");
-            liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelog.xml");
-
-        } else {
-            log.info("enabled quartz schemas initialization");
-            liquibase.setChangeLog("classpath*:/rdm-sync-db/baseChangelogWithQuartz.xml");
-
-            final Map<String, String> changeLogParameters = new HashMap<>(2);
-            changeLogParameters.put("quartz_schema_name", parameters.getQuartzSchemaName());
-            changeLogParameters.put("quartz_table_prefix", parameters.getQuartzTablePrefix());
-            liquibase.setChangeLogParameters(changeLogParameters);
-        }
-
-        return liquibase;
-    }
 
     @Bean
     @Primary
@@ -143,25 +106,6 @@ public class RdmClientSyncAutoConfiguration {
         return new PublishListener(rdmSyncService);
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "rdm-sync.change_data.mode", havingValue = "async")
-    public RdmChangeDataListener rdmChangeDataListener(@Value("${rdm.backend.path}") String url,
-                                                       RdmChangeDataRequestCallback rdmChangeDataRequestCallback) {
-        return new RdmChangeDataListener(url, rdmChangeDataRequestCallback);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "sync")
-    public RdmChangeDataClient syncRdmChangeDataClient(@Value("${rdm.backend.path}") String url) {
-        return new SyncRdmChangeDataClient(url);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "rdm-sync.change_data.mode", havingValue = "async")
-    public RdmChangeDataClient asyncRdmChangeDataClient(@Value("${rdm-sync.change_data.queue:rdmChangeData}")
-                                                        String rdmChangeDataQueue) {
-        return new AsyncRdmChangeDataClient(rdmChangeDataQueue);
-    }
 
     @Bean
     public RdmChangeDataRequestCallback rdmChangeDataRequestCallback() {
@@ -230,19 +174,7 @@ public class RdmClientSyncAutoConfiguration {
                 SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, rdmNotVersionedRefBookUpdater));
     }
 
-    @Bean
-    public LocalRefBookCreatorLocator localRefBookCreatorLocator(
-            @Qualifier("notVersionedLocalRefBookCreator") LocalRefBookCreator notVersionedLocalRefBookCreator,
-            @Qualifier("naturalPKLocalRefBookCreator") LocalRefBookCreator naturalPKLocalRefBookCreator,
-            @Qualifier("simpleVersionedLocalRefBookCreator") LocalRefBookCreator simpleVersionedLocalRefBookCreator
-    ) {
-        return new LocalRefBookCreatorLocator(Map.of(
-                SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
-                SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,
-                SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
-                SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator,
-                SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator));
-    }
+
 
     @Bean(name = "applicationEventMulticaster")
     public ApplicationEventMulticaster simpleApplicationEventMulticaster() {
