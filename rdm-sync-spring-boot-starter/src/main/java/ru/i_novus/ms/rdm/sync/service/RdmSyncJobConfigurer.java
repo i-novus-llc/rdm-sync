@@ -1,6 +1,5 @@
 package ru.i_novus.ms.rdm.sync.service;
 
-import jakarta.annotation.PostConstruct;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,16 +9,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.quartz.RdmSyncImportRecordsFromRdmJob;
 import ru.i_novus.ms.rdm.sync.util.StringUtils;
 
 import java.util.Date;
-
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
-import static ru.i_novus.ms.rdm.sync.util.StringUtils.isEmpty;
 
 @Component
 @ConditionalOnClass(name = "org.quartz.Scheduler")
