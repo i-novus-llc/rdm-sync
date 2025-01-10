@@ -32,7 +32,7 @@ public class NotVersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorD
         String addUniqueConstraint = "ALTER TABLE {schema}.{table} ADD CONSTRAINT {constraint} UNIQUE({column})";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(StringSubstitutor.replace(
                 addUniqueConstraint,
-                Map.of("schema", pgTable.getSchema(), "table", pgTable.getTable(), "constraint", pgTable.getUniqueConstraint(), "column", pgTable.getPrimaryField()), "{", "}"));
+                Map.of("schema", pgTable.getSchema(), "table", pgTable.getTable(), "constraint", pgTable.getUniqueConstraint(), "column", pgTable.getPrimaryField().orElseThrow()), "{", "}"));
     }
 
 

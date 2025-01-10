@@ -109,13 +109,14 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         if (Boolean.TRUE.equals(exists))
             return;
 
-        String query = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR NOT NULL DEFAULT '%s'", schemaTable, RDM_SYNC_INTERNAL_STATE_COLUMN, "DIRTY");
+        PgTable pgTable = new PgTable(schemaTable);
+        String query = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR NOT NULL DEFAULT '%s'", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN, "DIRTY");
         namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
 
-        query = String.format("CREATE INDEX ON %s (%s)", schemaTable, RDM_SYNC_INTERNAL_STATE_COLUMN);
+        query = String.format("CREATE INDEX ON %s (%s)", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN);
         namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
 
-        int n = namedParameterJdbcTemplate.update(String.format("UPDATE %s SET %s = :synced", schemaTable, RDM_SYNC_INTERNAL_STATE_COLUMN), Map.of("synced", "SYNCED"));
+        int n = namedParameterJdbcTemplate.update(String.format("UPDATE %s SET %s = :synced", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN), Map.of("synced", "SYNCED"));
         if (n != 0)
             log.info("{} records updated internal state to {} in table {}", n, "SYNCED", schemaTable);
     }
