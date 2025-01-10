@@ -147,9 +147,8 @@ abstract public class BaseSyncServiceUseCaseTest {
     }
 
     protected void prepareRowToAssert(Map<String, Object> row) {
-
         assertNotNull(row);
-
+        row.remove("rdm_sync_internal_local_row_state");
         row.remove(RECORD_SYS_COL);
     }
 
