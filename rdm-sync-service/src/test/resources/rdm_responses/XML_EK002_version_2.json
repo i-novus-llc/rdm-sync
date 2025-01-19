@@ -1,0 +1,74 @@
+{
+  "id": 286,
+  "optLockValue": 4,
+  "refBookId": 173,
+  "code": "XML_EK002",
+  "type": "DEFAULT",
+  "version": "2",
+  "fromDate": "2021-02-05T12:38:33",
+  "status": "PUBLISHED",
+  "archived": false,
+  "passport": {
+    "name": "Цвета",
+    "shortName": "Цвета"
+  },
+  "structure": {
+    "references": [
+      {
+        "attribute": "ref",
+        "referenceCode": "M1",
+        "displayExpression": "${name}"
+      }
+    ],
+    "attributes": [
+      {
+        "code": "id",
+        "name": "Ид",
+        "type": "INTEGER",
+        "isPrimary": true,
+        "localizable": false
+      },
+      {
+        "code": "is_cold",
+        "name": "Является холодным",
+        "type": "BOOLEAN",
+        "isPrimary": false,
+        "localizable": false
+      },
+      {
+        "code": "code_en",
+        "name": "Код (en)",
+        "type": "STRING",
+        "isPrimary": false,
+        "localizable": false
+      },
+      {
+        "code": "name_ru",
+        "name": "Название (ру)",
+        "type": "STRING",
+        "isPrimary": false,
+        "localizable": false
+      },
+      {
+        "code": "ref",
+        "name": "ссылка на мебель",
+        "type": "REFERENCE",
+        "isPrimary": false,
+        "localizable": false
+      }
+    ]
+  },
+  "editDate": "2021-02-05T12:38:33",
+  "removable": false,
+  "lastPublishedVersionId": 286,
+  "lastPublishedVersion": "2",
+  "lastPublishedVersionFromDate": "2021-02-05T12:38:33",
+  "hasPrimaryAttribute": true,
+  "hasReferrer": false,
+  "hasDataConflict": false,
+  "hasUpdatedConflict": false,
+  "hasAlteredConflict": false,
+  "hasStructureConflict": false,
+  "lastHasConflict": false,
+  "draft": false
+}

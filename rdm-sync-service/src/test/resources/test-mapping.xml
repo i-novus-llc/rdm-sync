@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapping>
+    <refbook code="1.2.643.5.1.13.2.1.1.726" source="FNSI" type="NOT_VERSIONED"
+             unique-sys-field="ID" deleted-field="deleted_ts" mapping-version="1">
+        <field sys-field="ID" rdm-field="ID" sys-data-type="integer"/>
+        <field sys-field="MNN_ID" rdm-field="MNN_ID" sys-data-type="integer"/>
+        <field sys-field="DRUG_FORM_ID" rdm-field="DRUG_FORM_ID" sys-data-type="integer"/>
+        <field sys-field="DOSE_ID" rdm-field="DOSE_ID" sys-data-type="integer" ignore-if-not-exists="true"/>
+        <field sys-field="IGNORED_FIELD" rdm-field="IGNORED_FIELD" sys-data-type="integer" ignore-if-not-exists="true"/>
+    </refbook>
+
+    <refbook code="1.2.643.5.1.13.13.11.1040" source="FNSI" type="SIMPLE_VERSIONED"
+             name="Пол пациента" sys-table="reference.gender"
+             unique-sys-field="name" mapping-version="2" range="*">
+        <field sys-field="src_id" sys-data-type="integer" rdm-field="ID" default-value="-1"/>
+        <field sys-field="name" sys-data-type="varchar" rdm-field="NAME"/>
+        <field sys-field="code" sys-data-type="varchar" rdm-field="CODE" ignore-if-not-exists="true"/>
+    </refbook>
+
+    <refbook code="XML_EK002" source="RDM" type="NOT_VERSIONED"
+             unique-sys-field="id" deleted-field="deleted_ts"
+             mapping-version="1">
+        <field sys-field="id" rdm-field="id" sys-data-type="integer"/>
+        <field sys-field="is_cold" rdm-field="is_cold" sys-data-type="boolean"/>
+        <field sys-field="code_en" rdm-field="code_en" sys-data-type="varchar"/>
+        <field sys-field="name_ru" rdm-field="name_ru" sys-data-type="varchar"/>
+        <field sys-field="ref" rdm-field="ref" sys-data-type="varchar"/>
+    </refbook>
+
+    <refbook code="XML_EK003" source="RDM" type="SIMPLE_VERSIONED"
+             unique-sys-field="id" deleted-field="deleted_ts"
+             mapping-version="1">
+        <field sys-field="id" rdm-field="id" sys-data-type="integer"/>
+        <field sys-field="name" rdm-field="name" sys-data-type="varchar"/>
+    </refbook>
+</mapping>
