@@ -32,7 +32,7 @@ public class RdmSourceLoaderServiceTest {
 
     @Test
     public void testLoad() {
-        SyncSource syncSourceActual = new SyncSource("RDM", "RDM", "abc", "RdmSyncSourceServiceFactory");
+        SyncSource syncSourceActual = new SyncSource("RDM", "RDM", url, "RdmSyncSourceServiceFactory");
         sourceLoaderService.load();
         verify(syncSourceDao).save(eq(syncSourceActual));
     }

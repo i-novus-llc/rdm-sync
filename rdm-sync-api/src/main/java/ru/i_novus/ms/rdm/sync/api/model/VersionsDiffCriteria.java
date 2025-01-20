@@ -17,6 +17,19 @@ public class VersionsDiffCriteria extends RestCriteria {
 
     private final String oldVersion;
 
+    /**
+     * Кэширование id старой версии для исключения лишних запросов id.
+     */
+    private Integer oldVersionId;
+
+    /**
+     * Кэширование id новой версии для исключения лишних запросов id.
+     */
+    private Integer newVersionId;
+
+    /**
+     * Множество полей, по которым нужна разница в значениях.
+     */
     private final Set<String> fields;
 
     private final RefBookStructure newVersionStructure;
@@ -25,10 +38,12 @@ public class VersionsDiffCriteria extends RestCriteria {
 
     private LocalDateTime toDate;
 
-    public VersionsDiffCriteria(String refBookCode, String newVersion, String oldVersion, Set<String> fields, RefBookStructure newVersionStructure) {
+    public VersionsDiffCriteria(String refBookCode, String newVersion, String oldVersion,
+                                Set<String> fields, RefBookStructure newVersionStructure) {
         this.refBookCode = refBookCode;
         this.newVersion = newVersion;
         this.oldVersion = oldVersion;
+
         this.fields = fields;
         this.newVersionStructure = newVersionStructure;
     }
@@ -53,6 +68,22 @@ public class VersionsDiffCriteria extends RestCriteria {
         return oldVersion;
     }
 
+    public Integer getOldVersionId() {
+        return oldVersionId;
+    }
+
+    public void setOldVersionId(Integer oldVersionId) {
+        this.oldVersionId = oldVersionId;
+    }
+
+    public Integer getNewVersionId() {
+        return newVersionId;
+    }
+
+    public void setNewVersionId(Integer newVersionId) {
+        this.newVersionId = newVersionId;
+    }
+
     public Set<String> getFields() {
         return fields;
     }
@@ -75,5 +106,17 @@ public class VersionsDiffCriteria extends RestCriteria {
 
     public void setToDate(LocalDateTime toDate) {
         this.toDate = toDate;
+    }
+
+    public void setAbsentOldVersionId(Integer oldVersionId) {
+        if (this.oldVersionId == null) {
+            this.oldVersionId = oldVersionId;
+        }
+    }
+
+    public void setAbsentNewVersionId(Integer newVersionId) {
+        if (this.newVersionId == null) {
+            this.newVersionId = newVersionId;
+        }
     }
 }

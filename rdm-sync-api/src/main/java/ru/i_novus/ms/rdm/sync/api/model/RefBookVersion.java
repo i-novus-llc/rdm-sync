@@ -4,7 +4,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class RefBookVersion extends RefBookVersionItem {
 
     private RefBookStructure structure;

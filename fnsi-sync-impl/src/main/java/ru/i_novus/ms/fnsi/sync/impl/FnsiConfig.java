@@ -12,12 +12,22 @@ import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 public class FnsiConfig {
 
     @Bean
-    public SyncSourceServiceFactory fnsiSyncSourceServiceFactory(){
-        return new FnsiSyncSourceServiceFactory(new RestTemplate());
+    public RestTemplate fnsiRestTemplate() {
+        return new RestTemplate();
     }
 
     @Bean
-    public SourceLoaderService fnsiSourceLoaderService(FnsiSourceProperty property, @Qualifier("syncSourceDaoImpl") SyncSourceDao dao){
+    public SyncSourceServiceFactory fnsiSyncSourceServiceFactory(
+            @Qualifier("fnsiRestTemplate") RestTemplate fnsiRestTemplate
+    ) {
+        return new FnsiSyncSourceServiceFactory(fnsiRestTemplate());
+    }
+
+    @Bean
+    public SourceLoaderService fnsiSourceLoaderService(
+            FnsiSourceProperty property,
+            @Qualifier("syncSourceDaoImpl") SyncSourceDao dao
+    ) {
         return new FnsiSourceLoaderService(property, dao);
     }
 

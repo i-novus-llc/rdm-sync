@@ -5,10 +5,11 @@ import jakarta.annotation.Nullable;
 public interface RefBookDownloader {
 
     /**
+     * Загрузка указанной версии справочника.
      *
      * @param refCode - код справочника
      * @param version - версия справочника
-     * @return Наименование таблицы куда скачались данные и тип данных версия или разница между версиями
+     * @return Наименование таблицы, куда скачались записи версии или записи разницы между версиями
      */
     DownloadResult download(String refCode, @Nullable String version);
 }

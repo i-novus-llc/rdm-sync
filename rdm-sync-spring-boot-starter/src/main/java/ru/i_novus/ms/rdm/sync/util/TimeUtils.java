@@ -26,8 +26,8 @@ public final class TimeUtils {
     public static final String DATE_TIME_PATTERN_EUROPEAN = "dd.MM.yyyy HH:mm:ss";
 
     public static final String DATE_PATTERN_ISO = "yyyy-MM-dd";
-    public static final String DATE_PATTERN_EUROPEAN = "dd.MM.u";
     public static final String DATE_PATTERN_ERA = "dd.MM.yyyy";
+    public static final String DATE_PATTERN_EUROPEAN = "dd.MM.u";
 
     public static final String DATE_TIME_PATTERN_ISO_REGEX = "^(\\d{4})-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) (0?[0-9]|[1][0-9]|2[0-3]):(0?[0-9]|[1-5][0-9]):(0?[0-9]|[1-5][0-9])$";
     public static final String DATE_TIME_PATTERN_ISO_WITH_TIME_DELIMITER_REGEX = "^(\\d{4})-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])T(0?[0-9]|[1][0-9]|2[0-3]):(0?[0-9]|[1-5][0-9]):(0?[0-9]|[1-5][0-9])$";
@@ -151,7 +151,7 @@ public final class TimeUtils {
         if (value instanceof LocalDateTime)
             return ((LocalDateTime) value).toLocalDate();
 
-        String result = String.valueOf(value);
+        final String result = String.valueOf(value);
         return LocalDate.parse(result, toDateFormatter(result));
     }
 

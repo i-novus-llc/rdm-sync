@@ -18,6 +18,7 @@ import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jms.annotation.EnableJms;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
@@ -43,7 +44,9 @@ import java.util.Map;
 @ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 @EnableConfigurationProperties({RdmClientSyncProperties.class})
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
+@EnableJms
 @Slf4j
+@SuppressWarnings("I-novus:MethodNameWordCountRule")
 public class RdmClientSyncAutoConfiguration {
 
     @Autowired
@@ -127,37 +130,42 @@ public class RdmClientSyncAutoConfiguration {
 
 
     @Bean
-    public RefBookUpdater notVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                     @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                     RdmLoggingService rdmLoggingService,
-                                                     VersionMappingService versionMappingService
-                                                     ) {
-        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
-    }
-
-    @Bean
-    public RefBookUpdater rdmNotVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        @Qualifier("notVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService,
-                                                        VersionMappingService versionMappingService
+    public RefBookUpdater notVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
     ) {
         return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
     @Bean
-    public RefBookUpdater simpleVersionedRefBookUpdater(RdmSyncDao rdmSyncDao,
-                                                        @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
-                                                        RdmLoggingService rdmLoggingService,
-                                                        VersionMappingService versionMappingService
+    public RefBookUpdater rdmNotVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("notVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
+    ) {
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
+    }
+
+    @Bean
+    public RefBookUpdater simpleVersionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("simpleVersionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
     ) {
         return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
 
     @Bean
-    public RefBookUpdaterLocator refBookUpdaterLocator(@Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
-                                                       @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
-                                                       @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater) {
+    public RefBookUpdaterLocator refBookUpdaterLocator(
+            @Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
+            @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
+            @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater
+    ) {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
