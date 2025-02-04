@@ -3,14 +3,15 @@ package ru.i_novus.ms.rdm.sync.init;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
@@ -39,7 +40,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
 
     @Transactional
     @Override
-    public void create(SyncMapping syncMapping) {
+    public void create(SyncMapping syncMapping, RefBookStructure structure) {
         String refBookCode = syncMapping.getVersionMapping().getCode();
         String range = syncMapping.getVersionMapping().getRange() != null ? syncMapping.getVersionMapping().getRange().getRange() : null;
         VersionMapping versionMapping = versionMappingService.getVersionMappingByCodeAndRange(refBookCode, range);
@@ -47,15 +48,28 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         String tableName = getTableNameWithSchema(refBookCode, syncMapping.getVersionMapping().getTable());
 
         if (!dao.tableExists(tableName)) {
-            createTable(tableName, syncMapping.getVersionMapping(), syncMapping.getFieldMapping());
+            Map<String, String> attributeDescriptions = structure.getAttributes().stream()
+                    .collect(Collectors.toMap(RefBookStructure.Attribute::code, RefBookStructure.Attribute::description));
+            createTable(
+                    tableName,
+                    syncMapping.getVersionMapping(),
+                    syncMapping.getFieldMapping(),
+                    structure.getRefDescription(),
+                    attributeDescriptions
+            );
         } else {
             refreshTable(tableName, syncMapping.getFieldMapping());
         }
     }
 
 
-    protected void createTable(String tableName, VersionMapping mapping, List<FieldMapping> fieldMappings) {
-        dao.createTable(tableName, mapping.getCode(), mapping, fieldMappings);
+    protected void createTable(String tableName,
+                               VersionMapping mapping,
+                               List<FieldMapping> fieldMappings,
+                               String refDescription,
+                               Map<String, String> fieldDescription) {
+
+        dao.createTable(tableName, mapping.getCode(), mapping, fieldMappings, refDescription, fieldDescription);
         logger.info("Table {}  successfully prepared.", tableName);
     }
 
@@ -87,7 +101,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         List<FieldMapping> newFieldMappings = fieldMappings.stream().filter(fieldMapping -> !columns.contains(fieldMapping.getSysField())).collect(Collectors.toList());
         if (!newFieldMappings.isEmpty()) {
             logger.info("change structure of table {}", tableName);
-            dao.refreshTable(tableName, newFieldMappings);
+            dao.refreshTable(tableName, newFieldMappings, null, null);
         }
     }
 

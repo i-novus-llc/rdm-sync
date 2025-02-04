@@ -109,7 +109,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 if (!"null".equals(value.trim())) {
                     String column = cellNode.get("column").asText();
                     if (dataCriteria.getFields().contains(column)) {
-                        AttributeTypeEnum attributeTypeEnum = refBookStructure.getAttributesAndTypes().get(column);
+                        AttributeTypeEnum attributeTypeEnum = refBookStructure.getAttribute(column).type();
                         try {
                             row.put(column, attributeTypeEnum.castValue(value));
                         } catch (Exception e) {
@@ -142,17 +142,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
         int total = jsonNode.get("data").get("total").intValue();
         List<RowDiff> rowDiffList = new ArrayList<>();
         diffsNode.elements().forEachRemaining(diffNode -> {
-            Map<String, AttributeTypeEnum> attributesAndTypes = criteria.getNewVersionStructure().getAttributesAndTypes();
+            Set<RefBookStructure.Attribute> attributes = criteria.getNewVersionStructure().getAttributes();
             Map<String, Object> row = new HashMap<>();
-            for (Map.Entry<String, AttributeTypeEnum> entry : attributesAndTypes.entrySet()) {
-                if(!criteria.getFields().contains(entry.getKey())) {
+            for (RefBookStructure.Attribute attribute : attributes) {
+                if(!criteria.getFields().contains(attribute.code())) {
                     continue;
                 }
-                JsonNode nodeValue = diffNode.get(entry.getKey());
+                JsonNode nodeValue = diffNode.get(attribute.code());
                 if (nodeValue.asText().trim().equals("null")) {
                     continue;
                 }
-                row.put(entry.getKey(), entry.getValue().castValue(nodeValue.asText()));
+                row.put(attribute.code(), attribute.type().castValue(nodeValue.asText()));
             }
             RowDiff rowDiff = new RowDiff(getRowDiffStatusEnum(diffNode.get("operation").asText()), row);
             rowDiffList.add(rowDiff);
@@ -267,11 +267,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
         refBookStructure.setPrimaries(findPrimaries(structureNode));
 
         final Iterator<JsonNode> fields = structureNode.get("fields").elements();
-        Map<String, AttributeTypeEnum> attributesAndTypes = new HashMap<>();
+        Set<RefBookStructure.Attribute> attributes = new HashSet<>();
         fields.forEachRemaining(jsonNode ->
-                attributesAndTypes.put(jsonNode.get("field").asText(), getAttrType(jsonNode.get("dataType").asText()))
+                attributes.add(
+                        new RefBookStructure.Attribute(
+                                jsonNode.get("field").asText(),
+                                getAttrType(jsonNode.get("dataType").asText()),
+                                null
+                        )
+                )
         );
-        refBookStructure.setAttributesAndTypes(attributesAndTypes);
+        refBookStructure.setAttributes(attributes);
         refBookStructure.setReferences(Collections.emptyList());
 
         return refBookStructure;

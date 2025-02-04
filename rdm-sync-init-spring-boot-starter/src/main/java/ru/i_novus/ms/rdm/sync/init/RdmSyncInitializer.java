@@ -79,7 +79,7 @@ public class RdmSyncInitializer {
                 .sorted(new SyncMappingComparator())
                 .forEach(syncMapping ->
                         localRefBookCreatorLocator.getLocalRefBookCreator(getSyncType(syncMapping))
-                .create(syncMapping));
+                .create(syncMapping, null));
     }
 
     private SyncTypeEnum getSyncType(SyncMapping syncMapping) {

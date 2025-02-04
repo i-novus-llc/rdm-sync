@@ -22,10 +22,12 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static ru.i_novus.ms.rdm.sync.api.model.RefBookStructure.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotSimpleVersionedPersisterServiceTest {
@@ -97,7 +99,10 @@ class NotSimpleVersionedPersisterServiceTest {
         refBook.setVersion("1.0");
         refBook.setFrom(LocalDateTime.of(2019, Month.FEBRUARY, 26, 10, 0));
         RefBookStructure refBookStructure = new RefBookStructure();
-        refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        refBookStructure.setAttributes(Set.of(
+                new Attribute("id", AttributeTypeEnum.INTEGER, "Ид"),
+                new Attribute("name", AttributeTypeEnum.STRING, "Наименование")
+        ));
         refBookStructure.setPrimaries(singletonList("id"));
         refBook.setStructure(refBookStructure);
         return refBook;
@@ -111,7 +116,10 @@ class NotSimpleVersionedPersisterServiceTest {
         refBook.setVersion("1.1");
         refBook.setFrom(LocalDateTime.of(2019, Month.FEBRUARY, 27, 10, 0));
         RefBookStructure refBookStructure = new RefBookStructure();
-        refBookStructure.setAttributesAndTypes(Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        refBookStructure.setAttributes(Set.of(
+                new Attribute("id", AttributeTypeEnum.INTEGER, "Ид"),
+                new Attribute("name", AttributeTypeEnum.STRING, "Наименование")
+        ));
         refBookStructure.setPrimaries(singletonList("id"));
         refBook.setStructure(refBookStructure);
         return refBook;

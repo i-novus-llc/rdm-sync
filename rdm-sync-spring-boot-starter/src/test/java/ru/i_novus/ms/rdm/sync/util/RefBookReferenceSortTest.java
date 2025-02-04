@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.util;
 
 
 import org.junit.jupiter.api.Test;
-import ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 
@@ -56,14 +55,14 @@ public class RefBookReferenceSortTest {
         refBook6.setCode("6");
         refBook7.setCode("7");
 
-        refBook0.setStructure(newStructure(emptyMap(), emptyList()));
-        refBook1.setStructure(newStructure(emptyMap(), singletonList(refBook0.getCode())));
-        refBook2.setStructure(newStructure(emptyMap(), singletonList(refBook1.getCode())));
-        refBook3.setStructure(newStructure(emptyMap(), singletonList(refBook1.getCode())));
-        refBook4.setStructure(newStructure(emptyMap(), emptyList()));
-        refBook5.setStructure(newStructure(emptyMap(), List.of(refBook2.getCode(), refBook4.getCode())));
-        refBook6.setStructure(newStructure(emptyMap(), List.of(refBook3.getCode(), refBook4.getCode())));
-        refBook7.setStructure(newStructure(emptyMap(), List.of(refBook5.getCode(), refBook6.getCode())));
+        refBook0.setStructure(newStructure(emptySet(), emptyList()));
+        refBook1.setStructure(newStructure(emptySet(), singletonList(refBook0.getCode())));
+        refBook2.setStructure(newStructure(emptySet(), singletonList(refBook1.getCode())));
+        refBook3.setStructure(newStructure(emptySet(), singletonList(refBook1.getCode())));
+        refBook4.setStructure(newStructure(emptySet(), emptyList()));
+        refBook5.setStructure(newStructure(emptySet(), List.of(refBook2.getCode(), refBook4.getCode())));
+        refBook6.setStructure(newStructure(emptySet(), List.of(refBook3.getCode(), refBook4.getCode())));
+        refBook7.setStructure(newStructure(emptySet(), List.of(refBook5.getCode(), refBook6.getCode())));
 
         List<RefBookVersion> refBooks = List.of(
                 refBook0, refBook1, refBook2, refBook3, refBook4, refBook5, refBook6, refBook7
@@ -78,9 +77,9 @@ public class RefBookReferenceSortTest {
         }
     }
 
-    private RefBookStructure newStructure(Map<String, AttributeTypeEnum> attributesAndTypes, List<String> references) {
+    private RefBookStructure newStructure(Set<RefBookStructure.Attribute> attributes, List<String> references) {
         RefBookStructure refBookStructure = new RefBookStructure();
-        refBookStructure.setAttributesAndTypes(attributesAndTypes);
+        refBookStructure.setAttributes(attributes);
         refBookStructure.setReferences(references);
         return refBookStructure;
     }

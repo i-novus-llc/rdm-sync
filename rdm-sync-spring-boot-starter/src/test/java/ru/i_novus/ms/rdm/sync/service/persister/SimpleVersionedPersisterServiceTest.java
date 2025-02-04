@@ -18,10 +18,7 @@ import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -89,7 +86,14 @@ class SimpleVersionedPersisterServiceTest {
         String versionNumber = "1";
         String refCode = "test";
         LocalDateTime publishDate = LocalDateTime.of(2021, 1, 14, 9, 21);
-        RefBookStructure structure = new RefBookStructure(null, Collections.singletonList("id"), Map.of("id", AttributeTypeEnum.INTEGER, "name", AttributeTypeEnum.STRING));
+        RefBookStructure structure = new RefBookStructure(
+                null,
+                Collections.singletonList("id"),
+                Set.of(
+                        new RefBookStructure.Attribute("id", AttributeTypeEnum.INTEGER, "Ид"),
+                        new RefBookStructure.Attribute("name", AttributeTypeEnum.STRING, "Наименование")
+                )
+        );
         return new RefBookVersion(refCode, versionNumber, publishDate, null, 1, structure);
     }
 

@@ -204,7 +204,7 @@ class RdmSyncSourceServiceTest {
         assertNotNull(structure);
         assertEquals(1, structure.getReferences().size());
         assertEquals(1, structure.getPrimaries().size());
-        assertEquals(4, structure.getAttributesAndTypes().size());
+        assertEquals(4, structure.getAttributes().size());
     }
 
 }

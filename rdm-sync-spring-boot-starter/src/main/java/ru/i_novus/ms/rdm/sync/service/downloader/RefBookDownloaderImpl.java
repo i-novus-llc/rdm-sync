@@ -1,5 +1,6 @@
 package ru.i_novus.ms.rdm.sync.service.downloader;
 
+import jakarta.annotation.Nullable;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import ru.i_novus.ms.rdm.sync.service.RdmMappingService;
 import ru.i_novus.ms.rdm.sync.service.persister.RetryingPageIterator;
 import ru.i_novus.ms.rdm.sync.util.PageIterator;
 
-import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,7 +122,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
         return fieldMappings.stream()
                 .filter(fieldMapping -> fieldMapping.getDefaultValue() != null &&
-                        !refBookVersion.getStructure().getAttributesAndTypes().containsKey(fieldMapping.getRdmField()))
+                        refBookVersion.getStructure().getAttribute(fieldMapping.getRdmField()) == null)
                 .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getDefaultValue));
     }
 
@@ -188,7 +188,8 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
 
         } else {
             return fieldMappings.stream()
-                    .map(fieldMapping -> structure.getAttributesAndTypes().keySet().stream()
+                    .map(fieldMapping -> structure.getAttributes().stream()
+                            .map(RefBookStructure.Attribute::code)
                             .filter(attr -> fieldMapping.getRdmField().equalsIgnoreCase(attr))
                             .findAny().orElse(null))
                     .filter(Objects::nonNull)
@@ -265,7 +266,8 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         if (fieldMapping == null)
             return null; // Поле не ведётся в системе
 
-        AttributeTypeEnum attributeType = newVersion.getStructure().getAttributesAndTypes().get(rdmField);
+        RefBookStructure.Attribute attribute = newVersion.getStructure().getAttribute(rdmField);
+        AttributeTypeEnum attributeType = attribute != null ? attribute.type() : null;
 
         Map<String, Object> mappedValue = new HashMap<>();
         mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, fieldMapping, value));

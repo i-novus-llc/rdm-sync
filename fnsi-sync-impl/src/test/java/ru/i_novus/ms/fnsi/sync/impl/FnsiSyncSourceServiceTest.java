@@ -58,14 +58,14 @@ class FnsiSyncSourceServiceTest {
         final RefBookStructure expectedStructure = new RefBookStructure(
                 null,
                 singletonList("ID"),
-                Map.of(
-                        "ID", INTEGER,
-                        "SMOCOD", STRING,
-                        "CODPVP", STRING,
-                        "ADDRESS", STRING,
-                        "PHONE", STRING,
-                        "DATEEND", DATE,
-                        "DATEBEG", DATE
+                Set.of(
+                        new RefBookStructure.Attribute("ID", INTEGER, null),
+                        new RefBookStructure.Attribute("SMOCOD", STRING, null),
+                        new RefBookStructure.Attribute("CODPVP", STRING, null),
+                        new RefBookStructure.Attribute("ADDRESS", STRING, null),
+                        new RefBookStructure.Attribute("PHONE", STRING, null),
+                        new RefBookStructure.Attribute("DATEEND", DATE, null),
+                        new RefBookStructure.Attribute("DATEBEG", DATE, null)
                 ));
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
@@ -106,8 +106,20 @@ class FnsiSyncSourceServiceTest {
         dataCriteria.setPageSize(pageSize);
         final Set<String> fields = Set.of("ID", "NAME", "CODE", "RAZDEL", "DATE_BEGIN");
         dataCriteria.setFields(fields);
-        dataCriteria.setRefBookStructure(new RefBookStructure(
-                emptyList(), List.of("ID"), Map.of("ID", INTEGER, "NAME", STRING, "CODE", STRING, "RAZDEL", INTEGER, "DATE_BEGIN", DATE, "DATE_END", DATE)));
+        dataCriteria.setRefBookStructure(
+                new RefBookStructure(
+                        emptyList(),
+                        List.of("ID"),
+                        Set.of(
+                                new RefBookStructure.Attribute("ID", INTEGER, null),
+                                new RefBookStructure.Attribute("NAME", STRING, null),
+                                new RefBookStructure.Attribute("CODE", STRING, null),
+                                new RefBookStructure.Attribute("RAZDEL", INTEGER, null),
+                                new RefBookStructure.Attribute("DATE_BEGIN", DATE, null),
+                                new RefBookStructure.Attribute("DATE_END", DATE, null)
+                        )
+                )
+        );
         Page<Map<String, Object>> data = syncSourceService.getData(dataCriteria);
 
         assertEquals(174, data.getTotalElements());
@@ -215,15 +227,16 @@ class FnsiSyncSourceServiceTest {
                 new RefBookStructure(
                         emptyList(),
                         List.of("ID"),
-                        Map.of(
-                                "ID", INTEGER,
-                                "SMOCOD", STRING,
-                                "CODPVP", STRING,
-                                "ADDRESS", STRING,
-                                "PHONE", STRING,
-                                "DATEBEG", DATE,
-                                "DATEEND", DATE
-                        ))
+                        Set.of(
+                                new RefBookStructure.Attribute("ID", INTEGER, "Идентификатор"),
+                                new RefBookStructure.Attribute("SMOCOD", STRING, "Код СМО"),
+                                new RefBookStructure.Attribute("CODPVP", STRING, "Код ПВП"),
+                                new RefBookStructure.Attribute("ADDRESS", STRING, "Адрес"),
+                                new RefBookStructure.Attribute("PHONE", STRING, "Номер телефона"),
+                                new RefBookStructure.Attribute("DATEBEG", DATE, "Дата начала"),
+                                new RefBookStructure.Attribute("DATEEND", DATE, "Дата конца")
+                        )
+                )
         );
         versionsDiffCriteria.setPageSize(200);
         VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
@@ -243,15 +256,16 @@ class FnsiSyncSourceServiceTest {
                 new RefBookStructure(
                         emptyList(),
                         List.of("ID"),
-                        Map.of(
-                                "ID", INTEGER,
-                                "SMOCOD", STRING,
-                                "CODPVP", STRING,
-                                "ADDRESS", STRING,
-                                "PHONE", STRING,
-                                "DATEBEG", DATE,
-                                "DATEEND", DATE
-                        ))
+                        Set.of(
+                                new RefBookStructure.Attribute("ID", INTEGER, "Идентификатор"),
+                                new RefBookStructure.Attribute("SMOCOD", STRING, "Код СМО"),
+                                new RefBookStructure.Attribute("CODPVP", STRING, "Код ПВП"),
+                                new RefBookStructure.Attribute("ADDRESS", STRING, "Адрес"),
+                                new RefBookStructure.Attribute("PHONE", STRING, "Номер телефона"),
+                                new RefBookStructure.Attribute("DATEBEG", DATE, "Дата начала"),
+                                new RefBookStructure.Attribute("DATEEND", DATE, "Дата конца")
+                        )
+                )
         );
         versionsDiffCriteria2.setPageSize(200);
         assertEquals(Set.of("ID"), syncSourceService.getDiff(versionsDiffCriteria2).getRows().getContent().get(0).getRow().keySet());

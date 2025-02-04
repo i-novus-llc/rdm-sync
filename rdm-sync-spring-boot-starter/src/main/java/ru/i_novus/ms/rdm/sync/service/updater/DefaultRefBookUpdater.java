@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.sync.api.exception.MappingNotFoundException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -19,8 +20,7 @@ import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors;
 
 public class DefaultRefBookUpdater implements RefBookUpdater {
 
@@ -121,8 +121,10 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
                 .stream()
                 .filter(fieldMapping -> (!fieldMapping.getIgnoreIfNotExists() && fieldMapping.getDefaultValue() == null))
                 .map(FieldMapping::getRdmField)
-                .collect(toList());
-        Set<String> actualFields = newVersion.getStructure().getAttributesAndTypes().keySet();
+                .toList();
+        Set<String> actualFields = newVersion.getStructure().getAttributes().stream()
+                .map(RefBookStructure.Attribute::code)
+                .collect(Collectors.toSet());
         Set<String> unknownClientRdmFields = new HashSet<>();
         clientRdmFields.forEach(clientRdmField -> {
             if((matchCase && !actualFields.contains(clientRdmField)) || (!matchCase && actualFields.stream().noneMatch(clientRdmField::equalsIgnoreCase)) ) {

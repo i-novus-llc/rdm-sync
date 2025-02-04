@@ -11,9 +11,7 @@ import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,13 +49,18 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
 
     @Override
-    public void createTable(String tableName, String refBookCode, VersionMapping mapping, List<FieldMapping> fieldMappings) {
+    public void createTable(String tableName,
+                            String refBookCode,
+                            VersionMapping mapping,
+                            List<FieldMapping> fieldMappings,
+                            String refDescription,
+                            Map<String, String> fieldDescription) {
         if(tableExists(tableName)) {
             return;
         }
         Map<String, String> columns = getColumnsWithType(fieldMappings);
         columns.putAll(getAdditionColumns(mapping));
-        PgTable pgTableWithColumns = new PgTable(tableName, columns, mapping.getPrimaryField(), mapping.getSysPkColumn());
+        PgTable pgTableWithColumns = new PgTable(tableName, refDescription, columns, fieldDescription, mapping.getPrimaryField(), mapping.getSysPkColumn());
         lockRefBookForUpdate(refBookCode);
         createSchemaIfNotExists(pgTableWithColumns.getSchema());
         createTable(pgTableWithColumns);
@@ -151,8 +154,11 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
     }
 
     @Override
-    public void refreshTable(String tableName, List<FieldMapping> newFieldMappings) {
-        PgTable pgTable = new PgTable(tableName, getColumnsWithType(newFieldMappings), null, null);
+    public void refreshTable(String tableName,
+                             List<FieldMapping> newFieldMappings,
+                             String refDescription,
+                             Map<String, String> fieldDescription) {
+        PgTable pgTable = new PgTable(tableName, null,  getColumnsWithType(newFieldMappings), null, null, null);
         StringBuilder ddl = new StringBuilder(String.format("ALTER TABLE %s ", pgTable.getName()));
 
 
@@ -200,9 +206,19 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         .map(column -> String.format("%s %s", column.name(), column.type()))
                         .collect(Collectors.joining(", "))
         );
-        ddl.append(")");
+        ddl.append(");");
 
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
+        ddl.append(String.format("COMMENT ON TABLE %s IS :tableDescription;", tableWithColumns.getName()));
+        String columnCommentTemplate = "COMMENT ON COLUMN " + tableWithColumns.getName() + ".%s IS %s;";
+        List<PgTable.Column> columns = new ArrayList<>(tableWithColumns.getColumns().orElseThrow());
+        Map<String, String> params = new HashMap<>();
+        params.put("tableDescription", tableWithColumns.getTableDescription().orElseThrow());
+        for (int i = 0; i < columns.size(); i++) {
+            String param = ":param" + i;
+            ddl.append(String.format(columnCommentTemplate, columns.get(i).name(), param));
+            params.put(param, columns.get(i).description());
+        }
+        namedParameterJdbcTemplate.update(ddl.toString(), params);
     }
 
     private boolean lockRefBookForUpdate(String code) {
