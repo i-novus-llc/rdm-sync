@@ -265,6 +265,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
         JsonNode structureNode = requestStructure(code, lastVersion);
         final RefBookStructure refBookStructure = new RefBookStructure();
         refBookStructure.setPrimaries(findPrimaries(structureNode));
+        refBookStructure.setRefDescription(structureNode.get("fullName").textValue());
 
         final Iterator<JsonNode> fields = structureNode.get("fields").elements();
         Set<RefBookStructure.Attribute> attributes = new HashSet<>();
@@ -273,7 +274,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
                         new RefBookStructure.Attribute(
                                 jsonNode.get("field").asText(),
                                 getAttrType(jsonNode.get("dataType").asText()),
-                                null
+                                jsonNode.get("description").isNull() ? jsonNode.get("alias").asText() : String.format("%s\n%s", jsonNode.get("alias").asText(), jsonNode.get("description").asText())
                         )
                 )
         );
