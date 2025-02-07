@@ -25,7 +25,7 @@ class PgTable {
 
     private final String loadedVersionFk;
 
-    private Optional<Set<Column>> columns = Optional.empty();;
+    private Optional<Set<Column>> columns = Optional.empty();
 
     private Optional<String> primaryField = Optional.empty();
 
@@ -63,12 +63,17 @@ class PgTable {
                    String sysPkColumn) {
         this(table);
         this.tableDescription = Optional.ofNullable(tableDescription);
+        this.tableDescription.ifPresent(this::validate);
         this.columns = Optional.of(
                 columns.entrySet()
                         .stream()
                         .map(entry -> {
                             validate(entry.getValue());
-                            return new Column(escapeName(entry.getKey()), entry.getValue(), columnDescriptions.get(entry.getKey()));
+                            String description = columnDescriptions.get(entry.getKey());
+                            if (description != null) {
+                                validate(description);
+                            }
+                            return new Column(escapeName(entry.getKey()), entry.getValue(), description);
                         }).collect(Collectors.toSet())
         );
         this.primaryField = Optional.ofNullable(escapeName(primaryField));

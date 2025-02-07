@@ -8,6 +8,6 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
  */
 public interface LocalRefBookCreator {
 
-    void create(SyncMapping syncMapping, RefBookStructure structure);
+    void create(SyncMapping syncMapping);
 
 }

@@ -32,6 +32,19 @@ public interface LocalRefBookCreatorDao {
                       String refDescription,
                       Map<String, String> fieldDescription);
 
+
+    /**
+     * Добавляет комментарии к полям и таблице если их нет
+     * @param tableName - таблица
+     * @param refDescription - описание справочника
+     * @param fieldMappings - маппинг полей
+     * @param columnDescriptions - описание атрибутов
+     */
+    void addCommentsIfNotExists(String tableName,
+                                String refDescription,
+                                List<FieldMapping> fieldMappings,
+                                Map<String, String> columnDescriptions);
+
     boolean tableExists(String tableName);
 
 }

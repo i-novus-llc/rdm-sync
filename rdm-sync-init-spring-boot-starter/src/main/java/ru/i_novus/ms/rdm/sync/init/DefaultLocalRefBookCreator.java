@@ -7,8 +7,12 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
+import ru.i_novus.ms.rdm.sync.init.description.RefBookDescription;
+import ru.i_novus.ms.rdm.sync.init.description.RefBookDescriptionService;
 
 import java.util.List;
 import java.util.Map;
@@ -27,38 +31,47 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final VersionMappingService versionMappingService;
 
+    protected final RefBookDescriptionService refBookDescriptionService;
+
 
     public DefaultLocalRefBookCreator(String defaultSchema,
-                                         Boolean caseIgnore,
-                                         LocalRefBookCreatorDao dao,
-                                         VersionMappingService versionMappingService) {
+                                      Boolean caseIgnore,
+                                      LocalRefBookCreatorDao dao,
+                                      VersionMappingService versionMappingService,
+                                      RefBookDescriptionService refBookDescriptionService) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
         this.dao = dao;
         this.versionMappingService = versionMappingService;
+        this.refBookDescriptionService = refBookDescriptionService;
     }
 
     @Transactional
     @Override
-    public void create(SyncMapping syncMapping, RefBookStructure structure) {
+    public void create(SyncMapping syncMapping) {
         String refBookCode = syncMapping.getVersionMapping().getCode();
+        RefBookDescription refBookDescription = refBookDescriptionService.getRefBookDescription(syncMapping);
         String range = syncMapping.getVersionMapping().getRange() != null ? syncMapping.getVersionMapping().getRange().getRange() : null;
         VersionMapping versionMapping = versionMappingService.getVersionMappingByCodeAndRange(refBookCode, range);
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
         String tableName = getTableNameWithSchema(refBookCode, syncMapping.getVersionMapping().getTable());
 
         if (!dao.tableExists(tableName)) {
-            Map<String, String> attributeDescriptions = structure.getAttributes().stream()
-                    .collect(Collectors.toMap(RefBookStructure.Attribute::code, RefBookStructure.Attribute::description));
+
             createTable(
                     tableName,
                     syncMapping.getVersionMapping(),
                     syncMapping.getFieldMapping(),
-                    structure.getRefDescription(),
-                    attributeDescriptions
+                    refBookDescription.refDescription(),
+                    refBookDescription.attributeDescriptions()
             );
         } else {
-            refreshTable(tableName, syncMapping.getFieldMapping());
+            refreshTable(
+                    tableName,
+                    syncMapping.getFieldMapping(),
+                    refBookDescription.refDescription(),
+                    refBookDescription.attributeDescriptions()
+            );
         }
     }
 
@@ -96,13 +109,18 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         return RdmSyncInitUtils.buildTableNameWithSchema(refBookCode, refBookTable, defaultSchema, caseIgnore);
     }
 
-    protected void refreshTable(String tableName, List<FieldMapping> fieldMappings) {
+    protected void refreshTable(String tableName,
+                                List<FieldMapping> fieldMappings,
+                                String refDescription,
+                                Map<String, String> fieldDescription) {
+
         List<String> columns = dao.getColumns(tableName);
         List<FieldMapping> newFieldMappings = fieldMappings.stream().filter(fieldMapping -> !columns.contains(fieldMapping.getSysField())).collect(Collectors.toList());
         if (!newFieldMappings.isEmpty()) {
             logger.info("change structure of table {}", tableName);
-            dao.refreshTable(tableName, newFieldMappings, null, null);
+            dao.refreshTable(tableName, newFieldMappings, refDescription, fieldDescription);
         }
+        dao.addCommentsIfNotExists(tableName, refDescription, fieldMappings, fieldDescription);
     }
 
 
