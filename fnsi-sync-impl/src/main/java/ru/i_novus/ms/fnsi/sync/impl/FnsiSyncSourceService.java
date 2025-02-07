@@ -1,6 +1,7 @@
 package ru.i_novus.ms.fnsi.sync.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -269,15 +270,25 @@ public class FnsiSyncSourceService implements SyncSourceService {
 
         final Iterator<JsonNode> fields = structureNode.get("fields").elements();
         Set<RefBookStructure.Attribute> attributes = new HashSet<>();
-        fields.forEachRemaining(jsonNode ->
-                attributes.add(
-                        new RefBookStructure.Attribute(
-                                jsonNode.get("field").asText(),
-                                getAttrType(jsonNode.get("dataType").asText()),
-                                jsonNode.get("description").isNull() ? jsonNode.get("alias").asText() : String.format("%s\n%s", jsonNode.get("alias").asText(), jsonNode.get("description").asText())
-                        )
-                )
-        );
+        fields.forEachRemaining(jsonNode -> {
+            String resultDescription = null;
+            String alias = jsonNode.get("alias").isNull() ? null : jsonNode.get("alias").asText();
+            String description = jsonNode.get("description").isNull() ? null : jsonNode.get("description").asText();
+            if (!StringUtils.isEmpty(alias) && !StringUtils.isEmpty(description)) {
+                resultDescription = alias + "\n" + description;
+            } else if (!StringUtils.isEmpty(alias)) {
+                resultDescription = alias;
+            } else if (!StringUtils.isEmpty(description)) {
+                resultDescription = description;
+            }
+            attributes.add(
+                    new RefBookStructure.Attribute(
+                            jsonNode.get("field").asText(),
+                            getAttrType(jsonNode.get("dataType").asText()),
+                            resultDescription
+                    )
+            );
+        });
         refBookStructure.setAttributes(attributes);
         refBookStructure.setReferences(Collections.emptyList());
 
