@@ -76,6 +76,7 @@ class DefaultLocalRefBookCreatorTest {
             return new DefaultLocalRefBookCreator(
                     "rdm",
                     false,
+                    true,
                     notVersionedDao,
                     versionMappingService,
                     refBookDescriptionService
