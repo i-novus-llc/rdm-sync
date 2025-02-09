@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "id": 206,
+      "optLockValue": 1,
+      "refBookId": 176,
+      "code": "XML_EK003",
+      "type": "DEFAULT",
+      "version": "3.0",
+      "fromDate": "2021-02-04T16:22:00",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Цифры",
+        "shortName": "Цифры"
+      },
+      "editDate": "2021-02-04T16:22:00",
+      "removable": false,
+      "lastPublishedVersionId": 206,
+      "lastPublishedVersion": "3.0",
+      "lastPublishedVersionFromDate": "2021-02-04T16:22:00",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    },
+    {
+      "id": 293,
+      "optLockValue": 5,
+      "refBookId": 176,
+      "code": "XML_EK003",
+      "type": "DEFAULT",
+      "version": "3.1",
+      "fromDate": "2022-01-11T11:42:44",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Цифры",
+        "shortName": "Цифры"
+      },
+      "editDate": "2022-01-11T11:42:44",
+      "removable": false,
+      "lastPublishedVersionId": 293,
+      "lastPublishedVersion": "3.1",
+      "lastPublishedVersionFromDate": "2022-01-11T11:42:44",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    }
+  ]
+}

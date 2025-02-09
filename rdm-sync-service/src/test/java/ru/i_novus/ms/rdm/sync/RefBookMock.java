@@ -278,6 +278,7 @@ public class RefBookMock {
         private final List<DataDiff> dataDiffs = new ArrayList<>();
         private final List<StructureDiff> structureDiffs = new ArrayList<>();
         private final List<GetByCodeAndVersion> getByCodeAndVersionList = new ArrayList<>();
+        private String versionsResponse;
 
         private RdmRefBook(String code) {
             this.code = code;
@@ -299,7 +300,7 @@ public class RefBookMock {
         }
 
         /**
-         * Эммулирует запросы /version/{version}/refbook/{code} и /rdm/version/refBook/{code}/last.
+         * Эммулирует запросы /version/{version}/refbook/{code} и /version/refBook/{code}/last.
          * Для /rdm/version/refBook/{code}/last учитывает последовательность версий в зависимости от того что было
          * загруженно в таблицу loaded_version для этого справочника, т.е в ответе будет следующая версия после той
          * которая есть в  loaded_version. Поэтому важно чтобы более раняя версия имела меньший номер версии.
@@ -312,6 +313,16 @@ public class RefBookMock {
             return this;
         }
 
+        /**
+         * Эммулирует запросы /version/versions
+         * @param fileName файл с примером ответа
+         * @return this
+         */
+        public RdmRefBook withVersions(String fileName) {
+            this.versionsResponse = fileName;
+            return this;
+        }
+
         public void mock() {
             mockRdmRefBookLastVersion();
             versionsData.forEach(versionData -> mockRdmData(versionData.versionId(), versionData.pagesOfFileData()));
@@ -320,6 +331,23 @@ public class RefBookMock {
             );
             dataDiffs.forEach(dataDiff -> mockRdmDataDiff(dataDiff.oldVersionId(), dataDiff.newVersionId(), dataDiff.pagesOfFileDiff()));
             getByCodeAndVersionList.forEach(this::mockGetRdmByCodeAndVersion);
+            if (versionsResponse != null) {
+                mockVersions();
+            }
+        }
+
+        private void mockVersions() {
+            final String uri = "/rdm/version/versions";
+            client
+                    .when(request().withMethod("GET").withPath(uri).withQueryStringParameter("refBookCode"))
+                    .respond(
+                            response()
+                                    .withStatusCode(200)
+                                    .withContentType(MediaType.APPLICATION_JSON)
+                                    .withBody(getFileContent("/rdm_responses/" + versionsResponse))
+                    );
+
+
         }
 
         private void mockGetRdmByCodeAndVersion(GetByCodeAndVersion codeAndVersion) {

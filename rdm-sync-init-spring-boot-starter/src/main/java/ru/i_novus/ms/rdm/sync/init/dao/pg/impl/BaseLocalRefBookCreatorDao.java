@@ -266,7 +266,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         .collect(Collectors.joining(", "))
         );
         ddl.append(");");
-        ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
+        if (tableWithColumns.getTableDescription().isPresent()) {
+            ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
+        }
         concatColumnsComment(tableWithColumns, ddl);
         namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
     }

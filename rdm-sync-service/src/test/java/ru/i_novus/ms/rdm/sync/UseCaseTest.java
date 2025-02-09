@@ -489,6 +489,7 @@ public class UseCaseTest {
                 .rdm(refCode)
                 .withGetByCodeAndVersion( "3.0", "XML_EK003_version_3.0.json")
                 .withGetByCodeAndVersion( "3.1", "XML_EK003_version_3.1.json")
+                .withVersions("XML_EK003_versions.json")
                 .mock();
     }
 
@@ -505,6 +506,7 @@ public class UseCaseTest {
                 .withData(newVersionId, Map.of(0, "EK002_version_2_data.json"))
                 .withStructureDiff(oldVersionId, newVersionId, "empty_structure_diff.json")
                 .withDataDiff(oldVersionId, newVersionId, Map.of(0, "EK002_versions_data_diff.json"))
+                .withVersions("EK002_versions.json")
                 .mock();
 
     }
@@ -521,6 +523,7 @@ public class UseCaseTest {
                 .withGetByCodeAndVersion(newVersion, "EK003_version_3.1.json")
                 .withData(oldVersionId, Map.of(0, "EK003_version_3.0_data.json"))
                 .withData(newVersionId, Map.of(0, "EK003_version_3.1_data.json"))
+                .withVersions("EK003_versions.json")
                 .mock();
     }
 
@@ -533,6 +536,7 @@ public class UseCaseTest {
                 .rdm(refCode)
                 .withGetByCodeAndVersion(firstVersion, "XML_EK002_version_1.json")
                 .withGetByCodeAndVersion(secondVersion, "XML_EK002_version_2.json")
+                .withVersions("XML_EK002_versions.json")
                 .mock();
     }
 
