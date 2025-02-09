@@ -213,6 +213,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         concatColumnsComment(pgTable, columnCommentQuery);
         if (!columnCommentQuery.isEmpty()) {
             namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+            log.info("refresh column comments for {}", pgTable.getName());
         }
 
         String existsTableCommentQuery = """
@@ -228,6 +229,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         Boolean existsTableComment = namedParameterJdbcTemplate.queryForObject(existsTableCommentQuery, Map.of("table", table, "schema", schema), Boolean.class);
         if (!existsTableComment && pgTable.getTableDescription().isPresent()) {
             namedParameterJdbcTemplate.getJdbcTemplate().execute("COMMENT ON TABLE " + pgTable.getName() + " IS '" + pgTable.getTableDescription().orElseThrow() + "';");
+            log.info("refresh comment for {}", pgTable.getName());
         }
     }
 
