@@ -87,7 +87,18 @@ class RdmSyncSourceServiceTest {
         assertNotNull(version);
         assertEquals(REF_BOOK_CODE, version.getCode());
         assertEquals(VERSION_1_1, version.getVersion());
-        assertStructure(version.getStructure());
+        RefBookStructure expectedStructure = new RefBookStructure(
+                List.of("REF_REF"),
+                List.of("id"),
+                Set.of(
+                        new RefBookStructure.Attribute("id", AttributeTypeEnum.INTEGER, "Идентификатор"),
+                        new RefBookStructure.Attribute("name", AttributeTypeEnum.STRING, "Наименование"),
+                        new RefBookStructure.Attribute("code", AttributeTypeEnum.STRING, "Код"),
+                        new RefBookStructure.Attribute("ref", AttributeTypeEnum.REFERENCE, "Ссылка")
+                )
+        );
+        expectedStructure.setRefDescription("Простой справочник");
+        assertEquals(expectedStructure, version.getStructure());
     }
 
     @Test
