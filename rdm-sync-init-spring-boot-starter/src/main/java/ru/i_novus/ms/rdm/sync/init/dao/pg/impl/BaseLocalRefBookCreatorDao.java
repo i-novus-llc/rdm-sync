@@ -211,7 +211,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         PgTable pgTable = new PgTable(tableName, refDescription, getColumnsWithType(newFieldMappings), columnDescriptions, null, null);
         StringBuilder columnCommentQuery = new StringBuilder();
         concatColumnsComment(pgTable, columnCommentQuery);
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+        if (!columnCommentQuery.isEmpty()) {
+            namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+        }
 
         String existsTableCommentQuery = """
                 SELECT EXISTS (
@@ -224,7 +226,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                                );
                 """;
         Boolean existsTableComment = namedParameterJdbcTemplate.queryForObject(existsTableCommentQuery, Map.of("table", table, "schema", schema), Boolean.class);
-        if (!existsTableComment) {
+        if (!existsTableComment && pgTable.getTableDescription().isPresent()) {
             namedParameterJdbcTemplate.getJdbcTemplate().execute("COMMENT ON TABLE " + pgTable.getName() + " IS '" + pgTable.getTableDescription().orElseThrow() + "';");
         }
     }
