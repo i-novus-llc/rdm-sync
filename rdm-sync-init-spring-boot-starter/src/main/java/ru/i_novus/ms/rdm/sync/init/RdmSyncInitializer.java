@@ -52,6 +52,7 @@ public class RdmSyncInitializer {
         autoCreate(syncMappings);
         deleteNotActualMappings(syncMappings);
         publisher.publishEvent(new RdmSyncInitCompleteEvent(this));
+        logger.info("initialization finished");
     }
 
     private void deleteNotActualMappings(List<SyncMapping> syncMappings) {

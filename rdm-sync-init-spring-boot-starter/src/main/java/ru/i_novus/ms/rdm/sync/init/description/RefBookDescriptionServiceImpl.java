@@ -40,7 +40,7 @@ public class RefBookDescriptionServiceImpl implements RefBookDescriptionService 
         int i = versions.size() -1;
         String refDescription = null;
         Map<String, String> rdmFieldToSysFieldMapping = mapping.getFieldMapping().stream()
-                .collect(Collectors.toMap(FieldMapping::getSysField, FieldMapping::getRdmField));
+                .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getSysField));
         while (i > -1 && attributeDescriptions.size() < rdmFieldToSysFieldMapping.size()) {
             RefBookVersionItem version = versions.get(i);
             RefBookVersion refBook = syncSourceService.getRefBook(version.getCode(), version.getVersion());

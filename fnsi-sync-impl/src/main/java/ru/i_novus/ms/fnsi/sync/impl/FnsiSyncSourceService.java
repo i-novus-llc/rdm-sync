@@ -273,9 +273,9 @@ public class FnsiSyncSourceService implements SyncSourceService {
         fields.forEachRemaining(jsonNode -> {
             String resultDescription = null;
             String alias = jsonNode.get("alias").isNull() ? null : jsonNode.get("alias").asText();
-            String description = jsonNode.get("description").isNull() ? null : jsonNode.get("description").asText();
+            String description = jsonNode.get("description").isNull() ? null : capitalizeFirstLetter(jsonNode.get("description").asText());
             if (!StringUtils.isEmpty(alias) && !StringUtils.isEmpty(description)) {
-                resultDescription = alias + "\n" + description;
+                resultDescription = alias + ".\n" + description;
             } else if (!StringUtils.isEmpty(alias)) {
                 resultDescription = alias;
             } else if (!StringUtils.isEmpty(description)) {
@@ -293,6 +293,13 @@ public class FnsiSyncSourceService implements SyncSourceService {
         refBookStructure.setReferences(Collections.emptyList());
 
         return refBookStructure;
+    }
+
+    public String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     private static List<String> findPrimaries(JsonNode structureNode) {

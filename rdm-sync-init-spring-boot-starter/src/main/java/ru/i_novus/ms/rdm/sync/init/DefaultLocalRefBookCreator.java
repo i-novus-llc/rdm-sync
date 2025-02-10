@@ -122,6 +122,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
             dao.refreshTable(tableName, newFieldMappings, refDescription, fieldDescription);
         }
         if (refreshComments) {
+            logger.info("try to refresh comments for {}", tableName);
             dao.addCommentsIfNotExists(tableName, refDescription, fieldMappings, fieldDescription);
         }
     }
