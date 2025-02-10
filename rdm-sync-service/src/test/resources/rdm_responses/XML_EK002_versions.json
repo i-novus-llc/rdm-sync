@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "id": 199,
+      "optLockValue": 1,
+      "refBookId": 173,
+      "code": "XML_EK002",
+      "type": "DEFAULT",
+      "version": "1",
+      "fromDate": "2021-02-04T12:38:33",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Цвета",
+        "shortName": "Цвета"
+      },
+      "editDate": "2021-02-04T12:38:33",
+      "removable": false,
+      "lastPublishedVersionId": 199,
+      "lastPublishedVersion": "1",
+      "lastPublishedVersionFromDate": "2021-02-04T12:38:33",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    },
+    {
+      "id": 286,
+      "optLockValue": 4,
+      "refBookId": 173,
+      "code": "XML_EK002",
+      "type": "DEFAULT",
+      "version": "2",
+      "fromDate": "2021-02-05T12:38:33",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Цвета",
+        "shortName": "Цвета"
+      },
+      "editDate": "2021-02-05T12:38:33",
+      "removable": false,
+      "lastPublishedVersionId": 286,
+      "lastPublishedVersion": "2",
+      "lastPublishedVersionFromDate": "2021-02-05T12:38:33",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
+    }
+  ]
+}

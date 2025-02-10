@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescriptionService;
@@ -34,17 +33,36 @@ public class RdmSyncInitAutoconfiguration {
     @Bean
     public LocalRefBookCreatorLocator localRefBookCreatorLocator(@Value("${rdm-sync.auto-create.schema:rdm}") String schema,
                                                                  @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
+                                                                 @Value("${rdm-sync.auto-create.refresh-comments:true}") Boolean refreshComments,
                                                                  @Qualifier("notVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao notVersionedDao,
                                                                  @Qualifier("naturalPKLocalRefBookCreatorDao") LocalRefBookCreatorDao naturalPKDao,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao versionedDao,
                                                                  VersionMappingService versionMappingService,
                                                                  RefBookDescriptionService refBookDescriptionService) {
-        LocalRefBookCreator
-                notVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(schema, caseIgnore,notVersionedDao, versionMappingService, refBookDescriptionService);
-        LocalRefBookCreator
-                naturalPKLocalRefBookCreator = new DefaultLocalRefBookCreator(schema, caseIgnore, naturalPKDao, versionMappingService, refBookDescriptionService);
-        LocalRefBookCreator
-                simpleVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(schema, caseIgnore, versionedDao, versionMappingService, refBookDescriptionService);
+        LocalRefBookCreator notVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
+                schema,
+                caseIgnore,
+                refreshComments,
+                notVersionedDao,
+                versionMappingService,
+                refBookDescriptionService
+        );
+        LocalRefBookCreator naturalPKLocalRefBookCreator = new DefaultLocalRefBookCreator(
+                schema,
+                caseIgnore,
+                refreshComments,
+                naturalPKDao,
+                versionMappingService,
+                refBookDescriptionService
+        );
+        LocalRefBookCreator simpleVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
+                schema,
+                caseIgnore,
+                refreshComments,
+                versionedDao,
+                versionMappingService,
+                refBookDescriptionService
+        );
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,

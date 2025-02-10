@@ -6,9 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
-import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
-import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescription;
@@ -33,14 +30,18 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final RefBookDescriptionService refBookDescriptionService;
 
+    private final boolean refreshComments;
+
 
     public DefaultLocalRefBookCreator(String defaultSchema,
                                       Boolean caseIgnore,
+                                      Boolean refreshComments,
                                       LocalRefBookCreatorDao dao,
                                       VersionMappingService versionMappingService,
                                       RefBookDescriptionService refBookDescriptionService) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
+        this.refreshComments = Boolean.TRUE.equals(refreshComments);
         this.dao = dao;
         this.versionMappingService = versionMappingService;
         this.refBookDescriptionService = refBookDescriptionService;
@@ -120,7 +121,10 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
             logger.info("change structure of table {}", tableName);
             dao.refreshTable(tableName, newFieldMappings, refDescription, fieldDescription);
         }
-        dao.addCommentsIfNotExists(tableName, refDescription, fieldMappings, fieldDescription);
+        if (refreshComments) {
+            logger.info("try to refresh comments for {}", tableName);
+            dao.addCommentsIfNotExists(tableName, refDescription, fieldMappings, fieldDescription);
+        }
     }
 
 

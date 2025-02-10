@@ -211,7 +211,10 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         PgTable pgTable = new PgTable(tableName, refDescription, getColumnsWithType(newFieldMappings), columnDescriptions, null, null);
         StringBuilder columnCommentQuery = new StringBuilder();
         concatColumnsComment(pgTable, columnCommentQuery);
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+        if (!columnCommentQuery.isEmpty()) {
+            namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+            log.info("refresh column comments for {}", pgTable.getName());
+        }
 
         String existsTableCommentQuery = """
                 SELECT EXISTS (
@@ -224,8 +227,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                                );
                 """;
         Boolean existsTableComment = namedParameterJdbcTemplate.queryForObject(existsTableCommentQuery, Map.of("table", table, "schema", schema), Boolean.class);
-        if (!existsTableComment) {
+        if (!existsTableComment && pgTable.getTableDescription().isPresent()) {
             namedParameterJdbcTemplate.getJdbcTemplate().execute("COMMENT ON TABLE " + pgTable.getName() + " IS '" + pgTable.getTableDescription().orElseThrow() + "';");
+            log.info("refresh comment for {}", pgTable.getName());
         }
     }
 
@@ -266,7 +270,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         .collect(Collectors.joining(", "))
         );
         ddl.append(");");
-        ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
+        if (tableWithColumns.getTableDescription().isPresent()) {
+            ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
+        }
         concatColumnsComment(tableWithColumns, ddl);
         namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
     }

@@ -59,14 +59,15 @@ class FnsiSyncSourceServiceTest {
                 null,
                 singletonList("ID"),
                 Set.of(
-                        new RefBookStructure.Attribute("ID", INTEGER, null),
-                        new RefBookStructure.Attribute("SMOCOD", STRING, null),
-                        new RefBookStructure.Attribute("CODPVP", STRING, null),
-                        new RefBookStructure.Attribute("ADDRESS", STRING, null),
-                        new RefBookStructure.Attribute("PHONE", STRING, null),
-                        new RefBookStructure.Attribute("DATEEND", DATE, null),
-                        new RefBookStructure.Attribute("DATEBEG", DATE, null)
+                        new RefBookStructure.Attribute("ID", INTEGER, "Идентификатор"),
+                        new RefBookStructure.Attribute("SMOCOD", STRING, "Код СМО в кодировке единого реестра СМО"),
+                        new RefBookStructure.Attribute("CODPVP", STRING, "Порядковый номер пункта выдачи полисов"),
+                        new RefBookStructure.Attribute("ADDRESS", STRING, "Фактический адрес пункта выдачи"),
+                        new RefBookStructure.Attribute("PHONE", STRING, "Номер телефона пункта выдачи полисов"),
+                        new RefBookStructure.Attribute("DATEEND", DATE, "Дата окончания действия записи"),
+                        new RefBookStructure.Attribute("DATEBEG", DATE, "Дата начала действия записи")
                 ));
+        expectedStructure.setRefDescription("Реестр пунктов выдачи полисов (ФОМС)");
         searchRefBookMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_refbook.json"));
         passportMockServer(oid, version, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.99.2.308_passport.json"));
 
