@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RefBookStructure {
     /**
@@ -18,18 +19,17 @@ public class RefBookStructure {
      */
     private List<String> primaries;
 
-    /**
-     * Ключ код атрибута, значение - тип (значений) атрибута
-     */
-    private Map<String, AttributeTypeEnum> attributesAndTypes;
+    private Set<Attribute> attributes;
+
+    private String refDescription;
 
     public RefBookStructure() {
     }
 
-    public RefBookStructure(List<String> references, List<String> primaries, Map<String, AttributeTypeEnum> attributesAndTypes) {
+    public RefBookStructure(List<String> references, List<String> primaries, Set<Attribute> attributes) {
         this.references = references == null ? Collections.emptyList() : references;
         this.primaries = primaries;
-        this.attributesAndTypes = attributesAndTypes;
+        this.attributes = attributes;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -37,12 +37,19 @@ public class RefBookStructure {
         return primaries != null && !primaries.isEmpty();
     }
 
-    public Map<String, AttributeTypeEnum> getAttributesAndTypes() {
-        return attributesAndTypes;
+    public Set<Attribute> getAttributes() {
+        return attributes;
     }
 
-    public void setAttributesAndTypes(Map<String, AttributeTypeEnum> attributesAndTypes) {
-        this.attributesAndTypes = attributesAndTypes;
+    public Attribute getAttribute(String code) {
+        if (attributes == null) {
+            return null;
+        }
+        return attributes.stream().filter(attribute -> attribute.code().equals(code)).findAny().orElse(null);
+    }
+
+    public void setAttributes(Set<Attribute> attributes) {
+        this.attributes = attributes;
     }
 
     public List<String> getReferences() {
@@ -61,6 +68,14 @@ public class RefBookStructure {
         this.primaries = primaries;
     }
 
+    public String getRefDescription() {
+        return refDescription;
+    }
+
+    public void setRefDescription(String refDescription) {
+        this.refDescription = refDescription;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,12 +84,24 @@ public class RefBookStructure {
 
         RefBookStructure that = (RefBookStructure) o;
 
-        return new EqualsBuilder().append(references, that.references).append(primaries, that.primaries).append(attributesAndTypes, that.attributesAndTypes).isEquals();
+        return
+                new EqualsBuilder()
+                        .append(references, that.references)
+                        .append(primaries, that.primaries)
+                        .append(attributes, that.attributes)
+                        .append(refDescription, that.refDescription)
+                        .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(references).append(primaries).append(attributesAndTypes).toHashCode();
+        return
+                new HashCodeBuilder(17, 37)
+                        .append(references)
+                        .append(primaries)
+                        .append(attributes)
+                        .append(refDescription)
+                        .toHashCode();
     }
 
     @Override
@@ -82,7 +109,11 @@ public class RefBookStructure {
         return "RefBookStructure{" +
                 "references=" + references +
                 ", primaries=" + primaries +
-                ", attributesAndTypes=" + attributesAndTypes +
+                ", attributes=" + attributes +
+                ", refDescription=" + refDescription +
                 '}';
+    }
+
+    public record Attribute(String code, AttributeTypeEnum type, String description) {
     }
 }

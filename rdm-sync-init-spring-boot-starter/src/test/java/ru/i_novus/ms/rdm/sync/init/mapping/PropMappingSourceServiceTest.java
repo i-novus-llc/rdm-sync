@@ -79,7 +79,11 @@ class PropMappingSourceServiceTest {
     @Test
     void testGetVersionMappingListFromProperties() {
 
-        RefBookStructure structure = new RefBookStructure(null, List.of("id"), Map.of("name", AttributeTypeEnum.STRING));
+        RefBookStructure structure = new RefBookStructure(
+                null,
+                List.of("id"),
+                Set.of(new RefBookStructure.Attribute("name", AttributeTypeEnum.STRING, "наименование"))
+        );
         RefBookVersion refBookVersion = new RefBookVersion("EK003", "1", null, null, null, structure);
 
         when(syncSourceService.getRefBook(any(), any())).thenReturn(refBookVersion);

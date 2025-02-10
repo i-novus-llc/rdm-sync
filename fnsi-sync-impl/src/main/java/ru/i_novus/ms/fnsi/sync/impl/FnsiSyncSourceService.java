@@ -1,6 +1,7 @@
 package ru.i_novus.ms.fnsi.sync.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -109,7 +110,7 @@ public class FnsiSyncSourceService implements SyncSourceService {
                 if (!"null".equals(value.trim())) {
                     String column = cellNode.get("column").asText();
                     if (dataCriteria.getFields().contains(column)) {
-                        AttributeTypeEnum attributeTypeEnum = refBookStructure.getAttributesAndTypes().get(column);
+                        AttributeTypeEnum attributeTypeEnum = refBookStructure.getAttribute(column).type();
                         try {
                             row.put(column, attributeTypeEnum.castValue(value));
                         } catch (Exception e) {
@@ -142,17 +143,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
         int total = jsonNode.get("data").get("total").intValue();
         List<RowDiff> rowDiffList = new ArrayList<>();
         diffsNode.elements().forEachRemaining(diffNode -> {
-            Map<String, AttributeTypeEnum> attributesAndTypes = criteria.getNewVersionStructure().getAttributesAndTypes();
+            Set<RefBookStructure.Attribute> attributes = criteria.getNewVersionStructure().getAttributes();
             Map<String, Object> row = new HashMap<>();
-            for (Map.Entry<String, AttributeTypeEnum> entry : attributesAndTypes.entrySet()) {
-                if(!criteria.getFields().contains(entry.getKey())) {
+            for (RefBookStructure.Attribute attribute : attributes) {
+                if(!criteria.getFields().contains(attribute.code())) {
                     continue;
                 }
-                JsonNode nodeValue = diffNode.get(entry.getKey());
+                JsonNode nodeValue = diffNode.get(attribute.code());
                 if (nodeValue.asText().trim().equals("null")) {
                     continue;
                 }
-                row.put(entry.getKey(), entry.getValue().castValue(nodeValue.asText()));
+                row.put(attribute.code(), attribute.type().castValue(nodeValue.asText()));
             }
             RowDiff rowDiff = new RowDiff(getRowDiffStatusEnum(diffNode.get("operation").asText()), row);
             rowDiffList.add(rowDiff);
@@ -265,16 +266,40 @@ public class FnsiSyncSourceService implements SyncSourceService {
         JsonNode structureNode = requestStructure(code, lastVersion);
         final RefBookStructure refBookStructure = new RefBookStructure();
         refBookStructure.setPrimaries(findPrimaries(structureNode));
+        refBookStructure.setRefDescription(structureNode.get("fullName").textValue());
 
         final Iterator<JsonNode> fields = structureNode.get("fields").elements();
-        Map<String, AttributeTypeEnum> attributesAndTypes = new HashMap<>();
-        fields.forEachRemaining(jsonNode ->
-                attributesAndTypes.put(jsonNode.get("field").asText(), getAttrType(jsonNode.get("dataType").asText()))
-        );
-        refBookStructure.setAttributesAndTypes(attributesAndTypes);
+        Set<RefBookStructure.Attribute> attributes = new HashSet<>();
+        fields.forEachRemaining(jsonNode -> {
+            String resultDescription = null;
+            String alias = jsonNode.get("alias").isNull() ? null : jsonNode.get("alias").asText();
+            String description = jsonNode.get("description").isNull() ? null : capitalizeFirstLetter(jsonNode.get("description").asText());
+            if (!StringUtils.isEmpty(alias) && !StringUtils.isEmpty(description)) {
+                resultDescription = alias + ".\n" + description;
+            } else if (!StringUtils.isEmpty(alias)) {
+                resultDescription = alias;
+            } else if (!StringUtils.isEmpty(description)) {
+                resultDescription = description;
+            }
+            attributes.add(
+                    new RefBookStructure.Attribute(
+                            jsonNode.get("field").asText(),
+                            getAttrType(jsonNode.get("dataType").asText()),
+                            resultDescription
+                    )
+            );
+        });
+        refBookStructure.setAttributes(attributes);
         refBookStructure.setReferences(Collections.emptyList());
 
         return refBookStructure;
+    }
+
+    public String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     private static List<String> findPrimaries(JsonNode structureNode) {

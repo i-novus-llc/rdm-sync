@@ -14,10 +14,6 @@ public class SyncMapping {
 
     private List<FieldMapping> fieldMapping;
 
-    public int getMappingVersion() {
-        return versionMapping.getMappingVersion();
-    }
-
     public VersionMapping getVersionMapping() {
         return versionMapping;
     }

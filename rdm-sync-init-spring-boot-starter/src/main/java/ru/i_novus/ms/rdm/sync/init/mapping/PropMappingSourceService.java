@@ -87,7 +87,7 @@ public class PropMappingSourceService implements MappingSourceService {
         String uniqueSysField = caseIgnore ? structure.getPrimaries().get(0).toLowerCase() : structure.getPrimaries().get(0);
 
         String isDeletedField = "deleted_ts";
-        if (structure.getAttributesAndTypes().containsKey(isDeletedField)) {
+        if (structure.getAttribute(isDeletedField) != null) {
             isDeletedField = "rdm_sync_internal_" + isDeletedField;
         }
 
@@ -99,12 +99,12 @@ public class PropMappingSourceService implements MappingSourceService {
 
 
     private List<FieldMapping> generateFieldMappings(RefBookStructure structure) {
-        List<FieldMapping> fieldMappings = new ArrayList<>(structure.getAttributesAndTypes().size() + 1);
-        for (Map.Entry<String, AttributeTypeEnum> attr : structure.getAttributesAndTypes().entrySet()) {
+        List<FieldMapping> fieldMappings = new ArrayList<>(structure.getAttributes().size() + 1);
+        for (RefBookStructure.Attribute attr : structure.getAttributes()) {
             fieldMappings.add(new FieldMapping(
-                    caseIgnore ? attr.getKey().toLowerCase() : attr.getKey(),
-                    DataTypeEnum.getByRdmAttr(attr.getValue()).getDataTypes().get(0),
-                    attr.getKey()
+                    caseIgnore ? attr.code().toLowerCase() : attr.code(),
+                    DataTypeEnum.getByRdmAttr(attr.type()).getDataTypes().get(0),
+                    attr.code()
             ));
         }
         return fieldMappings;

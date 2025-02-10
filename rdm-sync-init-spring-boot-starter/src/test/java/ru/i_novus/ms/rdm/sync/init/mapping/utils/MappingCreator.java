@@ -4,6 +4,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,9 +18,9 @@ public final class MappingCreator {
     }
 
     public static List<FieldMapping> createFieldMapping() {
-        return List.of(
+        return new ArrayList<>(List.of(
                 new FieldMapping("id", "integer", "id"),
                 new FieldMapping("name", "varchar", "name")
-        );
+        ));
     }
 }

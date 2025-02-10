@@ -4,10 +4,17 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public interface LocalRefBookCreatorDao {
 
-    void createTable(String tableName, String refBookCode, VersionMapping mapping, List<FieldMapping> fieldMappings);
+    void createTable(String tableName,
+                     String refBookCode,
+                     VersionMapping mapping,
+                     List<FieldMapping> fieldMappings,
+                     String refDescription,
+                     Map<String, String> fieldDescription);
 
     Integer addMapping(VersionMapping versionMapping, List<FieldMapping> fieldMappings);
 
@@ -20,7 +27,23 @@ public interface LocalRefBookCreatorDao {
      * @param tableName -
      * @param newFieldMappings - FieldMapping-и новых колонк
      */
-    void refreshTable(String tableName, List<FieldMapping> newFieldMappings);
+    void refreshTable(String tableName,
+                      List<FieldMapping> newFieldMappings,
+                      String refDescription,
+                      Map<String, String> fieldDescription);
+
+
+    /**
+     * Добавляет комментарии к полям и таблице если их нет
+     * @param tableName - таблица
+     * @param refDescription - описание справочника
+     * @param fieldMappings - маппинг полей
+     * @param columnDescriptions - описание атрибутов
+     */
+    void addCommentsIfNotExists(String tableName,
+                                String refDescription,
+                                List<FieldMapping> fieldMappings,
+                                Map<String, String> columnDescriptions);
 
     boolean tableExists(String tableName);
 

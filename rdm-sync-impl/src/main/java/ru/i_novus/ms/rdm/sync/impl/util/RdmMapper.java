@@ -9,10 +9,11 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
+import static ru.i_novus.ms.rdm.sync.api.model.RefBookStructure.Attribute;
 
 @Slf4j
 @SuppressWarnings("unchecked")
@@ -37,7 +38,7 @@ public class RdmMapper {
 
         final RefBookVersion result = new RefBookVersion();
         fillRefBookVersionItem(result, map);
-        result.setStructure(toRefBookStructure((Map<String, Object>) map.get("structure")));
+        result.setStructure(toRefBookStructure((Map<String, Object>) map.get("structure"), (Map<String, String>) map.get("passport")));
 
         return result;
     }
@@ -78,7 +79,7 @@ public class RdmMapper {
         item.setVersionId((Integer) map.get(VERSION_ID_FIELD));
     }
 
-    public static RefBookStructure toRefBookStructure(final Map<String, Object> map) {
+    public static RefBookStructure toRefBookStructure(final Map<String, Object> map, Map<String, String> passport) {
 
         if (CollectionUtils.isEmpty(map))
             return null;
@@ -89,10 +90,10 @@ public class RdmMapper {
                 .map(attribute -> (String) attribute.get("code"))
                 .toList();
 
-        final Map<String, AttributeTypeEnum> attributesAndTypes = attributeList.stream()
-                .map(RdmMapper::toAttributeEntry)
+        final Set<Attribute> attributesAndTypes = attributeList.stream()
+                .map(RdmMapper::toAttribute)
                 .filter(Objects::nonNull)
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toSet());
 
         final List<Map<String, Object>> referenceList = (List<Map<String, Object>>) map.get("references");
         final List<String> references = CollectionUtils.isEmpty(referenceList)
@@ -101,13 +102,16 @@ public class RdmMapper {
                         .map(reference -> (String) reference.get("referenceCode"))
                         .toList();
 
-        return new RefBookStructure(references, primaries, attributesAndTypes);
+        RefBookStructure refBookStructure = new RefBookStructure(references, primaries, attributesAndTypes);
+        refBookStructure.setRefDescription(passport != null ? passport.get("name") : null);
+        return refBookStructure;
     }
 
-    private static Map.Entry<String, AttributeTypeEnum> toAttributeEntry(Map<String, Object> attribute) {
+    private static Attribute toAttribute(Map<String, Object> attribute) {
 
         final AttributeTypeEnum type = toAttributeTypeEnum(attribute.get("type"));
-        return type != null ? new AbstractMap.SimpleEntry<>((String) attribute.get("code"), type) : null;
+        String description = (String) attribute.get("name");
+        return type != null ? new Attribute((String) attribute.get("code"), type, description) : null;
     }
 
     private static AttributeTypeEnum toAttributeTypeEnum(Object rdmFieldType) {

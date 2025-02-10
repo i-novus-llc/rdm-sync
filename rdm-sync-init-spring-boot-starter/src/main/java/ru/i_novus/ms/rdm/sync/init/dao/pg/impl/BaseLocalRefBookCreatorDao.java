@@ -11,9 +11,7 @@ import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,13 +49,18 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
 
     @Override
-    public void createTable(String tableName, String refBookCode, VersionMapping mapping, List<FieldMapping> fieldMappings) {
+    public void createTable(String tableName,
+                            String refBookCode,
+                            VersionMapping mapping,
+                            List<FieldMapping> fieldMappings,
+                            String refDescription,
+                            Map<String, String> fieldDescription) {
         if(tableExists(tableName)) {
             return;
         }
         Map<String, String> columns = getColumnsWithType(fieldMappings);
         columns.putAll(getAdditionColumns(mapping));
-        PgTable pgTableWithColumns = new PgTable(tableName, columns, mapping.getPrimaryField(), mapping.getSysPkColumn());
+        PgTable pgTableWithColumns = new PgTable(tableName, refDescription, columns, fieldDescription, mapping.getPrimaryField(), mapping.getSysPkColumn());
         lockRefBookForUpdate(refBookCode);
         createSchemaIfNotExists(pgTableWithColumns.getSchema());
         createTable(pgTableWithColumns);
@@ -95,8 +98,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
     }
 
     private void addInternalLocalRowStateColumnIfNotExists(String schemaTable) {
-        Map<String, String> params = new HashMap<>();
-        params.putAll(getSchemaAndTableParams(schemaTable));
+        Map<String, String> params = new HashMap<>(getSchemaAndTableParams(schemaTable));
         params.put("internal_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN);
         Boolean exists = namedParameterJdbcTemplate.queryForObject(
                 """
@@ -151,8 +153,11 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
     }
 
     @Override
-    public void refreshTable(String tableName, List<FieldMapping> newFieldMappings) {
-        PgTable pgTable = new PgTable(tableName, getColumnsWithType(newFieldMappings), null, null);
+    public void refreshTable(String tableName,
+                             List<FieldMapping> newFieldMappings,
+                             String refDescription,
+                             Map<String, String> fieldDescription) {
+        PgTable pgTable = new PgTable(tableName, refDescription,  getColumnsWithType(newFieldMappings), fieldDescription, null, null);
         StringBuilder ddl = new StringBuilder(String.format("ALTER TABLE %s ", pgTable.getName()));
 
 
@@ -161,7 +166,71 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                 .map(column -> String.format(" ADD COLUMN %s %s", column.name(), column.type()))
                 .collect(Collectors.joining(", ")));
 
+        ddl.append(";\n");
+        concatColumnsComment(pgTable, ddl);
+
         namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
+    }
+
+    @Override
+    public void addCommentsIfNotExists(String tableName,
+                                       String refDescription,
+                                       List<FieldMapping> fieldMappings,
+                                       Map<String, String> columnDescriptions) {
+
+        String[] splitTableName = tableName.split("\\.");
+        String table;
+        String schema;
+        if (splitTableName.length == 1) {
+            table = tableName;
+            schema = "public";
+        } else {
+            table = splitTableName[1];
+            schema = splitTableName[0];
+        }
+
+        String selectColumsWithNullableComment = """
+            SELECT a.attname AS column_name
+            FROM pg_attribute a
+            JOIN pg_class c ON c.oid = a.attrelid
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relname = :table
+              AND n.nspname = :schema
+              AND a.attnum > 0
+              AND NOT a.attisdropped;
+            """;
+
+
+        List<String> columnsWithNullableComment = namedParameterJdbcTemplate.queryForList(
+                selectColumsWithNullableComment,
+                Map.of("table", table, "schema", schema),
+                String.class
+        );
+        List<FieldMapping> newFieldMappings = fieldMappings.stream()
+                .filter(fm -> columnsWithNullableComment.contains(fm.getSysField())).toList();
+        PgTable pgTable = new PgTable(tableName, refDescription, getColumnsWithType(newFieldMappings), columnDescriptions, null, null);
+        StringBuilder columnCommentQuery = new StringBuilder();
+        concatColumnsComment(pgTable, columnCommentQuery);
+        if (!columnCommentQuery.isEmpty()) {
+            namedParameterJdbcTemplate.getJdbcTemplate().execute(columnCommentQuery.toString());
+            log.info("refresh column comments for {}", pgTable.getName());
+        }
+
+        String existsTableCommentQuery = """
+                SELECT EXISTS (
+                                   SELECT 1
+                                   FROM pg_class c
+                                   JOIN pg_namespace n ON n.oid = c.relnamespace
+                                   WHERE c.relname = 'document_type'
+                                     AND n.nspname = 'rdm'
+                                     AND obj_description(c.oid) is not null
+                               );
+                """;
+        Boolean existsTableComment = namedParameterJdbcTemplate.queryForObject(existsTableCommentQuery, Map.of("table", table, "schema", schema), Boolean.class);
+        if (!existsTableComment && pgTable.getTableDescription().isPresent()) {
+            namedParameterJdbcTemplate.getJdbcTemplate().execute("COMMENT ON TABLE " + pgTable.getName() + " IS '" + pgTable.getTableDescription().orElseThrow() + "';");
+            log.info("refresh comment for {}", pgTable.getName());
+        }
     }
 
     @Override
@@ -173,8 +242,8 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
     }
 
     private Map<String, String> getSchemaAndTableParams(String tableName) {
-        String schema = null;
-        String table = null;
+        String schema;
+        String table;
         if (tableName.contains(".")) {
             schema = tableName.split("\\.")[0];
             table = tableName.split("\\.")[1];
@@ -200,9 +269,24 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         .map(column -> String.format("%s %s", column.name(), column.type()))
                         .collect(Collectors.joining(", "))
         );
-        ddl.append(")");
-
+        ddl.append(");");
+        if (tableWithColumns.getTableDescription().isPresent()) {
+            ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
+        }
+        concatColumnsComment(tableWithColumns, ddl);
         namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
+    }
+
+    private void concatColumnsComment(PgTable tableWithColumns, StringBuilder ddl) {
+        String columnCommentTemplate = "\nCOMMENT ON COLUMN " + tableWithColumns.getName() + ".%s IS '%s'; ";
+
+        List<PgTable.Column> columnsWithDescription = tableWithColumns.getColumns().orElseThrow()
+                .stream()
+                .filter(column -> column.description() != null)
+                .toList();
+        for (PgTable.Column column :  columnsWithDescription) {
+            ddl.append(String.format(columnCommentTemplate, column.name(), column.description()));
+        }
     }
 
     private boolean lockRefBookForUpdate(String code) {
@@ -221,22 +305,19 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
     Integer insertVersionMapping(VersionMapping versionMapping) {
 
-        final String insMappingSql = "insert into rdm_sync.mapping (\n" +
-                "    deleted_field,\n" +
-                "    mapping_version,\n" +
-                "    sys_table,\n" +
-                "    sys_pk_field,\n" +
-                "    unique_sys_field," +
-                "        match_case," +
-                "    refreshable_range)\n" +
-                "values (\n" +
-                "    :deleted_field,\n" +
-                "    :mapping_version,\n" +
-                "    :sys_table,\n" +
-                "    :sys_pk_field,\n" +
-                "    :unique_sys_field," +
-                "    :match_case," +
-                "    :refreshable_range) RETURNING id";
+        final String insMappingSql = """
+                insert into rdm_sync.mapping (
+                    deleted_field,
+                    mapping_version,
+                    sys_table,
+                    sys_pk_field,
+                    unique_sys_field,        match_case,    refreshable_range)
+                values (
+                    :deleted_field,
+                    :mapping_version,
+                    :sys_table,
+                    :sys_pk_field,
+                    :unique_sys_field,    :match_case,    :refreshable_range) RETURNING id""";
 
         Integer mappingId = namedParameterJdbcTemplate.queryForObject(insMappingSql, toInsertMappingValues(versionMapping), Integer.class);
 

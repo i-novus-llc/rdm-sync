@@ -25,11 +25,13 @@ class PgTable {
 
     private final String loadedVersionFk;
 
-    private Optional<Set<Column>> columns = Optional.empty();;
+    private Optional<Set<Column>> columns = Optional.empty();
 
     private Optional<String> primaryField = Optional.empty();
 
     private Optional<String> sysPkColumn = Optional.empty();
+
+    private Optional<String> tableDescription = Optional.empty();
 
     private final String internalLocalStateUpdateTriggerName;
 
@@ -53,14 +55,25 @@ class PgTable {
         }
     }
 
-    public PgTable(String table, Map<String, String> columns, String primaryField, String sysPkColumn) {
+    public PgTable(String table,
+                   String tableDescription,
+                   Map<String, String> columns,
+                   Map<String, String> columnDescriptions,
+                   String primaryField,
+                   String sysPkColumn) {
         this(table);
+        this.tableDescription = Optional.ofNullable(tableDescription);
+        this.tableDescription.ifPresent(this::validate);
         this.columns = Optional.of(
                 columns.entrySet()
                         .stream()
                         .map(entry -> {
                             validate(entry.getValue());
-                            return new Column(escapeName(entry.getKey()), entry.getValue());
+                            String description = columnDescriptions.get(entry.getKey());
+                            if (description != null) {
+                                validate(description);
+                            }
+                            return new Column(escapeName(entry.getKey()), entry.getValue(), description);
                         }).collect(Collectors.toSet())
         );
         this.primaryField = Optional.ofNullable(escapeName(primaryField));
@@ -125,5 +138,9 @@ class PgTable {
         return loadedVersionFk;
     }
 
-    public static record Column(String name, String type) {}
+    public Optional<String> getTableDescription() {
+        return tableDescription;
+    }
+
+    public record Column(String name, String type, String description) {}
 }

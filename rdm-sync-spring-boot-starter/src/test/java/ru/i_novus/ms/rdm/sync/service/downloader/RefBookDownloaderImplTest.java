@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -56,7 +57,12 @@ class RefBookDownloaderImplTest {
             refBookVersion.setVersion(invocation.getArgument(1));
             refBookVersion.setCode(invocation.getArgument(0));
             refBookVersion.setStructure(new RefBookStructure(null, Collections.singletonList("ID"),
-                    Map.of("ID", AttributeTypeEnum.INTEGER, "CODE", AttributeTypeEnum.STRING, "name", AttributeTypeEnum.STRING)));
+                    Set.of(
+                            new RefBookStructure.Attribute("ID", AttributeTypeEnum.INTEGER, null),
+                            new RefBookStructure.Attribute("CODE", AttributeTypeEnum.STRING, null),
+                            new RefBookStructure.Attribute( "name", AttributeTypeEnum.STRING, null)
+                    )
+            ));
             return refBookVersion;
         });
 

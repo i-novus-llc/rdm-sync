@@ -43,9 +43,9 @@ public class RedirectingSyncSourceService implements SyncSourceService {
         //todo убрать когда в фнси появится отдельный тип данных для массива значений
         for (FieldMapping fieldMapping : getFieldMapping(code, refBook.getVersion())) {
             if ("integer[]".equals(fieldMapping.getSysDataType())) {
-                refBook.getStructure().getAttributesAndTypes().put(fieldMapping.getRdmField(), AttributeTypeEnum.INT_ARRAY);
+                refBook.getStructure().getAttributes().add(new RefBookStructure.Attribute(fieldMapping.getRdmField(), AttributeTypeEnum.INT_ARRAY, null));
             } else if ("text[]".equals(fieldMapping.getSysDataType())){
-                refBook.getStructure().getAttributesAndTypes().put(fieldMapping.getRdmField(), AttributeTypeEnum.STRING_ARRAY);
+                refBook.getStructure().getAttributes().add(new RefBookStructure.Attribute(fieldMapping.getRdmField(), AttributeTypeEnum.STRING_ARRAY, null));
             }
         }
         return refBook;
