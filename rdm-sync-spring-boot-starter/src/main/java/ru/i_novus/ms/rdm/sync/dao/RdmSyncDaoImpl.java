@@ -36,6 +36,8 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -1140,14 +1142,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void migrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
+    public void migrateSimpleVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
         String columnsExpression =  fields.stream().map(this::escapeName).collect(joining(","));
         namedParameterJdbcTemplate.update("INSERT INTO " + escapeName(refTable) + "(" + columnsExpression + ", version_id) " +
                 "(SELECT "+ columnsExpression + ", :versionId FROM " + escapeName(tempTable) + ")", Map.of("versionId", versionId));
     }
 
     @Override
-    public void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
+    public void reMigrateSimpleVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields) {
         String escapedRefTbl = escapeName(refTable);
         String escapedPk = escapeName(pkField);
         String columnsExpression = fields.stream().map(this::escapeName).collect(joining(","));
@@ -1318,6 +1320,22 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         return new HashSet<>(rangeData);
+    }
+
+    private String calculateSHA256Hash(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RdmSyncException("SHA-256 algorithm not found", e);
+        }
     }
 }
 

@@ -24,7 +24,7 @@ public class SimpleVersionedPersisterService implements PersisterService {
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
-        rdmSyncDao.migrateVersionedTempData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
+        rdmSyncDao.migrateSimpleVersionedTempData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
     }
 
     @Override
@@ -36,6 +36,6 @@ public class SimpleVersionedPersisterService implements PersisterService {
     public void repeatVersion(RefBookVersion refBookVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
-        rdmSyncDao.reMigrateVersionedTempData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
+        rdmSyncDao.reMigrateSimpleVersionedTempData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
     }
 }

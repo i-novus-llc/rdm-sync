@@ -12,7 +12,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.Range;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
@@ -446,7 +445,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         rdmSyncDao.closeLoadedVersion(refCode, "1.0", LocalDateTime.now());
         loadedVersionId = rdmSyncDao.insertLoadedVersion(refCode, "1.1", LocalDateTime.now(), null, true);
         List<String> fields = List.of("ID", "name", "some_dt", "flag");
-        rdmSyncDao.migrateVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
+        rdmSyncDao.migrateSimpleVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
 
         List<Map<String, Object>> actualData_1_1 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.1"))
                 .getContent().stream().peek(map -> {
@@ -470,7 +469,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
                 Map.of("ID", 4, "name", "name44", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
         );
         rdmSyncDao.insertVersionAsTempData(temp_table, tempDataRows);
-        rdmSyncDao.reMigrateVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
+        rdmSyncDao.reMigrateSimpleVersionedTempData(temp_table, refTableName, "ID", loadedVersionId, fields);
         actualData_1_1 = rdmSyncDao.getSimpleVersionedData(new VersionedLocalDataCriteria(refCode, refTableName, "ID", 30, 0, null, "1.1"))
                 .getContent().stream().peek(map -> {
                     map.remove("_sync_rec_id");

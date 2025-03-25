@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.singletonList;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.when;
 import static ru.i_novus.ms.rdm.sync.api.model.RefBookStructure.*;
 
 @ExtendWith(MockitoExtension.class)
-class NotSimpleVersionedPersisterServiceTest {
+class NotVersionedPersisterServiceTest {
 
     private NotVersionedPersisterService persisterService;
 
