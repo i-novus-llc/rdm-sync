@@ -67,7 +67,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         DownloadResult downloadResult;
         if (rdmSyncDao.getLoadedVersion(refCode, version) == null &&
                 rdmSyncDao.existsLoadedVersion(refCode)
-                && !SyncTypeEnum.SIMPLE_VERSIONED.equals(rdmSyncDao.getSyncRefBook(refCode).getType())
+                && !SyncTypeEnum.SIMPLE_VERSIONED.equals(rdmSyncDao.getSyncRefBook(refCode).getType()) && !SyncTypeEnum.VERSIONED.equals(rdmSyncDao.getSyncRefBook(refCode).getType())
         ) {
             logger.info("trying to download diff for version {} of {}", version, refCode);
             downloadResult = downloadDiff(refBookVersion, tempTableName, versionMapping, fieldMappings);

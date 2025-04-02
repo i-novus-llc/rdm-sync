@@ -23,6 +23,21 @@ public interface VersionedDataDao {
                             LocalDateTime toDate,
                             List<String> fields);
 
+    void repeatVersion(String tempTable,
+                       String refTable,
+                       String pkField,
+                       LocalDateTime fromDate,
+                       LocalDateTime toDate,
+                       List<String> fields);
+
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
+
+    List<Map<String, Object>> getDataFromTmp(String sql, Map<String, Object> args);
+
+    void executeQuery(String query);
+
+    void mergeIntervals(String refTable);
+
+    void closeIntervals(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
 
 }

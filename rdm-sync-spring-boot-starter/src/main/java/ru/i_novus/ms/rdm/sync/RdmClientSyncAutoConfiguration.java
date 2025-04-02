@@ -25,6 +25,8 @@ import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
+import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
+import ru.i_novus.ms.rdm.sync.dao.VersionedDataDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
 import ru.i_novus.ms.rdm.sync.service.change_data.RdmChangeDataRequestCallback;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
@@ -159,17 +161,29 @@ public class RdmClientSyncAutoConfiguration {
         return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
     }
 
+    @Bean
+    public RefBookUpdater versionedRefBookUpdater(
+            RdmSyncDao rdmSyncDao,
+            @Qualifier("versionedPersisterService") PersisterService persisterService,
+            RdmLoggingService rdmLoggingService,
+            VersionMappingService versionMappingService
+    ) {
+        return new DefaultRefBookUpdater(rdmSyncDao, rdmLoggingService, persisterService, versionMappingService);
+    }
+
 
     @Bean
     public RefBookUpdaterLocator refBookUpdaterLocator(
             @Qualifier("notVersionedRefBookUpdater") RefBookUpdater notVersionedRefBookUpdater,
             @Qualifier("rdmNotVersionedRefBookUpdater") RefBookUpdater rdmNotVersionedRefBookUpdater,
-            @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater
+            @Qualifier("simpleVersionedRefBookUpdater") RefBookUpdater simpleVersionedRefBookUpdater,
+            @Qualifier("versionedRefBookUpdater") RefBookUpdater versionedRefBookUpdater
     ) {
         return new RefBookUpdaterLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED, rdmNotVersionedRefBookUpdater,
                 SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedRefBookUpdater,
+                SyncTypeEnum.VERSIONED, versionedRefBookUpdater,
                 SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, notVersionedRefBookUpdater,
                 SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, rdmNotVersionedRefBookUpdater));
     }
@@ -181,5 +195,11 @@ public class RdmClientSyncAutoConfiguration {
         SimpleApplicationEventMulticaster eventMulticaster = new SimpleApplicationEventMulticaster();
         eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
         return eventMulticaster;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public VersionedDataDao versionedDataDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        return new VersionedDataDaoImpl(namedParameterJdbcTemplate);
     }
 }

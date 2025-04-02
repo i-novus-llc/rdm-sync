@@ -281,6 +281,46 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
+    public boolean closeLoadedVersionIfNotClose(String code, String version, LocalDateTime closeDate) {
+        final String countSql = "SELECT COUNT(1) FROM rdm_sync.loaded_version \n" +
+                " WHERE version = :version and code = :code";
+
+        final Integer count = namedParameterJdbcTemplate.queryForObject(countSql,
+                Map.of("version", version,
+                        "code", code),
+                Integer.class
+        );
+
+        if (count == 0)
+            return false;
+
+        final String selectSql = "SELECT close_dt IS NULL FROM rdm_sync.loaded_version \n" +
+                " WHERE version = :version and code = :code";
+
+        final Boolean result = namedParameterJdbcTemplate.queryForObject(selectSql,
+                Map.of("version", version,
+                        "code", code),
+                Boolean.class
+        );
+
+        if (Boolean.TRUE.equals(result)) {
+
+            final String sql = "UPDATE rdm_sync.loaded_version \n" +
+                    "   SET close_dt = :closeDate \n" +
+                    " WHERE version = :version and code = :code and close_dt is null";
+
+            namedParameterJdbcTemplate.update(sql,
+                    Map.of("version", version,
+                            "closeDate", closeDate,
+                            "code", code)
+            );
+            return true;
+
+        }
+        return false;
+    }
+
+    @Override
     public void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced) {
 
         insertRows(schemaTable, List.of(row), markSynced);

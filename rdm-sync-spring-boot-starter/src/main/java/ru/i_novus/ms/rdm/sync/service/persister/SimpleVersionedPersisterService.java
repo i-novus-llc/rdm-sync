@@ -8,6 +8,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,5 +38,15 @@ public class SimpleVersionedPersisterService implements PersisterService {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(refBookVersion.getCode(), refBookVersion.getVersion());
         rdmSyncDao.reMigrateSimpleVersionedTempData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
+    }
+
+    @Override
+    public void afterSyncProcess(String refTable) {
+        //nothing
+    }
+
+    @Override
+    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+        //nothing
     }
 }

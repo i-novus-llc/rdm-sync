@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.service.persister;
 
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -9,6 +10,7 @@ import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,20 +34,25 @@ public class VersionedPersisterService implements PersisterService {
 
     @Override
     public void merge(RefBookVersion newVersion, String syncedVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
 
         if (DownloadResultType.VERSION.equals(downloadResult.getType())) {
             firstWrite(newVersion, versionMapping, downloadResult);
-            return;
-        }
-
-        if (DownloadResultType.DIFF.equals(downloadResult.getType())) {
-            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getFrom(), newVersion.getTo(), fields);
         }
     }
 
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        // todo implement
+        List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
+        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getFrom(), newVersion.getTo(), fields);
+    }
+
+    @Override
+    public void afterSyncProcess(String refTable) {
+        versionedDataDao.mergeIntervals(refTable);
+    }
+
+    @Override
+    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+        versionedDataDao.closeIntervals(refTable, closedVersionPublishingDate, newVersionPublishingDate);
     }
 }

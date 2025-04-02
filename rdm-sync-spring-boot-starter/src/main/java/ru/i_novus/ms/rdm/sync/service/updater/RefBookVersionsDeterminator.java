@@ -124,4 +124,8 @@ public class RefBookVersionsDeterminator {
         return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
     }
 
+    public List<RefBookVersionItem> getAllVersions(String code) {
+        return syncSourceService.getVersions(code);
+    }
+
 }

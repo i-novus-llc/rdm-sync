@@ -13,14 +13,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
+import ru.i_novus.ms.rdm.sync.api.exception.MappingNotFoundException;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.log.LogCriteria;
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMappingField;
 import ru.i_novus.ms.rdm.sync.api.mapping.xml.XmlMappingRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
+import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
@@ -33,6 +37,7 @@ import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterException;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdaterLocator;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookVersionsDeterminator;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,10 +119,42 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             logger.error( "No mapping found for reference book with code '{}'.", refBookCode);
             return;
         }
+        beforeSyncProcess(syncRefBook);
         List<String> versions = getVersions(refBookCode);
         for (String version : versions) {
             // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
+        }
+
+        for (String version : versions) {
+            VersionMapping versionMapping = getVersionMapping(refBookCode, version);
+            afterSyncProcess(syncRefBook, versionMapping.getTable());
+        }
+    }
+
+    public VersionMapping getVersionMapping(String code, String version) {
+        VersionMapping versionMapping = versionMappingService.getVersionMapping(code, version);
+        if (versionMapping == null) {
+            throw new MappingNotFoundException(code, code);
+        }
+        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
+
+        final String primaryField = versionMapping.getPrimaryField();
+        if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
+            throw new IllegalArgumentException(String.format("No mapping found for primary key '%s'.", primaryField));
+
+        return versionMapping;
+    }
+
+    private void beforeSyncProcess(SyncRefBook syncRefBook) {
+        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook.getCode(), dao, syncSourceService, versionMappingService);
+        List<RefBookVersionItem> result = determinator.getAllVersions(syncRefBook.getCode());
+
+        for (int i = 0; i < result.size() - 1; i++) {
+            boolean isUpdated = dao.closeLoadedVersionIfNotClose(result.get(i).getCode(), result.get(i).getVersion(), result.get(i+1).getFrom());
+
+            if (isUpdated)
+                beforeSyncProcess(syncRefBook, result.get(i).getFrom(), result.get(i+1).getFrom());
         }
     }
 
@@ -223,5 +260,27 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             }
         };
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();
+    }
+
+    private void afterSyncProcess(SyncRefBook syncRefBook, String table) {
+
+        try {
+            RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
+
+            refBookUpdater.afterSyncProcess(table);
+        } catch (Exception e) {
+            logger.error("Error happend while after sync process.");
+        }
+    }
+
+    private void beforeSyncProcess(SyncRefBook syncRefBook, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+
+        try {
+            RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
+
+            refBookUpdater.beforeSyncProcess(syncRefBook.getName(), closedVersionPublishingDate, newVersionPublishingDate);
+        } catch (Exception e) {
+            logger.error("Error happend while before sync process.");
+        }
     }
 }

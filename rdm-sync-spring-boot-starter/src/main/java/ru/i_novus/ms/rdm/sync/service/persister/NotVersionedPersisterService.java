@@ -55,4 +55,13 @@ public class NotVersionedPersisterService implements PersisterService {
         dao.migrateNotVersionedTempData(tempDataTbl, versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), fields, deletedTs);
     }
 
+    @Override
+    public void afterSyncProcess(String refTable) {
+        //nothing
+    }
+
+    @Override
+    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+        //nothing
+    }
 }

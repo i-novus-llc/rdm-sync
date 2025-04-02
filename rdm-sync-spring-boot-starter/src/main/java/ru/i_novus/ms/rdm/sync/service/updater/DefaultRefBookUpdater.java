@@ -16,7 +16,9 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
+import ru.i_novus.ms.rdm.sync.service.persister.VersionedPersisterService;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +81,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
     }
 
-    private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
+    public VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
         if (versionMapping == null) {
             throw new MappingNotFoundException(refBookVersion.getCode(), refBookVersion.getCode());
@@ -180,6 +182,18 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         logger.info("{} first sync", newVersion.getCode());
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
         persisterService.firstWrite(newVersion, versionMapping, downloadResult);
+    }
+
+    @Override
+    public void afterSyncProcess(String refTable) {
+        if (persisterService instanceof VersionedPersisterService) {
+            persisterService.afterSyncProcess(refTable);
+        }
+    }
+
+    @Override
+    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+        persisterService.beforeSyncProcess(refTable, closedVersionPublishingDate, newVersionPublishingDate);
     }
 
 }
