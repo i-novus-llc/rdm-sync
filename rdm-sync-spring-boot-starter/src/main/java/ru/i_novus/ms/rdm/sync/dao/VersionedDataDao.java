@@ -32,12 +32,23 @@ public interface VersionedDataDao {
 
     Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
 
-    List<Map<String, Object>> getDataFromTmp(String sql, Map<String, Object> args);
+    void addPkFilter(LocalDataCriteria localDataCriteria, Long pk);
+
+    Map<String, Object> getDataByPkField(LocalDataCriteria localDataCriteria);
+
+    List<Map<String, Object>> getDataAsMap(String sql, Map<String, Object> args);
 
     void executeQuery(String query);
+
+    void updateQuery(String query, Map<String, Object> map);
 
     void mergeIntervals(String refTable);
 
     void closeIntervals(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
+
+    void insertIntervals(List<Long> ids,
+                         LocalDateTime fromDate,
+                         LocalDateTime toDate,
+                         String refTable);
 
 }

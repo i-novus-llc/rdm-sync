@@ -1,7 +1,10 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Bean;
@@ -14,8 +17,11 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.VersionedLocalRefBookCreatorDao;
 
+import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +31,7 @@ import java.util.Map;
         "spring.liquibase.enabled=false"
 })
 @Sql(scripts = {"/versionedDataDaoTest.sql"})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class VersionedDataDaoTest extends BaseDaoTest {
 
     private static final String RECORD_FROM_DT = "_sync_from_dt";
@@ -64,6 +71,7 @@ public class VersionedDataDaoTest extends BaseDaoTest {
      * Тестирует CRUD операции версионных данных
      */
     @Test
+    @Order(1)
     void testCRUDVersionedData() {
         List<FieldMapping> fieldMappings = List.of(
                 new FieldMapping("name", "varchar", "name"),
@@ -89,73 +97,74 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 refTable,
                 "_sync_rec_id",
                 "num");
-        LocalDateTime secondVersionCreatedDt = LocalDateTime.now();
-        LocalDateTime firsVersionCreatedDt = secondVersionCreatedDt;
+        LocalDate secondVersionCreatedDt = LocalDate.now();
+        LocalDate firstVersionCreatedDt = secondVersionCreatedDt.minusDays(3);
+
+        List<Map<String, Object>> version1 = List.of(
+                Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
+                Map.of("name", "name2", "num", 2, "flag", false, "some_dt", firstVersionCreatedDt),
+                Map.of("name", "name10", "num", 10, "flag", false, "some_dt", firstVersionCreatedDt)
+        );
+
         rdmSyncDao.insertVersionAsTempData(
                 tempVersionedRef,
-                List.of(
-                        Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firsVersionCreatedDt),
-                        Map.of("name", "name2", "num", 2, "flag", false, "some_dt", firsVersionCreatedDt)
-                )
+                version1
         );
-        LocalDateTime firstVersionDate = LocalDateTime.of(2025, 3, 23, 0, 0);
-        LocalDateTime nextVersionDt = LocalDateTime.of(2025, 3, 24, 0, 0);
-        versionedDataDao.addFirstVersionData(tempVersionedRef, refTable, "num", firstVersionDate, nextVersionDt, fields);
 
+        //даты версий
+        LocalDateTime firstVersionDate = LocalDateTime.of(2025, 3, 23, 0, 0);
+        LocalDateTime nextVersionDate = LocalDateTime.of(2025, 3, 24, 0, 0);
+        LocalDateTime nextVersionDate2 = LocalDateTime.of(2025, 3, 25, 0, 0);
+
+        //загружаем первую версию
+        versionedDataDao.addFirstVersionData(tempVersionedRef, refTable, "num", firstVersionDate, nextVersionDate, fields);
+        versionedDataDao.mergeIntervals(refTable);
+
+        //получаем данные справочника первой версии
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(refTable, "num", 100, 0, new ArrayList<>());
         localDataCriteria.setDateTime(firstVersionDate);
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
-        Assertions.assertEquals(2, data.getTotalElements());
+        Assertions.assertEquals(3, data.getTotalElements());
+        compare(data.getContent(), version1, localDataCriteria.getPk());
 
         // фильтруем по дате вне версии
-        localDataCriteria.setDateTime(firstVersionDate.minus(1, ChronoUnit.DAYS));
+        localDataCriteria.setDateTime(firstVersionDate.minusDays(1));
         data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(0, data.getTotalElements());
 
-        //следующая версия
+        //загружаем следующую версию
         String tempVersionedRef2 = "temp_versioned_ref2";
         rdmSyncDao.createVersionTempDataTbl(
                 tempVersionedRef2,
                 refTable,
                 "_sync_rec_id",
                 "num");
-        rdmSyncDao.insertVersionAsTempData(
-                tempVersionedRef2,
-                List.of(
-                        Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firsVersionCreatedDt),
-                        Map.of("name", "name2 updated", "num", 2, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name3", "num", 3, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name4", "num", 4, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt)
-                )
+
+        List<Map<String, Object>> version2 = List.of(
+                Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
+                Map.of("name", "name2 updated", "num", 2, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name3", "num", 3, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name4", "num", 4, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt)
         );
 
+        rdmSyncDao.insertVersionAsTempData(
+                tempVersionedRef2,
+                version2
+        );
 
-        LocalDateTime nextVersionDt2 = LocalDateTime.of(2025, 3, 25, 0, 0);
-        versionedDataDao.addDiffVersionData(tempVersionedRef2, refTable, "num", nextVersionDt, nextVersionDt2, fields);
+        versionedDataDao.addDiffVersionData(tempVersionedRef2, refTable, "num", nextVersionDate, nextVersionDate2, fields);
+        versionedDataDao.mergeIntervals(refTable);
 
-        localDataCriteria.setDateTime(null);
-        data = versionedDataDao.getData(localDataCriteria);
-
-        List<Map<String, Object>> result = versionedDataDao.getDataFromTmp("select * from temp_versioned_ref2", new HashMap<>());
-
-        localDataCriteria.setDateTime(nextVersionDt.plusHours(1));
+        //проверка
+        localDataCriteria.setDateTime(nextVersionDate);
         data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(5, data.getTotalElements());
+        compare(data.getContent(), version2, localDataCriteria.getPk());
 
 
-        versionedDataDao.mergeIntervals(refTable);
-        List<Map<String, Object>> mergeResult = versionedDataDao.getDataFromTmp("select * from versioned_ref_intervals", new HashMap<>());
-
-        Assertions.assertEquals(6, mergeResult.size());
-        Map<String, Object> mapForFirstRec = mergeResult.stream().filter(m -> m.get("record_id").equals(1L)).toList().get(0);
-        Assertions.assertEquals(firstVersionDate, mapForFirstRec.get(RECORD_FROM_DT));
-        Assertions.assertEquals(nextVersionDt2, mapForFirstRec.get(RECORD_TO_DT));
-
-        Map<String, Object> mapForSecondRec = mergeResult.stream().filter(m -> m.get("record_id").equals(2L)).toList().get(0);
-        Assertions.assertEquals(firstVersionDate, mapForSecondRec.get(RECORD_FROM_DT));
-        Assertions.assertEquals(nextVersionDt, mapForSecondRec.get(RECORD_TO_DT));
-
+        List<Map<String, Object>> mergeResult = versionedDataDao.getDataAsMap("select * from versioned_ref_intervals", new HashMap<>());
+        Assertions.assertEquals(7, mergeResult.size());
 
         //следующая версия
         String tempVersionedRef3 = "temp_versioned_ref3";
@@ -164,32 +173,88 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 refTable,
                 "_sync_rec_id",
                 "num");
-        rdmSyncDao.insertVersionAsTempData(
-                tempVersionedRef3,
-                List.of(
-                        Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firsVersionCreatedDt),
-                        Map.of("name", "name2 updated", "num", 2, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name3", "num", 3, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name4", "num", 4, "flag", false, "some_dt", secondVersionCreatedDt),
-                        Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt)
-                )
+
+        List<Map<String, Object>> version3 = List.of(
+                Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
+                Map.of("name", "name2 updated", "num", 2, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name3", "num", 3, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name4", "num", 4, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt)
         );
 
+        rdmSyncDao.insertVersionAsTempData(
+                tempVersionedRef3,
+                version3
+        );
 
-        versionedDataDao.addDiffVersionData(tempVersionedRef3, refTable, "num", nextVersionDt2, null, fields);
+        versionedDataDao.addDiffVersionData(tempVersionedRef3, refTable, "num", nextVersionDate2, null, fields);
+        versionedDataDao.mergeIntervals(refTable);
+
+        mergeResult = versionedDataDao.getDataAsMap("select * from versioned_ref_intervals", new HashMap<>());
+        Assertions.assertEquals(12, mergeResult.size());
+
+        LocalDateTime nextVersionDate3 = LocalDateTime.of(2025, 3, 27, 0, 0);
+        versionedDataDao.closeIntervals(refTable, nextVersionDate2, nextVersionDate3);
 
         versionedDataDao.mergeIntervals(refTable);
-        mergeResult = versionedDataDao.getDataFromTmp("select * from versioned_ref_intervals", new HashMap<>());
-        List<Map<String, Object>> all = versionedDataDao.getDataFromTmp("select * from versioned_ref", new HashMap<>());
-        Assertions.assertEquals(11, mergeResult.size());
+        mergeResult = versionedDataDao.getDataAsMap("select * from versioned_ref_intervals", new HashMap<>());
+        Assertions.assertEquals(7, mergeResult.size());
 
-        LocalDateTime nextVersionDt3 = LocalDateTime.of(2025, 3, 27, 0, 0);
-        versionedDataDao.closeIntervals(refTable, nextVersionDt2, nextVersionDt3);
+        //проверка
+        localDataCriteria.setDateTime(nextVersionDate2);
+        data = versionedDataDao.getData(localDataCriteria);
+        Assertions.assertEquals(5, data.getTotalElements());
+        compare(data.getContent(), version3, localDataCriteria.getPk());
 
-        versionedDataDao.mergeIntervals(refTable);
-        mergeResult = versionedDataDao.getDataFromTmp("select * from versioned_ref_intervals", new HashMap<>());
-        Assertions.assertEquals(6, mergeResult.size());
+        //портим версию
+        versionedDataDao.executeQuery("DELETE FROM versioned_ref_intervals WHERE id = (SELECT max(id) from versioned_ref_intervals)");
+
+        Long recId = 3L;
+        Long num = 10L;
+        versionedDataDao.insertIntervals(List.of(recId), nextVersionDate2, nextVersionDate3, refTable);
+
+        LocalDataCriteria criteria = new LocalDataCriteria(refTable, "num", 100, 0, new ArrayList<>());
+        criteria.setDateTime(nextVersionDate2);
+        versionedDataDao.addPkFilter(criteria, num);
+        Map<String, Object> rec = versionedDataDao.getDataByPkField(criteria);
+        Assertions.assertNotNull(rec, "Запись не была добавлена.");
+
+        //восстанавливаем версию
+        versionedDataDao.repeatVersion(tempVersionedRef3, refTable, "num", nextVersionDate2, nextVersionDate3, fields);
+
+        //проверка
+        localDataCriteria.setDateTime(nextVersionDate2);
+        data = versionedDataDao.getData(localDataCriteria);
+        Assertions.assertEquals(5, data.getTotalElements());
+        compare(data.getContent(), version3, localDataCriteria.getPk());
+
+        rec = versionedDataDao.getDataByPkField(criteria);
+        Assertions.assertNull(rec, "Запись не была удалена.");
+
     }
 
+    private void compare(List<Map<String, Object>> data, List<Map<String, Object>> version, String pk) {
+        data.forEach(res -> {
+            Map<String, Object> find = findRecord(res, version, pk);
+            res.forEach((key, value) -> {
+                if (find.get(key) instanceof LocalDate) {
+                    LocalDate ld = (LocalDate) find.get(key);
+                    LocalDate ld2 = ((Date) value).toLocalDate();
+                    int comparison = ld.compareTo(ld2);
+                    Assertions.assertEquals(0, comparison);
+                } else {
+                    Assertions.assertEquals(find.get(key), value);
+                }
+            });
+        });
+    }
+
+    private Map<String, Object> findRecord(Map<String, Object> res, List<Map<String, Object>> version, String pk) {
+        for (Map<String, Object> ver : version) {
+            if (ver.get(pk).equals(res.get(pk)))
+                return ver;
+        }
+        return null;
+    }
 
 }

@@ -30,9 +30,18 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
 
     @Override
     protected void customizeTable(PgTable pgTable, VersionMapping mapping, List<FieldMapping> fieldMappings) {
+
+        String name = pgTable.getName().replace("\"", "");
+
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
-                String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s);",
+                String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s)",
                         pgTable.getName(), pgTable.getUniqueConstraint(), pgTable.getPrimaryField().orElseThrow(), RECORD_HASH));
+
+        //индекс по хэшу и pk
+        String indexName = name.substring(name.indexOf(".") + 1) + "_hash_ix";
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s, %s)",
+                        indexName, pgTable.getName(), pgTable.getPrimaryField().orElseThrow(), RECORD_HASH));
 
         String query = """
                 CREATE TABLE %s (
@@ -44,11 +53,19 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
               );
               """;
 
-        String name = pgTable.getName().replace("\"", "");
-        name = name + "_intervals";
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(String.format(query, escapeName(name), pgTable.getName()));
+        String intervalsName = name + "_intervals";
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(String.format(query, escapeName(intervalsName), pgTable.getName()));
 
-        //todo добавить индекс по датам и внешнему ключу
+        //индекс по датам и внешнему ключу
+        indexName = intervalsName.substring(intervalsName.indexOf(".") + 1) + "_record_id_ix";
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s)",
+                        indexName, intervalsName, "record_id"));
+
+        indexName = intervalsName.substring(intervalsName.indexOf(".") + 1) + "_dates_ix";
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s, %s)",
+                        indexName, intervalsName, RECORD_FROM_DT, RECORD_TO_DT));
     }
 
     @Override

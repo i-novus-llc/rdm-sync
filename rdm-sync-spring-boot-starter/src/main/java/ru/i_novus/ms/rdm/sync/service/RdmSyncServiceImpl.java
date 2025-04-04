@@ -126,9 +126,13 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
         }
 
+        List<String> tablesForMerge = new ArrayList<>();
         for (String version : versions) {
             VersionMapping versionMapping = getVersionMapping(refBookCode, version);
-            afterSyncProcess(syncRefBook, versionMapping.getTable());
+            tablesForMerge.add(versionMapping.getTable());
+        }
+        for (String tableForMerge : tablesForMerge) {
+            afterSyncProcess(syncRefBook, tableForMerge);
         }
     }
 
