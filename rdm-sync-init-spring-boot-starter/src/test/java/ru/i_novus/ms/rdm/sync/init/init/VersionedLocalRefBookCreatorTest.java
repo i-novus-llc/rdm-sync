@@ -68,7 +68,7 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
                 .table("rdm.ref_versioned")
                 .source("FNSI")
                 .sysPkColumn("_sync_rec_id")
-                .primaryField("ID")
+                .primaryField("id")
                 .mappingVersion(-1)
                 .refBookName("Версионный справочник")
                 .type(SyncTypeEnum.VERSIONED)
@@ -90,8 +90,9 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
                 new SyncMapping(versionMapping, fieldMappings));
 
         Assertions.assertTrue(tableExists("rdm", "ref_versioned"));
-        Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_from_dt"));
-        Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_to_dt"));
+        Assertions.assertTrue(tableExists("rdm", "ref_versioned_intervals"));
+        Assertions.assertTrue(columnExists("rdm", "ref_versioned_intervals", "_sync_from_dt"));
+        Assertions.assertTrue(columnExists("rdm", "ref_versioned_intervals", "_sync_to_dt"));
         Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_rec_id"));
         Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_hash"));
 
