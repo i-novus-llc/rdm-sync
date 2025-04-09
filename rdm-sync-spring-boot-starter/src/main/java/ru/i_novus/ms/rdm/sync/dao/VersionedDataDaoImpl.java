@@ -130,7 +130,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 Map.entry("refTableIntervals", escapeName(intervalsTableName)),
                 Map.entry("fromDt", escapeName(RECORD_FROM_DT)),
                 Map.entry("toDt", escapeName(RECORD_TO_DT)),
-                Map.entry("uniqColumns", "(" + escapeName(pkField) + ", " + escapeName(RECORD_HASH) + ")"));
+                Map.entry("uniqColumns", escapeName(pkField) + ", " + escapeName(RECORD_HASH)));
 
         //удаляем записи, которых нет в версии
         String deleteQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
@@ -177,26 +177,27 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         String sq = StringSubstitutor.replace(sqt, queryPlaceholders, "{", "}");
         List<Long> srcIds2 = namedParameterJdbcTemplate.queryForList(sq, Map.of("from_date", fromDate), Long.class);
 
+        if (!srcIds2.isEmpty()) {
+            String updateQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
+                    "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
+                    "AND {pk} in (:srcIds2)";
+            String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders, "{", "}");
+            List<Long> idsForDelete2 = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
+            idsForDelete.addAll(idsForDelete2);
 
-        String updateQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
-                "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
-                "AND {pk} in (:srcIds2)";
-        String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders,"{", "}");
-        List<Long> idsForDelete2 = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
-        idsForDelete.addAll(idsForDelete2);
-
-        String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
-                "WHERE {pk} in (:srcIds2)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
-        String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-        namedParameterJdbcTemplate.queryForList(query, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
+            String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
+                    "WHERE {pk} in (:srcIds2)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
+            String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+            namedParameterJdbcTemplate.queryForList(query, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
 
 
-        //получаем _sync_rec_id
-        insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
-                "WHERE {pk} in (:srcIds2) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
-        query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-        List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
-        idsForInsert.addAll(idsForInsert2);
+            //получаем _sync_rec_id
+            insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
+                    "WHERE {pk} in (:srcIds2) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+            query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+            List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
+            idsForInsert.addAll(idsForInsert2);
+        }
 
         //
 
