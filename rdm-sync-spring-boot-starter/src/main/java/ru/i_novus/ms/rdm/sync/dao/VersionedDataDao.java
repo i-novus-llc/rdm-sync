@@ -40,8 +40,6 @@ public interface VersionedDataDao {
 
     void executeQuery(String query);
 
-    void updateQuery(String query, Map<String, Object> map);
-
     void mergeIntervals(String refTable);
 
     void closeIntervals(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
