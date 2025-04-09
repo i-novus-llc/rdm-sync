@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
@@ -69,6 +70,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 "toDt", RECORD_TO_DT,
                 "refTableIntervals", escapeName(intervalsTableName));
 
+        //выбираем из refTbl syncId и вставляем в таблицу интервалов
         String dataQueryTemplate = "WITH table_data AS (" +
                 "SELECT {syncId} FROM {refTbl} " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE {refTbl}.{hash} = md5({hashExpression}) AND {pk} = {refTbl}.{pk})" +
@@ -83,10 +85,11 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         map.put("to_dt", toDate);
         namedParameterJdbcTemplate.update(query, map);
 
-        dataQueryTemplate = "WITH table_data AS (\n" +
+        //вставляем записи в refTbl и в таблицу интервалов
+        dataQueryTemplate = "WITH table_data AS (" +
                 "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                 "WHERE NOT EXISTS(SELECT 1 FROM {refTbl} WHERE {refTbl}.{hash} = md5({hashExpression}) AND {tempTbl}.{pk} = {refTbl}.{pk})) RETURNING {syncId}" +
-                ")\n" +
+                ")" +
                 "INSERT INTO {refTableIntervals} (record_id, {fromDt}, {toDt}) " +
                 "SELECT {syncId}, :from_dt, :to_dt " +
                 "FROM table_data";
@@ -116,18 +119,20 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         String hashExpression = getHashExpression(fields, tempTable);
         String name = refTable.replace("\"", "");
         String intervalsTableName = name + "_intervals";
-        Map<String, String> queryPlaceholders = Map.of("tempTbl", escapeName(tempTable),
-                "columnsExpression", columnsExpression,
-                "hashExpression", hashExpression,
-                "hash", RECORD_HASH,
-                "refTbl", escapeName(refTable),
-                "pk", escapeName(pkField),
-                "syncId", RECORD_PK_COL,
-                "refTableIntervals", escapeName(intervalsTableName),
-                "fromDt", RECORD_FROM_DT,
-                "toDt", RECORD_TO_DT);
+        Map<String, String> queryPlaceholders = Map.ofEntries(
+                Map.entry("tempTbl", escapeName(tempTable)),
+                Map.entry("columnsExpression", columnsExpression),
+                Map.entry("hashExpression", hashExpression),
+                Map.entry("hash", escapeName(RECORD_HASH)),
+                Map.entry("refTbl", escapeName(refTable)),
+                Map.entry("pk", escapeName(pkField)),
+                Map.entry("syncId", escapeName(RECORD_PK_COL)),
+                Map.entry("refTableIntervals", escapeName(intervalsTableName)),
+                Map.entry("fromDt", escapeName(RECORD_FROM_DT)),
+                Map.entry("toDt", escapeName(RECORD_TO_DT)),
+                Map.entry("uniqColumns", "(" + escapeName(pkField) + ", " + escapeName(RECORD_HASH) + ")"));
 
-        //удаляем записи которых нет в версии
+        //удаляем записи, которых нет в версии
         String deleteQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
                 " WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})" +
                 " AND {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date)";
@@ -136,22 +141,22 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         //
 
 
-        //получаем записи которые есть в temp, но нет в сохраненной версии
+        //получаем записи, которые есть в temp, но нет в сохраненной версии
         String selectQueryTemplate = "SELECT {pk} FROM {tempTbl} " +
-                "WHERE NOT exists(SELECT 1 FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
-                                 "WHERE {pk} = {tempTbl}.{pk} " +
-                                 "AND {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date))";
+                "WHERE NOT EXISTS(SELECT 1 FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
+                                 "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
+                                 "AND {pk} = {tempTbl}.{pk})";
         String selectQuery = StringSubstitutor.replace(selectQueryTemplate, queryPlaceholders, "{", "}");
         List<Long> srcIds = namedParameterJdbcTemplate.queryForList(selectQuery, Map.of("from_date", fromDate), Long.class);
 
 
         List<Long> idsForInsert = new ArrayList<>();
         if (!srcIds.isEmpty()) {
-            //добавляем запись в refTbl, если ее нет в refTbl
+            //добавляем запись в refTbl, если ее нет
             String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
-                    "WHERE {pk} in (:srcIds) AND NOT EXISTS(SELECT 1 FROM {refTbl} WHERE {pk} = {tempTbl}.{pk} AND {hash} = md5({hashExpression}))) RETURNING {syncId}";
+                    "WHERE {pk} in (:srcIds)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
             String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-            List<Long> ids = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class); //не нужно возвращать айдишники
+            namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
 
             //получаем _sync_rec_id
             insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
@@ -161,20 +166,36 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         }
         //
 
-        //редактируем записи которые изменились
+        //редактируем записи, которые изменились
+
+        //ищем записи, которые есть и в tempTbl и в сохраненной версии (по pk), но с разным hash
+        String sqt = "SELECT {pk} FROM {tempTbl} " +
+                "WHERE EXISTS(SELECT 1 FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
+                "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
+                "AND {refTbl}.{pk} = {tempTbl}.{pk} " +
+                "AND {refTbl}.{hash} <> md5({hashExpression}))";
+        String sq = StringSubstitutor.replace(sqt, queryPlaceholders, "{", "}");
+        List<Long> srcIds2 = namedParameterJdbcTemplate.queryForList(sq, Map.of("from_date", fromDate), Long.class);
+
+
         String updateQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
                 "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
-                "AND exists(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk} AND md5({hashExpression}) <> {refTbl}.{hash})";
+                "AND {pk} in (:srcIds2)";
         String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders,"{", "}");
-        List<Long> idsForDelete2 = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("from_date", fromDate), Long.class);
+        List<Long> idsForDelete2 = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
         idsForDelete.addAll(idsForDelete2);
 
         String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
-                "WHERE EXISTS(SELECT 1 FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
-                "WHERE {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date) " +
-                "AND {pk} = {tempTbl}.{pk} AND {hash} <> md5({hashExpression}))) RETURNING {syncId}";
+                "WHERE {pk} in (:srcIds2)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
         String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-        List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("from_date", fromDate), Long.class);
+        namedParameterJdbcTemplate.queryForList(query, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
+
+
+        //получаем _sync_rec_id
+        insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
+                "WHERE {pk} in (:srcIds2) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+        query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+        List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
         idsForInsert.addAll(idsForInsert2);
 
         //
@@ -396,6 +417,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     }
 
     @Override
+    @Transactional
     public void mergeIntervals(String refTable) {
 
         log.info("Start merge intervals for table {}.", refTable);
@@ -450,6 +472,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
     @Override
     public void closeIntervals(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
+        log.info("Start close intervals for table {}.", refTable);
         String name = refTable.replace("\"", "");
         String intervalsTableName = name + "_intervals";
 
@@ -459,5 +482,6 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 Map.of("fromDt", closedVersionPublishingDate,
                         "toDt", newVersionPublishingDate)
         );
+        log.info("End close intervals for table {}.", refTable);
     }
 }
