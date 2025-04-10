@@ -138,6 +138,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 " AND {refTableIntervals}.{fromDt} <= :from_date AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date)";
         String deleteQuery = StringSubstitutor.replace(deleteQueryTemplate, queryPlaceholders, "{", "}");
         List<Long> idsForDelete = namedParameterJdbcTemplate.queryForList(deleteQuery, Map.of("from_date", fromDate), Long.class);
+        log.info("idsForDelete: {}", idsForDelete);
         //
 
 
@@ -163,6 +164,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                     "WHERE {pk} in (:srcIds) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
             query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
             idsForInsert = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
+            log.info("idsForInsert: {}", idsForInsert);
         }
         //
 
@@ -184,6 +186,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders, "{", "}");
             List<Long> idsForDelete2 = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("from_date", fromDate, "srcIds2", srcIds2), Long.class);
             idsForDelete.addAll(idsForDelete2);
+            log.info("idsForDelete2: {}", idsForDelete2);
 
             String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                     "WHERE {pk} in (:srcIds2)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
@@ -195,8 +198,9 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
                     "WHERE {pk} in (:srcIds2) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
             query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-            List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
+            List<Long> idsForInsert2 = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds2", srcIds2), Long.class);
             idsForInsert.addAll(idsForInsert2);
+            log.info("idsForInsert2: {}", idsForInsert2);
         }
 
         //
@@ -268,7 +272,6 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             params.put("id", id);
             List<Long> dateIds = namedParameterJdbcTemplate.queryForList("INSERT INTO " + escapeName(refTable + "_intervals") + "(record_id, " + RECORD_FROM_DT + ", " + RECORD_TO_DT + ") " +
                     "VALUES (:id, :fromDt, :toDt) RETURNING id", params, Long.class);
-            log.info(dateIds.toString());
         });
     }
 

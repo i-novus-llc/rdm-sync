@@ -202,7 +202,11 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 Map.of("name", "name2 updated", "num", 2, "flag", false, "some_dt", secondVersionCreatedDt),
                 Map.of("name", "name3", "num", 3, "flag", false, "some_dt", secondVersionCreatedDt),
                 Map.of("name", "name4", "num", 4, "flag", false, "some_dt", secondVersionCreatedDt),
-                Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt)
+                Map.of("name", "name5", "num", 5, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name6", "num", 6, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name7", "num", 7, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name8", "num", 8, "flag", false, "some_dt", secondVersionCreatedDt),
+                Map.of("name", "name9", "num", 9, "flag", false, "some_dt", secondVersionCreatedDt)
         );
 
         rdmSyncDao.insertVersionAsTempData(
@@ -214,27 +218,30 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         versionedDataDao.mergeIntervals(refTable);
 
         List<Map<String, Object>> mergeResult = versionedDataDao.getDataAsMap("select * from versioned_ref_intervals", new HashMap<>());
-        Assertions.assertEquals(12, mergeResult.size());
+        Assertions.assertEquals(16, mergeResult.size());
 
         versionedDataDao.closeIntervals(refTable, nextVersionDate2, nextVersionDate3);
 
         versionedDataDao.mergeIntervals(refTable);
         mergeResult = versionedDataDao.getDataAsMap("select * from versioned_ref_intervals", new HashMap<>());
-        Assertions.assertEquals(7, mergeResult.size());
+        Assertions.assertEquals(11, mergeResult.size());
 
         //проверка
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(refTable, "num", 100, 0, new ArrayList<>());
         localDataCriteria.setDateTime(nextVersionDate2);
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
-        Assertions.assertEquals(5, data.getTotalElements());
+        Assertions.assertEquals(9, data.getTotalElements());
         compare(data.getContent(), version3, localDataCriteria.getPk());
     }
 
     private void repeatVersion(String refTable,
                                List<String> fields) {
         //портим версию
+        //удаляем 2 записи
+        versionedDataDao.executeQuery("DELETE FROM versioned_ref_intervals WHERE id = (SELECT max(id) from versioned_ref_intervals)");
         versionedDataDao.executeQuery("DELETE FROM versioned_ref_intervals WHERE id = (SELECT max(id) from versioned_ref_intervals)");
 
+        //добавляем 1 запись
         Long recId = 3L;
         Long num = 10L;
         versionedDataDao.insertIntervals(List.of(recId), nextVersionDate2, nextVersionDate3, refTable);
@@ -245,6 +252,11 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         Map<String, Object> rec = versionedDataDao.getDataByPkField(criteria);
         Assertions.assertNotNull(rec, "Запись не была добавлена.");
 
+        //редактируем 2 записи
+        versionedDataDao.executeQuery("UPDATE versioned_ref SET _sync_hash = '8691427f2bc711f891fd30d6942b6cd5' WHERE name = 'name6'");
+        versionedDataDao.executeQuery("UPDATE versioned_ref SET _sync_hash = '45617f8f6aba83feb53fdb1503bee47e' WHERE name = 'name7'");
+
+
         //восстанавливаем версию
         versionedDataDao.repeatVersion(tempVersionedRef3, refTable, "num", nextVersionDate2, nextVersionDate3, fields);
 
@@ -252,7 +264,7 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         LocalDataCriteria localDataCriteria = new LocalDataCriteria(refTable, "num", 100, 0, new ArrayList<>());
         localDataCriteria.setDateTime(nextVersionDate2);
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
-        Assertions.assertEquals(5, data.getTotalElements());
+        Assertions.assertEquals(9, data.getTotalElements());
         compare(data.getContent(), version3, localDataCriteria.getPk());
 
         rec = versionedDataDao.getDataByPkField(criteria);
