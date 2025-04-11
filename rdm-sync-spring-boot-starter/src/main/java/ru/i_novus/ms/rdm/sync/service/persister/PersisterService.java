@@ -19,7 +19,5 @@ public interface PersisterService {
 
     void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult);
 
-    void afterSyncProcess(String refTable);
-
     void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
 }

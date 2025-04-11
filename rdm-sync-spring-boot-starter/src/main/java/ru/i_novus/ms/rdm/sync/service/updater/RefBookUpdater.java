@@ -9,8 +9,6 @@ public interface RefBookUpdater {
 
     void update(RefBookVersion refBookVersion, DownloadResult downloadResult) throws RefBookUpdaterException;
 
-    void afterSyncProcess(String refTable);
-
     void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
 
 }

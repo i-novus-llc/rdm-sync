@@ -125,7 +125,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
         }
-        afterSyncProcess(syncRefBook);
     }
 
     public VersionMapping getVersionMapping(String code, String version) {
@@ -244,15 +243,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             }
         };
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();
-    }
-
-    private void afterSyncProcess(SyncRefBook syncRefBook) {
-        try {
-            RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
-            refBookUpdater.afterSyncProcess(syncRefBook.getName());
-        } catch (Exception e) {
-            logger.error("Error happened while after sync process.");
-        }
     }
 
     private void beforeSyncProcess(SyncRefBook syncRefBook) {

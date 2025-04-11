@@ -39,17 +39,14 @@ public class VersionedPersisterService implements PersisterService {
             List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
             versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getCode(), newVersion.getFrom(), newVersion.getTo(), fields, syncedVersion);
         }
+        versionedDataDao.mergeIntervals(versionMapping.getTable());
     }
 
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
         versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getFrom(), newVersion.getTo(), fields);
-    }
-
-    @Override
-    public void afterSyncProcess(String refTable) {
-        versionedDataDao.mergeIntervals(refTable);
+        versionedDataDao.mergeIntervals(versionMapping.getTable());
     }
 
     @Override

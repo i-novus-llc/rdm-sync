@@ -185,11 +185,6 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
     }
 
     @Override
-    public void afterSyncProcess(String refTable) {
-        persisterService.afterSyncProcess(refTable);
-    }
-
-    @Override
     public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
         persisterService.beforeSyncProcess(refTable, closedVersionPublishingDate, newVersionPublishingDate);
     }

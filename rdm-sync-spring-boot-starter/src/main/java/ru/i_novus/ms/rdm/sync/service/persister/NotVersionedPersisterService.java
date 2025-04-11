@@ -56,11 +56,6 @@ public class NotVersionedPersisterService implements PersisterService {
     }
 
     @Override
-    public void afterSyncProcess(String refTable) {
-        //nothing
-    }
-
-    @Override
     public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
         //nothing
     }
