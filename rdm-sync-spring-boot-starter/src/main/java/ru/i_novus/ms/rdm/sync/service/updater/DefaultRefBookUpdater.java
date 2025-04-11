@@ -171,9 +171,9 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
     protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} sync new version {}", newVersion.getCode(), newVersion.getVersion());
         LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(newVersion.getCode());
-        if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
-            dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
-        }
+//        if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) { //как будто не нужно,т.к. перед обновлением закрываем версии
+//            dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
+//        }
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
         persisterService.merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, downloadResult);
     }
@@ -186,9 +186,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
 
     @Override
     public void afterSyncProcess(String refTable) {
-        if (persisterService instanceof VersionedPersisterService) {
-            persisterService.afterSyncProcess(refTable);
-        }
+        persisterService.afterSyncProcess(refTable);
     }
 
     @Override

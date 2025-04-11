@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.service.persister;
 
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;

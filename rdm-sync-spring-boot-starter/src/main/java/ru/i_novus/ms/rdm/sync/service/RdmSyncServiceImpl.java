@@ -125,15 +125,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             // если не удалось синхронизировать версию, то перестаем дальше синхронизировать остальные версии справочника
             if (!syncVersion(refBookCode, syncRefBook, version)) return;
         }
-
-        List<String> tablesForMerge = new ArrayList<>();
-        for (String version : versions) {
-            VersionMapping versionMapping = getVersionMapping(refBookCode, version);
-            tablesForMerge.add(versionMapping.getTable());
-        }
-        for (String tableForMerge : tablesForMerge) {
-            afterSyncProcess(syncRefBook, tableForMerge);
-        }
+        afterSyncProcess(syncRefBook);
     }
 
     public VersionMapping getVersionMapping(String code, String version) {
@@ -148,18 +140,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
             throw new IllegalArgumentException(String.format("No mapping found for primary key '%s'.", primaryField));
 
         return versionMapping;
-    }
-
-    private void beforeSyncProcess(SyncRefBook syncRefBook) {
-        final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(syncRefBook.getCode(), dao, syncSourceService, versionMappingService);
-        List<RefBookVersionItem> result = determinator.getAllVersions(syncRefBook.getCode());
-
-        for (int i = 0; i < result.size() - 1; i++) {
-            boolean isUpdated = dao.closeLoadedVersionIfNotClose(result.get(i).getCode(), result.get(i).getVersion(), result.get(i+1).getFrom());
-
-            if (isUpdated)
-                beforeSyncProcess(syncRefBook, result.get(i).getFrom(), result.get(i+1).getFrom());
-        }
     }
 
     private List<String> getVersions(String refBookCode) {
@@ -266,14 +246,23 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "filename=\"rdm-mapping.xml\"").entity(stream).build();
     }
 
-    private void afterSyncProcess(SyncRefBook syncRefBook, String table) {
-
+    private void afterSyncProcess(SyncRefBook syncRefBook) {
         try {
             RefBookUpdater refBookUpdater = refBookUpdaterLocator.getRefBookUpdater(syncRefBook.getType());
-
-            refBookUpdater.afterSyncProcess(table);
+            refBookUpdater.afterSyncProcess(syncRefBook.getName());
         } catch (Exception e) {
-            logger.error("Error happend while after sync process.");
+            logger.error("Error happened while after sync process.");
+        }
+    }
+
+    private void beforeSyncProcess(SyncRefBook syncRefBook) {
+        List<RefBookVersionItem> result = syncSourceService.getVersions(syncRefBook.getCode());
+
+        for (int i = 0; i < result.size() - 1; i++) {
+            boolean isUpdated = dao.closeLoadedVersionIfNotClose(result.get(i).getCode(), result.get(i).getVersion(), result.get(i+1).getFrom());
+
+            if (isUpdated)
+                beforeSyncProcess(syncRefBook, result.get(i).getFrom(), result.get(i+1).getFrom());
         }
     }
 
@@ -284,7 +273,7 @@ public class RdmSyncServiceImpl implements RdmSyncService {
 
             refBookUpdater.beforeSyncProcess(syncRefBook.getName(), closedVersionPublishingDate, newVersionPublishingDate);
         } catch (Exception e) {
-            logger.error("Error happend while before sync process.");
+            logger.error("Error happened while before sync process.");
         }
     }
 }
