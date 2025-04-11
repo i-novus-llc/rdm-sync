@@ -33,9 +33,11 @@ public class VersionedPersisterService implements PersisterService {
 
     @Override
     public void merge(RefBookVersion newVersion, String syncedVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-
         if (DownloadResultType.VERSION.equals(downloadResult.getType())) {
             firstWrite(newVersion, versionMapping, downloadResult);
+        } else {
+            List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
+            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getCode(), newVersion.getFrom(), newVersion.getTo(), fields, syncedVersion);
         }
     }
 

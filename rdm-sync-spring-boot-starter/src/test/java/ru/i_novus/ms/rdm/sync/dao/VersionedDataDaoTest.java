@@ -56,8 +56,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         }
 
         @Bean
-        VersionedDataDao versionedDataDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-            return new VersionedDataDaoImpl(namedParameterJdbcTemplate);
+        VersionedDataDao versionedDataDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate, RdmSyncDao rdmSyncDao) {
+            return new VersionedDataDaoImpl(namedParameterJdbcTemplate, rdmSyncDao);
         }
 
         @Bean

@@ -19,9 +19,11 @@ public interface VersionedDataDao {
     void addDiffVersionData(String tempTable,
                             String refTable,
                             String pkField,
+                            String code,
                             LocalDateTime fromDate,
                             LocalDateTime toDate,
-                            List<String> fields);
+                            List<String> fields,
+                            String syncedVersion);
 
     void repeatVersion(String tempTable,
                        String refTable,

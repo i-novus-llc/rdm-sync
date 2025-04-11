@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
 import ru.i_novus.ms.rdm.sync.dao.criteria.BaseDataCriteria;
@@ -43,9 +44,11 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     private static final String RECORD_HASH = "_sync_hash";
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final RdmSyncDao rdmSyncDao;
 
-    public VersionedDataDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public VersionedDataDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, RdmSyncDao rdmSyncDao) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.rdmSyncDao = rdmSyncDao;
     }
 
     @Override
@@ -101,10 +104,64 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     public void addDiffVersionData(String tempTable,
                                    String refTable,
                                    String pkField,
+                                   String code,
                                    LocalDateTime fromDate,
                                    LocalDateTime toDate,
-                                   List<String> fields) {
-        addFirstVersionData(tempTable, refTable, pkField, fromDate, toDate, fields);
+                                   List<String> fields,
+                                   String syncedVersion) {
+
+        log.info("Begin add diff version for {} version {}", refTable, fromDate);
+
+        String columnsExpression = fields.stream().map(RdmSyncDataUtils::escapeName).collect(joining(","));
+        String hashExpression = getHashExpression(fields, tempTable);
+        String name = refTable.replace("\"", "");
+        String intervalsTableName = name + "_intervals";
+        Map<String, String> queryPlaceholders = Map.of("tempTbl", escapeName(tempTable),
+                "columnsExpression", columnsExpression,
+                "hashExpression", hashExpression,
+                "hash", RECORD_HASH,
+                "refTbl", escapeName(refTable),
+                "pk", escapeName(pkField),
+                "syncId", RECORD_PK_COL,
+                "fromDt", RECORD_FROM_DT,
+                "toDt", RECORD_TO_DT,
+                "refTableIntervals", escapeName(intervalsTableName));
+
+        LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(code, syncedVersion);
+
+        //добавляем неизмененные записи из предыдущей версии
+        String str = "WITH table_data AS (" +
+                "SELECT {syncId} FROM {refTbl} JOIN {refTableIntervals} ON {refTbl}.{syncId} = {refTableIntervals}.record_id " +
+                "WHERE {refTableIntervals}.{fromDt} <= :from_date_prev AND ({refTableIntervals}.{toDt} IS NULL OR {refTableIntervals}.{toDt} > :from_date_prev) " +
+                "AND NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})" +
+                ")" +
+                "INSERT INTO {refTableIntervals} (record_id, {fromDt}, {toDt}) " +
+                "SELECT {syncId}, :from_dt, :to_dt " +
+                "FROM table_data";
+
+        String query = StringSubstitutor.replace(str, queryPlaceholders, "{", "}");
+        Map<String, Object> map = new HashMap<>();
+        map.put("from_dt", fromDate);
+        map.put("to_dt", toDate);
+        map.put("from_date_prev", loadedVersion.getPublicationDate());
+        namedParameterJdbcTemplate.update(query, map);
+
+        //обработка измененных записей
+        //добавление и редактирование
+        String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
+                "WHERE (diff_type = 'I' OR diff_type = 'U')) ON CONFLICT ({uniqColumns}) DO NOTHING";
+        query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+        namedParameterJdbcTemplate.queryForList(query, Map.of(), Long.class);
+
+        insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
+                "WHERE (diff_type = 'I' OR diff_type = 'U') AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+        query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+        List<Long> idsForInsert = namedParameterJdbcTemplate.queryForList(query, Map.of(), Long.class);
+        log.info("idsForInsert: {}", idsForInsert);
+
+        insertIntervals(idsForInsert, fromDate, toDate, refTable);
+
+        log.info("End add diff version for {} version {}", refTable, fromDate);
     }
 
     @Override
