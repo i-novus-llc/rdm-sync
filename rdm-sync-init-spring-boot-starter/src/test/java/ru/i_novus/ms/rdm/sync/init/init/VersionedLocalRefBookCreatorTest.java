@@ -90,9 +90,9 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
                 new SyncMapping(versionMapping, fieldMappings));
 
         Assertions.assertTrue(tableExists("rdm", "ref_versioned"));
-        Assertions.assertTrue(tableExists("rdm", "ref_versioned_intervals"));
-        Assertions.assertTrue(columnExists("rdm", "ref_versioned_intervals", "_sync_from_dt"));
-        Assertions.assertTrue(columnExists("rdm", "ref_versioned_intervals", "_sync_to_dt"));
+        Assertions.assertTrue(tableExists("rdm", "ref_versioned_versions"));
+        Assertions.assertTrue(columnExists("rdm", "ref_versioned_versions", "version_id"));
+        Assertions.assertTrue(columnExists("rdm", "ref_versioned_versions", "record_id"));
         Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_rec_id"));
         Assertions.assertTrue(columnExists("rdm", "ref_versioned", "_sync_hash"));
 
