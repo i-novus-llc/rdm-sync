@@ -9,7 +9,6 @@ import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ public class VersionedPersisterService implements PersisterService {
     @Override
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-        versionedDataDao.addFirstVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getFrom(), newVersion.getTo(), fields);
+        versionedDataDao.addFirstVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getVersionId(), fields);
     }
 
     @Override
@@ -37,20 +36,13 @@ public class VersionedPersisterService implements PersisterService {
             firstWrite(newVersion, versionMapping, downloadResult);
         } else {
             List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getCode(), newVersion.getFrom(), newVersion.getTo(), fields, syncedVersion);
+            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getCode(), newVersion.getVersionId(), fields, syncedVersion);
         }
-        versionedDataDao.mergeIntervals(versionMapping.getTable());
     }
 
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getFrom(), newVersion.getTo(), fields);
-        versionedDataDao.mergeIntervals(versionMapping.getTable());
-    }
-
-    @Override
-    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
-        versionedDataDao.closeIntervals(refTable, closedVersionPublishingDate, newVersionPublishingDate);
+        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getVersionId(), fields);
     }
 }

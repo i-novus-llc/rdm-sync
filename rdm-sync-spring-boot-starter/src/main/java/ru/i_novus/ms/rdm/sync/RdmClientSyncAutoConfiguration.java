@@ -199,7 +199,7 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public VersionedDataDao versionedDataDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new VersionedDataDaoImpl(namedParameterJdbcTemplate);
+    public VersionedDataDao versionedDataDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate, RdmSyncDao rdmSyncDao) {
+        return new VersionedDataDaoImpl(namedParameterJdbcTemplate, rdmSyncDao);
     }
 }

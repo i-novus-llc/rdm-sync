@@ -78,9 +78,8 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
         if (syncRefBook.getType().equals(SyncTypeEnum.VERSIONED)) {
             LoadedVersion loadedVersion = dao.getLoadedVersion(refBookCode, version);
-            LocalDataCriteria localDataCriteria = new LocalDataCriteria(versionMapping.getTable(),
-                    versionMapping.getPrimaryField(), size, page * size, filters);
-            localDataCriteria.setDateTime(loadedVersion.getPublicationDate());
+            VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(versionMapping.getCode(), versionMapping.getTable(),
+                    versionMapping.getPrimaryField(), size, page * size, filters, loadedVersion.getVersion());
             return versionedDataDao.getData(localDataCriteria);
         } else {
             VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),

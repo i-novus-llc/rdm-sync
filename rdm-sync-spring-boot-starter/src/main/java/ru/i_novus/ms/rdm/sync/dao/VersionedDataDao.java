@@ -1,9 +1,8 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
 import org.springframework.data.domain.Page;
-import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -12,43 +11,31 @@ public interface VersionedDataDao {
     void addFirstVersionData(String tempTable,
                              String refTable,
                              String pkField,
-                             LocalDateTime fromDate,
-                             LocalDateTime toDate,
+                             Integer versionId,
                              List<String> fields);
 
     void addDiffVersionData(String tempTable,
                             String refTable,
                             String pkField,
                             String code,
-                            LocalDateTime fromDate,
-                            LocalDateTime toDate,
+                            Integer versionId,
                             List<String> fields,
                             String syncedVersion);
 
     void repeatVersion(String tempTable,
                        String refTable,
                        String pkField,
-                       LocalDateTime fromDate,
-                       LocalDateTime toDate,
+                       Integer versionId,
                        List<String> fields);
 
-    Page<Map<String, Object>> getData(LocalDataCriteria localDataCriteria);
-
-    void addPkFilter(LocalDataCriteria localDataCriteria, Long pk);
-
-    Map<String, Object> getDataByPkField(LocalDataCriteria localDataCriteria);
+    Page<Map<String, Object>> getData(VersionedLocalDataCriteria localDataCriteria);
 
     List<Map<String, Object>> getDataAsMap(String sql, Map<String, Object> args);
 
     void executeQuery(String query);
 
-    void mergeIntervals(String refTable);
-
-    void closeIntervals(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate);
-
-    void insertIntervals(List<Long> ids,
-                         LocalDateTime fromDate,
-                         LocalDateTime toDate,
+    void insertVersions(List<Long> ids,
+                         Integer versionId,
                          String refTable);
 
 }

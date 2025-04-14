@@ -16,9 +16,7 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.service.RdmLoggingService;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
-import ru.i_novus.ms.rdm.sync.service.persister.VersionedPersisterService;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -183,10 +181,4 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
         persisterService.firstWrite(newVersion, versionMapping, downloadResult);
     }
-
-    @Override
-    public void beforeSyncProcess(String refTable, LocalDateTime closedVersionPublishingDate, LocalDateTime newVersionPublishingDate) {
-        persisterService.beforeSyncProcess(refTable, closedVersionPublishingDate, newVersionPublishingDate);
-    }
-
 }

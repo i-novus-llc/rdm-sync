@@ -25,3 +25,7 @@ INSERT INTO rdm_sync.loaded_version(
 	id, code, version, publication_dt, load_dt, is_actual)
 	VALUES (2, 'test', '2', now(), now(), true);
 
+INSERT INTO rdm_sync.loaded_version(
+	id, code, version, publication_dt, load_dt, is_actual)
+	VALUES (3, 'test', '3', now(), now(), true);
+

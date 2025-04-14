@@ -16,8 +16,7 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
 
     private static final String RECORD_PK_COL = "_sync_rec_id";
     private static final String RECORD_PK_COL_TYPE = "bigserial PRIMARY KEY";
-    private static final String RECORD_FROM_DT = "_sync_from_dt";
-    private static final String RECORD_TO_DT = "_sync_to_dt";
+    private static final String VERSION_ID = "version_id";
     private static final String RECORD_HASH = "_sync_hash";
 
     private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
@@ -33,6 +32,7 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
 
         String name = pgTable.getName().replace("\"", "");
 
+        //уникальность по хэшу и pk
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
                 String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s, %s)",
                         pgTable.getName(), pgTable.getUniqueConstraint(), pgTable.getPrimaryField().orElseThrow(), RECORD_HASH));
@@ -47,25 +47,25 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
                 CREATE TABLE %s (
                 id BIGSERIAL PRIMARY KEY,
                 record_id BIGINT NOT NULL,
-                _sync_from_dt TIMESTAMP NOT NULL,
-                _sync_to_dt TIMESTAMP,
-                CONSTRAINT record_id_fk FOREIGN KEY (record_id) REFERENCES %s (_sync_rec_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+                version_id INTEGER NOT NULL,
+                CONSTRAINT record_id_fk FOREIGN KEY (record_id) REFERENCES %s (_sync_rec_id),
+                CONSTRAINT version_id_fk FOREIGN KEY (version_id) REFERENCES rdm_sync.loaded_version(id)
               );
               """;
 
-        String intervalsName = name + "_intervals";
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(String.format(query, escapeName(intervalsName), pgTable.getName()));
+        String versionsName = name + "_versions";
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(String.format(query, escapeName(versionsName), pgTable.getName()));
 
-        //индекс по датам и внешнему ключу
-        indexName = intervalsName.substring(intervalsName.indexOf(".") + 1) + "_record_id_ix";
+        //индексы по внешним ключам
+        indexName = versionsName.substring(versionsName.indexOf(".") + 1) + "_record_id_ix";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
                 String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s)",
-                        indexName, intervalsName, "record_id"));
+                        indexName, versionsName, "record_id"));
 
-        indexName = intervalsName.substring(intervalsName.indexOf(".") + 1) + "_dates_ix";
+        indexName = versionsName.substring(versionsName.indexOf(".") + 1) + "_version_id_ix";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
-                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s, %s)",
-                        indexName, intervalsName, RECORD_FROM_DT, RECORD_TO_DT));
+                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s)",
+                        indexName, versionsName, VERSION_ID));
     }
 
     @Override
