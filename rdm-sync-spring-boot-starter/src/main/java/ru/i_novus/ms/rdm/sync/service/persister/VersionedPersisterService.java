@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.service.persister;
 
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -43,6 +44,7 @@ public class VersionedPersisterService implements PersisterService {
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getVersionId(), fields);
+        LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
+        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
     }
 }
