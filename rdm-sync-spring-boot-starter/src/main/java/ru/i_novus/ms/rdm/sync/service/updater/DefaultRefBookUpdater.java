@@ -169,16 +169,18 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
     protected void addNewVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} sync new version {}", newVersion.getCode(), newVersion.getVersion());
         LoadedVersion actualLoadedVersion = dao.getActualLoadedVersion(newVersion.getCode());
-//        if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) { //как будто не нужно,т.к. перед обновлением закрываем версии
-//            dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
-//        }
-        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
+        if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
+            dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
+        }
+        Integer versionId = dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
+        newVersion.setVersionId(versionId);
         persisterService.merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, downloadResult);
     }
 
     protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} first sync", newVersion.getCode());
-        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        Integer versionId = dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        newVersion.setVersionId(versionId);
         persisterService.firstWrite(newVersion, versionMapping, downloadResult);
     }
 }
