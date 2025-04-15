@@ -123,20 +123,6 @@ public class RdmSyncServiceImpl implements RdmSyncService {
         }
     }
 
-    public VersionMapping getVersionMapping(String code, String version) {
-        VersionMapping versionMapping = versionMappingService.getVersionMapping(code, version);
-        if (versionMapping == null) {
-            throw new MappingNotFoundException(code, code);
-        }
-        List<FieldMapping> fieldMappings = dao.getFieldMappings(versionMapping.getId());
-
-        final String primaryField = versionMapping.getPrimaryField();
-        if (fieldMappings.stream().noneMatch(mapping -> mapping.getSysField().equals(primaryField)))
-            throw new IllegalArgumentException(String.format("No mapping found for primary key '%s'.", primaryField));
-
-        return versionMapping;
-    }
-
     private List<String> getVersions(String refBookCode) {
         final RefBookVersionsDeterminator determinator = new RefBookVersionsDeterminator(refBookCode, dao, syncSourceService, versionMappingService);
         List<String> versions;

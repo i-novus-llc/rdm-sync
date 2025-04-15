@@ -7,14 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
 import ru.i_novus.ms.rdm.sync.dao.criteria.BaseDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
-import ru.i_novus.ms.rdm.sync.util.RdmSyncDataUtils;
 
 import java.sql.Array;
 import java.sql.Timestamp;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -46,23 +48,9 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
     @Override
     public void addFirstVersionData(String tempTable,
-                                    String refTable,
-                                    String pkField,
-                                    Integer versionId,
-                                    List<String> fields) {
-        String columnsExpression = fields.stream().map(RdmSyncDataUtils::escapeName).collect(joining(","));
-        String hashExpression = getHashExpression(fields, tempTable);
-        String name = refTable.replace("\"", "");
-        String versionsTableName = name + "_versions";
-        Map<String, String> queryPlaceholders = Map.of("tempTbl", escapeName(tempTable),
-                "columnsExpression", columnsExpression,
-                "hashExpression", hashExpression,
-                "hash", RECORD_HASH,
-                "refTbl", escapeName(refTable),
-                "pk", escapeName(pkField),
-                "syncId", RECORD_PK_COL,
-                "versionId", VERSION_ID,
-                "refTableVersions", escapeName(versionsTableName));
+                                    PgTable pgTable,
+                                    Integer versionId) {
+        Map<String, String> queryPlaceholders = getQueryPlaceholders(tempTable, pgTable);
 
         Map<String, Object> map = new HashMap<>();
         map.put("version_id", versionId);
@@ -71,8 +59,7 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         String dataQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                 "WHERE NOT EXISTS(SELECT 1 FROM {refTbl} WHERE {refTbl}.{hash} = md5({hashExpression}) AND {tempTbl}.{pk} = {refTbl}.{pk}))";
         String query = StringSubstitutor.replace(dataQueryTemplate, queryPlaceholders, "{", "}");
-        int n = namedParameterJdbcTemplate.update(query, map);
-        log.info("{} rows were inserted into {}.", n, refTable);
+        namedParameterJdbcTemplate.update(query, map);
 
         //выбираем из refTbl syncId и вставляем в таблицу версий
         dataQueryTemplate = "WITH table_data AS (" +
@@ -83,35 +70,17 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 "SELECT {syncId}, :version_id " +
                 "FROM table_data";
         query = StringSubstitutor.replace(dataQueryTemplate, queryPlaceholders, "{", "}");
-        int m = namedParameterJdbcTemplate.update(query, map);
-        log.info("{} rows were inserted into {}.", m, versionsTableName);
+        namedParameterJdbcTemplate.update(query, map);
     }
 
     @Override
     public void addDiffVersionData(String tempTable,
-                                   String refTable,
-                                   String pkField,
+                                   PgTable pgTable,
                                    String code,
                                    Integer versionId,
-                                   List<String> fields,
                                    String syncedVersion) {
 
-        log.info("Begin add diff version for {} version {}", refTable, versionId);
-
-        String columnsExpression = fields.stream().map(RdmSyncDataUtils::escapeName).collect(joining(","));
-        String hashExpression = getHashExpression(fields, tempTable);
-        String name = refTable.replace("\"", "");
-        String versionsTableName = name + "_versions";
-        Map<String, String> queryPlaceholders = Map.of("tempTbl", escapeName(tempTable),
-                "columnsExpression", columnsExpression,
-                "hashExpression", hashExpression,
-                "hash", RECORD_HASH,
-                "refTbl", escapeName(refTable),
-                "pk", escapeName(pkField),
-                "syncId", RECORD_PK_COL,
-                "versionId", VERSION_ID,
-                "refTableVersions", escapeName(versionsTableName),
-                "uniqColumns", escapeName(pkField) + ", " + escapeName(RECORD_HASH));
+        Map<String, String> queryPlaceholders = getQueryPlaceholders(tempTable, pgTable);
 
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(code, syncedVersion);
 
@@ -143,34 +112,15 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         List<Long> idsForInsert = namedParameterJdbcTemplate.queryForList(query, Map.of(), Long.class);
         log.info("idsForInsert: {}", idsForInsert);
 
-        insertVersions(idsForInsert, versionId, refTable);
-
-        log.info("End add diff version for {} version {}", refTable, versionId);
+        insertVersions(idsForInsert, versionId, pgTable);
     }
 
     @Override
     public void repeatVersion(String tempTable,
-                              String refTable,
-                              String pkField,
-                              Integer versionId,
-                              List<String> fields) {
-        log.info("Begin repeat version for {} version {}", refTable, versionId);
+                              PgTable pgTable,
+                              Integer versionId) {
 
-        String columnsExpression = fields.stream().map(RdmSyncDataUtils::escapeName).collect(joining(","));
-        String hashExpression = getHashExpression(fields, tempTable);
-        String name = refTable.replace("\"", "");
-        String versionsTableName = name + "_versions";
-        Map<String, String> queryPlaceholders = Map.ofEntries(
-                Map.entry("tempTbl", escapeName(tempTable)),
-                Map.entry("columnsExpression", columnsExpression),
-                Map.entry("hashExpression", hashExpression),
-                Map.entry("hash", escapeName(RECORD_HASH)),
-                Map.entry("refTbl", escapeName(refTable)),
-                Map.entry("pk", escapeName(pkField)),
-                Map.entry("syncId", escapeName(RECORD_PK_COL)),
-                Map.entry("refTableVersions", escapeName(versionsTableName)),
-                Map.entry("versionId", VERSION_ID),
-                Map.entry("uniqColumns", escapeName(pkField) + ", " + escapeName(RECORD_HASH)));
+        Map<String, String> queryPlaceholders = getQueryPlaceholders(tempTable, pgTable);
 
         //удаляем записи, которых нет в версии
         String deleteQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
@@ -244,24 +194,40 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
         //
 
-        insertVersions(idsForInsert, versionId, refTable);
-        deleteIntervals(idsForDelete, versionId, refTable);
-
-        log.info("End repeat version for {} version {}", refTable, versionId);
+        insertVersions(idsForInsert, versionId, pgTable);
+        deleteVersions(idsForDelete, versionId, pgTable);
     }
 
-    private void deleteIntervals(List<Long> ids,
-                                 Integer versionId,
-                                 String refTable) {
+    private Map<String, String> getQueryPlaceholders(String tempTable, PgTable pgTable) {
+        Assert.isTrue(pgTable.getColumns().isPresent(), "There is no columns in the table " + pgTable.getName());
+        Assert.isTrue(pgTable.getPrimaryField().isPresent(), "There is no primary field in the table " + pgTable.getName());
+        List<String> fields = pgTable.getColumns().get().stream().map(PgTable.Column::name).collect(Collectors.toList());
+        String columnsExpression = String.join(",", fields);
+        String hashExpression = getHashExpression(fields, tempTable);
+        String pkField = pgTable.getPrimaryField().get();
+
+        return Map.of("tempTbl", escapeName(tempTable),
+                "columnsExpression", columnsExpression,
+                "hashExpression", hashExpression,
+                "hash", RECORD_HASH,
+                "refTbl", pgTable.getName(),
+                "pk", pkField,
+                "syncId", RECORD_PK_COL,
+                "versionId", VERSION_ID,
+                "refTableVersions", pgTable.getVersionsTable(),
+                "uniqColumns", pkField + ", " + RECORD_HASH);
+    }
+
+    private void deleteVersions(List<Long> ids,
+                                Integer versionId,
+                                PgTable pgTable) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("version_id", versionId);
 
-        String name = refTable.replace("\"", "");
-        String versionsTableName = name + "_versions";
         Map<String, String> queryPlaceholders = Map.of(
                 "versionId", VERSION_ID,
-                "refTableVersions", escapeName(versionsTableName));
+                "refTableVersions", pgTable.getVersionsTable());
 
         ids.forEach(id -> {
             params.put("id", id);
@@ -271,18 +237,23 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     }
 
     private String getHashExpression(List<String> fields, String table) {
-        return fields.stream().map(field -> "coalesce(" + escapeName(table) + "." + escapeName(field) + "::text, '')").collect(joining("||"));
+        return fields.stream().map(field -> "coalesce(" + table + "." + field + "::text, '')").collect(joining("||"));
     }
 
     public void insertVersions(List<Long> ids,
                                Integer versionId,
-                               String refTable) {
+                               PgTable pgTable) {
         Map<String, Object> params = new HashMap<>();
         params.put("version_id", versionId);
+
+        Map<String, String> queryPlaceholders = Map.of(
+                "versionId", VERSION_ID,
+                "refTableVersions", pgTable.getVersionsTable());
+
         ids.forEach(id -> {
             params.put("id", id);
-            List<Long> dateIds = namedParameterJdbcTemplate.queryForList("INSERT INTO " + escapeName(refTable + "_versions") + "(record_id, " + VERSION_ID + ") " +
-                    "VALUES (:id, :version_id) RETURNING id", params, Long.class);
+            namedParameterJdbcTemplate.update(StringSubstitutor.replace("INSERT INTO {refTableVersions} (record_id, {versionId}) " +
+                    "VALUES (:id, :version_id)", queryPlaceholders, "{", "}"), params);
         });
     }
 

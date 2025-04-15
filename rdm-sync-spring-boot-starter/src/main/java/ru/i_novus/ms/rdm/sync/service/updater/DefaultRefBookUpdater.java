@@ -79,7 +79,7 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         }
     }
 
-    public VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
+    private VersionMapping getVersionMapping(RefBookVersion refBookVersion) {
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookVersion.getCode(), refBookVersion.getVersion());
         if (versionMapping == null) {
             throw new MappingNotFoundException(refBookVersion.getCode(), refBookVersion.getCode());

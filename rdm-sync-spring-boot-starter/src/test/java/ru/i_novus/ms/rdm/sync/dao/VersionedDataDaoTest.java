@@ -16,6 +16,7 @@ import org.springframework.util.Assert;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
 import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.VersionedLocalRefBookCreatorDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
@@ -50,6 +51,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
     private static List<Map<String, Object>> version3;
 
     private static final String refbookCode = "test";
+    private static final String refTable = "versioned_ref";
+    private static final String sysPkColumn = "_sync_rec_id";
 
     @Configuration
     static class Config {
@@ -90,44 +93,49 @@ public class VersionedDataDaoTest extends BaseDaoTest {
     @Test
     @Order(1)
     void testCRUDVersionedData() {
+
+        VersionMapping versionMapping = VersionMapping.builder()
+                .primaryField("num")
+                .table(refTable)
+                .sysPkColumn(sysPkColumn)
+                .build();
+
         List<FieldMapping> fieldMappings = List.of(
                 new FieldMapping("name", "varchar", "name"),
                 new FieldMapping("num", "integer", "num"),
                 new FieldMapping("flag", "boolean", "num"),
                 new FieldMapping("some_dt", "date", "some_dt")
         );
-        List<String> fields = fieldMappings.stream().map(FieldMapping::getSysField).toList();
-        String refTable = "versioned_ref";
+
+        PgTable pgTable = new PgTable(versionMapping, fieldMappings);
+
         versionedLocalRefBookCreatorDao.createTable(
                 refTable,
-                "test",
-                VersionMapping.builder()
-                        .primaryField("num")
-                        .build(),
+                refbookCode,
+                versionMapping,
                 fieldMappings,
                 "some table",
                 Map.of()
         );
 
-        loadFirstVersion(refTable, fields);
+        loadFirstVersion(pgTable);
 
         //загружаем следующую версию
-        loadSecondVersion(refTable, fields);
+        loadSecondVersion(pgTable);
 
         //следующая версия
-        loadThirdVersion(refTable, fields);
+        loadThirdVersion(pgTable);
 
         //repeatVersion
-        repeatVersion(refTable, fields);
+        repeatVersion(pgTable);
     }
 
-    private void loadFirstVersion(String refTable,
-                                  List<String> fields) {
+    private void loadFirstVersion(PgTable pgTable) {
         String tempVersionedRef = "temp_versioned_ref";
         rdmSyncDao.createVersionTempDataTbl(
                 tempVersionedRef,
-                refTable,
-                "_sync_rec_id",
+                pgTable.getName().replace("\"", ""),
+                sysPkColumn,
                 "num");
 
         List<Map<String, Object>> version1 = List.of(
@@ -142,10 +150,10 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         );
 
         //загружаем первую версию
-        versionedDataDao.addFirstVersionData(tempVersionedRef, refTable, "num", firstVersion, fields);
+        versionedDataDao.addFirstVersionData(tempVersionedRef, pgTable, firstVersion);
 
         //получаем данные справочника первой версии
-        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, refTable, "num", 100, 0, new ArrayList<>(), firstVersion.toString());
+        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, pgTable.getName().replace("\"", ""), "num", 100, 0, new ArrayList<>(), firstVersion.toString());
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(3, data.getTotalElements());
         compare(data.getContent(), version1, localDataCriteria.getPk());
@@ -156,12 +164,11 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         Assertions.assertEquals(0, data.getTotalElements());
     }
 
-    private void loadSecondVersion(String refTable,
-                                   List<String> fields) {
+    private void loadSecondVersion(PgTable pgTable) {
         String tempVersionedRef2 = "temp_versioned_ref2";
         rdmSyncDao.createDiffTempDataTbl(
                 tempVersionedRef2,
-                refTable);
+                pgTable.getName().replace("\"", ""));
 
         List<Map<String, Object>> version2 = List.of(
                 Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
@@ -192,21 +199,20 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 version2ForDelete
         );
 
-        versionedDataDao.addDiffVersionData(tempVersionedRef2, refTable, "num", refbookCode, nextVersion, fields, firstVersion.toString());
+        versionedDataDao.addDiffVersionData(tempVersionedRef2, pgTable, refbookCode, nextVersion, firstVersion.toString());
 
         //проверка
-        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, refTable, "num", 100, 0, new ArrayList<>(), nextVersion.toString());
+        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, pgTable.getName().replace("\"", ""), "num", 100, 0, new ArrayList<>(), nextVersion.toString());
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(5, data.getTotalElements());
         compare(data.getContent(), version2, localDataCriteria.getPk());
     }
 
-    private void loadThirdVersion(String refTable,
-                                  List<String> fields) {
+    private void loadThirdVersion(PgTable pgTable) {
 
         rdmSyncDao.createDiffTempDataTbl(
                 tempVersionedRef3,
-                refTable);
+                pgTable.getName().replace("\"", ""));
 
         version3 = List.of(
                 Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
@@ -234,23 +240,22 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 List.of()
         );
 
-        versionedDataDao.addDiffVersionData(tempVersionedRef3, refTable, "num", refbookCode, nextVersion2, fields, nextVersion.toString());
+        versionedDataDao.addDiffVersionData(tempVersionedRef3, pgTable, refbookCode, nextVersion2, nextVersion.toString());
 
         //проверка
-        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, refTable, "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
+        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, pgTable.getName().replace("\"", ""), "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(9, data.getTotalElements());
         compare(data.getContent(), version3, localDataCriteria.getPk());
     }
 
-    private void repeatVersion(String refTable,
-                               List<String> fields) {
+    private void repeatVersion(PgTable pgTable) {
 
         String tempVersionedRef4 = "temp_versioned_ref4";
         rdmSyncDao.createVersionTempDataTbl(
                 tempVersionedRef4,
-                refTable,
-                "_sync_rec_id",
+                pgTable.getName().replace("\"", ""),
+                sysPkColumn,
                 "num");
 
         rdmSyncDao.insertVersionAsTempData(
@@ -266,9 +271,9 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         //добавляем 1 запись
         Long recId = 3L;
         Long num = 10L;
-        versionedDataDao.insertVersions(List.of(recId), nextVersion2, refTable);
+        versionedDataDao.insertVersions(List.of(recId), nextVersion2, pgTable);
 
-        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refbookCode, refTable, "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refbookCode, pgTable.getName().replace("\"", ""), "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
         addPkFilter(criteria, num);
         Map<String, Object> rec = getDataByPkField(criteria);
         Assertions.assertNotNull(rec, "Запись не была добавлена.");
@@ -279,10 +284,10 @@ public class VersionedDataDaoTest extends BaseDaoTest {
 
 
         //восстанавливаем версию
-        versionedDataDao.repeatVersion(tempVersionedRef4, refTable, "num", nextVersion2, fields);
+        versionedDataDao.repeatVersion(tempVersionedRef4, pgTable, nextVersion2);
 
         //проверка
-        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, refTable, "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
+        VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(refbookCode, pgTable.getName().replace("\"", ""), "num", 100, 0, new ArrayList<>(), nextVersion2.toString());
         Page<Map<String, Object>> data = versionedDataDao.getData(localDataCriteria);
         Assertions.assertEquals(9, data.getTotalElements());
         compare(data.getContent(), version3, localDataCriteria.getPk());

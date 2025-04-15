@@ -127,7 +127,6 @@
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
             <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>

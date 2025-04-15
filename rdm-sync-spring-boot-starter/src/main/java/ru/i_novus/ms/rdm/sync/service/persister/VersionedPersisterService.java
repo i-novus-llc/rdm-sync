@@ -1,17 +1,14 @@
 package ru.i_novus.ms.rdm.sync.service.persister;
 
 import org.springframework.stereotype.Service;
-import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class VersionedPersisterService implements PersisterService {
@@ -27,8 +24,8 @@ public class VersionedPersisterService implements PersisterService {
 
     @Override
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-        versionedDataDao.addFirstVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), newVersion.getVersionId(), fields);
+        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+        versionedDataDao.addFirstVersionData(downloadResult.getTableName(), pgTable, newVersion.getVersionId());
     }
 
     @Override
@@ -36,15 +33,15 @@ public class VersionedPersisterService implements PersisterService {
         if (DownloadResultType.VERSION.equals(downloadResult.getType())) {
             firstWrite(newVersion, versionMapping, downloadResult);
         } else {
-            List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
-            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getCode(), newVersion.getVersionId(), fields, syncedVersion);
+            PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+            versionedDataDao.addDiffVersionData(downloadResult.getTableName(), pgTable, versionMapping.getCode(), newVersion.getVersionId(), syncedVersion);
         }
     }
 
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        List<String> fields = rdmSyncDao.getFieldMappings(versionMapping.getId()).stream().map(FieldMapping::getSysField).collect(Collectors.toList());
+        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
-        versionedDataDao.repeatVersion(downloadResult.getTableName(), versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), fields);
+        versionedDataDao.repeatVersion(downloadResult.getTableName(), pgTable, loadedVersion.getId());
     }
 }
