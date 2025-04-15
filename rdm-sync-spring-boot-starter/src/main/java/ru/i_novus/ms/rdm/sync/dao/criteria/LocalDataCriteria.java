@@ -3,7 +3,6 @@ package ru.i_novus.ms.rdm.sync.dao.criteria;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class LocalDataCriteria extends BaseDataCriteria {
@@ -12,7 +11,6 @@ public class LocalDataCriteria extends BaseDataCriteria {
     private RdmSyncLocalRowState state = RdmSyncLocalRowState.SYNCED;
     private DeletedCriteria deleted = null;
     private String sysPkColumn;
-    private LocalDateTime dateTime;
 
     public LocalDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
 
@@ -49,13 +47,5 @@ public class LocalDataCriteria extends BaseDataCriteria {
 
     public void setSysPkColumn(String sysPkColumn) {
         this.sysPkColumn = sysPkColumn;
-    }
-
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
     }
 }

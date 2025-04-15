@@ -30,10 +30,6 @@ public interface VersionedDataDao {
 
     Page<Map<String, Object>> getData(VersionedLocalDataCriteria localDataCriteria);
 
-    List<Map<String, Object>> getDataAsMap(String sql, Map<String, Object> args);
-
-    void executeQuery(String query);
-
     void insertVersions(List<Long> ids,
                          Integer versionId,
                          String refTable);

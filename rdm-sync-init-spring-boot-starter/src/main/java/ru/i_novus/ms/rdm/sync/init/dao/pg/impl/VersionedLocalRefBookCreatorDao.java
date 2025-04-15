@@ -59,8 +59,8 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
         //индексы по внешним ключам
         indexName = versionsName.substring(versionsName.indexOf(".") + 1) + "_record_id_ix";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
-                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s)",
-                        indexName, versionsName, "record_id"));
+                String.format("CREATE INDEX IF NOT EXISTS %s ON %s(record_id)",
+                        indexName, versionsName));
 
         indexName = versionsName.substring(versionsName.indexOf(".") + 1) + "_version_id_ix";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(

@@ -281,46 +281,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public boolean closeLoadedVersionIfNotClose(String code, String version, LocalDateTime closeDate) {
-        final String countSql = "SELECT COUNT(1) FROM rdm_sync.loaded_version \n" +
-                " WHERE version = :version and code = :code";
-
-        final Integer count = namedParameterJdbcTemplate.queryForObject(countSql,
-                Map.of("version", version,
-                        "code", code),
-                Integer.class
-        );
-
-        if (count == 0)
-            return false;
-
-        final String selectSql = "SELECT close_dt IS NULL FROM rdm_sync.loaded_version \n" +
-                " WHERE version = :version and code = :code";
-
-        final Boolean result = namedParameterJdbcTemplate.queryForObject(selectSql,
-                Map.of("version", version,
-                        "code", code),
-                Boolean.class
-        );
-
-        if (Boolean.TRUE.equals(result)) {
-
-            final String sql = "UPDATE rdm_sync.loaded_version \n" +
-                    "   SET close_dt = :closeDate \n" +
-                    " WHERE version = :version and code = :code and close_dt is null";
-
-            namedParameterJdbcTemplate.update(sql,
-                    Map.of("version", version,
-                            "closeDate", closeDate,
-                            "code", code)
-            );
-            return true;
-
-        }
-        return false;
-    }
-
-    @Override
     public void insertRow(String schemaTable, Map<String, Object> row, boolean markSynced) {
 
         insertRows(schemaTable, List.of(row), markSynced);
@@ -1360,22 +1320,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         return new HashSet<>(rangeData);
-    }
-
-    private String calculateSHA256Hash(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RdmSyncException("SHA-256 algorithm not found", e);
-        }
     }
 }
 

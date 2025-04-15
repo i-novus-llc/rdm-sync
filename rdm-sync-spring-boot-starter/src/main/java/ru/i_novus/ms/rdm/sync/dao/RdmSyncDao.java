@@ -56,8 +56,6 @@ public interface RdmSyncDao {
 
     void closeLoadedVersion(String code, String version, LocalDateTime closeDate);
 
-    boolean closeLoadedVersionIfNotClose(String code, String version, LocalDateTime closeDate);
-
     /**
      * Проверить существование значения первичного ключа в таблице клиента.
      *

@@ -81,6 +81,9 @@ public class VersionedDataDaoTest extends BaseDaoTest {
     @Autowired
     private VersionedLocalRefBookCreatorDao versionedLocalRefBookCreatorDao;
 
+    @Autowired
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     /**
      * Тестирует CRUD операции версионных данных
      */
@@ -257,8 +260,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
 
         //портим версию
         //удаляем 2 записи
-        versionedDataDao.executeQuery("DELETE FROM versioned_ref_versions WHERE id = (SELECT max(id) from versioned_ref_versions)");
-        versionedDataDao.executeQuery("DELETE FROM versioned_ref_versions WHERE id = (SELECT max(id) from versioned_ref_versions)");
+        executeQuery("DELETE FROM versioned_ref_versions WHERE id = (SELECT max(id) from versioned_ref_versions)");
+        executeQuery("DELETE FROM versioned_ref_versions WHERE id = (SELECT max(id) from versioned_ref_versions)");
 
         //добавляем 1 запись
         Long recId = 3L;
@@ -271,8 +274,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         Assertions.assertNotNull(rec, "Запись не была добавлена.");
 
         //редактируем 2 записи
-        versionedDataDao.executeQuery("UPDATE versioned_ref SET _sync_hash = '8691427f2bc711f891fd30d6942b6cd5' WHERE name = 'name6'");
-        versionedDataDao.executeQuery("UPDATE versioned_ref SET _sync_hash = '45617f8f6aba83feb53fdb1503bee47e' WHERE name = 'name7'");
+        executeQuery("UPDATE versioned_ref SET _sync_hash = '8691427f2bc711f891fd30d6942b6cd5' WHERE name = 'name6'");
+        executeQuery("UPDATE versioned_ref SET _sync_hash = '45617f8f6aba83feb53fdb1503bee47e' WHERE name = 'name7'");
 
 
         //восстанавливаем версию
@@ -323,6 +326,10 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         FieldValueFilter fieldValueFilter = new FieldValueFilter(FilterTypeEnum.EQUAL, List.of(pk));
         FieldFilter fieldFilter = new FieldFilter(localDataCriteria.getPk(), DataTypeEnum.INTEGER, List.of(fieldValueFilter));//todo брать тип из маппинга
         localDataCriteria.getFilters().add(fieldFilter);
+    }
+
+    private void executeQuery(String query) {
+        namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
     }
 
 }

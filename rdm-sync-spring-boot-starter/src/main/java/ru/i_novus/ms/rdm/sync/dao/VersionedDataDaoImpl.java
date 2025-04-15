@@ -377,29 +377,4 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
         return builder;
     }
-
-    @Override
-    public List<Map<String, Object>> getDataAsMap(String sql, Map<String, Object> args) {
-        return namedParameterJdbcTemplate.query(sql,
-                args, (rs, rowNum) -> {
-                    Map<String, Object> map = new HashMap<>();
-                    for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                        Object val = rs.getObject(i);
-                        String key = rs.getMetaData().getColumnName(i);
-                        if (val instanceof Timestamp) {
-                            val = ((Timestamp) val).toLocalDateTime();
-                        } else if (val instanceof Array) {
-                            val = Arrays.asList((Object[]) ((Array) val).getArray());
-                        }
-                        map.put(key, val);
-                    }
-
-                    return map;
-                });
-    }
-
-    @Override
-    public void executeQuery(String query) {
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
-    }
 }
