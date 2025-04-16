@@ -172,14 +172,15 @@ public class DefaultRefBookUpdater implements RefBookUpdater {
         if (newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate())) {
             dao.closeLoadedVersion(actualLoadedVersion.getCode(), actualLoadedVersion.getVersion(), newVersion.getFrom());
         }
-        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
+        Integer versionId = dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), newVersion.getFrom().isAfter(actualLoadedVersion.getPublicationDate()));
+        newVersion.setVersionId(versionId);
         persisterService.merge(newVersion, actualLoadedVersion.getVersion(), versionMapping, downloadResult);
     }
 
     protected void addFirstVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
         logger.info("{} first sync", newVersion.getCode());
-        dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        Integer versionId = dao.insertLoadedVersion(newVersion.getCode(), newVersion.getVersion(), newVersion.getFrom(), newVersion.getTo(), true);
+        newVersion.setVersionId(versionId);
         persisterService.firstWrite(newVersion, versionMapping, downloadResult);
     }
-
 }

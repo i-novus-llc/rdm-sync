@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author lgalimova
@@ -187,9 +186,9 @@ public interface RdmSyncDao {
 
     void migrateDiffTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime);
 
-    void migrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
+    void migrateSimpleVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
 
-    void reMigrateVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
+    void reMigrateSimpleVersionedTempData(String tempTable, String refTable, String pkField, Integer versionId, List<String> fields);
 
     void dropTable(String tableName);
 

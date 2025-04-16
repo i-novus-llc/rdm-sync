@@ -44,7 +44,7 @@ class SimpleVersionedPersisterServiceTest {
         when(dao.getLoadedVersion(refBook.getCode(), refBook.getVersion())).thenReturn(loadedVersion);
 
         persisterService.firstWrite(refBook, versionMapping, new DownloadResult("temp_table", DownloadResultType.VERSION));
-        verify(dao, times(1)).migrateVersionedTempData("temp_table", versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), List.of("id", "name"));
+        verify(dao, times(1)).migrateSimpleVersionedTempData("temp_table", versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), List.of("id", "name"));
     }
 
     @Test
@@ -61,7 +61,7 @@ class SimpleVersionedPersisterServiceTest {
 
         persisterService.merge(newVersion, oldVersion.getVersion(), versionMapping, new DownloadResult("temp_tbl", DownloadResultType.VERSION));
 
-        verify(dao, times(1)).migrateVersionedTempData("temp_tbl", versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), List.of("id", "name"));
+        verify(dao, times(1)).migrateSimpleVersionedTempData("temp_tbl", versionMapping.getTable(), versionMapping.getPrimaryField(), loadedVersion.getId(), List.of("id", "name"));
     }
 
     @Test
@@ -75,7 +75,7 @@ class SimpleVersionedPersisterServiceTest {
 
         persisterService.repeatVersion(refBookVersion, versionMapping, new DownloadResult("temp_tbl", DownloadResultType.VERSION));
 
-        verify(dao, times(1)).reMigrateVersionedTempData("temp_tbl", versionMapping.getTable(),  versionMapping.getPrimaryField(),loadedVersion.getId(), List.of("id", "name"));
+        verify(dao, times(1)).reMigrateSimpleVersionedTempData("temp_tbl", versionMapping.getTable(),  versionMapping.getPrimaryField(),loadedVersion.getId(), List.of("id", "name"));
     }
 
     private List<FieldMapping> generateFieldMappings() {

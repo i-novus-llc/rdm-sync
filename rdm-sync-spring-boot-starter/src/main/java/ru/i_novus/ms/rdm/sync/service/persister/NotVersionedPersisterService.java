@@ -54,5 +54,4 @@ public class NotVersionedPersisterService implements PersisterService {
         List<String> fields = fieldMappings.stream().map(FieldMapping::getSysField).collect(Collectors.toList());
         dao.migrateNotVersionedTempData(tempDataTbl, versionMapping.getTable(), versionMapping.getPrimaryField(), versionMapping.getDeletedField(), fields, deletedTs);
     }
-
 }

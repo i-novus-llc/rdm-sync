@@ -36,7 +36,8 @@ public class RdmSyncInitAutoconfiguration {
                                                                  @Value("${rdm-sync.auto-create.refresh-comments:true}") Boolean refreshComments,
                                                                  @Qualifier("notVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao notVersionedDao,
                                                                  @Qualifier("naturalPKLocalRefBookCreatorDao") LocalRefBookCreatorDao naturalPKDao,
-                                                                 @Qualifier("simpleVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao versionedDao,
+                                                                 @Qualifier("simpleVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao simpleVersionedDao,
+                                                                 @Qualifier("versionedLocalRefBookCreatorDao") LocalRefBookCreatorDao versionedDao,
                                                                  VersionMappingService versionMappingService,
                                                                  RefBookDescriptionService refBookDescriptionService) {
         LocalRefBookCreator notVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
@@ -59,6 +60,14 @@ public class RdmSyncInitAutoconfiguration {
                 schema,
                 caseIgnore,
                 refreshComments,
+                simpleVersionedDao,
+                versionMappingService,
+                refBookDescriptionService
+        );
+        LocalRefBookCreator versionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
+                schema,
+                caseIgnore,
+                refreshComments,
                 versionedDao,
                 versionMappingService,
                 refBookDescriptionService
@@ -66,6 +75,7 @@ public class RdmSyncInitAutoconfiguration {
         return new LocalRefBookCreatorLocator(Map.of(
                 SyncTypeEnum.NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.SIMPLE_VERSIONED, simpleVersionedLocalRefBookCreator,
+                SyncTypeEnum.VERSIONED, versionedLocalRefBookCreator,
                 SyncTypeEnum.RDM_NOT_VERSIONED, notVersionedLocalRefBookCreator,
                 SyncTypeEnum.NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator,
                 SyncTypeEnum.RDM_NOT_VERSIONED_WITH_NATURAL_PK, naturalPKLocalRefBookCreator));

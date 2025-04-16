@@ -55,6 +55,7 @@ class RefBookDownloaderImplTest {
         when(syncSourceService.getRefBook(anyString(), anyString())).thenAnswer(invocation -> {
             RefBookVersion refBookVersion = new RefBookVersion();
             refBookVersion.setVersion(invocation.getArgument(1));
+            refBookVersion.setFrom(LocalDateTime.now());
             refBookVersion.setCode(invocation.getArgument(0));
             refBookVersion.setStructure(new RefBookStructure(null, Collections.singletonList("ID"),
                     Set.of(
@@ -137,7 +138,7 @@ class RefBookDownloaderImplTest {
                 .thenReturn(VersionsDiff.dataChangedInstance(pageOf(rec1, rec2, rec3, rec0)));
         when(syncSourceService.getDiff(argThat(criteria -> criteria != null && criteria.getPageNumber() > 0)))
                 .thenReturn(VersionsDiff.dataChangedInstance(new PageImpl<>(Collections.emptyList())));
-        when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", null, null, null, null));
+        when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", LocalDateTime.now().minusDays(5), null, null, null));
         String refBookTable = "ref_table";
 
         DownloadResult downloadResult = refBookDownloader.download("testCode", "1.0");
@@ -165,7 +166,7 @@ class RefBookDownloaderImplTest {
         when(dao.getLoadedVersion(anyString(), anyString())).thenReturn(null);
         when(dao.existsLoadedVersion(anyString())).thenReturn(true);
         when(dao.getSyncRefBook(anyString())).thenReturn(new SyncRefBook(1, null, SyncTypeEnum.NOT_VERSIONED, null, null));
-        when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", null, null, null, null));
+        when(dao.getActualLoadedVersion(anyString())).thenReturn(new LoadedVersion(1, "testCode", "1.1", LocalDateTime.now().minusDays(5), null, null, null));
         when(syncSourceService.getDiff(any(VersionsDiffCriteria.class))).thenReturn(VersionsDiff.structureChangedInstance());
         String refBookTable = "ref_table";
 

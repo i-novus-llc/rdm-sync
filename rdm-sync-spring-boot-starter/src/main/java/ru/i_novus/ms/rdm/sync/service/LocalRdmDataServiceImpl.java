@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
+import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
+import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
 import ru.i_novus.ms.rdm.sync.dao.criteria.DeletedCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
@@ -38,6 +41,9 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
     private RdmSyncDao dao;
 
     @Autowired
+    private VersionedDataDao versionedDataDao;
+
+    @Autowired
     private VersionMappingService versionMappingService;
 
     @Override
@@ -61,16 +67,20 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Override
     public Page<Map<String, Object>> getVersionedData(String refBookCode, String version, Integer page, Integer size, UriInfo uriInfo) {
+        SyncRefBook syncRefBook = dao.getSyncRefBook(refBookCode);
+
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, version);
         if (page == null) page = 0;
         if (size == null) size = 10;
 
         List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
-
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, filters, version);
-
-        return dao.getSimpleVersionedData(criteria);
+        if (syncRefBook.getType().equals(SyncTypeEnum.VERSIONED)) {
+            return versionedDataDao.getData(criteria);
+        } else {
+            return dao.getSimpleVersionedData(criteria);
+        }
     }
 
     @Override

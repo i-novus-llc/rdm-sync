@@ -7,6 +7,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
@@ -14,6 +15,10 @@ import static java.util.stream.Collectors.toSet;
 public final class RdmSyncDataUtils {
 
     public static final HashMap<String, Object> INTERNAL_TAG = new HashMap<>();
+
+    private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
+            "(?i)(.*(--|#|/\\*|\\*\\/|;|\\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE)?|INSERT( +INTO)?|MERGE|SELECT|UPDATE|UNION( +ALL)?)\\b).*)",
+            Pattern.CASE_INSENSITIVE);
 
     private RdmSyncDataUtils() {
         throw new UnsupportedOperationException();
@@ -123,5 +128,18 @@ public final class RdmSyncDataUtils {
     private static boolean shouldConsiderThisField(String fieldName, Set<String> schema) {
 
         return schema == null || schema.contains(fieldName);
+    }
+
+    public static String escapeName(String name) {
+        if ( SQL_INJECTION_PATTERN.matcher(name).matches()) {
+            throw new IllegalArgumentException(name + "illegal value");
+        }
+        if (name.contains(".")) {
+            String firstPart = escapeName(name.split("\\.")[0]);
+            String secondPart = escapeName(name.split("\\.")[1]);
+            return firstPart + "." + secondPart;
+        }
+        return "\"" + name + "\"";
+
     }
 }

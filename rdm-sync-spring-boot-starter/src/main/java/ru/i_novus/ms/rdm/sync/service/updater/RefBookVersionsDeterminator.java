@@ -123,5 +123,4 @@ public class RefBookVersionsDeterminator {
     private boolean isNewVersionPublished(RefBookVersionItem newVersion, LoadedVersion loadedVersion) {
         return loadedVersion.getPublicationDate().isBefore(newVersion.getFrom());
     }
-
 }

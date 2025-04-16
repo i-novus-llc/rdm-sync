@@ -16,5 +16,4 @@ public interface PersisterService {
     void merge(RefBookVersion newVersion, String syncedVersion, VersionMapping versionMapping, DownloadResult downloadResult);
 
     void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult);
-
 }

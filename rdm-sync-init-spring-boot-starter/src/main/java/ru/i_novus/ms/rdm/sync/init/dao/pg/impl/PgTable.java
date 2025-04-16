@@ -1,12 +1,16 @@
 package ru.i_novus.ms.rdm.sync.init.dao.pg.impl;
 
+import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
+import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class PgTable {
+public class PgTable {
 
     // Регулярное выражение для поиска потенциальных SQL-инъекций
     private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
@@ -35,6 +39,8 @@ class PgTable {
 
     private final String internalLocalStateUpdateTriggerName;
 
+    private final String versionsTable;
+
     public PgTable(String table) {
         if (table.contains(".")) {
             String splitedSchema = table.split("\\.")[0];
@@ -45,6 +51,7 @@ class PgTable {
             this.pkConstraint = escapeName(splitedTable + "_pk");
             this.loadedVersionFk = escapeName(splitedTable + "_" + loadedVersionColumn + "_fk");
             this.internalLocalStateUpdateTriggerName = escapeName(splitedSchema + "_" + splitedTable + "_intrnl_lcl_rw_stt_updt");
+            this.versionsTable = escapeName(splitedSchema + "." + splitedTable + "_versions");
         } else {
             this.table = escapeName(table);
             this.schema = "public";
@@ -52,6 +59,7 @@ class PgTable {
             this.pkConstraint = escapeName(table + "_pk");
             this.internalLocalStateUpdateTriggerName = escapeName(schema + "_" + table + "_intrnl_lcl_rw_stt_updt");
             this.loadedVersionFk = escapeName(table + "_" + loadedVersionColumn + "_fk");
+            this.versionsTable = escapeName(this.schema + "." + table + "_versions");
         }
     }
 
@@ -80,11 +88,30 @@ class PgTable {
         this.sysPkColumn = Optional.ofNullable(escapeName(sysPkColumn));
     }
 
+    public PgTable(VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
+        this(versionMapping.getTable());
+        this.columns = Optional.of(
+                fieldMappings
+                        .stream()
+                        .map(fieldMapping -> {
+                            validate(fieldMapping.getSysDataType());
+                            return new Column(escapeName(fieldMapping.getSysField()), fieldMapping.getSysDataType(), null);
+                        }).collect(Collectors.toSet())
+        );
+        this.primaryField = Optional.ofNullable(escapeName(versionMapping.getPrimaryField()));
+        this.sysPkColumn = Optional.ofNullable(escapeName(versionMapping.getSysPkColumn()));
+    }
+
     private String escapeName(String name) {
         if(name == null) {
             return null;
         }
         validate(name);
+        if (name.contains(".")) {
+            String firstPart = escapeName(name.split("\\.")[0]);
+            String secondPart = escapeName(name.split("\\.")[1]);
+            return firstPart + "." + secondPart;
+        }
         return "\"" + name + "\"";
     }
 
@@ -140,6 +167,10 @@ class PgTable {
 
     public Optional<String> getTableDescription() {
         return tableDescription;
+    }
+
+    public String getVersionsTable() {
+        return versionsTable;
     }
 
     public record Column(String name, String type, String description) {}
