@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
-import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
@@ -75,15 +74,11 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
         if (size == null) size = 10;
 
         List<FieldFilter> filters = paramsToFilters(dao.getFieldMappings(versionMapping.getId()), uriInfo.getQueryParameters());
-
+        VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
+                versionMapping.getPrimaryField(), size, page * size, filters, version);
         if (syncRefBook.getType().equals(SyncTypeEnum.VERSIONED)) {
-            LoadedVersion loadedVersion = dao.getLoadedVersion(refBookCode, version);
-            VersionedLocalDataCriteria localDataCriteria = new VersionedLocalDataCriteria(versionMapping.getCode(), versionMapping.getTable(),
-                    versionMapping.getPrimaryField(), size, page * size, filters, loadedVersion.getVersion());
-            return versionedDataDao.getData(localDataCriteria);
+            return versionedDataDao.getData(criteria);
         } else {
-            VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
-                    versionMapping.getPrimaryField(), size, page * size, filters, version);
             return dao.getSimpleVersionedData(criteria);
         }
     }
