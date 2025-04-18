@@ -22,6 +22,8 @@ public class XmlMappingField {
 
     private String transformExpression;
 
+    private String comment;
+
     @XmlAttribute(name = "rdm-field", required = true)
     public String getRdmField() {
         return rdmField;
@@ -72,6 +74,15 @@ public class XmlMappingField {
         this.defaultValue = defaultValue;
     }
 
+    @XmlAttribute(name = "comment")
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public static XmlMappingField createBy(FieldMapping mapping) {
 
         XmlMappingField result = new XmlMappingField();
@@ -82,11 +93,12 @@ public class XmlMappingField {
         result.setIgnoreIfNotExists(mapping.getIgnoreIfNotExists());
         result.setDefaultValue(mapping.getDefaultValue());
         result.setTransformExpression(mapping.getTransformExpression());
+        result.setComment(mapping.getComment());
 
         return result;
     }
 
     public FieldMapping convertToFieldMapping() {
-        return new FieldMapping(sysField, sysDataType, rdmField, ignoreIfNotExists, defaultValue, transformExpression);
+        return new FieldMapping(sysField, sysDataType, rdmField, ignoreIfNotExists, defaultValue, transformExpression, comment);
     }
 }

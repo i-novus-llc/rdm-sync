@@ -10,6 +10,8 @@ import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 
+import java.util.Map;
+
 @Service
 public class VersionedPersisterService implements PersisterService {
 
@@ -24,7 +26,7 @@ public class VersionedPersisterService implements PersisterService {
 
     @Override
     public void firstWrite(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()), null, Map.of());
         versionedDataDao.addFirstVersionData(downloadResult.getTableName(), pgTable, newVersion.getVersionId());
     }
 
@@ -33,14 +35,14 @@ public class VersionedPersisterService implements PersisterService {
         if (DownloadResultType.VERSION.equals(downloadResult.getType())) {
             firstWrite(newVersion, versionMapping, downloadResult);
         } else {
-            PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+            PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()), null, Map.of());
             versionedDataDao.addDiffVersionData(downloadResult.getTableName(), pgTable, versionMapping.getCode(), newVersion.getVersionId(), syncedVersion);
         }
     }
 
     @Override
     public void repeatVersion(RefBookVersion newVersion, VersionMapping versionMapping, DownloadResult downloadResult) {
-        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()));
+        PgTable pgTable = new PgTable(versionMapping, rdmSyncDao.getFieldMappings(versionMapping.getId()), null, Map.of());
         LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(newVersion.getCode(), newVersion.getVersion());
         versionedDataDao.repeatVersion(downloadResult.getTableName(), pgTable, loadedVersion.getId());
     }

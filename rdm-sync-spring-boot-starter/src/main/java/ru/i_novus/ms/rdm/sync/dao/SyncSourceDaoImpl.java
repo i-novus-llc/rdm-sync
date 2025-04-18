@@ -31,4 +31,25 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
                 (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"),  rs.getString("init_values"), rs.getString("service_factory")));
     }
 
+    @Override
+    public boolean tableExists(String tableName) {
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT EXISTS (SELECT * FROM information_schema.tables  WHERE table_schema = :schema AND table_name = :table)",
+                getSchemaAndTableParams(tableName),
+                Boolean.class);
+    }
+
+    private Map<String, String> getSchemaAndTableParams(String tableName) {
+        String schema;
+        String table;
+        if (tableName.contains(".")) {
+            schema = tableName.split("\\.")[0];
+            table = tableName.split("\\.")[1];
+        } else {
+            schema = "public";
+            table = tableName;
+        }
+        return  Map.of("schema", schema, "table", table);
+    }
+
 }

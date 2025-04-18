@@ -107,7 +107,7 @@ public class VersionedDataDaoTest extends BaseDaoTest {
                 new FieldMapping("some_dt", "date", "some_dt")
         );
 
-        PgTable pgTable = new PgTable(versionMapping, fieldMappings);
+        PgTable pgTable = new PgTable(versionMapping, fieldMappings, null, Map.of());
 
         versionedLocalRefBookCreatorDao.createTable(
                 refTable,

@@ -58,9 +58,12 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         if(tableExists(tableName)) {
             return;
         }
-        Map<String, String> columns = getColumnsWithType(fieldMappings);
-        columns.putAll(getAdditionColumns(mapping));
-        PgTable pgTableWithColumns = new PgTable(tableName, refDescription, columns, fieldDescription, mapping.getPrimaryField(), mapping.getSysPkColumn());
+        Map<String, String> additionalColumns = getAdditionColumns(mapping);
+        List<FieldMapping> fieldMappingsWithAdditional = new ArrayList<>();
+        fieldMappingsWithAdditional.addAll(fieldMappings);
+        fieldMappingsWithAdditional.addAll(getFieldMappings(additionalColumns));
+
+        PgTable pgTableWithColumns = new PgTable(mapping, fieldMappingsWithAdditional, refDescription, fieldDescription);
         lockRefBookForUpdate(refBookCode);
         createSchemaIfNotExists(pgTableWithColumns.getSchema());
         createTable(pgTableWithColumns);
@@ -74,6 +77,14 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         return fieldMappings
                 .stream()
                 .collect(Collectors.toMap(FieldMapping::getSysField, FieldMapping::getSysDataType));
+    }
+
+    private List<FieldMapping> getFieldMappings(Map<String, String> columns) {
+        return columns
+                .entrySet()
+                .stream()
+                .map(entry -> new FieldMapping(entry.getKey(), entry.getValue(), null))
+                .toList();
     }
 
     private void addInternalLocalRowStateUpdateTrigger(PgTable pgTable) {
@@ -154,10 +165,11 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
     @Override
     public void refreshTable(String tableName,
+                             VersionMapping versionMapping,
                              List<FieldMapping> newFieldMappings,
                              String refDescription,
                              Map<String, String> fieldDescription) {
-        PgTable pgTable = new PgTable(tableName, refDescription,  getColumnsWithType(newFieldMappings), fieldDescription, null, null);
+        PgTable pgTable = new PgTable(versionMapping, newFieldMappings, refDescription, fieldDescription);
         StringBuilder ddl = new StringBuilder(String.format("ALTER TABLE %s ", pgTable.getName()));
 
 
@@ -174,8 +186,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
     @Override
     public void addCommentsIfNotExists(String tableName,
-                                       String refDescription,
+                                       VersionMapping versionMapping,
                                        List<FieldMapping> fieldMappings,
+                                       String refDescription,
                                        Map<String, String> columnDescriptions) {
 
         String[] splitTableName = tableName.split("\\.");
@@ -194,10 +207,12 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
             FROM pg_attribute a
             JOIN pg_class c ON c.oid = a.attrelid
             JOIN pg_namespace n ON n.oid = c.relnamespace
+            LEFT JOIN pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
             WHERE c.relname = :table
               AND n.nspname = :schema
               AND a.attnum > 0
-              AND NOT a.attisdropped;
+              AND NOT a.attisdropped
+              AND d.description IS NULL;
             """;
 
 
@@ -208,7 +223,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         );
         List<FieldMapping> newFieldMappings = fieldMappings.stream()
                 .filter(fm -> columnsWithNullableComment.contains(fm.getSysField())).toList();
-        PgTable pgTable = new PgTable(tableName, refDescription, getColumnsWithType(newFieldMappings), columnDescriptions, null, null);
+        PgTable pgTable = new PgTable(versionMapping, newFieldMappings, refDescription, columnDescriptions);
         StringBuilder columnCommentQuery = new StringBuilder();
         concatColumnsComment(pgTable, columnCommentQuery);
         if (!columnCommentQuery.isEmpty()) {
@@ -221,8 +236,8 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                                    SELECT 1
                                    FROM pg_class c
                                    JOIN pg_namespace n ON n.oid = c.relnamespace
-                                   WHERE c.relname = 'document_type'
-                                     AND n.nspname = 'rdm'
+                                   WHERE c.relname = :table
+                                     AND n.nspname = :schema
                                      AND obj_description(c.oid) is not null
                                );
                 """;
@@ -374,8 +389,8 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
         final String sqlInsert = """
                 INSERT INTO rdm_sync.field_mapping\s
-                      (mapping_id, sys_field, sys_data_type, rdm_field, ignore_if_not_exists, default_value, transform_expr)\s
-                VALUES(?, ?, ?, ?, ?, ?, ?)""";
+                      (mapping_id, sys_field, sys_data_type, rdm_field, ignore_if_not_exists, default_value, transform_expr, comment)\s
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?)""";
 
         namedParameterJdbcTemplate.getJdbcTemplate().batchUpdate(sqlInsert,
                 new BatchPreparedStatementSetter() {
@@ -389,6 +404,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         ps.setBoolean(5, fieldMappings.get(i).getIgnoreIfNotExists());
                         ps.setString(6, fieldMappings.get(i).getDefaultValue());
                         ps.setString(7 ,fieldMappings.get(i).getTransformExpression());
+                        ps.setString(8 ,fieldMappings.get(i).getComment());
                     }
 
                     public int getBatchSize() {

@@ -28,6 +28,7 @@ public interface LocalRefBookCreatorDao {
      * @param newFieldMappings - FieldMapping-и новых колонк
      */
     void refreshTable(String tableName,
+                      VersionMapping versionMapping,
                       List<FieldMapping> newFieldMappings,
                       String refDescription,
                       Map<String, String> fieldDescription);
@@ -41,8 +42,9 @@ public interface LocalRefBookCreatorDao {
      * @param columnDescriptions - описание атрибутов
      */
     void addCommentsIfNotExists(String tableName,
-                                String refDescription,
+                                VersionMapping versionMapping,
                                 List<FieldMapping> fieldMappings,
+                                String refDescription,
                                 Map<String, String> columnDescriptions);
 
     boolean tableExists(String tableName);
