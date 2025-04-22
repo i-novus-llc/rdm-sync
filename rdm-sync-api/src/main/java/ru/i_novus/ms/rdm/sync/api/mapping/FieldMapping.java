@@ -19,6 +19,7 @@ public class FieldMapping {
     private boolean ignoreIfNotExists;
     private String defaultValue;
     private String transformExpression;
+    private String comment;
 
     public FieldMapping(String sysField, String sysDataType, String rdmField) {
         this.sysField = sysField;
@@ -38,5 +39,14 @@ public class FieldMapping {
         this.sysDataType = sysDataType;
         this.rdmField = rdmField;
         this.ignoreIfNotExists = ignoreIfNotExists;
+    }
+
+    public FieldMapping(String sysField, String sysDataType, String rdmField, boolean ignoreIfNotExists, String defaultValue, String transformExpression) {
+        this.sysField = sysField;
+        this.sysDataType = sysDataType;
+        this.rdmField = rdmField;
+        this.ignoreIfNotExists = ignoreIfNotExists;
+        this.defaultValue = defaultValue;
+        this.transformExpression = transformExpression;
     }
 }

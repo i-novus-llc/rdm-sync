@@ -6,4 +6,6 @@ public interface SyncSourceDao {
 
     SyncSource findByCode(String code);
 
+    boolean tableExists(String tableName);
+
 }

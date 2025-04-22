@@ -53,7 +53,7 @@ class RefBookDescriptionServiceImplTest {
                 .thenReturn(new SyncSource(TEST_SOURCE_CODE, TEST_SOURCE_CODE, "testValues", "RdmSyncSourceServiceFactory"));
         when(syncSourceServiceFactory.isSatisfied(any(SyncSource.class))).thenReturn(true);
         when(syncSourceServiceFactory.createService(any(SyncSource.class))).thenReturn(syncSourceService);
-        descriptionService = new RefBookDescriptionServiceImpl(syncSourceDao, Set.of(syncSourceServiceFactory));
+        descriptionService = new RefBookDescriptionServiceImpl(syncSourceDao, Set.of(syncSourceServiceFactory), false, 3);
     }
 
     @Test

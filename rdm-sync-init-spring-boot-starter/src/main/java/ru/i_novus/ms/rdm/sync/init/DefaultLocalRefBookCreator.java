@@ -69,6 +69,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         } else {
             refreshTable(
                     tableName,
+                    syncMapping.getVersionMapping(),
                     syncMapping.getFieldMapping(),
                     refBookDescription.refDescription(),
                     refBookDescription.attributeDescriptions()
@@ -111,6 +112,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
     }
 
     protected void refreshTable(String tableName,
+                                VersionMapping versionMapping,
                                 List<FieldMapping> fieldMappings,
                                 String refDescription,
                                 Map<String, String> fieldDescription) {
@@ -119,11 +121,11 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         List<FieldMapping> newFieldMappings = fieldMappings.stream().filter(fieldMapping -> !columns.contains(fieldMapping.getSysField())).collect(Collectors.toList());
         if (!newFieldMappings.isEmpty()) {
             logger.info("change structure of table {}", tableName);
-            dao.refreshTable(tableName, newFieldMappings, refDescription, fieldDescription);
+            dao.refreshTable(tableName, versionMapping, newFieldMappings, refDescription, fieldDescription);
         }
         if (refreshComments) {
             logger.info("try to refresh comments for {}", tableName);
-            dao.addCommentsIfNotExists(tableName, refDescription, fieldMappings, fieldDescription);
+            dao.addCommentsIfNotExists(tableName, versionMapping, fieldMappings, refDescription, fieldDescription);
         }
     }
 

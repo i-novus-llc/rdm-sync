@@ -5,6 +5,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -88,14 +89,21 @@ public class PgTable {
         this.sysPkColumn = Optional.ofNullable(escapeName(sysPkColumn));
     }
 
-    public PgTable(VersionMapping versionMapping, List<FieldMapping> fieldMappings) {
+    public PgTable(VersionMapping versionMapping, List<FieldMapping> fieldMappings, String tableDescription, Map<String, String> columnDescriptions) {
         this(versionMapping.getTable());
+        this.tableDescription = Optional.ofNullable(tableDescription);
+        this.tableDescription.ifPresent(this::validate);
         this.columns = Optional.of(
                 fieldMappings
                         .stream()
                         .map(fieldMapping -> {
                             validate(fieldMapping.getSysDataType());
-                            return new Column(escapeName(fieldMapping.getSysField()), fieldMapping.getSysDataType(), null);
+                            String description = Objects.nonNull(fieldMapping.getComment()) ? fieldMapping.getComment()
+                                    : columnDescriptions.get(fieldMapping.getSysField());
+                            if (description != null) {
+                                validate(description);
+                            }
+                            return new Column(escapeName(fieldMapping.getSysField()), fieldMapping.getSysDataType(), description);
                         }).collect(Collectors.toSet())
         );
         this.primaryField = Optional.ofNullable(escapeName(versionMapping.getPrimaryField()));
