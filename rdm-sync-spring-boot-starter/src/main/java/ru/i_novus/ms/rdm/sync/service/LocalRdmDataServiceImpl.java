@@ -20,7 +20,6 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldValueFilter;
 import ru.i_novus.ms.rdm.sync.model.filter.FilterTypeEnum;
 
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.Serializable;
@@ -46,7 +45,7 @@ public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Override
     public Page<Map<String, Object>> getData(String refBookCode, Boolean getDeleted,
-                                             Integer page, Integer size, @Context UriInfo uriInfo) {
+                                             Integer page, Integer size, UriInfo uriInfo) {
 
         VersionMapping versionMapping = getVersionMappingOrThrowRefBookNotFound(refBookCode, null);
         if (page == null) page = 0;
