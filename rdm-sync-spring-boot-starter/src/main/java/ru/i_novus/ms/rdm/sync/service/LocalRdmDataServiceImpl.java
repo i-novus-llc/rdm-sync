@@ -2,7 +2,6 @@ package ru.i_novus.ms.rdm.sync.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -34,7 +33,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-@Service
 public class LocalRdmDataServiceImpl implements LocalRdmDataService {
 
     @Autowired
