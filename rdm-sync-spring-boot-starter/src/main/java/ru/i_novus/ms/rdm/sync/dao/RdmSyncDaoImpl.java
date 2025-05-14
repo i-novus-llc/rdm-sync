@@ -36,8 +36,6 @@ import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -1202,12 +1200,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
                 "  FROM rdm_sync.version v " +
                 " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
                 " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
-                "WHERE code = :code AND (:range IS NULL OR version = :range);";
+                "WHERE code = :code AND ((:range::varchar IS NULL AND version is NULL) OR version = :range) " +
+                "ORDER BY mapping_last_updated DESC;";
 
-        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
-                "code", code,
-                "range", range == null ? "" : range
-        ), versionMappingRowMapper);
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", code);
+        params.put("range", range);
+        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, params, versionMappingRowMapper);
 
         return results.isEmpty() ? null : results.get(0);
     }
