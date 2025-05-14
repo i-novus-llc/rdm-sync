@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202505150141_fix_mapping_duplicate_1.0" author="tnurdinov"  dbms="postgresql">
+        <sql>
+            ALTER TABLE rdm_sync.field_mapping DROP CONSTRAINT field_mapping_mapping_id_fk;
+            ALTER TABLE rdm_sync.field_mapping ADD CONSTRAINT field_mapping_mapping_id_fk FOREIGN KEY(mapping_id) REFERENCES rdm_sync.mapping(id) ON DELETE CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="202505150141_fix_mapping_duplicate_2.0" author="tnurdinov"  dbms="postgresql">
+        <sql>
+            delete from rdm_sync.version where version is null and id != (
+                select v.id from rdm_sync.version v
+                inner join rdm_sync.mapping m on m.id =  v.mapping_id
+                where v.version is null
+                ORDER BY mapping_last_updated DESC limit 1
+            );
+            delete from rdm_sync.mapping where not exists (select * from rdm_sync.version where mapping_id = rdm_sync.mapping.id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
