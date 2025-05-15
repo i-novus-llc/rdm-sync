@@ -4,14 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 
 import static org.mockito.Mockito.*;
 
@@ -25,7 +24,7 @@ public class FnsiSourceLoaderServiceTest {
     FnsiSourceProperty fnsiSourceProperty;
 
     @Mock
-    private SyncSourceDao syncSourceDao;
+    private SyncSourceSavingDao syncSourceDao;
 
     private FnsiSourceLoaderService sourceLoaderService;
 

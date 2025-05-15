@@ -11,10 +11,10 @@ import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.DefaultLocalRefBookCreator;
 import ru.i_novus.ms.rdm.sync.init.LocalRefBookCreator;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
+import ru.i_novus.ms.rdm.sync.init.dao.VersionMappingDao;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescription;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescriptionService;
 import ru.i_novus.ms.rdm.sync.init.mapping.utils.MappingCreator;
@@ -43,14 +43,14 @@ public class NotVersionedLocalRefBookCreatorTest  extends DefaultLocalRefBookCre
         DefaultLocalRefBookCreator notVersionedCreator(
                 @Qualifier("notVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao notVersionedDao,
                 RefBookDescriptionService refBookDescriptionService,
-                VersionMappingService versionMappingService) {
+                VersionMappingDao versionMappingDao) {
 
             return new DefaultLocalRefBookCreator(
                     "rdm",
                     false,
                     true,
                     notVersionedDao,
-                    versionMappingService,
+                    versionMappingDao,
                     refBookDescriptionService
             );
         }

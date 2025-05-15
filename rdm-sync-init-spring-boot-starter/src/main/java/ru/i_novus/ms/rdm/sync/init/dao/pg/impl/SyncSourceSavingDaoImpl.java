@@ -1,18 +1,28 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.init.dao.pg.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 
 import java.util.Map;
 
 @Repository
-public class SyncSourceDaoImpl implements SyncSourceDao {
+public class SyncSourceSavingDaoImpl implements SyncSourceSavingDao {
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Override
+    public void save(SyncSource syncSource) {
+        String sql = "INSERT INTO rdm_sync.source\n" +
+                "     (code, name, init_values, service_factory)\n" +
+                "     VALUES(:code, :name, :init_values, :serviceFactory)\n" +
+                "     ON CONFLICT (code) DO UPDATE\n" +
+                "     SET (name, init_values, service_factory) = (:name, :init_values, :serviceFactory);";
+        namedParameterJdbcTemplate.update(sql, Map.of("code", syncSource.getCode(), "name", syncSource.getName(), "init_values", syncSource.getInitValues(), "serviceFactory",syncSource.getFactoryName()));
+    }
 
     @Override
     public SyncSource findByCode(String code) {
@@ -41,5 +51,4 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
         }
         return  Map.of("schema", schema, "table", table);
     }
-
 }

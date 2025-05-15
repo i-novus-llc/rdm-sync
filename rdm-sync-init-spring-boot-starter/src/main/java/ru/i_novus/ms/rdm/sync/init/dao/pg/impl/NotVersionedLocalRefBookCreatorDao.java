@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 
 import java.util.List;
 import java.util.Map;

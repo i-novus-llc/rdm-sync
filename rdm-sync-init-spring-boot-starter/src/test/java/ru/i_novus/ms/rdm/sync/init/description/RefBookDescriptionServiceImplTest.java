@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
@@ -16,6 +15,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -39,7 +39,7 @@ class RefBookDescriptionServiceImplTest {
     private RefBookDescriptionServiceImpl descriptionService;
     
     @Mock
-    private SyncSourceDao syncSourceDao;
+    private SyncSourceSavingDao syncSourceDao;
 
     @Mock
     private SyncSourceService syncSourceService;

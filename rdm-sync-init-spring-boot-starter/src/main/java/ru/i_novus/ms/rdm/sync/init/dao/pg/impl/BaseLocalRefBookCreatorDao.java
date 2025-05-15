@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
 
 import java.sql.PreparedStatement;

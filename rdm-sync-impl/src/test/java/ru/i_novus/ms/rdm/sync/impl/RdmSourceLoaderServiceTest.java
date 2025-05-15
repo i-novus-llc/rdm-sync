@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 public class RdmSourceLoaderServiceTest {
 
     @Mock
-    private SyncSourceDao syncSourceDao;
+    private SyncSourceSavingDao syncSourceDao;
 
     @Value("${rdm.backend.path}")
     private String url;

@@ -14,7 +14,7 @@ import ru.i_novus.ms.rdm.sync.api.model.DataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.builder.SqlFilterBuilder;
 import ru.i_novus.ms.rdm.sync.dao.criteria.BaseDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 
 import java.sql.Array;

@@ -74,4 +74,22 @@ public class VersionMappingDaoImpl implements VersionMappingDao {
         final Timestamp value = rs.getTimestamp(columnIndex);
         return value != null ? value.toLocalDateTime() : defaultValue;
     }
+
+    @Override
+    public VersionMapping getVersionMappingByCodeAndRange(String referenceCode, String range) {
+        final String sql = "SELECT m.id, code, name, version, " +
+                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, " +
+                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range " +
+                "  FROM rdm_sync.version v " +
+                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
+                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
+                "WHERE code = :code AND (:range IS NULL OR version = :range);";
+
+        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, Map.of(
+                "code", referenceCode,
+                "range", range == null ? "" : range
+        ), versionMappingRowMapper);
+
+        return results.isEmpty() ? null : results.get(0);
+    }
 }
