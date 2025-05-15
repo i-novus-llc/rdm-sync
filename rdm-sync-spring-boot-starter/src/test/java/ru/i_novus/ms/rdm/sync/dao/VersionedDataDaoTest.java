@@ -16,7 +16,7 @@ import org.springframework.util.Assert;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.VersionedLocalRefBookCreatorDao;
 import ru.i_novus.ms.rdm.sync.model.DataTypeEnum;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;

@@ -2,7 +2,7 @@ package ru.i_novus.ms.rdm.sync.dao;
 
 import org.springframework.data.domain.Page;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 
 import java.util.List;
 import java.util.Map;

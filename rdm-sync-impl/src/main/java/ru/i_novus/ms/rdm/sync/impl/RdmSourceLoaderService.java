@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 
 public class RdmSourceLoaderService implements SourceLoaderService {
@@ -13,10 +13,10 @@ public class RdmSourceLoaderService implements SourceLoaderService {
 
     private final String url;
 
-    private final SyncSourceDao dao;
+    private final SyncSourceSavingDao dao;
 
     @Autowired
-    public RdmSourceLoaderService(String url, SyncSourceDao dao) {
+    public RdmSourceLoaderService(String url, SyncSourceSavingDao dao) {
         this.url = url;
         this.dao = dao;
     }

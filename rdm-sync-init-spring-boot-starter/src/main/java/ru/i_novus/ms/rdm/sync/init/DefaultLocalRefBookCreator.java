@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
-import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
+import ru.i_novus.ms.rdm.sync.init.dao.VersionMappingDao;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescription;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescriptionService;
 
@@ -26,7 +26,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final LocalRefBookCreatorDao dao;
 
-    protected final VersionMappingService versionMappingService;
+    protected final VersionMappingDao versionMappingDao;
 
     protected final RefBookDescriptionService refBookDescriptionService;
 
@@ -37,13 +37,13 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
                                       Boolean caseIgnore,
                                       Boolean refreshComments,
                                       LocalRefBookCreatorDao dao,
-                                      VersionMappingService versionMappingService,
+                                      VersionMappingDao versionMappingDao,
                                       RefBookDescriptionService refBookDescriptionService) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
         this.refreshComments = Boolean.TRUE.equals(refreshComments);
         this.dao = dao;
-        this.versionMappingService = versionMappingService;
+        this.versionMappingDao = versionMappingDao;
         this.refBookDescriptionService = refBookDescriptionService;
     }
 
@@ -53,7 +53,7 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
         String refBookCode = syncMapping.getVersionMapping().getCode();
         RefBookDescription refBookDescription = refBookDescriptionService.getRefBookDescription(syncMapping);
         String range = syncMapping.getVersionMapping().getRange() != null ? syncMapping.getVersionMapping().getRange().getRange() : null;
-        VersionMapping versionMapping = versionMappingService.getVersionMappingByCodeAndRange(refBookCode, range);
+        VersionMapping versionMapping = versionMappingDao.getVersionMappingByCodeAndRange(refBookCode, range);
         saveMapping(syncMapping.getVersionMapping(), syncMapping.getFieldMapping(), versionMapping);
         String tableName = getTableNameWithSchema(refBookCode, syncMapping.getVersionMapping().getTable());
 

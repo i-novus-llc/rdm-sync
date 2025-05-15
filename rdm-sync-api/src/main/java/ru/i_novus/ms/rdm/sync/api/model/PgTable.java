@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.init.dao.pg.impl;
+package ru.i_novus.ms.rdm.sync.api.model;
 
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;

@@ -1,0 +1,19 @@
+package ru.i_novus.ms.rdm.sync.init.loader;
+
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+@ExtendWith(SpringExtension.class)
+@JdbcTest(properties = {
+        "spring.liquibase.change-log=classpath:/rdm-sync-db/baseChangelog.xml",
+        "spring.liquibase.parameters.quartz_schema_name=rdm_sync_qz",
+        "spring.liquibase.parameters.quartz_table_prefix=rdm_sync_qrtz_"
+})
+@AutoConfigureEmbeddedDatabase(
+        type = AutoConfigureEmbeddedDatabase.DatabaseType.POSTGRES,
+        provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.OPENTABLE
+)
+public abstract class BaseDaoTest {
+}

@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
 
 public class FnsiSourceLoaderService implements SourceLoaderService {
 
@@ -13,10 +13,10 @@ public class FnsiSourceLoaderService implements SourceLoaderService {
 
     private final FnsiSourceProperty property;
 
-    private final SyncSourceDao dao;
+    private final SyncSourceSavingDao dao;
 
     @Autowired
-    public FnsiSourceLoaderService(FnsiSourceProperty property, SyncSourceDao dao) {
+    public FnsiSourceLoaderService(FnsiSourceProperty property, SyncSourceSavingDao dao) {
         this.dao = dao;
         this.property = property;
     }

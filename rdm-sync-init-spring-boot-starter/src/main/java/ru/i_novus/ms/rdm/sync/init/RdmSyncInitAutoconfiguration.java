@@ -10,8 +10,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
+import ru.i_novus.ms.rdm.sync.init.dao.VersionMappingDao;
 import ru.i_novus.ms.rdm.sync.init.description.RefBookDescriptionService;
 import ru.i_novus.ms.rdm.sync.init.liquibase.RdmClientSyncLiquibaseParameters;
 import ru.i_novus.ms.rdm.sync.init.liquibase.RdmSyncLiquibaseService;
@@ -38,14 +38,14 @@ public class RdmSyncInitAutoconfiguration {
                                                                  @Qualifier("naturalPKLocalRefBookCreatorDao") LocalRefBookCreatorDao naturalPKDao,
                                                                  @Qualifier("simpleVersionedLocalRefBookCreatorDao") LocalRefBookCreatorDao simpleVersionedDao,
                                                                  @Qualifier("versionedLocalRefBookCreatorDao") LocalRefBookCreatorDao versionedDao,
-                                                                 VersionMappingService versionMappingService,
+                                                                 VersionMappingDao versionMappingDao,
                                                                  RefBookDescriptionService refBookDescriptionService) {
         LocalRefBookCreator notVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
                 schema,
                 caseIgnore,
                 refreshComments,
                 notVersionedDao,
-                versionMappingService,
+                versionMappingDao,
                 refBookDescriptionService
         );
         LocalRefBookCreator naturalPKLocalRefBookCreator = new DefaultLocalRefBookCreator(
@@ -53,7 +53,7 @@ public class RdmSyncInitAutoconfiguration {
                 caseIgnore,
                 refreshComments,
                 naturalPKDao,
-                versionMappingService,
+                versionMappingDao,
                 refBookDescriptionService
         );
         LocalRefBookCreator simpleVersionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
@@ -61,7 +61,7 @@ public class RdmSyncInitAutoconfiguration {
                 caseIgnore,
                 refreshComments,
                 simpleVersionedDao,
-                versionMappingService,
+                versionMappingDao,
                 refBookDescriptionService
         );
         LocalRefBookCreator versionedLocalRefBookCreator = new DefaultLocalRefBookCreator(
@@ -69,7 +69,7 @@ public class RdmSyncInitAutoconfiguration {
                 caseIgnore,
                 refreshComments,
                 versionedDao,
-                versionMappingService,
+                versionMappingDao,
                 refBookDescriptionService
         );
         return new LocalRefBookCreatorLocator(Map.of(

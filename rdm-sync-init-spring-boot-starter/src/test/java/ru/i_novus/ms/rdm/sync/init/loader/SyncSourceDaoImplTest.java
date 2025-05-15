@@ -1,4 +1,4 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.init.loader;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.SyncSourceSavingDaoImpl;
 
 class SyncSourceDaoImplTest extends BaseDaoTest {
 
@@ -13,13 +14,13 @@ class SyncSourceDaoImplTest extends BaseDaoTest {
     static class Config {
 
         @Bean
-        public SyncSourceDaoImpl syncSourceDao() {
-            return new SyncSourceDaoImpl();
+        public SyncSourceSavingDaoImpl syncSourceDao() {
+            return new SyncSourceSavingDaoImpl();
         }
     }
 
     @Autowired
-    SyncSourceDaoImpl syncSourceDao;
+    SyncSourceSavingDaoImpl syncSourceDao;
 
     @Test
     void testSave() {
