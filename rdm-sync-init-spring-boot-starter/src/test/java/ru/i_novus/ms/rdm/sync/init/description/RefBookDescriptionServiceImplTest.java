@@ -15,7 +15,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
+import ru.i_novus.ms.rdm.sync.init.dao.SyncSourceDao;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -39,7 +39,7 @@ class RefBookDescriptionServiceImplTest {
     private RefBookDescriptionServiceImpl descriptionService;
     
     @Mock
-    private SyncSourceSavingDao syncSourceDao;
+    private SyncSourceDao syncSourceDao;
 
     @Mock
     private SyncSourceService syncSourceService;

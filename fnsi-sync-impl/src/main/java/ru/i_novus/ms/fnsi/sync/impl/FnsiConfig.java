@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
-import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceCreator;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 
 @Configuration
@@ -24,11 +23,10 @@ public class FnsiConfig {
     }
 
     @Bean
-    public SourceLoaderService fnsiSourceLoaderService(
-            FnsiSourceProperty property,
-            @Qualifier("syncSourceSavingDaoImpl") SyncSourceSavingDao dao
+    public SyncSourceCreator fnsiSyncSourceCreatorImpl(
+            FnsiSourceProperty property
     ) {
-        return new FnsiSourceLoaderService(property, dao);
+        return new FnsiSyncSourceCreatorImpl(property);
     }
 
 }

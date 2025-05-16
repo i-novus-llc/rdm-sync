@@ -1,9 +1,0 @@
-package ru.i_novus.ms.rdm.sync.api.dao;
-
-public interface SyncSourceDao {
-
-    SyncSource findByCode(String code);
-
-    boolean tableExists(String tableName);
-
-}

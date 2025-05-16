@@ -11,7 +11,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersionItem;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
+import ru.i_novus.ms.rdm.sync.init.dao.SyncSourceDao;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,14 +20,14 @@ import java.util.stream.Collectors;
 @Transactional(propagation = Propagation.NEVER)
 public class RefBookDescriptionServiceImpl implements RefBookDescriptionService {
 
-    private final SyncSourceSavingDao syncSourceDao;
+    private final SyncSourceDao syncSourceDao;
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
     private final Boolean refreshComments;
     private final Integer refreshCommentsSearchDepth;
 
-    public RefBookDescriptionServiceImpl(SyncSourceSavingDao syncSourceDao,
+    public RefBookDescriptionServiceImpl(SyncSourceDao syncSourceDao,
                                          Set<SyncSourceServiceFactory> syncSourceServiceFactories,
                                          @Value("${rdm-sync.auto-create.refresh-comments:true}") Boolean refreshComments,
                                          @Value("${rdm-sync.auto-create.refresh-comments.search-depth:3}") Integer refreshCommentsSearchDepth) {

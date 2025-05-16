@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -1319,6 +1320,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         return new HashSet<>(rangeData);
+    }
+
+    @Override
+    public SyncSource findByCode(String code) {
+        return namedParameterJdbcTemplate.queryForObject("SELECT name, code, init_values, service_factory FROM rdm_sync.source WHERE code = :code",
+                Map.of("code", code),
+                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"),  rs.getString("init_values"), rs.getString("service_factory")));
     }
 }
 

@@ -13,7 +13,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
+import ru.i_novus.ms.rdm.sync.init.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.init.loader.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.init.loader.AutoCreateRefBookPropertyValue;
 
@@ -31,7 +31,7 @@ public class PropMappingSourceService implements MappingSourceService {
 
     private static final int DEFAULT_VERSION_FOR_PROPERTY_MAPPING = -2;
 
-    private final SyncSourceSavingDao syncSourceDao;
+    private final SyncSourceDao syncSourceDao;
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactories;
 
@@ -42,7 +42,7 @@ public class PropMappingSourceService implements MappingSourceService {
     private AutoCreateRefBookProperty autoCreateRefBookProperties;
 
     @Autowired
-    public PropMappingSourceService(SyncSourceSavingDao syncSourceDao,
+    public PropMappingSourceService(SyncSourceDao syncSourceDao,
                                     Set<SyncSourceServiceFactory> syncSourceServiceFactories,
                                     @Value("${rdm-sync.auto-create.ignore-case:true}") Boolean caseIgnore,
                                     @Value("${rdm-sync.auto-create.schema:rdm}") String defaultSchema,

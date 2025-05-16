@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.SyncSourceSavingDaoImpl;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.SyncSourceDaoImpl;
 
 class SyncSourceDaoImplTest extends BaseDaoTest {
 
@@ -14,13 +14,13 @@ class SyncSourceDaoImplTest extends BaseDaoTest {
     static class Config {
 
         @Bean
-        public SyncSourceSavingDaoImpl syncSourceDao() {
-            return new SyncSourceSavingDaoImpl();
+        public SyncSourceDaoImpl syncSourceDao() {
+            return new SyncSourceDaoImpl();
         }
     }
 
     @Autowired
-    SyncSourceSavingDaoImpl syncSourceDao;
+    SyncSourceDaoImpl syncSourceDao;
 
     @Test
     void testSave() {

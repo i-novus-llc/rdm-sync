@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.*;
@@ -21,8 +20,6 @@ import java.util.Set;
 @Component
 public class RedirectingSyncSourceService implements SyncSourceService {
 
-    private final SyncSourceDao syncSourceDao;
-
     private final RdmSyncDao syncDao;
 
     private final Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
@@ -30,8 +27,7 @@ public class RedirectingSyncSourceService implements SyncSourceService {
     private final VersionMappingService versionMappingService;
 
     @Autowired
-    public RedirectingSyncSourceService(SyncSourceDao syncSourceDao, RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet, VersionMappingService versionMappingService) {
-        this.syncSourceDao = syncSourceDao;
+    public RedirectingSyncSourceService(RdmSyncDao syncDao, Set<SyncSourceServiceFactory> syncSourceServiceFactorySet, VersionMappingService versionMappingService) {
         this.syncDao = syncDao;
         this.syncSourceServiceFactorySet = syncSourceServiceFactorySet;
         this.versionMappingService = versionMappingService;
@@ -74,7 +70,7 @@ public class RedirectingSyncSourceService implements SyncSourceService {
 
     private SyncSource getSource(String refBookCode) {
         VersionMapping versionMapping = versionMappingService.getVersionMapping(refBookCode, null);
-        return syncSourceDao.findByCode(versionMapping.getSource());
+        return syncDao.findByCode(versionMapping.getSource());
     }
 
     //todo убрать когда в фнси появится отдельный тип данных для массива значений

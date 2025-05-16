@@ -19,7 +19,7 @@ import ru.i_novus.ms.rdm.sync.api.model.RefBookStructure;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceService;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceSavingDao;
+import ru.i_novus.ms.rdm.sync.init.dao.SyncSourceDao;
 import ru.i_novus.ms.rdm.sync.init.loader.AutoCreateRefBookProperty;
 import ru.i_novus.ms.rdm.sync.init.mapping.utils.MappingCreator;
 
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 class PropMappingSourceServiceTest {
 
     @Mock
-    private SyncSourceSavingDao syncSourceDao;
+    private SyncSourceDao syncSourceDao;
 
     @Spy
     private Set<SyncSourceServiceFactory> syncSourceServiceFactorySet;
