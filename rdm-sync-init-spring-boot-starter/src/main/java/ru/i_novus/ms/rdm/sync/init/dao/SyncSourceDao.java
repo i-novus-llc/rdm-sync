@@ -1,10 +1,13 @@
-package ru.i_novus.ms.rdm.sync.api.dao;
+package ru.i_novus.ms.rdm.sync.init.dao;
 
-public interface SyncSourceSavingDao {
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+
+public interface SyncSourceDao {
 
     void save(SyncSource syncSource);
 
     SyncSource findByCode(String code);
 
     boolean tableExists(String tableName);
+
 }
