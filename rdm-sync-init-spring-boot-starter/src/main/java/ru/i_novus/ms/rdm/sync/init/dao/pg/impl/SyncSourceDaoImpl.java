@@ -1,10 +1,10 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.init.dao.pg.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
+import ru.i_novus.ms.rdm.sync.init.dao.SyncSourceDao;
 
 import java.util.Map;
 
@@ -51,5 +51,4 @@ public class SyncSourceDaoImpl implements SyncSourceDao {
         }
         return  Map.of("schema", schema, "table", table);
     }
-
 }

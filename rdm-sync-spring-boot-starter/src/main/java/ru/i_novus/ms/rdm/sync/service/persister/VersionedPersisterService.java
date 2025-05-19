@@ -6,7 +6,7 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.RefBookVersion;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
 import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
-import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.PgTable;
+import ru.i_novus.ms.rdm.sync.api.model.PgTable;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResult;
 import ru.i_novus.ms.rdm.sync.service.downloader.DownloadResultType;
 

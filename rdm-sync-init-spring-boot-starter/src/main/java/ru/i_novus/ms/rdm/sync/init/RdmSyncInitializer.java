@@ -12,9 +12,9 @@ import ru.i_novus.ms.rdm.sync.api.mapping.MappingRangeValidator;
 import ru.i_novus.ms.rdm.sync.api.mapping.SyncMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
-import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.init.dao.VersionMappingDao;
 import ru.i_novus.ms.rdm.sync.init.event.RdmSyncInitCompleteEvent;
+import ru.i_novus.ms.rdm.sync.init.loader.SourceLoaderService;
 import ru.i_novus.ms.rdm.sync.init.mapping.MappingSourceService;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class RdmSyncInitializer {
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncInitializer.class);
 
     @Autowired
-    private List<SourceLoaderService> sourceLoaderServiceList;
+    private SourceLoaderService sourceLoaderService;
 
     @Autowired
     private List<MappingSourceService> mappingSourceServiceList;
@@ -71,7 +71,7 @@ public class RdmSyncInitializer {
     }
 
     private void sourceLoaderServiceInit() {
-        sourceLoaderServiceList.forEach(SourceLoaderService::load);
+        sourceLoaderService.load();
     }
 
     private void autoCreate(List<SyncMapping> syncMappings) {

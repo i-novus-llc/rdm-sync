@@ -2,6 +2,7 @@ package ru.i_novus.ms.rdm.sync.dao;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
@@ -194,9 +195,9 @@ public interface RdmSyncDao {
 
     List<VersionMapping> getVersionMappingsByRefBookCode(String refBookCode);
 
-    VersionMapping getVersionMappingByRefBookCodeAndRange(String refBookCode, String range);
-
     List<String> getColumns(String schema, String table);
 
     Boolean tableExists(String schema, String table);
+
+    SyncSource findByCode(String code);
 }

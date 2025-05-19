@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import ru.i_novus.ms.rdm.sync.api.dao.SyncSourceDao;
-import ru.i_novus.ms.rdm.sync.api.service.SourceLoaderService;
+import ru.i_novus.ms.rdm.sync.api.service.SyncSourceCreator;
 import ru.i_novus.ms.rdm.sync.api.service.SyncSourceServiceFactory;
 
 @ConditionalOnProperty(name = "rdm.backend.path", havingValue = "")
@@ -29,10 +28,9 @@ public class RdmSyncImplConfig {
     }
 
     @Bean
-    public SourceLoaderService rdmSourceLoaderService(
-            @Value("${rdm.backend.path}") String url,
-            @Qualifier("syncSourceDaoImpl") SyncSourceDao dao
+    public SyncSourceCreator rdmSyncSourceCreatorImpl(
+            @Value("${rdm.backend.path}") String url
     ) {
-        return new RdmSourceLoaderService(url, dao);
+        return new RdmSyncSourceCreatorImpl(url);
     }
 }

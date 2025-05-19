@@ -1,15 +1,16 @@
-package ru.i_novus.ms.rdm.sync.dao;
+package ru.i_novus.ms.rdm.sync.init.loader;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
+import ru.i_novus.ms.rdm.sync.init.dao.pg.impl.SyncSourceDaoImpl;
 
-class SyncSourceDaoImplTest extends BaseDaoTest {
+class SyncSourceDaoImplTest extends BaseTest {
 
-    @Configuration
+    @TestConfiguration
     static class Config {
 
         @Bean

@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -1193,25 +1194,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public VersionMapping getVersionMappingByRefBookCodeAndRange(String code, String range) {
-        final String sql = "SELECT m.id, code, name, version, " +
-                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, " +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range " +
-                "  FROM rdm_sync.version v " +
-                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
-                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
-                "WHERE code = :code AND ((:range::varchar IS NULL AND version is NULL) OR version = :range) " +
-                "ORDER BY mapping_last_updated DESC;";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("code", code);
-        params.put("range", range);
-        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, params, versionMappingRowMapper);
-
-        return results.isEmpty() ? null : results.get(0);
-    }
-
-    @Override
     public List<String> getColumns(String schema, String table) {
         return namedParameterJdbcTemplate.queryForList(
                 "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name   = :table",
@@ -1319,6 +1301,13 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         );
 
         return new HashSet<>(rangeData);
+    }
+
+    @Override
+    public SyncSource findByCode(String code) {
+        return namedParameterJdbcTemplate.queryForObject("SELECT name, code, init_values, service_factory FROM rdm_sync.source WHERE code = :code",
+                Map.of("code", code),
+                (rs, rowNum) -> new SyncSource(rs.getString("name"), rs.getString("code"),  rs.getString("init_values"), rs.getString("service_factory")));
     }
 }
 
