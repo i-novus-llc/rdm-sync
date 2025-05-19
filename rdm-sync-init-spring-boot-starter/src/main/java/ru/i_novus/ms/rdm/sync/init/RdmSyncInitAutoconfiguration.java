@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AbstractDependsOnBeanFactoryPostProcessor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.init.dao.LocalRefBookCreatorDao;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @EnableConfigurationProperties({RdmClientSyncLiquibaseParameters.class})
+@ComponentScan({"ru.i_novus.ms.rdm", "ru.i_novus.ms.fnsi"})
 public class RdmSyncInitAutoconfiguration {
 
     @PostConstruct
