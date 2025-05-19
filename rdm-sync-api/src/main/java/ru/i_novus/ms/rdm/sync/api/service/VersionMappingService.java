@@ -6,6 +6,4 @@ public interface VersionMappingService {
 
     VersionMapping getVersionMapping(String referenceCode, String version);
 
-    VersionMapping getVersionMappingByCodeAndRange(String referenceCode, String range);
-
 }
