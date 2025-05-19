@@ -1194,25 +1194,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public VersionMapping getVersionMappingByRefBookCodeAndRange(String code, String range) {
-        final String sql = "SELECT m.id, code, name, version, " +
-                "       sys_table, sys_pk_field, (SELECT s.code FROM rdm_sync.source s WHERE s.id = r.source_id), unique_sys_field, deleted_field, " +
-                "       mapping_last_updated, mapping_version, mapping_id, sync_type, match_case, refreshable_range " +
-                "  FROM rdm_sync.version v " +
-                " INNER JOIN rdm_sync.mapping m ON m.id = v.mapping_id " +
-                " INNER JOIN rdm_sync.refbook r ON r.id = v.ref_id " +
-                "WHERE code = :code AND ((:range::varchar IS NULL AND version is NULL) OR version = :range) " +
-                "ORDER BY mapping_last_updated DESC;";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("code", code);
-        params.put("range", range);
-        List<VersionMapping> results = namedParameterJdbcTemplate.query(sql, params, versionMappingRowMapper);
-
-        return results.isEmpty() ? null : results.get(0);
-    }
-
-    @Override
     public List<String> getColumns(String schema, String table) {
         return namedParameterJdbcTemplate.queryForList(
                 "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name   = :table",
