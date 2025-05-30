@@ -98,8 +98,7 @@ public class PgTable {
                         .stream()
                         .map(fieldMapping -> {
                             validate(fieldMapping.getSysDataType());
-                            String description = Objects.nonNull(fieldMapping.getComment()) ? fieldMapping.getComment()
-                                    : columnDescriptions.get(fieldMapping.getSysField());
+                            String description = columnDescriptions.get(fieldMapping.getSysField());
                             if (description != null) {
                                 validate(description);
                             }

@@ -46,7 +46,6 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
             return new DefaultLocalRefBookCreator(
                     "rdm",
                     false,
-                    true,
                     versionedDao,
                     versionMappingDao,
                     refBookDescriptionService
