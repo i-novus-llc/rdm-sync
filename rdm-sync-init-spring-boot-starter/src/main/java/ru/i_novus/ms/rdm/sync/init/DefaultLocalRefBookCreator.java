@@ -30,18 +30,13 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
 
     protected final RefBookDescriptionService refBookDescriptionService;
 
-    private final boolean refreshComments;
-
-
     public DefaultLocalRefBookCreator(String defaultSchema,
                                       Boolean caseIgnore,
-                                      Boolean refreshComments,
                                       LocalRefBookCreatorDao dao,
                                       VersionMappingDao versionMappingDao,
                                       RefBookDescriptionService refBookDescriptionService) {
         this.defaultSchema = defaultSchema;
         this.caseIgnore = Boolean.TRUE.equals(caseIgnore);
-        this.refreshComments = Boolean.TRUE.equals(refreshComments);
         this.dao = dao;
         this.versionMappingDao = versionMappingDao;
         this.refBookDescriptionService = refBookDescriptionService;
@@ -123,10 +118,8 @@ public class DefaultLocalRefBookCreator implements LocalRefBookCreator {
             logger.info("change structure of table {}", tableName);
             dao.refreshTable(tableName, versionMapping, newFieldMappings, refDescription, fieldDescription);
         }
-        if (refreshComments) {
-            logger.info("try to refresh comments for {}", tableName);
-            dao.addCommentsIfNotExists(tableName, versionMapping, fieldMappings, refDescription, fieldDescription);
-        }
+        logger.info("try to refresh comments for {}", tableName);
+        dao.addCommentsIfNotExists(tableName, versionMapping, fieldMappings, refDescription, fieldDescription);
     }
 
 

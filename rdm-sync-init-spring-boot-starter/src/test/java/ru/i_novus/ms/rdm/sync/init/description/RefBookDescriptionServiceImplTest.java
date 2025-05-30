@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 import static ru.i_novus.ms.rdm.sync.api.model.AttributeTypeEnum.STRING;
@@ -49,15 +50,17 @@ class RefBookDescriptionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-       when(syncSourceDao.findByCode(TEST_SOURCE_CODE))
-                .thenReturn(new SyncSource(TEST_SOURCE_CODE, TEST_SOURCE_CODE, "testValues", "RdmSyncSourceServiceFactory"));
-        when(syncSourceServiceFactory.isSatisfied(any(SyncSource.class))).thenReturn(true);
-        when(syncSourceServiceFactory.createService(any(SyncSource.class))).thenReturn(syncSourceService);
-        descriptionService = new RefBookDescriptionServiceImpl(syncSourceDao, Set.of(syncSourceServiceFactory), false, 3);
+        descriptionService = new RefBookDescriptionServiceImpl(
+                syncSourceDao,
+                Set.of(syncSourceServiceFactory),
+                EnrichCommentsMode.ALWAYS,
+                3
+        );
     }
 
     @Test
     void testWhenMappingIsForAllVersionsThanGetDescriptionFromLastVersion() {
+        prepareSyncSourceMocks();
         String code = "testCode";
         RefBookDescription expected = new RefBookDescription("some refBook", Map.of("id", "identity", "name", "some name"));
         String version = "1";
@@ -75,6 +78,7 @@ class RefBookDescriptionServiceImplTest {
      */
     @Test
     void testGetDescriptionFromTwoVersion() {
+        prepareSyncSourceMocks();
         String code = "testCode";
         String version1 = "1";
         String version2 = "2";
@@ -108,6 +112,160 @@ class RefBookDescriptionServiceImplTest {
         RefBookDescription refBookDescription = descriptionService.getRefBookDescription(new SyncMapping(VersionMapping.builder().code(code).source(TEST_SOURCE_CODE).build(), fieldMappings));
         assertEquals(expected, refBookDescription);
 
+    }
+
+    @Test
+    void testWhenMappingContainsAllDescriptionsThenUseDescriptionsFormMapping() {
+        String code = "testCode";
+        RefBookDescription expected = new RefBookDescription(
+                "some refBook",
+                Map.of("id", "identity", "name", "some name")
+        );
+        testGetDescriptionsWithoutFetch(expected);
+    }
+
+    @Test
+    void testWhenMappingHasNoDescriptionForRefBookThenFetchAbsentDescription() {
+        prepareSyncSourceMocks();
+        String code = "testCode";
+        RefBookDescription expected = new RefBookDescription(
+                "some refBook",
+                Map.of("id", "identity", "name", "some name")
+        );
+        String version = "1";
+        when(syncSourceService.getVersions(anyString())).thenReturn(List.of(new RefBookVersionItem(code, version, LocalDateTime.now(), null, null)));
+        RefBookStructure structure = getStructure(expected.refDescription(), expected.attributeDescriptions());
+        when(syncSourceService.getRefBook(code, version)).thenReturn(new RefBookVersion(code, version, null, null, null, structure));
+        RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
+                new SyncMapping(
+                        VersionMapping.builder().code(code).source(TEST_SOURCE_CODE).build(),
+                        expected.attributeDescriptions().keySet().stream()
+                                .map(attr -> {
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    fieldMapping.setComment(expected.attributeDescriptions().get(attr));
+                                    return fieldMapping;
+                                })
+                                .toList()
+                )
+        );
+        assertEquals(expected, refBookDescription);
+    }
+
+    @Test
+    void testWhenMappingHasNoDescriptionForFieldThenFetchAbsentDescription() {
+        prepareSyncSourceMocks();
+        String code = "testCode";
+        RefBookDescription expected = new RefBookDescription(
+                "some refBook",
+                Map.of("id", "identity", "name", "some name")
+        );
+        String version = "1";
+        when(syncSourceService.getVersions(anyString())).thenReturn(List.of(new RefBookVersionItem(code, version, LocalDateTime.now(), null, null)));
+        RefBookStructure structure = getStructure(expected.refDescription(), expected.attributeDescriptions());
+        when(syncSourceService.getRefBook(code, version)).thenReturn(new RefBookVersion(code, version, null, null, null, structure));
+        RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
+                new SyncMapping(
+                        VersionMapping.builder().code(code).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
+                        expected.attributeDescriptions().keySet().stream()
+                                .map(attr -> {
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    if (!attr.equals("name")) {
+                                        fieldMapping.setComment(expected.attributeDescriptions().get(attr));
+                                    }
+                                    return fieldMapping;
+                                })
+                                .toList()
+                )
+        );
+        assertEquals(expected, refBookDescription);
+    }
+
+    @Test
+    void testWhenEnrichModeNeverThenUseDescriptionsFormMapping() {
+        descriptionService = new RefBookDescriptionServiceImpl(
+                syncSourceDao,
+                Set.of(syncSourceServiceFactory),
+                EnrichCommentsMode.NEVER,
+                3
+        );
+        RefBookDescription expected = new RefBookDescription(null, Map.of("id", "identity"));
+        testGetDescriptionsWithoutFetch(expected);
+    }
+
+    @Test
+    void testWhenEnrichModeOnCreateAndTableNotExistsThenFetchAbsentDescription() {
+        descriptionService = new RefBookDescriptionServiceImpl(
+                syncSourceDao,
+                Set.of(syncSourceServiceFactory),
+                EnrichCommentsMode.ON_CREATE,
+                3
+        );
+        prepareSyncSourceMocks();
+        String code = "testCode";
+        RefBookDescription expected = new RefBookDescription(
+                "some refBook",
+                Map.of("id", "identity", "name", "some name")
+        );
+        String version = "1";
+        when(syncSourceService.getVersions(anyString())).thenReturn(List.of(new RefBookVersionItem(code, version, LocalDateTime.now(), null, null)));
+        RefBookStructure structure = getStructure(expected.refDescription(), expected.attributeDescriptions());
+        when(syncSourceService.getRefBook(code, version)).thenReturn(new RefBookVersion(code, version, null, null, null, structure));
+        RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
+                new SyncMapping(
+                        VersionMapping.builder().code(code).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
+                        expected.attributeDescriptions().keySet().stream()
+                                .map(attr -> {
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    if (!attr.equals("name")) {
+                                        fieldMapping.setComment(expected.attributeDescriptions().get(attr));
+                                    }
+                                    return fieldMapping;
+                                })
+                                .toList()
+                )
+        );
+        assertEquals(expected, refBookDescription);
+    }
+
+    @Test
+    void testWhenEnrichModeOnCreateAndTableExistsThenUseDescriptionsFormMapping() {
+        descriptionService = new RefBookDescriptionServiceImpl(
+                syncSourceDao,
+                Set.of(syncSourceServiceFactory),
+                EnrichCommentsMode.ON_CREATE,
+                3
+        );
+        String table = "testTable";
+        when(syncSourceDao.tableExists(eq(table))).thenReturn(true);
+        RefBookDescription expected = new RefBookDescription(null, Map.of("id", "identity"));
+        testGetDescriptionsWithoutFetch(expected, table);
+    }
+
+    private void testGetDescriptionsWithoutFetch(RefBookDescription expected) {
+        testGetDescriptionsWithoutFetch(expected, "testTable");
+    }
+
+    private void testGetDescriptionsWithoutFetch(RefBookDescription expected, String table) {
+        RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
+                new SyncMapping(
+                        VersionMapping.builder().code("testCode").table(table).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
+                        expected.attributeDescriptions().keySet().stream()
+                                .map(attr -> {
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    fieldMapping.setComment(expected.attributeDescriptions().get(attr));
+                                    return fieldMapping;
+                                })
+                                .toList()
+                )
+        );
+        assertEquals(expected, refBookDescription);
+    }
+
+    private void prepareSyncSourceMocks() {
+        when(syncSourceDao.findByCode(TEST_SOURCE_CODE))
+                .thenReturn(new SyncSource(TEST_SOURCE_CODE, TEST_SOURCE_CODE, "testValues", "RdmSyncSourceServiceFactory"));
+        when(syncSourceServiceFactory.isSatisfied(any(SyncSource.class))).thenReturn(true);
+        when(syncSourceServiceFactory.createService(any(SyncSource.class))).thenReturn(syncSourceService);
     }
 
     private List<FieldMapping> getFieldMappings(RefBookDescription description) {
