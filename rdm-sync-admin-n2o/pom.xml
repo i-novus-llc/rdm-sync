@@ -22,7 +22,7 @@
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
             <artifactId>rdm-sync-admin-api</artifactId>
-            <version>${project.version}</version>
+            <version>1.53.0</version>
         </dependency>
 
         <dependency>

@@ -31,7 +31,7 @@
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
             <artifactId>rdm-sync-spring-boot-starter</artifactId>
-            <version>${project.version}</version>
+            <version>1.53.0</version>
         </dependency>
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
