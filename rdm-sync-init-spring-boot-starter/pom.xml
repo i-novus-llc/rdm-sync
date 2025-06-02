@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
+    <name>rdm-sync-init-spring-boot-starter</name>
 
 
     <dependencies>
