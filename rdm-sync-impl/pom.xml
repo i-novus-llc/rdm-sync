@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rdm-sync-impl</artifactId>
+    <name>rdm-sync-impl</name>
 
     <properties>
         <jacoco.skip>false</jacoco.skip>

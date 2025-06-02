@@ -121,11 +121,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.activation</groupId>
-                <artifactId>activation</artifactId>
-            </dependency>
-
-            <dependency>
                 <groupId>ru.i-novus.common</groupId>
                 <artifactId>fs-file-storage</artifactId>
                 <version>${filestorage.version}</version>

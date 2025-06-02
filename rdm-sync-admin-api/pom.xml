@@ -3,6 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rdm-sync-admin-api</artifactId>
+    <name>rdm-sync-admin-api</name>
 
     <parent>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
