@@ -168,7 +168,7 @@ class RefBookDescriptionServiceImplTest {
                         VersionMapping.builder().code(code).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
                         expected.attributeDescriptions().keySet().stream()
                                 .map(attr -> {
-                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr.toUpperCase());
                                     if (!attr.equals("name")) {
                                         fieldMapping.setComment(expected.attributeDescriptions().get(attr));
                                     }
@@ -207,15 +207,18 @@ class RefBookDescriptionServiceImplTest {
                 Map.of("id", "identity", "name", "some name")
         );
         String version = "1";
+        String rdmFieldPrefix = "RDM_PREFIX_";
         when(syncSourceService.getVersions(anyString())).thenReturn(List.of(new RefBookVersionItem(code, version, LocalDateTime.now(), null, null)));
         RefBookStructure structure = getStructure(expected.refDescription(), expected.attributeDescriptions());
+        structure.setAttributes(structure.getAttributes().stream()
+                .map(a -> new RefBookStructure.Attribute(rdmFieldPrefix + a.code(), a.type(), a.description())).collect(Collectors.toSet()));
         when(syncSourceService.getRefBook(code, version)).thenReturn(new RefBookVersion(code, version, null, null, null, structure));
         RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
                 new SyncMapping(
                         VersionMapping.builder().code(code).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
                         expected.attributeDescriptions().keySet().stream()
                                 .map(attr -> {
-                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", attr);
+                                    FieldMapping fieldMapping = new FieldMapping(attr, "varchar", rdmFieldPrefix + attr.toUpperCase());
                                     if (!attr.equals("name")) {
                                         fieldMapping.setComment(expected.attributeDescriptions().get(attr));
                                     }
@@ -270,14 +273,14 @@ class RefBookDescriptionServiceImplTest {
 
     private List<FieldMapping> getFieldMappings(RefBookDescription description) {
         return description.attributeDescriptions().keySet().stream()
-                .map(attr -> new FieldMapping(attr, "varchar", attr))
+                .map(attr -> new FieldMapping(attr, "varchar", attr.toUpperCase()))
                 .toList();
     }
 
     @NotNull
     private RefBookStructure getStructure(String refDescription, Map<String, String> attributeDescription) {
         Set<RefBookStructure.Attribute> attributes = attributeDescription.entrySet().stream()
-                .map(entry -> new RefBookStructure.Attribute(entry.getKey(), STRING, entry.getValue()))
+                .map(entry -> new RefBookStructure.Attribute(entry.getKey().toUpperCase(), STRING, entry.getValue()))
                 .collect(Collectors.toSet());
         RefBookStructure structure = new RefBookStructure(
                 Collections.emptyList(),

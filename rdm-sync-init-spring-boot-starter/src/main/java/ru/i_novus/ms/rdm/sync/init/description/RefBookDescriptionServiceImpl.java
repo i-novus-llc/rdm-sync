@@ -117,7 +117,10 @@ public class RefBookDescriptionServiceImpl implements RefBookDescriptionService 
                 fieldDescriptions.putAll(
                         refBook.getStructure().getAttributes().stream()
                                 .filter(attr -> shouldExtractDescription(attr, fieldDescriptions, rdmFieldToSysFieldMapping))
-                                .collect(Collectors.toMap(RefBookStructure.Attribute::code, RefBookStructure.Attribute::description))
+                                .collect(Collectors.toMap(
+                                        attr -> rdmFieldToSysFieldMapping.get(attr.code()),
+                                        RefBookStructure.Attribute::description
+                                ))
                 );
             }
             processableVersionIndex--;
