@@ -31,7 +31,7 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
 
     static Set<RefBookStructure.Attribute> refAttributes = Set.of(
             new RefBookStructure.Attribute("ID", INTEGER, "Идентификатор"),
-            new RefBookStructure.Attribute("NAME", STRING, "Наименование"),
+            new RefBookStructure.Attribute("NAME", STRING, "Наименование ('Название')"),
             new RefBookStructure.Attribute("CREATE_DT", DATE, "Дата создания")
     );
 
@@ -80,7 +80,7 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
         when(refBookDescriptionService.getRefBookDescription(any(SyncMapping.class)))
                 .thenReturn(
                         new RefBookDescription(
-                                "Тестовый справочник",
+                                "Тестовый справочник 'Версионный'",
                                 refAttributes.stream().collect(Collectors.toMap(attribute -> attribute.code().toLowerCase(), RefBookStructure.Attribute::description)
                                 )
                         )
@@ -99,7 +99,7 @@ public class VersionedLocalRefBookCreatorTest extends DefaultLocalRefBookCreator
             Assertions.assertEquals(attribute.description(), getColumnComment("ref_versioned", attribute.code().toLowerCase()));
         });
 
-        Assertions.assertEquals("Тестовый справочник", getTableComment("ref_versioned"));
+        Assertions.assertEquals("Тестовый справочник 'Версионный'", getTableComment("ref_versioned"));
 
     }
 }
