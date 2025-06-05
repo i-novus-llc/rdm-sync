@@ -33,6 +33,9 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
     private static final String INTERNAL_FUNCTION = "rdm_sync_internal_update_local_row_state()";
 
+    private static final String TABLE_COMMENT_TEMPLATE = "COMMENT ON TABLE %s IS %s;";
+    private static final String COLUMN_COMMENT_TEMPLATE = "COMMENT ON COLUMN %s.%s IS %s;";
+
 
     protected final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -243,9 +246,13 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                                );
                 """;
         Boolean existsTableComment = namedParameterJdbcTemplate.queryForObject(existsTableCommentQuery, Map.of("table", table, "schema", schema), Boolean.class);
-        if (!existsTableComment && pgTable.getTableDescription().isPresent()) {
-            namedParameterJdbcTemplate.getJdbcTemplate().execute("COMMENT ON TABLE " + pgTable.getName() + " IS '" + pgTable.getTableDescription().orElseThrow() + "';");
-            log.info("refresh comment for {}", pgTable.getName());
+        if (!existsTableComment) {
+                pgTable.getTableDescription().ifPresent(description -> {
+                    namedParameterJdbcTemplate.getJdbcTemplate().execute(
+                            String.format(TABLE_COMMENT_TEMPLATE, pgTable.getName(), quoteLiteral(description))
+                    );
+                    log.info("refresh comment for {}", pgTable.getName());
+                });
         }
     }
 
@@ -286,23 +293,21 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                         .collect(Collectors.joining(", "))
         );
         ddl.append(");");
-        if (tableWithColumns.getTableDescription().isPresent()) {
-            ddl.append(String.format("\nCOMMENT ON TABLE %s IS '%s'; ", tableWithColumns.getName(), tableWithColumns.getTableDescription().orElseThrow()));
-        }
+
+        tableWithColumns.getTableDescription().ifPresent(description ->
+            ddl.append(String.format("\n" + TABLE_COMMENT_TEMPLATE, tableWithColumns.getName(), quoteLiteral(description)))
+        );
         concatColumnsComment(tableWithColumns, ddl);
         namedParameterJdbcTemplate.getJdbcTemplate().execute(ddl.toString());
     }
 
     private void concatColumnsComment(PgTable tableWithColumns, StringBuilder ddl) {
-        String columnCommentTemplate = "\nCOMMENT ON COLUMN " + tableWithColumns.getName() + ".%s IS '%s'; ";
-
-        List<PgTable.Column> columnsWithDescription = tableWithColumns.getColumns().orElseThrow()
+        tableWithColumns.getColumns().orElseThrow(() -> new IllegalArgumentException("At least one column required"))
                 .stream()
                 .filter(column -> column.description() != null)
-                .toList();
-        for (PgTable.Column column :  columnsWithDescription) {
-            ddl.append(String.format(columnCommentTemplate, column.name(), column.description()));
-        }
+                .forEach(column ->
+                        ddl.append(String.format("\n" + COLUMN_COMMENT_TEMPLATE, tableWithColumns.getName(), column.name(), quoteLiteral(column.description())))
+                );
     }
 
     private boolean lockRefBookForUpdate(String code) {
@@ -448,6 +453,10 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         result.put("refreshable_range", versionMapping.isRefreshableRange());
 
         return result;
+    }
+
+    private static String quoteLiteral(String literal) {
+        return literal == null ? "NULL" : ("'" + literal.replace("'", "''") + "'");
     }
 
 }
