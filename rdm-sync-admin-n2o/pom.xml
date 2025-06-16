@@ -8,7 +8,7 @@
     <parent>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
         <artifactId>rdm-sync</artifactId>
-        <version>1.54.0-SNAPSHOT</version>
+        <version>1.54.0</version>
     </parent>
 
     <properties>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>ru.i-novus.ms.rdm.sync</groupId>
             <artifactId>rdm-sync-admin-api</artifactId>
-            <version>1.54.0-SNAPSHOT</version>
+            <version>1.54.0</version>
         </dependency>
 
         <dependency>
