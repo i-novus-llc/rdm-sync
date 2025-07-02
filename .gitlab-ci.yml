@@ -8,6 +8,7 @@ include:
 build and verify:
   variables:
     MAVEN_GOAL: verify
+    JDK_VERSION: 'jdk21'
 
 # Т.к. у нас нет dev-стенда -- убираем post-dev, чтобы в Jira не проставлялась дата установки на develop
 post dev:
