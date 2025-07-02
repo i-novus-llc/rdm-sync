@@ -9,7 +9,8 @@ build and verify:
   variables:
     MAVEN_GOAL: verify
     JDK_VERSION: 'jdk21'
-    MAVEN_IMAGE_VERSION: 'v0'
+    MAVEN_IMAGE_VERSION: 'v5'
+    NODE_VERSION: 'node22'
 
 # Т.к. у нас нет dev-стенда -- убираем post-dev, чтобы в Jira не проставлялась дата установки на develop
 post dev:
