@@ -1,11 +1,11 @@
-FROM harbor.i-novus.ru/library/java17-runtime-base:1.0.0 AS builder
+FROM harbor.i-novus.ru/pipeline/maven-build:jdk21-node22-v5 AS builder
 
 WORKDIR /build
 ARG JAR_FILE
 COPY "${JAR_FILE}" app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
-FROM harbor.i-novus.ru/library/java17-runtime-base:1.0.0
+FROM harbor.i-novus.ru/pipeline/maven-build:jdk21-node22-v5
 
 EXPOSE 8080
 
