@@ -181,6 +181,40 @@ class RefBookDescriptionServiceImplTest {
     }
 
     @Test
+    void testWhenMappingHasSeveralFieldsWithSameAttr() {
+        prepareSyncSourceMocks();
+        String code = "testCode";
+        RefBookDescription expected = new RefBookDescription(
+                "some refBook",
+                Map.of(
+                        "id", "identity",
+                        "oid", "oid description",
+                        "sys_oid", "oid description",
+                        "sys_oid_with_descr_from_mapping", "description from mapping"
+                )
+        );
+        FieldMapping fieldMapping = new FieldMapping("sys_oid_with_descr_from_mapping", "varchar", "OID");
+        fieldMapping.setComment(expected.attributeDescriptions().get(fieldMapping.getSysField()));
+        List<FieldMapping> mappings = List.of(
+                new FieldMapping("id", "varchar", "ID"),
+                new FieldMapping("oid", "varchar", "OID"),
+                new FieldMapping("sys_oid", "varchar", "OID"),
+                fieldMapping
+        );
+        String version = "1";
+        when(syncSourceService.getVersions(anyString())).thenReturn(List.of(new RefBookVersionItem(code, version, LocalDateTime.now(), null, null)));
+        RefBookStructure structure = getStructure(expected.refDescription(), expected.attributeDescriptions());
+        when(syncSourceService.getRefBook(code, version)).thenReturn(new RefBookVersion(code, version, null, null, null, structure));
+        RefBookDescription refBookDescription = descriptionService.getRefBookDescription(
+                new SyncMapping(
+                        VersionMapping.builder().code(code).refBookName(expected.refDescription()).source(TEST_SOURCE_CODE).build(),
+                        mappings
+                )
+        );
+        assertEquals(expected, refBookDescription);
+    }
+
+    @Test
     void testWhenEnrichModeNeverThenUseDescriptionsFormMapping() {
         descriptionService = new RefBookDescriptionServiceImpl(
                 syncSourceDao,
