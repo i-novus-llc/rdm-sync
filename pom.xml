@@ -26,7 +26,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform-parent</artifactId>
-        <version>6.1.4</version>
+        <version>7.0.0</version>
     </parent>
 
     <scm>
@@ -37,7 +37,7 @@
     </scm>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <encoding>UTF-8</encoding>
 
         <!-- as ${maven-compiler-plugin.version} -->
@@ -47,7 +47,7 @@
 
         <n2o.version>7.23.0</n2o.version>
 
-        <lombok.version>1.18.24</lombok.version>
+        <lombok.version>1.18.30</lombok.version>
 
         <apache.poi.version>3.17</apache.poi.version>
         <filestorage.version>2.3</filestorage.version>
