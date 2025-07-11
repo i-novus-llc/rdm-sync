@@ -76,31 +76,40 @@ public class RefBookDescriptionServiceImpl implements RefBookDescriptionService 
     ) {
         String table = mapping.getVersionMapping().getTable();
         String source = mapping.getVersionMapping().getSource();
-        Map<String, String> rdmFieldToSysFieldMapping = mapping.getFieldMapping().stream()
-                .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getSysField));
+        Map<String, List<String>> rdmFieldToSysFieldMapping = extractRdmFieldToSysFieldMapping(mapping);
 
         if (allDescriptionsDefined(refBookDescription, fieldDescriptions, rdmFieldToSysFieldMapping)) {
             log.debug("Mapping contains all descriptions, skip fetching from {}", source);
             return new RefBookDescription(refBookDescription, fieldDescriptions);
         } else {
             log.info("Fetch absent descriptions for {} from {}", table, source);
-            return fetchUndefinedDescriptions(mapping, refBookDescription, fieldDescriptions);
+            return fetchUndefinedDescriptions(mapping, refBookDescription, fieldDescriptions, rdmFieldToSysFieldMapping);
         }
+    }
+
+    private static Map<String, List<String>> extractRdmFieldToSysFieldMapping(SyncMapping mapping) {
+        Map<String, List<String>> rdmFieldToSysFieldMapping = new HashMap<>();
+        for (FieldMapping fieldMapping : mapping.getFieldMapping()) {
+            if (rdmFieldToSysFieldMapping.containsKey(fieldMapping.getRdmField())) {
+                rdmFieldToSysFieldMapping.get(fieldMapping.getRdmField()).add(fieldMapping.getSysField());
+            } else {
+                rdmFieldToSysFieldMapping.put(fieldMapping.getRdmField(), new ArrayList<>(List.of(fieldMapping.getSysField())));
+            }
+        }
+        return rdmFieldToSysFieldMapping;
     }
 
     private RefBookDescription fetchUndefinedDescriptions(
             SyncMapping mapping,
             String refBookDescription,
-            Map<String, String> fieldDescriptions
+            Map<String, String> fieldDescriptions,
+            Map<String, List<String>> rdmFieldToSysFieldMapping
     ) {
         SyncSourceService syncSourceService = getSyncSourceService(mapping.getVersionMapping().getSource());
         List<RefBookVersionItem> versions = new ArrayList<>(
                 syncSourceService.getVersions(mapping.getVersionMapping().getCode())
         );
         versions.sort(Comparator.comparing(RefBookVersionItem::getFrom));
-
-        Map<String, String> rdmFieldToSysFieldMapping = mapping.getFieldMapping().stream()
-                .collect(Collectors.toMap(FieldMapping::getRdmField, FieldMapping::getSysField));
 
         int processableVersionIndex = versions.size() - 1;
         while (processableVersionIndex > -1
@@ -114,14 +123,16 @@ public class RefBookDescriptionServiceImpl implements RefBookDescriptionService 
             }
             boolean allFieldDescriptionsDefined = fieldDescriptions.size() == rdmFieldToSysFieldMapping.size();
             if (!allFieldDescriptionsDefined) {
-                fieldDescriptions.putAll(
-                        refBook.getStructure().getAttributes().stream()
-                                .filter(attr -> shouldExtractDescription(attr, fieldDescriptions, rdmFieldToSysFieldMapping))
-                                .collect(Collectors.toMap(
-                                        attr -> rdmFieldToSysFieldMapping.get(attr.code()),
-                                        RefBookStructure.Attribute::description
-                                ))
-                );
+                Set<RefBookStructure.Attribute> shouldExtractDescriptionAttributes = refBook.getStructure()
+                        .getAttributes().stream()
+                        .filter(attr -> shouldExtractDescription(attr, fieldDescriptions, rdmFieldToSysFieldMapping))
+                        .collect(Collectors.toSet());
+                shouldExtractDescriptionAttributes.forEach(attr -> {
+                    List<String> sysFields = rdmFieldToSysFieldMapping.get(attr.code());
+                    sysFields.stream()
+                            .filter(sysField -> !fieldDescriptions.containsKey(sysField))
+                            .forEach(sysField -> fieldDescriptions.put(sysField, attr.description()));
+                });
             }
             processableVersionIndex--;
         }
@@ -135,17 +146,18 @@ public class RefBookDescriptionServiceImpl implements RefBookDescriptionService 
     private static boolean shouldExtractDescription(
             RefBookStructure.Attribute attr,
             Map<String, String> fieldDescriptions,
-            Map<String, String> rdmFieldToSysFieldMapping
+            Map<String, List<String>> rdmFieldToSysFieldMapping
     ) {
         boolean definitionExpected = rdmFieldToSysFieldMapping.containsKey(attr.code());
-        boolean alreadyDefined = !fieldDescriptions.containsKey(rdmFieldToSysFieldMapping.get(attr.code()));
-        return isNotBlank(attr.description()) && definitionExpected && alreadyDefined;
+        boolean alreadyDefined = rdmFieldToSysFieldMapping.containsKey(attr.code())
+                && rdmFieldToSysFieldMapping.get(attr.code()).stream().allMatch(fieldDescriptions::containsKey);
+        return isNotBlank(attr.description()) && definitionExpected && !alreadyDefined;
     }
 
     private static boolean allDescriptionsDefined(
             String refBookDescription,
             Map<String, String> fieldDescriptions,
-            Map<String, String> rdmFieldToSysFieldMapping
+            Map<String, List<String>> rdmFieldToSysFieldMapping
     ) {
         boolean refBookDescriptionDefined = isNotBlank(refBookDescription);
         boolean allFieldDescriptionsDefined = fieldDescriptions.size() == rdmFieldToSysFieldMapping.size();
