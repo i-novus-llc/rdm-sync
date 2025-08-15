@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.ms.rdm.sync</groupId>
     <artifactId>rdm-sync</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>rdm-sync</name>
@@ -87,25 +87,25 @@
             <dependency>
                 <groupId>ru.i-novus.ms.rdm.sync</groupId>
                 <artifactId>rdm-sync-api</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.1-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>ru.i-novus.ms.rdm.sync</groupId>
                 <artifactId>rdm-sync-impl</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.1-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>ru.i-novus.ms.rdm.sync</groupId>
                 <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.1-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>ru.i-novus.ms.rdm.sync</groupId>
                 <artifactId>fnsi-sync-impl</artifactId>
-                <version>2.0.0</version>
+                <version>2.0.1-SNAPSHOT</version>
             </dependency>
 
             <dependency>
