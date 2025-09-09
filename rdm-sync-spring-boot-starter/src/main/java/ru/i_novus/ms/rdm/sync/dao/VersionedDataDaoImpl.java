@@ -287,10 +287,14 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
     private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
 
-        SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
-        if (filterBuilder != null) {
-            sql += "\n AND " + filterBuilder.build();
-            args.putAll(filterBuilder.getParams());
+        if (dataCriteria.getFilterSql() != null) {
+            sql += "\n AND " + dataCriteria.getFilterSql();
+        } else {
+            SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
+            if (filterBuilder != null) {
+                sql += "\n AND " + filterBuilder.build();
+                args.putAll(filterBuilder.getParams());
+            }
         }
 
         Integer count = namedParameterJdbcTemplate.queryForObject("SELECT count(*)" + sql, args, Integer.class);

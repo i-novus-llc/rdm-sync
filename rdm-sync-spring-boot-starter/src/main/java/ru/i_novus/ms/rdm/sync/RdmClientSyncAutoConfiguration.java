@@ -21,6 +21,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jms.annotation.EnableJms;
 import ru.i_novus.ms.rdm.sync.api.model.SyncTypeEnum;
 import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataService;
+import ru.i_novus.ms.rdm.sync.api.service.LocalRdmDataServiceV2;
 import ru.i_novus.ms.rdm.sync.api.service.RdmSyncService;
 import ru.i_novus.ms.rdm.sync.api.service.VersionMappingService;
 import ru.i_novus.ms.rdm.sync.dao.RdmSyncDao;
@@ -128,6 +129,11 @@ public class RdmClientSyncAutoConfiguration {
     @Bean
     public LocalRdmDataService localRdmDataService() {
         return new LocalRdmDataServiceImpl();
+    }
+
+    @Bean
+    public LocalRdmDataServiceV2 localRdmDataServiceV2() {
+        return new LocalRdmDataServiceImplV2();
     }
 
 
