@@ -803,7 +803,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private Page<Map<String, Object>> getData0(String sql, Map<String, Object> args, BaseDataCriteria dataCriteria, String selectSubQuery) {
 
-        if (dataCriteria.getFilterSql() != null) {
+        if (dataCriteria.getFilterSql() != null && !dataCriteria.getFilterSql().isEmpty()) {
             sql += "\n AND " + dataCriteria.getFilterSql();
         } else {
             SqlFilterBuilder filterBuilder = getFiltersClause(dataCriteria.getFilters());
