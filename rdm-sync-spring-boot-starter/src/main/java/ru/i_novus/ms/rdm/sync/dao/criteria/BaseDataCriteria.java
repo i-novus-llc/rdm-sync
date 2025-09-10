@@ -11,7 +11,7 @@ public abstract class BaseDataCriteria {
     private final int limit;
     private final int offset;
     private final List<FieldFilter> filters;
-    private String filterSql;
+    private String filterSql;  //todo зарефакторить без явной завязки на sql
 
     public BaseDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
 
