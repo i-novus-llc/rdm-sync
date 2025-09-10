@@ -4,7 +4,7 @@
     ```xml
     <dependency>
         <groupId>ru.i-novus.ms.rdm.sync</groupId>
-        <artifactId>rdm-sync-init-spring-boot-starter</artifactId>
+        <artifactId>rdm-sync-spring-boot-starter</artifactId>
         <version>${rdm.sync.version}</version>
     </dependency>
     ```
