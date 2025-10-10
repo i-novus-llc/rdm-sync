@@ -3,33 +3,29 @@ CREATE TABLE IF NOT EXISTS ref_filtered(
     "id" integer,
 
     "_sync_rec_id" bigserial PRIMARY KEY,
-    "deleted_ts" timestamp without time zone,
-    "rdm_sync_internal_local_row_state" character varying NOT NULL DEFAULT 'DIRTY'::character varying
+    "deleted_ts" timestamp without time zone
 );
 
 CREATE TABLE IF NOT EXISTS ref_ek001(
     "name" character varying,
     "id" integer,
-    "deleted_ts" timestamp without time zone,
-    "rdm_sync_internal_local_row_state" character varying NOT NULL DEFAULT 'DIRTY'::character varying
+    "deleted_ts" timestamp without time zone
 );
 
 CREATE TABLE IF NOT EXISTS ref_ek002(
     "name" character varying,
     "id" integer,
-    "deleted_ts" timestamp without time zone,
-    "rdm_sync_internal_local_row_state" character varying NOT NULL DEFAULT 'DIRTY'::character varying
+    "deleted_ts" timestamp without time zone
 );
 
 CREATE TABLE IF NOT EXISTS ref_cars(
     "model" character varying,
     "id" integer,
-    "deleted_ts" timestamp without time zone,
-    "rdm_sync_internal_local_row_state" character varying NOT NULL DEFAULT 'DIRTY'::character varying
+    "deleted_ts" timestamp without time zone
 );
 
-INSERT INTO ref_cars (model, id, deleted_ts, rdm_sync_internal_local_row_state) VALUES ('model-1', 1, '2021-09-25 12:30:00', 'SYNCED');
-INSERT INTO ref_cars (model, id, deleted_ts, rdm_sync_internal_local_row_state) VALUES ('model-2', 2, NULL, 'SYNCED');
+INSERT INTO ref_cars (model, id, deleted_ts) VALUES ('model-1', 1, '2021-09-25 12:30:00');
+INSERT INTO ref_cars (model, id, deleted_ts) VALUES ('model-2', 2, NULL);
 
 INSERT INTO rdm_sync.source (name, code, init_values) VALUES ('name1', 'CODE-1', '{}');
 INSERT INTO rdm_sync.source (name, code, init_values) VALUES ('name2', 'CODE-2', '{}');

@@ -247,8 +247,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
                 sysPkColumn
         );
 
-        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists(schema, table);
-
         List<Map<String, Object>> insertRows = List.of(
                 new HashMap<>(Map.of("id", 1, "name", "name1", "age", 20)),
                 new HashMap<>(Map.of("id", 2, "name", "name2", "age", 25)),
@@ -488,7 +486,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         String refTbl = "ref_tbl";
         String tempTbl = "temp_tbl";
         rdmSyncDao.createNotVersionedTableIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "_sys_rec", "ID");
-        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists("public", refTbl);
 
         List<Map<String, Object>> rows_1_0 = generateRows();
         rdmSyncDao.insertRows(refTbl, rows_1_0, true);
@@ -520,7 +517,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         actualData.forEach(map -> {
             prepareRowToAssert(map);
             map.remove(DELETED_FIELD_COL);
-            map.remove("rdm_sync_internal_local_row_state");
             map.remove("_sys_rec");
         });
         //оборачиваю в сет, чтобы игнорировать порядок
@@ -536,7 +532,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         actualData.forEach(map -> {
             prepareRowToAssert(map);
             map.remove(DELETED_FIELD_COL);
-            map.remove("rdm_sync_internal_local_row_state");
             map.remove("_sys_rec");
         });
         assertEquals(new HashSet<>(expectedData), new HashSet<>(actualData.getContent()));
@@ -552,7 +547,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         String refTbl = "ref_tbl_with_natural_pk";
         String tempTbl = "temp_tbl_with_natural_pk";
         rdmSyncDao.createTableWithNaturalPrimaryKeyIfNotExists("public", refTbl, generateFieldMappings(), DELETED_FIELD_COL, "ID");
-        rdmSyncDao.addInternalLocalRowStateColumnIfNotExists("public", refTbl);
         rdmSyncDao.createVersionTempDataTbl(tempTbl, refTbl, "ID", "ID");
 
         // добавляем данные
@@ -569,7 +563,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         actualData.forEach(map -> {
             prepareRowToAssert(map);
             map.remove(DELETED_FIELD_COL);
-            map.remove("rdm_sync_internal_local_row_state");
             map.remove("_sys_rec");
         });
         assertEquals(rows, actualData.getContent());
@@ -595,7 +588,6 @@ class RdmSyncDaoTest extends BaseDaoTest {
         actualData.forEach(map -> {
             prepareRowToAssert(map);
             map.remove(DELETED_FIELD_COL);
-            map.remove("rdm_sync_internal_local_row_state");
             map.remove("_sys_rec");
         });
         assertEquals(rows, actualData.getContent());

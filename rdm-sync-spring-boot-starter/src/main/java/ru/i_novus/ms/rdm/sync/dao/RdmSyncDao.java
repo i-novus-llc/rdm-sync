@@ -10,7 +10,6 @@ import ru.i_novus.ms.rdm.sync.api.mapping.VersionMapping;
 import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import jakarta.annotation.Nullable;
 import java.time.LocalDate;
@@ -48,8 +47,6 @@ public interface RdmSyncDao {
     List<FieldMapping> getFieldMappings(String refbookCode);
 
     List<FieldMapping> getFieldMappings(Integer mappingId);
-
-    List<Pair<String, String>> getLocalColumnTypes(String schemaTable);
 
     Integer insertLoadedVersion(String code, String version, LocalDateTime publishDate, LocalDateTime closeDate, boolean actual);
 
@@ -125,9 +122,6 @@ public interface RdmSyncDao {
 
     boolean lockRefBookForUpdate(String code, boolean blocking);
 
-    void addInternalLocalRowStateUpdateTrigger(String schema, String table);
-    void createOrReplaceLocalRowStateUpdateFunction();
-    void addInternalLocalRowStateColumnIfNotExists(String schema, String table);
     void disableInternalLocalRowStateUpdateTrigger(String table);
     void enableInternalLocalRowStateUpdateTrigger(String table);
     boolean existsInternalLocalRowStateUpdateTrigger(String table);
@@ -138,10 +132,7 @@ public interface RdmSyncDao {
 
 
     Page<Map<String, Object>> getVersionedData(VersionedLocalDataCriteria localDataCriteria);
-    <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues,
-                                     RdmSyncLocalRowState expectedState, RdmSyncLocalRowState state);
 
-    RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv);
     void createSchemaIfNotExists(String schema);
     void createTableWithNaturalPrimaryKeyIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn);
     void createNotVersionedTableIfNotExists(String schema, String table, List<FieldMapping> fieldMappings, String isDeletedFieldName, String sysPkColumn, String primaryField);

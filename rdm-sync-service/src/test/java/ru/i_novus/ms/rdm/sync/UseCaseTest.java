@@ -383,7 +383,6 @@ public class UseCaseTest {
 
     private void prepareRowToAssert(Map<String, Object> row) {
         assertNotNull(row);
-        row.remove("rdm_sync_internal_local_row_state");
         row.remove("_sync_rec_id");
     }
 

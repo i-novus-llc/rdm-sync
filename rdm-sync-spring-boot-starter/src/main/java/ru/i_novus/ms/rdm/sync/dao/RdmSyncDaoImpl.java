@@ -34,7 +34,6 @@ import ru.i_novus.ms.rdm.sync.dao.criteria.BaseDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
-import ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -48,7 +47,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static ru.i_novus.ms.rdm.sync.service.RdmSyncLocalRowState.*;
 import static ru.i_novus.ms.rdm.sync.util.StringUtils.addDoubleQuotes;
 
 /**
@@ -59,17 +57,6 @@ import static ru.i_novus.ms.rdm.sync.util.StringUtils.addDoubleQuotes;
 public class RdmSyncDaoImpl implements RdmSyncDao {
 
     private static final Logger logger = LoggerFactory.getLogger(RdmSyncDaoImpl.class);
-
-    private static final String INTERNAL_FUNCTION = "rdm_sync_internal_update_local_row_state()";
-
-    private static final String LOCAL_ROW_STATE_UPDATE_FUNC = "CREATE OR REPLACE FUNCTION %1$s\n" +
-            "  RETURNS trigger AS \n" +
-            "$BODY$ \n" +
-            "  BEGIN \n" +
-            "    NEW.%2$s='%3$s'; \n" +
-            "    RETURN NEW; \n" +
-            "  END; \n" +
-            "$BODY$ LANGUAGE 'plpgsql' \n";
 
     private static final String RECORD_SYS_COL = "_sync_rec_id";
     private static final String RECORD_SYS_COL_INFO = "bigserial PRIMARY KEY";
@@ -193,32 +180,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public List<Pair<String, String>> getLocalColumnTypes(String schemaTable) {
-
-        String[] split = schemaTable.split("\\.");
-        String schema = split[0];
-        String table = split[1];
-
-        String sql = "SELECT column_name, data_type \n" +
-                "  FROM information_schema.columns \n" +
-                " WHERE table_schema = :schemaName \n" +
-                "   AND table_name = :tableName \n" +
-                "   AND column_name != :internal_local_row_state_column";
-
-        List<Pair<String, String>> list = namedParameterJdbcTemplate.query(sql,
-                Map.of("schemaName", schema,
-                        "tableName", table,
-                        "internal_local_row_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN),
-                (rs, rowNum) -> Pair.of(rs.getString(1), rs.getString(2))
-        );
-
-        if (list.isEmpty())
-            throw new RdmSyncException("No table '" + table + "' in schema '" + schema + "'.");
-
-        return list;
-    }
-
-    @Override
     public boolean isIdExists(String schemaTable, String primaryField, Object primaryValue) {
 
         final String sql = String.format("SELECT count(*) > 0 FROM %s WHERE %s = :primary",
@@ -287,11 +248,7 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Override
     public void insertRows(String schemaTable, List<Map<String, Object>> rows, boolean markSynced) {
-        List<Map<String, Object>> newRows = rows.stream().map(map -> {
-            Map<String, Object> newMap = new HashMap<>(map);
-            newMap.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
-            return newMap;
-        }).collect(toList());
+        List<Map<String, Object>> newRows = rows.stream().map(HashMap::new).collect(toList());
         insertRows(schemaTable, newRows);
     }
 
@@ -312,7 +269,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         if (markSynced) {
             row = new HashMap<>(row);
-            row.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
         }
 
         executeUpdate(schemaTable, Collections.singletonList(row), primaryField);
@@ -330,8 +286,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         Map<String, Object> args = new HashMap<>();
         args.put(primaryField, primaryValue);
         args.put(isDeletedField, deletedTime);
-        if (markSynced)
-            args.put(RDM_SYNC_INTERNAL_STATE_COLUMN, SYNCED.name());
 
         executeUpdate(schemaTable, Collections.singletonList(args), primaryField);
     }
@@ -590,54 +544,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     }
 
     @Override
-    public void addInternalLocalRowStateUpdateTrigger(String schema, String table) {
-
-        String triggerName = escapeName(getInternalLocalStateUpdateTriggerName(schema, table));
-        String schemaTable = escapeName(schema + "." + table);
-
-        final String sqlExists = "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE NOT tgisinternal AND tgname = :tgname)";
-        Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlExists, Map.of("tgname", triggerName.replaceAll("\"", "")), Boolean.class);
-
-        if (Boolean.TRUE.equals(exists))
-            return;
-
-        final String sqlCreateFormat = "CREATE TRIGGER %s \n" +
-                "  BEFORE INSERT OR UPDATE \n" +
-                "  ON %s \n" +
-                "  FOR EACH ROW \n" +
-                "  EXECUTE PROCEDURE %s;";
-        String sqlCreate = String.format(sqlCreateFormat, triggerName, schemaTable, INTERNAL_FUNCTION);
-        getJdbcTemplate().execute(sqlCreate);
-    }
-
-    @Override
-    public void createOrReplaceLocalRowStateUpdateFunction() {
-
-        String sql = String.format(LOCAL_ROW_STATE_UPDATE_FUNC, INTERNAL_FUNCTION, RDM_SYNC_INTERNAL_STATE_COLUMN, DIRTY);
-
-        getJdbcTemplate().execute(sql);
-    }
-
-    @Override
-    public void addInternalLocalRowStateColumnIfNotExists(String schema, String table) {
-
-        String schemaTable = escapeName(schema + "." + table);
-        Boolean exists = namedParameterJdbcTemplate.queryForObject("SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :internal_state_column)", Map.of("schema", schema, "table", table, "internal_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN), Boolean.class);
-        if (Boolean.TRUE.equals(exists))
-            return;
-
-        String query = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR NOT NULL DEFAULT '%s'", schemaTable, RDM_SYNC_INTERNAL_STATE_COLUMN, DIRTY);
-        getJdbcTemplate().execute(query);
-
-        query = String.format("CREATE INDEX ON %s (%s)", schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN));
-        getJdbcTemplate().execute(query);
-
-        int n = namedParameterJdbcTemplate.update(String.format("UPDATE %s SET %s = :synced", schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN)), Map.of("synced", SYNCED.name()));
-        if (n != 0)
-            logger.info("{} records updated internal state to {} in table {}", n, SYNCED, schemaTable);
-    }
-
-    @Override
     public void disableInternalLocalRowStateUpdateTrigger(String table) {
 
         String[] split = table.split("\\.");
@@ -672,9 +578,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String selectSubQuery = null;
         if(columnExists(LOADED_VERSION_REF, localDataCriteria.getSchemaTable())) {
             selectSubQuery = "(SELECT version FROM rdm_sync.loaded_version where id = version_id) as version_num ";
-        } else {
-            sql += " AND " + addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN) +" = :state";
-            args.put("state", localDataCriteria.getState().name());
         }
 
         if (localDataCriteria.getRecordId() != null) {
@@ -695,7 +598,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
         Page<Map<String, Object>> data = getData0(sql, args, localDataCriteria, selectSubQuery);
         data.getContent().forEach(row -> {
-            row.remove(RDM_SYNC_INTERNAL_STATE_COLUMN);
             row.remove(LOADED_VERSION_REF);
         });
         return data;
@@ -867,33 +769,6 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         filters.forEach(builder::parse);
 
         return builder;
-    }
-
-    @Override
-    public <T> boolean setLocalRecordsState(String schemaTable, String pk, List<? extends T> primaryValues, RdmSyncLocalRowState expectedState, RdmSyncLocalRowState toState) {
-
-        if (primaryValues.isEmpty())
-            return false;
-
-        String query = String.format("SELECT COUNT(*) FROM %s WHERE %s IN (:primaryValues)", schemaTable, addDoubleQuotes(pk));
-        Integer count = namedParameterJdbcTemplate.queryForObject(query, Map.of("primaryValues", primaryValues), Integer.class);
-        if (count == null || count == 0)
-            return false;
-
-        query = String.format("UPDATE %1$s SET %2$s = :toState WHERE %3$s IN (:primaryValues) AND %2$s = :expectedState", schemaTable, addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), addDoubleQuotes(pk));
-        int numUpdatedRecords = namedParameterJdbcTemplate.update(query, Map.of("toState", toState.name(), "primaryValues", primaryValues, "expectedState", expectedState.name()));
-        return numUpdatedRecords == count;
-    }
-
-    @Override
-    public RdmSyncLocalRowState getLocalRowState(String schemaTable, String pk, Object pv) {
-
-        String query = String.format("SELECT %s FROM %s WHERE %s = :pv", addDoubleQuotes(RDM_SYNC_INTERNAL_STATE_COLUMN), schemaTable, addDoubleQuotes(pk));
-        List<String> list = namedParameterJdbcTemplate.query(query, Map.of("pv", pv), (rs, rowNum) -> rs.getString(1));
-        if (list.size() > 1)
-            throw new RdmSyncException("Cannot identify record by " + pk);
-
-        return list.stream().findAny().map(RdmSyncLocalRowState::valueOf).orElse(null);
     }
 
     @Override
@@ -1115,8 +990,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void migrateNotVersionedTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
         String revertDeletedRowsQueryTemplate = "UPDATE {refTbl} SET({columns}, {deletedField}) = (SELECT {columns}, null::timestamp without time zone  FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NOT NULL;";
-        String addNewRowsQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
-                "SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE NOT EXISTS (SELECT 1 FROM {refTbl} WHERE {pk} = {tempTbl}.{pk} );";
+        String addNewRowsQueryTemplate  = "INSERT INTO {refTbl}({columns}) " +
+                "SELECT {columns} FROM {tempTbl} WHERE NOT EXISTS (SELECT 1 FROM {refTbl} WHERE {pk} = {tempTbl}.{pk} );";
         String updateEditRowsQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
         String markDeletedQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
@@ -1131,8 +1006,8 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
     public void migrateDiffTempData(String tempTable, String refTable, String pkField, String deletedField, List<String> fields, LocalDateTime deletedTime) {
         String revertDeletedRowsQueryTemplate = "UPDATE {refTbl} SET({columns}, {deletedField}) = (SELECT {columns}, null::timestamp without time zone  FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE  {pk} = {refTbl}.{pk} AND diff_type = 'I' ) AND {deletedField} IS NOT NULL;";
-        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}, rdm_sync_internal_local_row_state) " +
-                "(SELECT {columns}, 'SYNCED' FROM {tempTbl} WHERE diff_type = 'I' AND NOT EXISTS(SELECT 1 FROM {refTbl} WHERE  {pk} = {tempTbl}.{pk} ));";
+        String insertQueryTemplate  = "INSERT INTO {refTbl}({columns}) " +
+                "(SELECT {columns} FROM {tempTbl} WHERE diff_type = 'I' AND NOT EXISTS(SELECT 1 FROM {refTbl} WHERE  {pk} = {tempTbl}.{pk} ));";
         String updateQueryTemplate = "UPDATE {refTbl} SET({columns}) = (SELECT {columns} FROM {tempTbl} WHERE {pk} = {refTbl}.{pk}) " +
                 "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'U' AND {pk} = {refTbl}.{pk}) AND {deletedField} IS NULL;";
         String deleteQueryTemplate = "UPDATE {refTbl} SET {deletedField} = :deletedTime  WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE diff_type = 'D' AND {pk} = {refTbl}.{pk})  AND {deletedField} IS NULL;";
