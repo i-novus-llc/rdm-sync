@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202510101245_drop_column_rdm_sync_internal_local_row_state" author="stabakaeva"  dbms="postgresql">
+        <sql splitStatements="false">
+            DO $$
+            DECLARE
+                mapping_record RECORD;
+                schema_name TEXT;
+                table_name TEXT;
+            BEGIN
+                FOR mapping_record IN
+                    SELECT
+                        sys_table,
+                        SPLIT_PART(sys_table, '.', 1) as schema_part,
+                        SPLIT_PART(sys_table, '.', 2) as table_part
+                    FROM rdm_sync.mapping
+                    WHERE sys_table IS NOT NULL
+                    AND sys_table LIKE '%.%'
+                    AND SPLIT_PART(sys_table, '.', 2) != '' -- убеждаемся, что есть и схема, и таблица
+                LOOP
+                    schema_name := TRIM(mapping_record.schema_part);
+                    table_name := TRIM(mapping_record.table_part);
+
+                    BEGIN
+                        EXECUTE format(
+                            'ALTER TABLE %I.%I DROP COLUMN IF EXISTS rdm_sync_internal_local_row_state',
+                            schema_name,
+                            table_name
+                        );
+                        RAISE NOTICE 'Удален столбец из таблицы: %.%', schema_name, table_name;
+                    EXCEPTION
+                        WHEN undefined_table THEN
+                            RAISE NOTICE 'Таблица %.% не существует, пропуск', schema_name, table_name;
+                        WHEN others THEN
+                            RAISE NOTICE 'Ошибка при обработке таблицы %.%: %',
+                                schema_name, table_name, SQLERRM;
+                    END;
+                END LOOP;
+
+                RAISE NOTICE 'Операция завершена';
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
