@@ -279,7 +279,6 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             row.remove(RECORD_HASH);
             row.remove("record_id");
             row.remove("id");
-            row.remove("rdm_sync_internal_local_row_state");//нужно ли удалять?
         });
 
         return data;

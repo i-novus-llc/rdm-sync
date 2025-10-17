@@ -29,7 +29,6 @@ import ru.i_novus.ms.rdm.sync.dao.RdmSyncDaoImpl;
 import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
 import ru.i_novus.ms.rdm.sync.dao.VersionedDataDaoImpl;
 import ru.i_novus.ms.rdm.sync.service.*;
-import ru.i_novus.ms.rdm.sync.service.change_data.RdmChangeDataRequestCallback;
 import ru.i_novus.ms.rdm.sync.service.persister.PersisterService;
 import ru.i_novus.ms.rdm.sync.service.updater.DefaultRefBookUpdater;
 import ru.i_novus.ms.rdm.sync.service.updater.RefBookUpdater;
@@ -109,21 +108,10 @@ public class RdmClientSyncAutoConfiguration {
         return new PublishListener(rdmSyncService);
     }
 
-
-    @Bean
-    public RdmChangeDataRequestCallback rdmChangeDataRequestCallback() {
-        return new RdmChangeDataRequestCallback.DefaultRdmChangeDataRequestCallback();
-    }
-
     @Bean
     @ConditionalOnMissingBean
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new NamedParameterJdbcTemplate(jdbcTemplate);
-    }
-
-    @Bean
-    public RdmSyncLocalRowStateService rdmSyncLocalRowStateService() {
-        return new RdmSyncLocalRowStateService(rdmSyncDao());
     }
 
     @Bean

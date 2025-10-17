@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202510101246_modify_column_rdm_sync_internal_local_row_state" author="stabakaeva"  dbms="postgresql">
+        <sql splitStatements="false">
+            DO $$
+            DECLARE
+                mapping_record RECORD;
+                schema_name TEXT;
+                table_name TEXT;
+                trigger_name TEXT;
+                function_name TEXT;
+                function_schema TEXT;
+            BEGIN
+                FOR mapping_record IN
+                    SELECT
+                        sys_table,
+                        SPLIT_PART(sys_table, '.', 1) as schema_part,
+                        SPLIT_PART(sys_table, '.', 2) as table_part
+                    FROM rdm_sync.mapping
+                    WHERE sys_table IS NOT NULL
+                    AND sys_table LIKE '%.%'
+                    AND SPLIT_PART(sys_table, '.', 2) != '' -- убеждаемся, что есть и схема, и таблица
+                LOOP
+                    schema_name := TRIM(mapping_record.schema_part);
+                    table_name := TRIM(mapping_record.table_part);
+
+                    BEGIN
+                        -- Удаляем триггер и запоминаем имя триггерной функции
+                        FOR trigger_name, function_name, function_schema IN
+                            SELECT t.tgname, p.proname, n2.nspname
+                            FROM pg_trigger t
+                            JOIN pg_class c ON t.tgrelid = c.oid
+                            JOIN pg_namespace n ON c.relnamespace = n.oid
+                            JOIN pg_proc p ON t.tgfoid = p.oid
+                            JOIN pg_namespace n2 ON p.pronamespace = n2.oid
+                            WHERE n.nspname = schema_name
+                            AND c.relname = table_name
+                            AND t.tgname LIKE '%intrnl_lcl_rw%'
+                        LOOP
+                            -- Удаляем триггер
+                            EXECUTE format(
+                                'DROP TRIGGER IF EXISTS %I ON %I.%I',
+                                trigger_name,
+                                schema_name,
+                                table_name
+                            );
+                            RAISE NOTICE 'Удален триггер % из таблицы %.%', trigger_name, schema_name, table_name;
+
+                            -- Удаляем триггерную функцию
+                            EXECUTE format(
+                                'DROP FUNCTION IF EXISTS %I.%I() CASCADE',
+                                function_schema,
+                                function_name
+                            );
+                            RAISE NOTICE 'Удалена триггерная функция %.%', function_schema, function_name;
+                        END LOOP;
+
+                        -- Изменяем колонку: делаем nullable и устанавливаем дефолтное значение
+                        EXECUTE format(
+                            'ALTER TABLE %I.%I ALTER COLUMN rdm_sync_internal_local_row_state DROP NOT NULL',
+                            schema_name,
+                            table_name
+                        );
+
+                        EXECUTE format(
+                            'ALTER TABLE %I.%I ALTER COLUMN rdm_sync_internal_local_row_state SET DEFAULT %L',
+                            schema_name,
+                            table_name,
+                            'SYNCED'
+                        );
+
+                        -- Добавляем комментарий deprecated к колонке
+                        EXECUTE format(
+                            'COMMENT ON COLUMN %I.%I.rdm_sync_internal_local_row_state IS %L',
+                            schema_name,
+                            table_name,
+                            'deprecated'
+                        );
+
+                        RAISE NOTICE 'Изменена колонка rdm_sync_internal_local_row_state в таблице %.%: nullable + default SYNCED + comment deprecated', schema_name, table_name;
+                    EXCEPTION
+                        WHEN undefined_table THEN
+                            RAISE NOTICE 'Таблица %.% не существует, пропуск', schema_name, table_name;
+                        WHEN undefined_column THEN
+                            RAISE NOTICE 'Колонка rdm_sync_internal_local_row_state не существует в таблице %.%, пропуск', schema_name, table_name;
+                        WHEN others THEN
+                            RAISE NOTICE 'Ошибка при обработке таблицы %.%: %',
+                                schema_name, table_name, SQLERRM;
+                    END;
+                END LOOP;
+
+                RAISE NOTICE 'Операция завершена';
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

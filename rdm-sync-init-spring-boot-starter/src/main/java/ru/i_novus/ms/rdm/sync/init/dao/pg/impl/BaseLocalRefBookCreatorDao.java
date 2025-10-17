@@ -18,21 +18,6 @@ import java.util.stream.Collectors;
 @Slf4j
 abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
-    private static final String RDM_SYNC_INTERNAL_STATE_COLUMN = "rdm_sync_internal_local_row_state";
-
-    private static final String LOCAL_ROW_STATE_UPDATE_FUNC = """
-            CREATE OR REPLACE FUNCTION %1$s
-              RETURNS trigger AS\s
-            $BODY$\s
-              BEGIN\s
-                NEW.%2$s='%3$s';\s
-                RETURN NEW;\s
-              END;\s
-            $BODY$ LANGUAGE 'plpgsql'\s
-            """;
-
-    private static final String INTERNAL_FUNCTION = "rdm_sync_internal_update_local_row_state()";
-
     private static final String TABLE_COMMENT_TEMPLATE = "COMMENT ON TABLE %s IS %s;";
     private static final String COLUMN_COMMENT_TEMPLATE = "COMMENT ON COLUMN %s.%s IS %s;";
 
@@ -72,9 +57,6 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         createSchemaIfNotExists(pgTableWithColumns.getSchema());
         createTable(pgTableWithColumns);
         customizeTable(pgTableWithColumns, mapping, fieldMappings);
-        addInternalLocalRowStateColumnIfNotExists(tableName);
-        createOrReplaceLocalRowStateUpdateFunction(); // Мы по сути в цикле перезаписываем каждый раз функцию, это не страшно
-        addInternalLocalRowStateUpdateTrigger(pgTableWithColumns);
     }
 
     private Map<String, String> getColumnsWithType(List<FieldMapping> fieldMappings) {
@@ -90,61 +72,6 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
                 .map(entry -> new FieldMapping(entry.getKey(), entry.getValue(), null))
                 .toList();
     }
-
-    private void addInternalLocalRowStateUpdateTrigger(PgTable pgTable) {
-
-        String triggerName = pgTable.getInternalLocalStateUpdateTriggerName();
-        String schemaTable = pgTable.getName();
-
-        final String sqlExists = "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE NOT tgisinternal AND tgname = :tgname)";
-        Boolean exists = namedParameterJdbcTemplate.queryForObject(sqlExists, Map.of("tgname", triggerName.replaceAll("\"", "")), Boolean.class);
-
-        if (Boolean.TRUE.equals(exists))
-            return;
-
-        final String sqlCreateFormat = """
-                CREATE TRIGGER %s\s
-                  BEFORE INSERT OR UPDATE\s
-                  ON %s\s
-                  FOR EACH ROW\s
-                  EXECUTE PROCEDURE %s;""";
-        String sqlCreate = String.format(sqlCreateFormat, triggerName, schemaTable, INTERNAL_FUNCTION);
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(sqlCreate);
-    }
-
-    private void addInternalLocalRowStateColumnIfNotExists(String schemaTable) {
-        Map<String, String> params = new HashMap<>(getSchemaAndTableParams(schemaTable));
-        params.put("internal_state_column", RDM_SYNC_INTERNAL_STATE_COLUMN);
-        Boolean exists = namedParameterJdbcTemplate.queryForObject(
-                """
-                        SELECT EXISTS(SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = :schema AND table_name = :table AND column_name = :internal_state_column)
-                        """,
-                params,
-                Boolean.class
-        );
-        if (Boolean.TRUE.equals(exists))
-            return;
-
-        PgTable pgTable = new PgTable(schemaTable);
-        String query = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR NOT NULL DEFAULT '%s'", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN, "DIRTY");
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
-
-        query = String.format("CREATE INDEX ON %s (%s)", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN);
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(query);
-
-        int n = namedParameterJdbcTemplate.update(String.format("UPDATE %s SET %s = :synced", pgTable.getName(), RDM_SYNC_INTERNAL_STATE_COLUMN), Map.of("synced", "SYNCED"));
-        if (n != 0)
-            log.info("{} records updated internal state to {} in table {}", n, "SYNCED", schemaTable);
-    }
-
-    public void createOrReplaceLocalRowStateUpdateFunction() {
-
-        String sql = String.format(LOCAL_ROW_STATE_UPDATE_FUNC, INTERNAL_FUNCTION, RDM_SYNC_INTERNAL_STATE_COLUMN, "DIRTY");
-
-        namedParameterJdbcTemplate.getJdbcTemplate().execute(sql);
-    }
-
 
     @Override
     public Integer addMapping(VersionMapping versionMapping, List<FieldMapping> fieldMappings) {

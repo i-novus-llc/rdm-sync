@@ -386,13 +386,10 @@ Xml-mapping имеет приоритет выше, чем маппинг чер
 - колонка с любым типом, совместимым с типом первичного ключа справочника НСИ. Например `code`.
   В эту колонку будет копироваться значение первичного ключа справочника из НСИ. Указывается в колонке `rdm_sync.version.unique_sys_field`.
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
-- `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
 
 #### Таблицы для типов `NOT_VERSIONED_WITH_NATURAL_PK` и `RDM_NOT_VERSIONED_WITH_NATURAL_PK`
 Таблица должна содержать колонки для атрибутов справочника(те которые указаны в маппинге), первичным ключом таблицы должна быть колонка указанная в мапинге в атрибуте unique-sys-field и следующие технические колонки:
 - `deleted_ts timestamp without time zone` -- признак и дата удалённости записи. Указывается в колонке `rdm_sync.version.deleted_field`.
--  `rdm_sync_internal_local_row_state character varying NOT NULL DEFAULT 'DIRTY'::character varying`
-   ;
 
 
 #### Таблицы для типа `SIMPLE_VERSIONED`
