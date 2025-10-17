@@ -4,7 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="202510101245_modify_column_rdm_sync_internal_local_row_state" author="stabakaeva"  dbms="postgresql">
+    <changeSet id="202510101246_modify_column_rdm_sync_internal_local_row_state" author="stabakaeva"  dbms="postgresql">
         <sql splitStatements="false">
             DO $$
             DECLARE
@@ -73,7 +73,15 @@
                             'SYNCED'
                         );
 
-                        RAISE NOTICE 'Изменена колонка rdm_sync_internal_local_row_state в таблице %.%: nullable + default SYNCED', schema_name, table_name;
+                        -- Добавляем комментарий deprecated к колонке
+                        EXECUTE format(
+                            'COMMENT ON COLUMN %I.%I.rdm_sync_internal_local_row_state IS %L',
+                            schema_name,
+                            table_name,
+                            'deprecated'
+                        );
+
+                        RAISE NOTICE 'Изменена колонка rdm_sync_internal_local_row_state в таблице %.%: nullable + default SYNCED + comment deprecated', schema_name, table_name;
                     EXCEPTION
                         WHEN undefined_table THEN
                             RAISE NOTICE 'Таблица %.% не существует, пропуск', schema_name, table_name;
