@@ -2,13 +2,13 @@ version: "3.6"
 
 services:
   rdm-sync-service:
-    image: "${DOCKER_REGISTRY}/rdm-sync/rdm-sync-service:${docker.image.tag}"
+    image: "${DOCKER_REGISTRY}/n2o-components/rdm-sync/rdm-sync-service:${docker.image.tag}"
     build:
       context: ${project.basedir}/rdm-sync-service
       args:
         JAR_FILE: target/rdm-sync-service.jar
 
   db:
-    image: "${DOCKER_REGISTRY}/rdm-sync/db:${docker.image.tag}"
+    image: "${DOCKER_REGISTRY}/n2o-components/rdm-sync/db:${docker.image.tag}"
     build:
       context: ${project.basedir}/rdm-sync-db
