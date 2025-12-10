@@ -13,7 +13,7 @@ global:
 
 springServices:
   rdm-sync-service:
-    imageName: rdm-sync/rdm-sync-service
+    imageName: n2o-components/rdm-sync/rdm-sync-service
     resources:
       limits:
         memory: 1000M
@@ -33,7 +33,7 @@ genericServices:
   postgresql:
     enabled: false
     port: 5432
-    imageName: rdm-sync/db
+    imageName: n2o-components/rdm-sync/db
     useGlobalRegistry: true
     resources:
       limits:

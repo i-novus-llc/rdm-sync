@@ -6,7 +6,9 @@ import org.apache.commons.text.StringSubstitutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
@@ -38,6 +40,8 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     private static final String VERSION_ID = "version_id";
     private static final String RECORD_HASH = "_sync_hash";
 
+    private static final int BATCH_SIZE = 1000;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final RdmSyncDao rdmSyncDao;
 
@@ -56,21 +60,31 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         map.put("version_id", versionId);
 
         //вставляем записи в refTbl
-        String dataQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
-                "WHERE NOT EXISTS(SELECT 1 FROM {refTbl} WHERE {refTbl}.{hash} = md5({hashExpression}) AND {tempTbl}.{pk} = {refTbl}.{pk}))";
+        String dataQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) " +
+                "SELECT {tempColumnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
+                "LEFT JOIN {refTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}) " +
+                "WHERE {refTbl}.{pk} IS NULL";
         String query = StringSubstitutor.replace(dataQueryTemplate, queryPlaceholders, "{", "}");
-        namedParameterJdbcTemplate.update(query, map);
+
+        long startTime = System.currentTimeMillis();
+        int inserted = namedParameterJdbcTemplate.update(query, map);
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("addFirstVersionData: Inserted {} records into refTbl in {} ms", inserted, duration);
 
         //выбираем из refTbl syncId и вставляем в таблицу версий
         dataQueryTemplate = "WITH table_data AS (" +
-                "SELECT {syncId} FROM {refTbl} " +
-                "WHERE EXISTS(SELECT 1 FROM {tempTbl} WHERE {refTbl}.{hash} = md5({hashExpression}) AND {pk} = {refTbl}.{pk})" +
+                "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                "INNER JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression})" +
                 ") " +
                 "INSERT INTO {refTableVersions} (record_id, {versionId}) " +
                 "SELECT {syncId}, :version_id " +
                 "FROM table_data";
         query = StringSubstitutor.replace(dataQueryTemplate, queryPlaceholders, "{", "}");
-        namedParameterJdbcTemplate.update(query, map);
+
+        startTime = System.currentTimeMillis();
+        int linked = namedParameterJdbcTemplate.update(query, map);
+        duration = System.currentTimeMillis() - startTime;
+        log.info("addFirstVersionData: Linked {} records with version {} in {} ms", linked, versionId, duration);
     }
 
     @Override
@@ -86,10 +100,12 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
 
         //добавляем неизмененные записи из предыдущей версии
         String str = "WITH table_data AS (" +
-                "SELECT {syncId} FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+                "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                "INNER JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+                "LEFT JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} " +
                 "WHERE {refTableVersions}.{versionId} = :prev_version_id " +
-                "AND NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})" +
-                ")" +
+                "AND {tempTbl}.{pk} IS NULL" +
+                ") " +
                 "INSERT INTO {refTableVersions} (record_id, {versionId}) " +
                 "SELECT {syncId}, :version_id " +
                 "FROM table_data";
@@ -98,19 +114,31 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         Map<String, Object> map = new HashMap<>();
         map.put("version_id", versionId);
         map.put("prev_version_id", loadedVersion.getId());
-        namedParameterJdbcTemplate.update(query, map);
+
+        long startTime = System.currentTimeMillis();
+        int rowsInserted = namedParameterJdbcTemplate.update(query, map);
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("addDiffVersionData: Inserted {} unchanged records in {} ms", rowsInserted, duration);
 
         //обработка измененных записей(добавление и редактирование)
         String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                 "WHERE (diff_type = 'I' OR diff_type = 'U')) ON CONFLICT ({uniqColumns}) DO NOTHING";
         query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-        namedParameterJdbcTemplate.update(query, Map.of());
 
-        insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
-                "WHERE (diff_type = 'I' OR diff_type = 'U') AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+        startTime = System.currentTimeMillis();
+        int n = namedParameterJdbcTemplate.update(query, Map.of());
+        duration = System.currentTimeMillis() - startTime;
+        log.info("addDiffVersionData: inserted {} new records in {} ms", n, duration);
+
+        insertQueryTemplate = "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                "INNER JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}) " +
+                "WHERE {tempTbl}.diff_type IN ('I', 'U')";
         query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+
+        startTime = System.currentTimeMillis();
         List<Long> idsForInsert = namedParameterJdbcTemplate.queryForList(query, Map.of(), Long.class);
-        log.info("idsForInsert: {}", idsForInsert);
+        duration = System.currentTimeMillis() - startTime;
+        log.info("addDiffVersionData: selected {} record IDs in {} ms", idsForInsert.size(), duration);
 
         insertVersions(idsForInsert, versionId, pgTable);
     }
@@ -123,22 +151,32 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         Map<String, String> queryPlaceholders = getQueryPlaceholders(tempTable, pgTable);
 
         //удаляем записи, которых нет в версии
-        String deleteQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
-                " WHERE {refTableVersions}.{versionId} = :version_id " +
-                " AND NOT EXISTS(SELECT 1 FROM {tempTbl} WHERE {pk} = {refTbl}.{pk})";
+        String deleteQueryTemplate = "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                "INNER JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+                "LEFT JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} " +
+                "WHERE {refTableVersions}.{versionId} = :version_id AND {tempTbl}.{pk} IS NULL";
         String deleteQuery = StringSubstitutor.replace(deleteQueryTemplate, queryPlaceholders, "{", "}");
+
+        long startTime = System.currentTimeMillis();
         List<Long> idsForDelete = namedParameterJdbcTemplate.queryForList(deleteQuery, Map.of("version_id", versionId), Long.class);
-        log.info("idsForDelete: {}", idsForDelete);
-        //
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("repeatVersion: found {} records to delete in {} ms", idsForDelete.size(), duration);
 
 
         //получаем записи, которые есть в temp, но нет в сохраненной версии
-        String selectQueryTemplate = "SELECT {pk} FROM {tempTbl} " +
-                "WHERE NOT EXISTS(SELECT 1 FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
-                "WHERE {refTableVersions}.{versionId} = :version_id " +
-                "AND {pk} = {tempTbl}.{pk})";
+        String selectQueryTemplate = "SELECT {tempTbl}.{pk} FROM {tempTbl} " +
+                "LEFT JOIN (" +
+                "  SELECT {refTbl}.{pk} FROM {refTbl} " +
+                "  INNER JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+                "  WHERE {refTableVersions}.{versionId} = :version_id" +
+                ") v ON {tempTbl}.{pk} = v.{pk} " +
+                "WHERE v.{pk} IS NULL";
         String selectQuery = StringSubstitutor.replace(selectQueryTemplate, queryPlaceholders, "{", "}");
+
+        startTime = System.currentTimeMillis();
         List<Long> srcIds = namedParameterJdbcTemplate.queryForList(selectQuery, Map.of("version_id", versionId), Long.class);
+        duration = System.currentTimeMillis() - startTime;
+        log.info("repeatVersion: found {} new records in {} ms", srcIds.size(), duration);
 
 
         List<Long> idsForInsert = new ArrayList<>();
@@ -147,49 +185,72 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                     "WHERE {pk} in (:srcIds)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
             String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+
+            startTime = System.currentTimeMillis();
             namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
+            duration = System.currentTimeMillis() - startTime;
+            log.info("repeatVersion: inserted {} new records in {} ms", srcIds.size(), duration);
 
             //получаем _sync_rec_id
-            insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
-                    "WHERE {pk} in (:srcIds) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+            insertQueryTemplate = "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                    "INNER JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}) " +
+                    "WHERE {tempTbl}.{pk} IN (:srcIds)";
             query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+
+            startTime = System.currentTimeMillis();
             idsForInsert = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIds", srcIds), Long.class);
-            log.info("idsForInsert: {}", idsForInsert);
+            duration = System.currentTimeMillis() - startTime;
+            log.info("repeatVersion: selected {} new record IDs in {} ms", idsForInsert.size(), duration);
         }
         //
 
         //редактируем записи, которые изменились
         //ищем записи, которые есть и в tempTbl и в сохраненной версии (по pk), но с разным hash
-        String sqt = "SELECT {pk} FROM {tempTbl} " +
-                "WHERE EXISTS(SELECT 1 FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+        String sqt = "SELECT {tempTbl}.{pk} FROM {tempTbl} " +
+                "INNER JOIN {refTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} " +
+                "INNER JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
                 "WHERE {refTableVersions}.{versionId} = :version_id " +
-                "AND {refTbl}.{pk} = {tempTbl}.{pk} " +
-                "AND {refTbl}.{hash} <> md5({hashExpression}))";
+                "AND {refTbl}.{hash} <> md5({hashExpression})";
         String sq = StringSubstitutor.replace(sqt, queryPlaceholders, "{", "}");
+
+        startTime = System.currentTimeMillis();
         List<Long> srcIdsFromUpdate = namedParameterJdbcTemplate.queryForList(sq, Map.of("version_id", versionId), Long.class);
+        duration = System.currentTimeMillis() - startTime;
+        log.info("repeatVersion: found {} modified records in {} ms", srcIdsFromUpdate.size(), duration);
 
         if (!srcIdsFromUpdate.isEmpty()) {
-            String updateQueryTemplate = "SELECT {syncId} FROM {refTbl} JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
+            String updateQueryTemplate = "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                    "INNER JOIN {refTableVersions} ON {refTbl}.{syncId} = {refTableVersions}.record_id " +
                     "WHERE {refTableVersions}.{versionId} = :version_id " +
-                    "AND {pk} in (:srcIdsFromUpdate)";
+                    "AND {refTbl}.{pk} IN (:srcIdsFromUpdate)";
             String updateQuery = StringSubstitutor.replace(updateQueryTemplate, queryPlaceholders, "{", "}");
+
+            startTime = System.currentTimeMillis();
             List<Long> idsForDeleteFromUpdate = namedParameterJdbcTemplate.queryForList(updateQuery, Map.of("version_id", versionId, "srcIdsFromUpdate", srcIdsFromUpdate), Long.class);
+            duration = System.currentTimeMillis() - startTime;
+            log.info("repeatVersion: found {} old versions to delete in {} ms", idsForDeleteFromUpdate.size(), duration);
             idsForDelete.addAll(idsForDeleteFromUpdate);
-            log.info("idsForDeleteFromUpdate: {}", idsForDeleteFromUpdate);
 
             String insertQueryTemplate = "INSERT INTO {refTbl} ({columnsExpression}, {hash}) (SELECT {columnsExpression}, md5({hashExpression}) FROM {tempTbl} " +
                     "WHERE {pk} in (:srcIdsFromUpdate)) ON CONFLICT ({uniqColumns}) DO NOTHING RETURNING {syncId}";
             String query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
-            namedParameterJdbcTemplate.queryForList(query, Map.of("srcIdsFromUpdate", srcIdsFromUpdate), Long.class);
 
+            startTime = System.currentTimeMillis();
+            namedParameterJdbcTemplate.queryForList(query, Map.of("srcIdsFromUpdate", srcIdsFromUpdate), Long.class);
+            duration = System.currentTimeMillis() - startTime;
+            log.info("repeatVersion: inserted {} updated records in {} ms", srcIdsFromUpdate.size(), duration);
 
             //получаем _sync_rec_id
-            insertQueryTemplate = "SELECT {syncId} FROM {refTbl} WHERE EXISTS (SELECT 1 FROM {tempTbl} " +
-                    "WHERE {pk} in (:srcIdsFromUpdate) AND {pk} = {refTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}))";
+            insertQueryTemplate = "SELECT {refTbl}.{syncId} FROM {refTbl} " +
+                    "INNER JOIN {tempTbl} ON {refTbl}.{pk} = {tempTbl}.{pk} AND {refTbl}.{hash} = md5({hashExpression}) " +
+                    "WHERE {tempTbl}.{pk} IN (:srcIdsFromUpdate)";
             query = StringSubstitutor.replace(insertQueryTemplate, queryPlaceholders, "{", "}");
+
+            startTime = System.currentTimeMillis();
             List<Long> idsForInsertFromUpdate = namedParameterJdbcTemplate.queryForList(query, Map.of("srcIdsFromUpdate", srcIdsFromUpdate), Long.class);
+            duration = System.currentTimeMillis() - startTime;
+            log.info("repeatVersion: selected {} updated record IDs in {} ms", idsForInsertFromUpdate.size(), duration);
             idsForInsert.addAll(idsForInsertFromUpdate);
-            log.info("idsForInsertFromUpdate: {}", idsForInsertFromUpdate);
         }
 
         //
@@ -206,34 +267,51 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         String hashExpression = getHashExpression(fields, tempTable);
         String pkField = pgTable.getPrimaryField().get();
 
-        return Map.of("tempTbl", escapeName(tempTable),
-                "columnsExpression", columnsExpression,
-                "hashExpression", hashExpression,
-                "hash", RECORD_HASH,
-                "refTbl", pgTable.getName(),
-                "pk", pkField,
-                "syncId", RECORD_PK_COL,
-                "versionId", VERSION_ID,
-                "refTableVersions", pgTable.getVersionsTable(),
-                "uniqColumns", pkField + ", " + RECORD_HASH);
+        // Создаем версию columnsExpression с префиксом временной таблицы для использования в SELECT
+        String escapedTempTable = escapeName(tempTable);
+        String tempColumnsExpression = fields.stream()
+                .map(field -> escapedTempTable + "." + field)
+                .collect(Collectors.joining(","));
+
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("tempTbl", escapedTempTable);
+        placeholders.put("columnsExpression", columnsExpression);
+        placeholders.put("tempColumnsExpression", tempColumnsExpression);
+        placeholders.put("hashExpression", hashExpression);
+        placeholders.put("hash", RECORD_HASH);
+        placeholders.put("refTbl", pgTable.getName());
+        placeholders.put("pk", pkField);
+        placeholders.put("syncId", RECORD_PK_COL);
+        placeholders.put("versionId", VERSION_ID);
+        placeholders.put("refTableVersions", pgTable.getVersionsTable());
+        placeholders.put("uniqColumns", pkField + ", " + RECORD_HASH);
+
+        return placeholders;
     }
 
     private void deleteVersions(List<Long> ids,
                                 Integer versionId,
                                 PgTable pgTable) {
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("version_id", versionId);
+        if (ids.isEmpty()) {
+            return;
+        }
 
         Map<String, String> queryPlaceholders = Map.of(
                 "versionId", VERSION_ID,
                 "refTableVersions", pgTable.getVersionsTable());
 
-        ids.forEach(id -> {
-            params.put("id", id);
-            namedParameterJdbcTemplate.update(StringSubstitutor.replace("DELETE FROM {refTableVersions} " +
-                            "WHERE record_id = :id AND {versionId} = :version_id", queryPlaceholders, "{", "}"), params);
-        });
+        // Используем одиночный DELETE с ANY для оптимизации производительности
+        String query = StringSubstitutor.replace("DELETE FROM {refTableVersions} " +
+                "WHERE record_id = ANY(:ids) AND {versionId} = :version_id", queryPlaceholders, "{", "}");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", ids.toArray(new Long[0]));
+        params.put("version_id", versionId);
+
+        long startTime = System.currentTimeMillis();
+        int deleted = namedParameterJdbcTemplate.update(query, params);
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("Deleted {} version records in {} ms", deleted, duration);
     }
 
     private String getHashExpression(List<String> fields, String table) {
@@ -243,18 +321,38 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
     public void insertVersions(List<Long> ids,
                                Integer versionId,
                                PgTable pgTable) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("version_id", versionId);
+        if (ids.isEmpty()) {
+            return;
+        }
 
         Map<String, String> queryPlaceholders = Map.of(
                 "versionId", VERSION_ID,
                 "refTableVersions", pgTable.getVersionsTable());
 
-        ids.forEach(id -> {
-            params.put("id", id);
-            namedParameterJdbcTemplate.update(StringSubstitutor.replace("INSERT INTO {refTableVersions} (record_id, {versionId}) " +
-                    "VALUES (:id, :version_id)", queryPlaceholders, "{", "}"), params);
-        });
+        String query = StringSubstitutor.replace("INSERT INTO {refTableVersions} (record_id, {versionId}) " +
+                "VALUES (:id, :version_id)", queryPlaceholders, "{", "}");
+
+        // Разбиваем на батчи для предотвращения переполнения параметров и памяти
+        long startTime = System.currentTimeMillis();
+        int totalInserted = 0;
+
+        for (int i = 0; i < ids.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, ids.size());
+            List<Long> batchIds = ids.subList(i, end);
+
+            SqlParameterSource[] batch = batchIds.stream()
+                    .map(id -> new MapSqlParameterSource()
+                            .addValue("id", id)
+                            .addValue("version_id", versionId))
+                    .toArray(SqlParameterSource[]::new);
+
+            namedParameterJdbcTemplate.batchUpdate(query, batch);
+            totalInserted += batchIds.size();
+        }
+
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("Inserted {} version records in {} ms",
+                 totalInserted, duration);
     }
 
     @Override
