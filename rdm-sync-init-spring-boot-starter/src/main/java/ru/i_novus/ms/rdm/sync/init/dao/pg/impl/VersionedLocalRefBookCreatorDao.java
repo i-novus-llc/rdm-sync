@@ -59,8 +59,9 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
 
         // Добавление комментария к таблице версий
         pgTable.getTableDescription().ifPresent(tableDescription -> {
-            String versionTableComment = String.format("COMMENT ON TABLE %s IS 'Версии справочника \"%s\"';",
-                escapeName(versionsName), tableDescription);
+            String commentText = "Версии справочника \"" + tableDescription + "\"";
+            String versionTableComment = String.format("COMMENT ON TABLE %s IS %s;",
+                escapeName(versionsName), quoteLiteral(commentText));
             namedParameterJdbcTemplate.getJdbcTemplate().execute(versionTableComment);
         });
 

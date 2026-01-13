@@ -393,7 +393,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         return result;
     }
 
-    private static String quoteLiteral(String literal) {
+    protected static String quoteLiteral(String literal) {
         return literal == null ? "NULL" : ("'" + literal.replace("'", "''") + "'");
     }
 
