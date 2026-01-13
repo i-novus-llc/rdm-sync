@@ -37,4 +37,9 @@ public class SimpleVersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreat
         return Map.of(LOADED_VERSION_REF, "integer NOT NULL",
                 RECORD_SYS_COL, RECORD_SYS_COL_INFO);
     }
+
+    @Override
+    protected Map<String, String> getAdditionColumnsDescriptions(VersionMapping mapping) {
+        return Map.of(RECORD_SYS_COL, "Суррогатный первичный ключ");
+    }
 }
