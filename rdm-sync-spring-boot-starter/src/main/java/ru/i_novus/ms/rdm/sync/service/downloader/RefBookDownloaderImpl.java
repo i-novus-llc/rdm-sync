@@ -257,22 +257,26 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             List<FieldMapping> fieldMappings,
             boolean matchCase
     ) {
-        final FieldMapping fieldMapping = fieldMappings.stream()
+        final List<FieldMapping> matchingMappings = fieldMappings.stream()
                 .filter(mapping -> {
                     if (matchCase)
                         return mapping.getRdmField().equals(rdmField);
                     else
                         return mapping.getRdmField().equalsIgnoreCase(rdmField);
                 })
-                .findAny().orElse(null);
-        if (fieldMapping == null)
+                .collect(Collectors.toList());
+
+        if (matchingMappings.isEmpty())
             return null; // Поле не ведётся в системе
 
         RefBookStructure.Attribute attribute = newVersion.getStructure().getAttribute(rdmField);
         AttributeTypeEnum attributeType = attribute != null ? attribute.type() : null;
 
         Map<String, Object> mappedValue = new HashMap<>();
-        mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, fieldMapping, value));
+
+        for (FieldMapping fieldMapping : matchingMappings) {
+            mappedValue.put(fieldMapping.getSysField(), rdmMappingService.map(attributeType, fieldMapping, value));
+        }
 
         return mappedValue;
     }
