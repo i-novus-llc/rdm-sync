@@ -98,8 +98,9 @@ public class RdmClientSyncAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public RdmSyncDao rdmSyncDao() {
-        return new RdmSyncDaoImpl();
+    public RdmSyncDao rdmSyncDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                                 @Autowired(required = false) ru.i_novus.ms.rdm.sync.dao.TempTableCustomizer tempTableCustomizer) {
+        return new RdmSyncDaoImpl(namedParameterJdbcTemplate, tempTableCustomizer);
     }
 
     @Bean

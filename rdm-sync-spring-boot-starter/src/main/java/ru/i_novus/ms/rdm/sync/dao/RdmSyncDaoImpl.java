@@ -11,7 +11,6 @@ import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.Pair;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
-import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
 import ru.i_novus.ms.rdm.sync.api.mapping.LoadedVersion;
@@ -84,6 +82,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    private final TempTableCustomizer tempTableCustomizer;
+
+    public RdmSyncDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                          @Autowired(required = false) TempTableCustomizer tempTableCustomizer) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.tempTableCustomizer = tempTableCustomizer;
+    }
 
     @Override
     public List<VersionMapping> getVersionMappings() {
@@ -893,6 +899,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             getJdbcTemplate().execute(" ALTER TABLE " + escapedTempTable + " DROP COLUMN IF EXISTS  " + escapeName(sysPkColumn));
         }
         getJdbcTemplate().execute("CREATE UNIQUE INDEX ON " + escapedTempTable + "(" + escapeName(refPk) + ");");
+
+        if (tempTableCustomizer != null) {
+            tempTableCustomizer.customizeVersionTempTable(tempTableName, refTableName, getJdbcTemplate());
+        }
     }
 
     @Override
@@ -902,6 +912,9 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         String queryTemplate = "CREATE TABLE {tempTbl} AS TABLE {refTbl} WITH NO DATA; ALTER TABLE {tempTbl} ADD COLUMN diff_type VARCHAR;";
         getJdbcTemplate().execute(StringSubstitutor.replace(queryTemplate, Map.of("tempTbl", escapedTempTable, "refTbl", escapedRefTable),"{", "}"));
 
+        if (tempTableCustomizer != null) {
+            tempTableCustomizer.customizeDiffTempTable(tempTableName, refTableName, getJdbcTemplate());
+        }
     }
 
     @Override
