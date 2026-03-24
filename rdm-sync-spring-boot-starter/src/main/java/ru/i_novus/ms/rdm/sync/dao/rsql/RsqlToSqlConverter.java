@@ -153,19 +153,20 @@ public class RsqlToSqlConverter {
     }
 
     private static String convertSingleValueToSql(String value, String operator) {
-        if (isNumeric(value)) {
-            return value; // Числа без кавычек
-        } else if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-            return value; // Булевы значения без кавычек
-        } else if ("null".equalsIgnoreCase(value)) {
-            return "NULL"; // NULL значение
-        } else {
-            return "'" + value.replace("'", "''") + "'"; // Строки в кавычках
-        }
-    }
+        // FIX: Always quote values except true/false/null
+        // This fixes the VARCHAR = INTEGER bug in PostgreSQL
+        // PostgreSQL can automatically convert '123' to INTEGER when needed
 
-    private static boolean isNumeric(String str) {
-        return str.matches("-?\\d+(\\.\\d+)?");
+        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            return value; // Boolean values without quotes
+        } else if ("null".equalsIgnoreCase(value)) {
+            return "NULL"; // NULL value
+        } else {
+            // Always quote - works for both VARCHAR and INTEGER columns
+            // PostgreSQL: WHERE age = '25' automatically converts to INTEGER
+            // PostgreSQL: WHERE status = '0' works for VARCHAR
+            return "'" + value.replace("'", "''") + "'";
+        }
     }
 
 
