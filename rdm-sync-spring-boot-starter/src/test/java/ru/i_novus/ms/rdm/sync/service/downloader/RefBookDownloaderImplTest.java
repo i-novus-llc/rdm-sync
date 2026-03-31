@@ -144,7 +144,7 @@ class RefBookDownloaderImplTest {
         DownloadResult downloadResult = refBookDownloader.download("testCode", "1.0");
 
         Assert.assertEquals(DownloadResultType.DIFF, downloadResult.getType());
-        verify(dao, times(1)).createDiffTempDataTbl("temp_testCode_1_0", refBookTable);
+        verify(dao, times(1)).createDiffTempDataTbl("temp_testCode_1_0", refBookTable, "id");
         verify(dao, times(1)).insertDiffAsTempData("temp_testCode_1_0", List.of(rec2.getRow(), rec3.getRow()),List.of(rec1.getRow()), List.of(rec0.getRow()));
 
     }

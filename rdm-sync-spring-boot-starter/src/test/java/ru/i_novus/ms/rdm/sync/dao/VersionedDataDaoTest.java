@@ -168,7 +168,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
         String tempVersionedRef2 = "temp_versioned_ref2";
         rdmSyncDao.createDiffTempDataTbl(
                 tempVersionedRef2,
-                pgTable.getName().replace("\"", ""));
+                pgTable.getName().replace("\"", ""),
+                "num");
 
         List<Map<String, Object>> version2 = List.of(
                 Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),
@@ -212,7 +213,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
 
         rdmSyncDao.createDiffTempDataTbl(
                 tempVersionedRef3,
-                pgTable.getName().replace("\"", ""));
+                pgTable.getName().replace("\"", ""),
+                "num");
 
         version3 = List.of(
                 Map.of("name", "name1", "num", 1, "flag", true, "some_dt", firstVersionCreatedDt),

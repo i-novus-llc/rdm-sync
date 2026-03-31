@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 abstract class BaseTest {
 
     @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
+    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("rdm_sync")
             .withUsername("postgresql")
             .withPassword("postgresql");

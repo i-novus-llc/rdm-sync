@@ -1,7 +1,7 @@
 package ru.i_novus.ms.rdm.sync.dao;
 
+import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.util.Pair;
 import ru.i_novus.ms.rdm.sync.api.dao.SyncSource;
 import ru.i_novus.ms.rdm.sync.api.log.Log;
 import ru.i_novus.ms.rdm.sync.api.mapping.FieldMapping;
@@ -11,7 +11,6 @@ import ru.i_novus.ms.rdm.sync.api.model.SyncRefBook;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 
-import jakarta.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -164,8 +163,9 @@ public interface RdmSyncDao {
      * <p>
      * @param tempTableName наименование для временной таблицы
      * @param refTableName наименование таблицы, где лежат данные справочника
+     * @param pkField первичный ключ для создания индекса
      */
-    void createDiffTempDataTbl(String tempTableName, String refTableName);
+    void createDiffTempDataTbl(String tempTableName, String refTableName, String pkField);
 
     void insertVersionAsTempData(String tableName, List<Map<String, Object>> data);
 

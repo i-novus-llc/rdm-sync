@@ -350,6 +350,47 @@ public class UseCaseTest {
         final List<Map<String, Object>> deletedRows = getResultRows(deletedData);
         deletedRows.forEach(this::prepareRowToAssert);
         assertEquals(expectedDeletedData, new ObjectMapper().writeValueAsString(deletedRows));
+
+        // Загрузка третьей версии (diff: id=1 восстановлен, id=4 удалён).
+        if ("EK002".equals(refBookCode)) {
+            final String expectedV3Data = "[" +
+                    "{\"name_ru\":\"Красный_v3\",\"code_en\":\"red_v3\",\"id\":1,\"is_cold\":true}," +
+                    "{\"ref\":\"tab\",\"name_ru\":\"Голубой\",\"code_en\":\"blue\",\"id\":2,\"is_cold\":true}," +
+                    "{\"ref\":\"st\",\"name_ru\":\"желтый\",\"code_en\":\"yello\",\"id\":3,\"is_cold\":false}" +
+                    "]";
+            final String expectedV3DeletedData = "[" +
+                    "{\"deleted_ts\":\"2021-02-06T12:38:33\"," +
+                    "\"name_ru\":\"зеленый\",\"code_en\":\"green\",\"id\":4,\"is_cold\":false}" +
+                    "]";
+
+            final ResponseEntity<String> v3Response = performRefBookSync(refBookCode);
+            assertSyncResponse(v3Response);
+            String v3Version = "3";
+            waitVersionLoaded(refBookCode, v3Version);
+
+            // Проверка актуальных записей v3.
+            final Map<String, Object> v3Data = getDataByUrl(dataUrl + "?getDeleted=false");
+            assertEquals(3, getTotalElements(v3Data));
+
+            final List<Map<String, Object>> v3Rows = getResultRows(v3Data);
+            v3Rows.forEach(this::prepareRowToAssert);
+            assertEquals(expectedV3Data, dataToJsonMapper.writeValueAsString(v3Rows));
+
+            // id=1 восстановлен — deleted_ts должен быть null.
+            final Map<String, Object> restoredRow = getDataByUrl(dataUrl + "/1");
+            prepareRowToAssert(restoredRow);
+            assertEquals("Красный_v3", restoredRow.get("name_ru"));
+            assertEquals("red_v3", restoredRow.get("code_en"));
+            Assertions.assertNull(restoredRow.get("deleted_ts"));
+
+            // id=4 удалён.
+            final Map<String, Object> v3DeletedData = getDataByUrl(dataUrl + "?getDeleted=true");
+            assertEquals(1, getTotalElements(v3DeletedData));
+
+            final List<Map<String, Object>> v3DeletedRows = getResultRows(v3DeletedData);
+            v3DeletedRows.forEach(this::prepareRowToAssert);
+            assertEquals(expectedV3DeletedData, dataToJsonMapper.writeValueAsString(v3DeletedRows));
+        }
     }
 
     private int getTotalElements(Map<String, Object> result) {
@@ -494,17 +535,21 @@ public class UseCaseTest {
 
     private static void mockEK002(MockServerClient client) {
         final String refCode = "EK002";
-        int oldVersionId = 199;
-        int newVersionId = 286;
+        int v1Id = 199;
+        int v2Id = 286;
+        int v3Id = 350;
 
         RefBookMock.instanceOf(client, () -> loggingService)
                 .rdm(refCode)
                 .withGetByCodeAndVersion( "1", "EK002_version_1.json")
                 .withGetByCodeAndVersion( "2", "EK002_version_2.json")
-                .withData(oldVersionId, Map.of(0, "EK002_version_1_data.json"))
-                .withData(newVersionId, Map.of(0, "EK002_version_2_data.json"))
-                .withStructureDiff(oldVersionId, newVersionId, "empty_structure_diff.json")
-                .withDataDiff(oldVersionId, newVersionId, Map.of(0, "EK002_versions_data_diff.json"))
+                .withGetByCodeAndVersion( "3", "EK002_version_3.json")
+                .withData(v1Id, Map.of(0, "EK002_version_1_data.json"))
+                .withData(v2Id, Map.of(0, "EK002_version_2_data.json"))
+                .withStructureDiff(v1Id, v2Id, "empty_structure_diff.json")
+                .withDataDiff(v1Id, v2Id, Map.of(0, "EK002_versions_data_diff.json"))
+                .withStructureDiff(v2Id, v3Id, "empty_structure_diff.json")
+                .withDataDiff(v2Id, v3Id, Map.of(0, "EK002_versions_data_diff_v2_v3.json"))
                 .withVersions("EK002_versions.json")
                 .mock();
 
