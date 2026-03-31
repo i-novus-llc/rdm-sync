@@ -58,8 +58,8 @@ public class VersionedDataDaoTest extends BaseDaoTest {
     static class Config {
 
         @Bean
-        RdmSyncDao rdmSyncDao() {
-            return new RdmSyncDaoImpl();
+        RdmSyncDao rdmSyncDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+            return new RdmSyncDaoImpl(namedParameterJdbcTemplate, null);
         }
 
         @Bean

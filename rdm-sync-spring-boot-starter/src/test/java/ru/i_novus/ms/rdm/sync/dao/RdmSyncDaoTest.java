@@ -45,8 +45,8 @@ class RdmSyncDaoTest extends BaseDaoTest {
     @Configuration
     static class Config {
         @Bean
-        public RdmSyncDao rdmSyncDao() {
-            return new RdmSyncDaoImpl();
+        public RdmSyncDao rdmSyncDao(@Autowired org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+            return new RdmSyncDaoImpl(namedParameterJdbcTemplate, null);
         }
 
         @Bean
@@ -55,8 +55,8 @@ class RdmSyncDaoTest extends BaseDaoTest {
         }
 
         @Bean
-        public VersionMappingService versionMappingService() {
-            return new VersionMappingServiceImpl(rdmSyncDao());
+        public VersionMappingService versionMappingService(@Autowired org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+            return new VersionMappingServiceImpl(rdmSyncDao(namedParameterJdbcTemplate));
         }
     }
 

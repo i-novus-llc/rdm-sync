@@ -374,7 +374,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
         updateParams.put("source_code", versionMapping.getSource());
         updateParams.put("sync_type", versionMapping.getType().toString());
         updateParams.put("name", versionMapping.getRefBookName());
-        updateParams.put("range", versionMapping.getRange().getRange());
+        updateParams.put("range", Objects.isNull(versionMapping.getRange()) ? null : versionMapping.getRange().getRange());
         namedParameterJdbcTemplate.update(updateRefbook, updateParams);
     }
 
@@ -382,7 +382,7 @@ abstract class BaseLocalRefBookCreatorDao implements LocalRefBookCreatorDao {
 
         Map<String, Object> result = new HashMap<>(6);
         result.put("code", versionMapping.getCode());
-        result.put("version", versionMapping.getRange().getRange());
+        result.put("version", Objects.isNull(versionMapping.getRange()) ? null : versionMapping.getRange().getRange());
         result.put("mapping_version", versionMapping.getMappingVersion());
         result.put("sys_table", versionMapping.getTable());
         result.put("unique_sys_field", versionMapping.getPrimaryField());

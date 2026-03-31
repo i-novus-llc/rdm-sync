@@ -57,8 +57,10 @@ public class LocalRdmDataServiceImplV2 implements LocalRdmDataServiceV2 {
         if (page == null) page = 0;
         if (size == null) size = 10;
 
+        String filterSql = RsqlToSqlConverter.convertToSql(rsqlFilter);
         VersionedLocalDataCriteria criteria = new VersionedLocalDataCriteria(refBookCode, versionMapping.getTable(),
                 versionMapping.getPrimaryField(), size, page * size, null, version);
+        criteria.setFilterSql(filterSql);
         if (syncRefBook.getType().equals(SyncTypeEnum.VERSIONED)) {
             return versionedDataDao.getData(criteria);
         } else {
