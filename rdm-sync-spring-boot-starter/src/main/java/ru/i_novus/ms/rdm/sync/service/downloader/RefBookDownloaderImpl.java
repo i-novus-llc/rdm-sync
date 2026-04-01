@@ -150,7 +150,7 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
             return downloadVersion(refBookVersion,  tempTableName, versionMapping, fieldMappings);
         }
 
-        rdmSyncDao.createDiffTempDataTbl(tempTableName, versionMapping.getTable());
+        rdmSyncDao.createDiffTempDataTbl(tempTableName, versionMapping.getTable(), versionMapping.getPrimaryField());
 
         final RetryingPageIterator<RowDiff> iter = new RetryingPageIterator<>(
                 new PageIterator<>(criteria -> syncSourceService.getDiff(criteria).getRows(), diffCriteria, true),

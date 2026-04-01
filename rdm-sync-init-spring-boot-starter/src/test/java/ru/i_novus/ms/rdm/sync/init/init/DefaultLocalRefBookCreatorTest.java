@@ -4,7 +4,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
@@ -28,7 +28,7 @@ import java.util.Map;
 @Sql(scripts = {"/test-source.sql", "/doc_type.sql"})
 abstract class DefaultLocalRefBookCreatorTest {
 
-    @MockBean
+    @MockitoBean
     RefBookDescriptionService refBookDescriptionService;
 
     @TestConfiguration
@@ -39,7 +39,7 @@ abstract class DefaultLocalRefBookCreatorTest {
     @EnableConfigurationProperties({RdmClientSyncLiquibaseParameters.class})
     static class Config {
 
-        @MockBean
+        @MockitoBean
         VersionMappingService versionMappingService;
 
 
@@ -61,7 +61,7 @@ abstract class DefaultLocalRefBookCreatorTest {
     }
 
     @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
+    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("rdm_sync")
             .withUsername("postgresql")
             .withPassword("postgresql");

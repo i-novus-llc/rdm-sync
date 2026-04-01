@@ -1,0 +1,139 @@
+{
+  "rows": {
+    "content": [
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "newValue": 1,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "newValue": true,
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "red_v3",
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "newValue": "Красный_v3",
+            "status": "INSERTED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "status": "INSERTED"
+          }
+        ],
+        "status": "INSERTED"
+      },
+      {
+        "values": [
+          {
+            "field": {
+              "id": "IntegerField",
+              "name": "id",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "bigint"
+            },
+            "oldValue": 4,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "BooleanField",
+              "name": "is_cold",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "boolean"
+            },
+            "oldValue": false,
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "code_en",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "green",
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "StringField",
+              "name": "name_ru",
+              "unique": false,
+              "required": false,
+              "searchEnabled": false,
+              "type": "character varying"
+            },
+            "oldValue": "зеленый",
+            "status": "DELETED"
+          },
+          {
+            "field": {
+              "id": "ReferenceField",
+              "name": "ref",
+              "unique": false,
+              "required": false,
+              "searchEnabled": true,
+              "type": "jsonb"
+            },
+            "status": "DELETED"
+          }
+        ],
+        "status": "DELETED"
+      }
+    ],
+    "totalElements": 2,
+    "sort": []
+  },
+  "newAttributes": [],
+  "oldAttributes": [],
+  "updatedAttributes": []
+}

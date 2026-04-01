@@ -494,7 +494,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
                 Map.of("ID", 3, "name", "name3", "some_dt", LocalDate.of(2021, 1, 1), "flag", true),
                 Map.of("ID", 4, "name", "name4", "some_dt", LocalDate.of(2021, 1, 2), "flag", false)
         );
-        rdmSyncDao.createDiffTempDataTbl(tempTbl, refTbl);
+        rdmSyncDao.createDiffTempDataTbl(tempTbl, refTbl, "ID");
         List<Map<String, Object>> updatedData = singletonList(Map.of("ID", 1, "name", "name111", "some_dt", LocalDate.of(2021, 1, 1), "flag", false));
         List<Map<String, Object>> deletedData = singletonList(Map.of("ID", 2, "name", "name2", "some_dt", LocalDate.of(2021, 1, 2), "flag", false));
         rdmSyncDao.insertDiffAsTempData(
@@ -571,7 +571,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         //теперь тоже самое для diff
 
         String tempDiffTbl = "diff_temp_tbl_with_natural_pk";
-        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl);
+        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl, "ID");
 
         rdmSyncDao.insertDiffAsTempData(tempDiffTbl, new ArrayList<>(), new ArrayList<>(), rows);
         rdmSyncDao.migrateDiffTempData(tempDiffTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
@@ -579,7 +579,7 @@ class RdmSyncDaoTest extends BaseDaoTest {
         assertTrue(rdmSyncDao.getData(criteria).getContent().isEmpty());
 
         rdmSyncDao.dropTable(tempDiffTbl);
-        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl);
+        rdmSyncDao.createDiffTempDataTbl(tempDiffTbl, refTbl, "ID");
 
         rdmSyncDao.insertDiffAsTempData(tempDiffTbl, rows, new ArrayList<>(), new ArrayList<>() );
         rdmSyncDao.migrateDiffTempData(tempDiffTbl, refTbl, "ID", DELETED_FIELD_COL, fields, LocalDateTime.now());
