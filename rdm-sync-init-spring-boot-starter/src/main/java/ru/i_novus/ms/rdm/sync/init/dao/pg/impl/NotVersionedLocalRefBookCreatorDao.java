@@ -28,6 +28,11 @@ public class NotVersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorD
     }
 
     @Override
+    protected Map<String, String> getAdditionColumnsDescriptions(VersionMapping mapping) {
+        return Map.of(mapping.getSysPkColumn(), "Суррогатный первичный ключ");
+    }
+
+    @Override
     protected void customizeTable(PgTable pgTable, VersionMapping mapping, List<FieldMapping> fieldMappings) {
 
         String addUniqueConstraint = "ALTER TABLE {schema}.{table} ADD CONSTRAINT {constraint} UNIQUE({column})";

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="202601131000_update_version_table_comment" author="stabakaeva" dbms="postgresql">
+        <sql>
+            COMMENT ON TABLE rdm_sync.version IS 'Связь версий справочника и состава полей';
+        </sql>
+    </changeSet>
+
+    <changeSet id="202601131000_add_refbook_source_id_constraint" author="stabakaeva" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists schemaName="rdm_sync" foreignKeyName="refbook_source_id_fk"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE rdm_sync.refbook
+            ADD CONSTRAINT refbook_source_id_fk
+            FOREIGN KEY (source_id) REFERENCES rdm_sync.source(id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
