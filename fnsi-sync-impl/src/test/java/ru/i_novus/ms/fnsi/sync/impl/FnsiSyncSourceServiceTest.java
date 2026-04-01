@@ -322,6 +322,40 @@ class FnsiSyncSourceServiceTest {
     }
 
     @Test
+    void testGetDiffWithIncompleteData() throws URISyntaxException {
+
+        String oid = "1.2.643.5.1.13.13.11.1473";
+
+        compareMockServer(
+                oid,
+                LocalDateTime.of(2023, 1, 1, 10, 0),
+                LocalDateTime.of(2023, 3, 1, 10, 0),
+                new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.11.1473_incomplete_diff.json")
+        );
+        versionsMockServer(oid, new ClassPathResource("/fnsi_test_responses/1.2.643.5.1.13.13.11.1473_versions.json"));
+
+        final VersionsDiffCriteria versionsDiffCriteria = new VersionsDiffCriteria(
+                oid,
+                "1.3",
+                "1.2",
+                Set.of("ID", "FULLNAME"),
+                new RefBookStructure(
+                        emptyList(),
+                        List.of("ID"),
+                        Set.of(
+                                new RefBookStructure.Attribute("ID", INTEGER, "Идентификатор"),
+                                new RefBookStructure.Attribute("FULLNAME", STRING, "Наименование")
+                        )
+                )
+        );
+        versionsDiffCriteria.setPageSize(200);
+
+        VersionsDiff diff = syncSourceService.getDiff(versionsDiffCriteria);
+        assertFalse(diff.isStructureChanged());
+        assertTrue(diff.isDiffInapplicable());
+    }
+
+    @Test
     void testGetVersions() throws URISyntaxException {
 
         String oid = "1.2.643.5.1.13.2.1.1.725";
