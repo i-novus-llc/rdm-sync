@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FnsiSyncSourceService implements SyncSourceService {
 
@@ -137,12 +136,17 @@ public class FnsiSyncSourceService implements SyncSourceService {
             return getErrorDiff(jsonNode);
         }
         if (!"null".equals(jsonNode.get("fields").asText().trim())) {
+            logger.info("structure of refbook {} changed between versions {} and {}, falling back to full version download",
+                    criteria.getRefBookCode(), criteria.getOldVersion(), criteria.getNewVersion());
             return VersionsDiff.structureChangedInstance();
         }
         JsonNode diffsNode = jsonNode.get("data").get("list");
         int total = jsonNode.get("data").get("total").intValue();
         List<RowDiff> rowDiffList = new ArrayList<>();
-        diffsNode.elements().forEachRemaining(diffNode -> {
+        List<String> primaries = criteria.getNewVersionStructure().getPrimaries();
+        Iterator<JsonNode> diffIterator = diffsNode.elements();
+        while (diffIterator.hasNext()) {
+            JsonNode diffNode = diffIterator.next();
             Set<RefBookStructure.Attribute> attributes = criteria.getNewVersionStructure().getAttributes();
             Map<String, Object> row = new HashMap<>();
             for (RefBookStructure.Attribute attribute : attributes) {
@@ -150,14 +154,19 @@ public class FnsiSyncSourceService implements SyncSourceService {
                     continue;
                 }
                 JsonNode nodeValue = diffNode.get(attribute.code());
-                if (nodeValue.asText().trim().equals("null")) {
+                if (nodeValue == null || nodeValue.asText().trim().equals("null") || nodeValue.asText().trim().isEmpty()) {
                     continue;
                 }
                 row.put(attribute.code(), attribute.type().castValue(nodeValue.asText()));
             }
+            if (primaries != null && primaries.stream().anyMatch(pk -> !row.containsKey(pk))) {
+                logger.warn("diff for {} contains row without primary key, falling back to full version download", criteria.getRefBookCode());
+                return VersionsDiff.incompleteDataInstance();
+            }
+
             RowDiff rowDiff = new RowDiff(getRowDiffStatusEnum(diffNode.get("operation").asText()), row);
             rowDiffList.add(rowDiff);
-        });
+        }
         return VersionsDiff.dataChangedInstance(new PageImpl<>(rowDiffList, criteria, total));
     }
 

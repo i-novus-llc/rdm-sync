@@ -1,0 +1,24 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "total": 2,
+  "list": [
+    {
+      "version": "1.3",
+      "createDate": "01.03.2023",
+      "publishDate": "01.03.2023 10:00",
+      "lastUpdate": "01.03.2023 10:00",
+      "releaseNotes": "",
+      "archive": false
+    },
+    {
+      "version": "1.2",
+      "createDate": "01.01.2023",
+      "publishDate": "01.01.2023 10:00",
+      "lastUpdate": "01.01.2023 10:00",
+      "releaseNotes": "",
+      "archive": true
+    }
+  ]
+}

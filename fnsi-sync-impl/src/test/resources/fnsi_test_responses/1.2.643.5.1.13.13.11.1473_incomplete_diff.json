@@ -1,0 +1,20 @@
+{
+  "result": "OK",
+  "resultText": null,
+  "resultCode": null,
+  "fields": null,
+  "keys": null,
+  "data": {
+    "total": 1,
+    "list": [
+      {
+        "FULLNAME": "",
+        "operation": "DELETE",
+        "ANATOM_LOC": null,
+        "METHOD": null,
+        "SNOMED_CT": null,
+        "TYPE_PAT": null
+      }
+    ]
+  }
+}
