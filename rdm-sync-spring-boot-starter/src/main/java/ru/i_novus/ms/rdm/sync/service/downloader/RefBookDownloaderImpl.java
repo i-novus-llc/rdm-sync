@@ -145,8 +145,8 @@ public class RefBookDownloaderImpl implements RefBookDownloader {
         );
         diffCriteria.setPageSize(maxSize);
 
-        if(syncSourceService.getDiff(diffCriteria).isStructureChanged()) {
-            logger.info("structure refbook {} version {} was changed, downloading full version", refBookVersion.getCode(), refBookVersion.getVersion());
+        if(syncSourceService.getDiff(diffCriteria).isDiffInapplicable()) {
+            logger.info("diff for refbook {} version {} is inapplicable, downloading full version", refBookVersion.getCode(), refBookVersion.getVersion());
             return downloadVersion(refBookVersion,  tempTableName, versionMapping, fieldMappings);
         }
 
