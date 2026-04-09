@@ -55,6 +55,34 @@
       "hasStructureConflict": false,
       "lastHasConflict": false,
       "draft": false
+    },
+    {
+      "id": 350,
+      "optLockValue": 5,
+      "refBookId": 173,
+      "code": "EK002",
+      "type": "DEFAULT",
+      "version": "3",
+      "fromDate": "2021-02-06T12:38:33",
+      "status": "PUBLISHED",
+      "archived": false,
+      "passport": {
+        "name": "Цвета",
+        "shortName": "Цвета"
+      },
+      "editDate": "2021-02-06T12:38:33",
+      "removable": false,
+      "lastPublishedVersionId": 350,
+      "lastPublishedVersion": "3",
+      "lastPublishedVersionFromDate": "2021-02-06T12:38:33",
+      "hasPrimaryAttribute": true,
+      "hasReferrer": false,
+      "hasDataConflict": false,
+      "hasUpdatedConflict": false,
+      "hasAlteredConflict": false,
+      "hasStructureConflict": false,
+      "lastHasConflict": false,
+      "draft": false
     }
   ]
 }

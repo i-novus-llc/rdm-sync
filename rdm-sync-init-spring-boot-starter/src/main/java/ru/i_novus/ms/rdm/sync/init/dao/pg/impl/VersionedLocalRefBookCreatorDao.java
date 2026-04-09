@@ -57,6 +57,14 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
         String versionsName = name + "_versions";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(String.format(query, escapeName(versionsName), pgTable.getName()));
 
+        // Добавление комментария к таблице версий
+        pgTable.getTableDescription().ifPresent(tableDescription -> {
+            String commentText = "Версии справочника \"" + tableDescription + "\"";
+            String versionTableComment = String.format("COMMENT ON TABLE %s IS %s;",
+                escapeName(versionsName), quoteLiteral(commentText));
+            namedParameterJdbcTemplate.getJdbcTemplate().execute(versionTableComment);
+        });
+
         //индексы по внешним ключам
         indexName = versionsName.substring(versionsName.indexOf(".") + 1) + "_record_id_ix";
         namedParameterJdbcTemplate.getJdbcTemplate().execute(
@@ -73,6 +81,11 @@ public class VersionedLocalRefBookCreatorDao extends BaseLocalRefBookCreatorDao 
     protected Map<String, String> getAdditionColumns(VersionMapping mapping) {
         return Map.of(RECORD_PK_COL, RECORD_PK_COL_TYPE,
                 RECORD_HASH, "TEXT NOT NULL");
+    }
+
+    @Override
+    protected Map<String, String> getAdditionColumnsDescriptions(VersionMapping mapping) {
+        return Map.of(RECORD_PK_COL, "Суррогатный первичный ключ");
     }
 
     public static String escapeName(String name) {
