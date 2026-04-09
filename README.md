@@ -615,6 +615,18 @@ rdm-sync.import.from_rdm.cron=0 0/10 * * * ?
 - begin_dt=notnull=null
 - name=like=Скорая*
 
+### Приведение поля к строковому типу (::text)
+
+Если поле в таблице имеет числовой тип (например, `integer`), а сравнение нужно выполнить как строковое (например, `ILIKE`), используйте суффикс `::text` после имени поля. При конвертации оно будет обёрнуто в `CAST(поле AS TEXT)`.
+
+Синтаксис: `<поле>::text<оператор><значение>`
+
+Примеры:
+- `stage::text=ilike=*1*` → `CAST(stage AS TEXT) ILIKE '%1%'`
+- `code::text==ABC` → `CAST(code AS TEXT) = 'ABC'`
+- `stage::text=in=(1,2,3)` → `CAST(stage AS TEXT) IN ('1','2','3')`
+- `stage::text=ilike=*1*;name==John` → `(CAST(stage AS TEXT) ILIKE '%1%' AND name = 'John')`
+
 Ссылка на используемую библиотеку: https://github.com/jirutka/rsql-parser/blob/master/README.adoc
 
 ## Отслеживание событий
