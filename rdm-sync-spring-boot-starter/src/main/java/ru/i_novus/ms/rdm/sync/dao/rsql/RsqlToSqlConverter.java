@@ -10,6 +10,11 @@ import java.util.stream.Collectors;
 
 public class RsqlToSqlConverter {
 
+    // Суффикс-маркер для полей с ::text-кастом (field::text → field__CAST_TEXT)
+    private static final String CAST_TEXT_MARKER = "__CAST_TEXT";
+    // Паттерн для поиска field::text в RSQL-строке до парсинга
+    private static final Pattern CAST_TEXT_PATTERN = Pattern.compile("(\\w+)::text");
+
     private static final Map<String, String> OPERATOR_MAP = Map.ofEntries(
             Map.entry("==", "="),
             Map.entry("!=", "<>"),
@@ -37,8 +42,12 @@ public class RsqlToSqlConverter {
         }
 
         try {
-            // Парсим RSQL
-            Node rootNode = CustomRsqlParser.parse(rsqlFilter);
+            // Заменяем field::text на field__CAST_TEXT до парсинга,
+            // т.к. RSQL-парсер не допускает ':' в именах полей
+            String preprocessed = CAST_TEXT_PATTERN.matcher(rsqlFilter)
+                    .replaceAll(m -> m.group(1) + CAST_TEXT_MARKER);
+
+            Node rootNode = CustomRsqlParser.parse(preprocessed);
             return convertNodeToSql(rootNode);
 
         } catch (RSQLParserException e) {
@@ -56,7 +65,11 @@ public class RsqlToSqlConverter {
     }
 
     private static String convertComparisonNode(ComparisonNode node) {
-        String field = node.getSelector();
+        String rawField = node.getSelector();
+        // Если поле помечено маркером ::text — оборачиваем в CAST(field AS TEXT)
+        String field = rawField.endsWith(CAST_TEXT_MARKER)
+                ? "CAST(" + rawField.substring(0, rawField.length() - CAST_TEXT_MARKER.length()) + " AS TEXT)"
+                : rawField;
         String operator = node.getOperator().getSymbol();
         List<String> arguments = node.getArguments();
 

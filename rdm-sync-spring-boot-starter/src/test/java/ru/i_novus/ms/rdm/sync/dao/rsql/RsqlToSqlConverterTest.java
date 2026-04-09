@@ -539,6 +539,101 @@ class RsqlToSqlConverterTest {
         );
     }
 
+    // ==================== CAST TO TEXT (::text) ====================
+
+    /**
+     * Test ::text cast with equals operator.
+     * Integer field compared as text: stage::text==25 → CAST(stage AS TEXT) = '25'
+     */
+    @Test
+    void convertToSql_withCastToTextAndEqualsOperator_shouldWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text==25");
+
+        assertEquals("CAST(stage AS TEXT) = '25'", result);
+    }
+
+    /**
+     * Test ::text cast with ILIKE operator — основной кейс из задачи.
+     * stage::text=ilike=*1* → CAST(stage AS TEXT) ILIKE '%1%'
+     */
+    @Test
+    void convertToSql_withCastToTextAndIlikeOperator_shouldWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text=ilike=*1*");
+
+        assertEquals("CAST(stage AS TEXT) ILIKE '%1%'", result);
+    }
+
+    /**
+     * Test ::text cast with LIKE operator.
+     */
+    @Test
+    void convertToSql_withCastToTextAndLikeOperator_shouldWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("code::text=like=ABC*");
+
+        assertEquals("CAST(code AS TEXT) LIKE 'ABC%'", result);
+    }
+
+    /**
+     * Test ::text cast with not-equals operator.
+     */
+    @Test
+    void convertToSql_withCastToTextAndNotEqualsOperator_shouldWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text!=0");
+
+        assertEquals("CAST(stage AS TEXT) <> '0'", result);
+    }
+
+    /**
+     * Test ::text cast with IN operator.
+     */
+    @Test
+    void convertToSql_withCastToTextAndInOperator_shouldWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text=in=(1,2,3)");
+
+        assertEquals("CAST(stage AS TEXT) IN ('1','2','3')", result);
+    }
+
+    /**
+     * Test ::text cast combined with other conditions via AND.
+     * stage::text=ilike=*1*;name==John → (CAST(stage AS TEXT) ILIKE '%1%' AND name = 'John')
+     */
+    @Test
+    void convertToSql_withCastToTextCombinedWithAnd_shouldApplyCastOnlyToAnnotatedField() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text=ilike=*1*;name==John");
+
+        assertEquals("(CAST(stage AS TEXT) ILIKE '%1%' AND name = 'John')", result);
+    }
+
+    /**
+     * Test ::text cast combined with OR.
+     */
+    @Test
+    void convertToSql_withCastToTextCombinedWithOr_shouldApplyCastOnlyToAnnotatedField() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text==1,status==active");
+
+        assertEquals("(CAST(stage AS TEXT) = '1' OR status = 'active')", result);
+    }
+
+    /**
+     * Test multiple fields with ::text in one expression.
+     */
+    @Test
+    void convertToSql_withMultipleCastToTextFields_shouldWrapEachFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage::text==1;code::text=like=ABC*");
+
+        assertEquals("(CAST(stage AS TEXT) = '1' AND CAST(code AS TEXT) LIKE 'ABC%')", result);
+    }
+
+    /**
+     * Обратная совместимость: поле без ::text не должно быть обёрнуто в CAST.
+     */
+    @Test
+    void convertToSql_withoutCastToText_shouldNotWrapFieldInCast() {
+        String result = RsqlToSqlConverter.convertToSql("stage==1");
+
+        assertEquals("stage = '1'", result);
+    }
+
     // ==================== REAL-WORLD SCENARIOS ====================
 
     /**
