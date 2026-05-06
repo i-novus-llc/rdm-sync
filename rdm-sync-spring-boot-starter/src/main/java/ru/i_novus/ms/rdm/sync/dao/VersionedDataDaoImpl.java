@@ -364,9 +364,12 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 escapeName(criteria.getSchemaTable()), escapeName(name), escapeName(criteria.getSchemaTable()), escapeName(name));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + VERSION_ID + ("=(SELECT id from rdm_sync.loaded_version WHERE code = :code AND version = :version)");
-            args.put("code", criteria.getRefBookCode());
-            args.put("version", criteria.getVersion());
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(criteria.getRefBookCode(), criteria.getVersion());
+            if (loadedVersion == null) {
+                return Page.empty();
+            }
+            sql = sql + " AND " + VERSION_ID + " = :versionId";
+            args.put("versionId", loadedVersion.getId());
         }
 
 
