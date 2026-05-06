@@ -364,9 +364,12 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
                 escapeName(criteria.getSchemaTable()), escapeName(name), escapeName(criteria.getSchemaTable()), escapeName(name));
 
         if (criteria.getVersion() != null) {
-            sql = sql + " AND " + VERSION_ID + ("=(SELECT id from rdm_sync.loaded_version WHERE code = :code AND version = :version)");
-            args.put("code", criteria.getRefBookCode());
-            args.put("version", criteria.getVersion());
+            LoadedVersion loadedVersion = rdmSyncDao.getLoadedVersion(criteria.getRefBookCode(), criteria.getVersion());
+            if (loadedVersion == null) {
+                return Page.empty();
+            }
+            sql = sql + " AND " + VERSION_ID + " = :versionId";
+            args.put("versionId", loadedVersion.getId());
         }
 
 
@@ -403,9 +406,12 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
         }
 
-        sql += String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
-
         sql = "SELECT * " + (selectSubQuery != null ? ", " + selectSubQuery + " " : "") + sql;
+
+        sql = "WITH _data AS MATERIALIZED (" + sql + ")\n" +
+                "SELECT * FROM _data" +
+                (limit != 1 ? String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk())) : "") +
+                String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
 
         if (log.isDebugEnabled()) {
             log.debug("getData0 sql:\n{}\n binding args:\n{}\n.", sql, args);
