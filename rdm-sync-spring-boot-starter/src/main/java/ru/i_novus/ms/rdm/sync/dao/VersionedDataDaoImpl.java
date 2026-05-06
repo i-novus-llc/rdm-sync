@@ -399,13 +399,13 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             return Page.empty();
 
         int limit = dataCriteria.getLimit();
-        if (limit != 1) {
-            sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
-        }
-
-        sql += String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
 
         sql = "SELECT * " + (selectSubQuery != null ? ", " + selectSubQuery + " " : "") + sql;
+
+        sql = "WITH _data AS MATERIALIZED (" + sql + ")\n" +
+                "SELECT * FROM _data" +
+                (limit != 1 ? String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk())) : "") +
+                String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
 
         if (log.isDebugEnabled()) {
             log.debug("getData0 sql:\n{}\n binding args:\n{}\n.", sql, args);
