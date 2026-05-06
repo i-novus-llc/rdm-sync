@@ -399,6 +399,9 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             return Page.empty();
 
         int limit = dataCriteria.getLimit();
+        if (limit != 1) {
+            sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
+        }
 
         sql = "SELECT * " + (selectSubQuery != null ? ", " + selectSubQuery + " " : "") + sql;
 
