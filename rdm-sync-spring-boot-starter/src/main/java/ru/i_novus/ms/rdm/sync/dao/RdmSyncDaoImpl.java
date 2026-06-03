@@ -720,8 +720,14 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
             return Page.empty();
 
         int limit = dataCriteria.getLimit();
+        List<Sort.Order> sortOrders = dataCriteria.getSortOrders();
         if (limit != 1) {
-            sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
+            String orderBy = sortOrders.isEmpty()
+                    ? addDoubleQuotes(dataCriteria.getPk())
+                    : sortOrders.stream()
+                            .map(o -> addDoubleQuotes(o.getProperty()) + " " + o.getDirection().name())
+                            .collect(joining(", "));
+            sql += String.format("%n ORDER BY %s ", orderBy);
         }
 
         sql += String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
@@ -752,7 +758,10 @@ public class RdmSyncDaoImpl implements RdmSyncDao {
         final RestCriteria restCriteria = new DataCriteria();
         restCriteria.setPageNumber(dataCriteria.getOffset() / limit);
         restCriteria.setPageSize(limit);
-        restCriteria.setOrders(Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(toList()));
+        List<Sort.Order> effectiveOrders = sortOrders.isEmpty()
+                ? Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(toList())
+                : sortOrders;
+        restCriteria.setOrders(effectiveOrders);
 
         return new PageImpl<>(result, restCriteria, count);
     }

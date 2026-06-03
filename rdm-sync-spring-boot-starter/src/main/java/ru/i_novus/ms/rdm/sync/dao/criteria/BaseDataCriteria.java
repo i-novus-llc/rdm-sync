@@ -1,7 +1,9 @@
 package ru.i_novus.ms.rdm.sync.dao.criteria;
 
+import org.springframework.data.domain.Sort;
 import ru.i_novus.ms.rdm.sync.model.filter.FieldFilter;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class BaseDataCriteria {
@@ -12,6 +14,7 @@ public abstract class BaseDataCriteria {
     private final int offset;
     private final List<FieldFilter> filters;
     private String filterSql;  //todo зарефакторить без явной завязки на sql
+    private List<Sort.Order> sortOrders = Collections.emptyList();
 
     public BaseDataCriteria(String schemaTable, String pk, int limit, int offset, List<FieldFilter> filters) {
 
@@ -48,5 +51,13 @@ public abstract class BaseDataCriteria {
 
     public void setFilterSql(String filterSql) {
         this.filterSql = filterSql;
+    }
+
+    public List<Sort.Order> getSortOrders() {
+        return sortOrders;
+    }
+
+    public void setSortOrders(List<Sort.Order> sortOrders) {
+        this.sortOrders = sortOrders != null ? sortOrders : Collections.emptyList();
     }
 }
