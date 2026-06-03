@@ -18,8 +18,12 @@ import ru.i_novus.ms.rdm.sync.dao.VersionedDataDao;
 import ru.i_novus.ms.rdm.sync.dao.criteria.LocalDataCriteria;
 import ru.i_novus.ms.rdm.sync.dao.criteria.VersionedLocalDataCriteria;
 
+import org.springframework.data.domain.Sort;
+import ru.i_novus.ms.rdm.sync.api.exception.RdmSyncException;
+
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,7 +77,7 @@ class LocalRdmDataServiceImplV2Test {
 
         // Act
         Page<Map<String, Object>> result = service.getData(
-                TEST_REF_BOOK_CODE, false, 1, 20, null, null
+                TEST_REF_BOOK_CODE, false, 1, 20, null, null, null
         );
 
         // Assert
@@ -99,7 +103,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act
-        service.getData(TEST_REF_BOOK_CODE, false, null, null, null, null);
+        service.getData(TEST_REF_BOOK_CODE, false, null, null, null, null, null);
 
         // Assert: Verify that defaults were applied in the criteria
         verify(dao).getData(criteriaCaptor.capture());
@@ -126,7 +130,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act
-        service.getData(TEST_REF_BOOK_CODE, true, 0, 10, null, null);
+        service.getData(TEST_REF_BOOK_CODE, true, 0, 10, null, null, null);
 
         // Assert: Verify deleted criteria is properly set
         verify(dao).getData(criteriaCaptor.capture());
@@ -154,7 +158,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act
-        service.getData(TEST_REF_BOOK_CODE, false, 0, 10, rsqlFilter, null);
+        service.getData(TEST_REF_BOOK_CODE, false, 0, 10, rsqlFilter, null, null);
 
         // Assert: Verify filter was applied to criteria
         verify(dao).getData(criteriaCaptor.capture());
@@ -175,7 +179,7 @@ class LocalRdmDataServiceImplV2Test {
 
         // Act & Assert
         RdmSyncException exception = assertThrows(RdmSyncException.class, () ->
-                service.getData(TEST_REF_BOOK_CODE, false, 0, 10, null, null)
+                service.getData(TEST_REF_BOOK_CODE, false, 0, 10, null, null, null)
         );
 
         assertTrue(exception.getMessage().contains("RefBook with code '" + TEST_REF_BOOK_CODE + "' is not maintained in system."));
@@ -198,7 +202,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act: page=2, size=20 should result in offset=40
-        service.getData(TEST_REF_BOOK_CODE, false, 2, 20, null, null);
+        service.getData(TEST_REF_BOOK_CODE, false, 2, 20, null, null, null);
 
         // Assert
         verify(dao).getData(criteriaCaptor.capture());
@@ -228,7 +232,7 @@ class LocalRdmDataServiceImplV2Test {
 
         // Act
         Page<Map<String, Object>> result = service.getVersionedData(
-                TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null
+                TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null, null
         );
 
         // Assert
@@ -258,7 +262,7 @@ class LocalRdmDataServiceImplV2Test {
 
         // Act
         Page<Map<String, Object>> result = service.getVersionedData(
-                TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null
+                TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null, null
         );
 
         // Assert
@@ -289,7 +293,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act
-        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, null, null, null, null);
+        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, null, null, null, null, null);
 
         // Assert
         verify(versionedDataDao).getData(criteriaCaptor.capture());
@@ -321,7 +325,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act
-        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, rsqlFilter, null);
+        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, rsqlFilter, null, null);
 
         // Assert
         verify(versionedDataDao).getData(criteriaCaptor.capture());
@@ -346,7 +350,7 @@ class LocalRdmDataServiceImplV2Test {
 
         // Act & Assert
         RdmSyncException exception = assertThrows(RdmSyncException.class, () ->
-                service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null)
+                service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 0, 10, null, null, null)
         );
 
         assertTrue(exception.getMessage().contains("RefBook with code '" + TEST_REF_BOOK_CODE + "' is not maintained in system."));
@@ -373,7 +377,7 @@ class LocalRdmDataServiceImplV2Test {
                 .thenReturn(expectedPage);
 
         // Act: page=3, size=15 should result in offset=45
-        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 3, 15, null, null);
+        service.getVersionedData(TEST_REF_BOOK_CODE, TEST_VERSION, 3, 15, null, null, null);
 
         // Assert
         verify(versionedDataDao).getData(criteriaCaptor.capture());
@@ -381,6 +385,59 @@ class LocalRdmDataServiceImplV2Test {
 
         assertEquals(15, criteria.getLimit());
         assertEquals(45, criteria.getOffset()); // page * size = 3 * 15 = 45
+    }
+
+    @Test
+    void getData_withSort_shouldPassSortOrdersToCriteria() {
+        VersionMapping versionMapping = createVersionMapping();
+        Page<Map<String, Object>> expectedPage = createMockPage();
+        ArgumentCaptor<LocalDataCriteria> criteriaCaptor = ArgumentCaptor.forClass(LocalDataCriteria.class);
+
+        when(versionMappingService.getVersionMapping(TEST_REF_BOOK_CODE, null)).thenReturn(versionMapping);
+        when(dao.getData(any(LocalDataCriteria.class))).thenReturn(expectedPage);
+
+        service.getData(TEST_REF_BOOK_CODE, false, 0, 10, null, "code:asc,name:desc", null);
+
+        verify(dao).getData(criteriaCaptor.capture());
+        List<Sort.Order> orders = criteriaCaptor.getValue().getSortOrders();
+        assertEquals(2, orders.size());
+        assertEquals("code", orders.get(0).getProperty());
+        assertEquals(Sort.Direction.ASC, orders.get(0).getDirection());
+        assertEquals("name", orders.get(1).getProperty());
+        assertEquals(Sort.Direction.DESC, orders.get(1).getDirection());
+    }
+
+    @Test
+    void getData_withNullSort_shouldHaveEmptySortOrders() {
+        VersionMapping versionMapping = createVersionMapping();
+        Page<Map<String, Object>> expectedPage = createMockPage();
+        ArgumentCaptor<LocalDataCriteria> criteriaCaptor = ArgumentCaptor.forClass(LocalDataCriteria.class);
+
+        when(versionMappingService.getVersionMapping(TEST_REF_BOOK_CODE, null)).thenReturn(versionMapping);
+        when(dao.getData(any(LocalDataCriteria.class))).thenReturn(expectedPage);
+
+        service.getData(TEST_REF_BOOK_CODE, false, 0, 10, null, null, null);
+
+        verify(dao).getData(criteriaCaptor.capture());
+        assertTrue(criteriaCaptor.getValue().getSortOrders().isEmpty());
+    }
+
+    @Test
+    void parseSortOrders_withInvalidFieldName_shouldThrowException() {
+        assertThrows(RdmSyncException.class, () ->
+                LocalRdmDataServiceImplV2.parseSortOrders("1invalid_field")
+        );
+        assertThrows(RdmSyncException.class, () ->
+                LocalRdmDataServiceImplV2.parseSortOrders("field with spaces")
+        );
+    }
+
+    @Test
+    void parseSortOrders_withValidFieldsAndDefaultDirection_shouldDefaultToAsc() {
+        List<Sort.Order> orders = LocalRdmDataServiceImplV2.parseSortOrders("code");
+        assertEquals(1, orders.size());
+        assertEquals("code", orders.get(0).getProperty());
+        assertEquals(Sort.Direction.ASC, orders.get(0).getDirection());
     }
 
     // Helper methods to create test data
