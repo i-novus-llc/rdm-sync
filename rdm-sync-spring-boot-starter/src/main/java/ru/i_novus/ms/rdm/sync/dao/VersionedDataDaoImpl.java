@@ -402,15 +402,25 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
             return Page.empty();
 
         int limit = dataCriteria.getLimit();
+        List<Sort.Order> sortOrders = dataCriteria.getSortOrders();
         if (limit != 1) {
-            sql += String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk()));
+            String orderBy = sortOrders.isEmpty()
+                    ? addDoubleQuotes(dataCriteria.getPk())
+                    : sortOrders.stream()
+                            .map(o -> addDoubleQuotes(o.getProperty()) + " " + o.getDirection().name())
+                            .collect(Collectors.joining(", "));
+            sql += String.format("%n ORDER BY %s ", orderBy);
         }
 
         sql = "SELECT * " + (selectSubQuery != null ? ", " + selectSubQuery + " " : "") + sql;
 
         sql = "WITH _data AS MATERIALIZED (" + sql + ")\n" +
                 "SELECT * FROM _data" +
-                (limit != 1 ? String.format("%n ORDER BY %s ", addDoubleQuotes(dataCriteria.getPk())) : "") +
+                (limit != 1 ? String.format("%n ORDER BY %s ", sortOrders.isEmpty()
+                        ? addDoubleQuotes(dataCriteria.getPk())
+                        : sortOrders.stream()
+                                .map(o -> addDoubleQuotes(o.getProperty()) + " " + o.getDirection().name())
+                                .collect(Collectors.joining(", "))) : "") +
                 String.format("%n LIMIT %d OFFSET %d", limit, dataCriteria.getOffset());
 
         if (log.isDebugEnabled()) {
@@ -437,7 +447,10 @@ public class VersionedDataDaoImpl implements VersionedDataDao {
         final RestCriteria restCriteria = new DataCriteria();
         restCriteria.setPageNumber(dataCriteria.getOffset() / limit);
         restCriteria.setPageSize(limit);
-        restCriteria.setOrders(Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(toList()));
+        List<Sort.Order> effectiveOrders = sortOrders.isEmpty()
+                ? Sort.by(Sort.Order.asc(dataCriteria.getPk())).get().collect(Collectors.toList())
+                : sortOrders;
+        restCriteria.setOrders(effectiveOrders);
 
         return new PageImpl<>(result, restCriteria, count);
     }

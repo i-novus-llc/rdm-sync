@@ -25,6 +25,7 @@ public interface LocalRdmDataServiceV2 {
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size,
             @QueryParam("filter") String rsqlFilter,
+            @QueryParam("sort") String sort,
             @Context UriInfo uriInfo
     );
 
@@ -37,6 +38,7 @@ public interface LocalRdmDataServiceV2 {
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size,
             @QueryParam("filter") String rsqlFilter,
+            @QueryParam("sort") String sort,
             @Context UriInfo uriInfo
     );
 }
